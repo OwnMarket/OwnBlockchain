@@ -8,4 +8,7 @@
     <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />
     <ProjectReference Include="..\Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DomainTypes.fs" />
+  </ItemGroup>
 </Project>
