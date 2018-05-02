@@ -1,0 +1,77 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{B21B8E5B-35AE-4845-9CF8-9432222B025A}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Common", "Chainium.Common\Chainium.Common.fsproj", "{7863EFF6-7271-467E-AC0B-39F1FEFB4252}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Common", "Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj", "{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{AD45BC5B-CADC-46B6-B505-765A59BDF476}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.Core", "Chainium.Blockchain.Public.Core\Chainium.Blockchain.Public.Core.fsproj", "{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.Crypto", "Chainium.Blockchain.Public.Crypto\Chainium.Blockchain.Public.Crypto.fsproj", "{43959247-679F-459D-AD6D-D96B1128EF4A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{8326E566-95AA-4A26-AB4D-E648A9C7351D}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.Data", "Chainium.Blockchain.Public.Data\Chainium.Blockchain.Public.Data.fsproj", "{81928E31-134E-4823-AC9E-8B7C773EE001}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.Net", "Chainium.Blockchain.Public.Net\Chainium.Blockchain.Public.Net.fsproj", "{3961873E-9489-46C3-B7EC-72D62A3E577A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{BC5EB361-3612-4183-A6EA-38F1B68D810C}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.Node", "Chainium.Blockchain.Public.Node\Chainium.Blockchain.Public.Node.fsproj", "{FD2A5722-643D-4232-A507-474B965E78B2}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.Wallet", "Chainium.Blockchain.Public.Wallet\Chainium.Blockchain.Public.Wallet.fsproj", "{6016F6E7-7760-422B-8AED-3E346B38DAA0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7863EFF6-7271-467E-AC0B-39F1FEFB4252}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7863EFF6-7271-467E-AC0B-39F1FEFB4252}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7863EFF6-7271-467E-AC0B-39F1FEFB4252}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7863EFF6-7271-467E-AC0B-39F1FEFB4252}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43959247-679F-459D-AD6D-D96B1128EF4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43959247-679F-459D-AD6D-D96B1128EF4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43959247-679F-459D-AD6D-D96B1128EF4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43959247-679F-459D-AD6D-D96B1128EF4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81928E31-134E-4823-AC9E-8B7C773EE001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81928E31-134E-4823-AC9E-8B7C773EE001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81928E31-134E-4823-AC9E-8B7C773EE001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81928E31-134E-4823-AC9E-8B7C773EE001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3961873E-9489-46C3-B7EC-72D62A3E577A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3961873E-9489-46C3-B7EC-72D62A3E577A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3961873E-9489-46C3-B7EC-72D62A3E577A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3961873E-9489-46C3-B7EC-72D62A3E577A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD2A5722-643D-4232-A507-474B965E78B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD2A5722-643D-4232-A507-474B965E78B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD2A5722-643D-4232-A507-474B965E78B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD2A5722-643D-4232-A507-474B965E78B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6016F6E7-7760-422B-8AED-3E346B38DAA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6016F6E7-7760-422B-8AED-3E346B38DAA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6016F6E7-7760-422B-8AED-3E346B38DAA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6016F6E7-7760-422B-8AED-3E346B38DAA0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{09FEAE5D-825C-4066-8068-6F8A4BA1ED09} = {B21B8E5B-35AE-4845-9CF8-9432222B025A}
+		{7863EFF6-7271-467E-AC0B-39F1FEFB4252} = {B21B8E5B-35AE-4845-9CF8-9432222B025A}
+		{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381} = {AD45BC5B-CADC-46B6-B505-765A59BDF476}
+		{43959247-679F-459D-AD6D-D96B1128EF4A} = {AD45BC5B-CADC-46B6-B505-765A59BDF476}
+		{81928E31-134E-4823-AC9E-8B7C773EE001} = {8326E566-95AA-4A26-AB4D-E648A9C7351D}
+		{3961873E-9489-46C3-B7EC-72D62A3E577A} = {8326E566-95AA-4A26-AB4D-E648A9C7351D}
+		{FD2A5722-643D-4232-A507-474B965E78B2} = {BC5EB361-3612-4183-A6EA-38F1B68D810C}
+		{6016F6E7-7760-422B-8AED-3E346B38DAA0} = {BC5EB361-3612-4183-A6EA-38F1B68D810C}
+	EndGlobalSection
+EndGlobal
