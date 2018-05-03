@@ -1,7 +1,6 @@
 namespace Chainium.Blockchain.Public.Wallet
 
 open System
-open System.Reflection
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 
@@ -12,12 +11,12 @@ module Cli =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let handleGenerateKeyPairCommand seed =
-         Signing.generateKeyPair seed
-         |> printfn "Key Pair: %A" // TODO: Decide about the output format
+        Signing.generateKeyPair seed
+        |> printfn "Key Pair: %A" // TODO: Decide about the output format
 
     let handleSignMessageCommand privateKey message =
-         Signing.signMessage privateKey message
-         |> printfn "Signature: %A" // TODO: Decide about the output format
+        Signing.signMessage privateKey message
+        |> printfn "Signature: %A" // TODO: Decide about the output format
 
     let handleUnknownCommand args =
         // TODO: Show help
