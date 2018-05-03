@@ -15,8 +15,11 @@ type KeyPair = {
     PublicKey : PublicKey
 }
 
-type TxHash = TxHash of string
 type Signature = Signature of string
+
+type TxHash = TxHash of string
+type BlockHash = BlockHash of string
+type MerkleTree = MerkleTree of string
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -9,4 +9,8 @@
     <ProjectReference Include="..\Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj" />
     <ProjectReference Include="..\Chainium.Blockchain.Public.Core\Chainium.Blockchain.Public.Core.fsproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Hashing.fs" />
+    <Compile Include="Signing.fs" />
+  </ItemGroup>
 </Project>
