@@ -8,11 +8,18 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Hashing =
 
-    let hash (data : string) =
-        // TODO: Implement properly
-        let content = Encoding.UTF8.GetBytes(data)
-        let hash = SHA256.Create().ComputeHash(content)
-        BitConverter.ToString(hash).Replace("-", "")
+    let baseHash()=SHA256.Create() :> HashAlgorithm
+
+    let hash (data:byte[])=
+        baseHash().ComputeHash(data)
+
+    let addressHash (dataToHash:byte[])=
+        let numOfBytesToTake=20;
+        
+        let sha160Hash=fun (data:byte[]) -> let sha512=SHA512.Create() in () ;  sha512.ComputeHash(data) |> Array.take(numOfBytesToTake)
+        
+        let sha256=SHA256.Create()
+        dataToHash |> sha256.ComputeHash |> sha160Hash
 
     let merkleTree _ =
         MerkleTree ""
