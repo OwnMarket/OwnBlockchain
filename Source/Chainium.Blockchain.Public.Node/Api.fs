@@ -5,8 +5,38 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
+open Chainium.Blockchain.Public.Core.DomainTypes
+open Chainium.Blockchain.Public.Core.Dtos
 
 module Api =
+
+    let toApiResponse mapData = function
+        | Ok data ->
+            data
+            |> mapData
+            |> json
+        | Error errors ->
+            errors
+            |> List.map (fun (AppError e) -> e)
+            |> (fun es -> { ErrorResponseDto.Errors = es })
+            |> json
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Handlers
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let submitTxHandler : HttpHandler = fun next ctx ->
+        task {
+            let! requestDto = ctx.BindJsonAsync<SubmitTxRequestDto>()
+
+            let response =
+                Composition.submitTx requestDto
+                |> toApiResponse (fun (TxHash txHash) -> { SubmitTxResponseDto.TxHash = txHash })
+
+            return! response next ctx
+        }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
@@ -18,7 +48,7 @@ module Api =
                 route "/" >=> text "TODO: Show link to the help page"
             ]
             POST >=> choose [
-                route "/tx" >=> text "TODO: Handle Tx submission"
+                route "/tx" >=> submitTxHandler
             ]
         ]
 
