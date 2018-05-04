@@ -1,6 +1,7 @@
 namespace Chainium.Blockchain.Public.Wallet
 
 open System
+open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 
@@ -15,7 +16,9 @@ module Cli =
         |> printfn "Key Pair: %A" // TODO: Decide about the output format
 
     let handleSignMessageCommand privateKey message =
-        Signing.signMessage privateKey message
+        message
+        |> Serialization.stringToBytes // TODO: Provide input as a file path, so the raw data can be read.
+        |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
         |> printfn "Signature: %A" // TODO: Decide about the output format
 
     let handleUnknownCommand args =

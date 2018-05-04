@@ -42,10 +42,13 @@ module Signing =
             PublicKey = publicKey
         }
 
-    let signMessage (privateKey : PrivateKey) (message : string) : Signature =
+    let signMessage (privateKey : PrivateKey) (data : byte[]) : Signature =
         // TODO: Implement
-        Signature "DUMMY_SIGNATURE"
+        {
+            R = "AAA"
+            S = "BBB"
+        }
 
-    let verifySignature (signature : Signature) (message : string) : ChainiumAddress option =
+    let verifySignature (signature : Signature) (data : byte[]) : ChainiumAddress option =
         // TODO: Implement
         Some (ChainiumAddress "ch1234567890")
