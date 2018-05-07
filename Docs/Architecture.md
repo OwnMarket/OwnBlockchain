@@ -42,7 +42,7 @@ More information about this approach can be found in [the work of Scott Wlaschin
 
 ![High Level Flow](Architecture/HighLevelFlow.png)
 
-This diagram explains how to construct the handling of a command from it's entrance into the system, until the business logic.
+This diagram explains how to construct the handling of a command from its entrance into the system, until the business logic.
 
 1. A command enters the system from outside world through the interface. Interface can represent an API request, a command entered on OS terminal, a network request from the peer, etc.
 2. Once command enters the system, it first goes to Dispatch table, where it is mapped to the corresponding handler in the code. The Dispatch table can be a list of API routes, a list of terminal commands, or a list of network commands - it depends on the use case.
