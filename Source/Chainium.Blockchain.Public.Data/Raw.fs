@@ -8,7 +8,7 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Raw =
 
-    let saveTx (dataDir : string) (TxHash txHash) (signedTx : string) : Result<TxHash, AppErrors> =
+    let saveTx (dataDir : string) (TxHash txHash) (signedTx : string) : Result<unit, AppErrors> =
         // TODO: Implement proper storage for canonical representation of data.
         try
             if not (Directory.Exists(dataDir)) then
@@ -20,7 +20,7 @@ module Raw =
                 Error [AppError (sprintf "Tx with hash %s already exists." txHash)]
             else
                 File.WriteAllText(path, signedTx)
-                Ok (TxHash txHash)
+                Ok ()
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces

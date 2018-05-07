@@ -17,5 +17,6 @@ module Workflows =
                 Serialization.deserializeTx signedTx.RawTx
                 >>= Validation.validateTx senderAddress txHash
                 >>= (fun _ -> saveTx txHash requestDto.SignedTx)
+                |> Result.map (fun _ -> txHash)
             )
         )
