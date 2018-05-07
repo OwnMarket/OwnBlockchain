@@ -64,3 +64,4 @@ Project | Description | Layer
 `Chainium.Blockchain.Public.Data` | Data persistance | Infrastructure
 `Chainium.Blockchain.Public.Net` | Network communication between nodes | Infrastructure
 `Chainium.Blockchain.Public.Node` | Application host / composition root / API | Infrastructure
+`Chainium.Blockchain.Public.Wallet` | Application host / composition root / CLI | Infrastructure
