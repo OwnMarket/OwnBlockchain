@@ -2,10 +2,6 @@ namespace Chainium.Blockchain.Public.Core.DomainTypes
 
 open System
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Crypto
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 type PrivateKey = PrivateKey of string
 type PublicKey = PublicKey of string
 type ChainiumAddress = ChainiumAddress of string
@@ -15,11 +11,53 @@ type WalletInfo = {
     ChainiumAddress : ChainiumAddress
 }
 
-type Signature = Signature of string
+type Signature = {
+    R : string
+    S : string
+}
 
 type TxHash = TxHash of string
 type BlockHash = BlockHash of string
 type MerkleTree = MerkleTree of string
+
+type AccountHash = AccountHash of string
+type EquityID = EquityID of string
+type EquityAmount = EquityAmount of decimal
+type ChxAmount = ChxAmount of decimal
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Tx
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type ChxTransferTxAction = {
+    RecipientAddress : ChainiumAddress
+    Amount : ChxAmount
+}
+
+type EquityTransferTxAction = {
+    FromAccountHash : AccountHash
+    ToAccountHash : AccountHash
+    EquityID : EquityID
+    Amount : EquityAmount
+}
+
+type TxAction =
+    | ChxTransfer of ChxTransferTxAction
+    | EquityTransfer of EquityTransferTxAction
+
+type Tx = {
+    TxHash : TxHash
+    Sender : ChainiumAddress
+    Nonce : int64
+    Actions : TxAction list
+    Fee : ChxAmount
+}
+
+type SignedTx = {
+    RawTx : byte[]
+    Signature : Signature
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

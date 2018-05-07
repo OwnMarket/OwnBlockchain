@@ -1,7 +1,6 @@
 ﻿namespace Chainium.Blockchain.Public.Crypto
 
 open System
-open System.IO
 open System.Text
 open System.Security.Cryptography
 open Chainium.Common
