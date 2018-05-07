@@ -7,6 +7,8 @@ open Chainium.Common
 open Chainium.Blockchain.Public.Crypto
 
 module SigningTests =
+    open Chainium.Blockchain.Public.Core.DomainTypes
+    open Org.BouncyCastle.Math
 
     [<Fact>]
     let ``Signing.generateRandomSeed generates an array of 64 bytes`` () =
@@ -26,3 +28,72 @@ module SigningTests =
             |> List.distinct
         
         test <@ distinctSeeds.Length = allSeeds.Length @>
+    
+    [<Fact>]
+    let ``Signing.generateWalletInfo using seed`` () =
+        let seed = 
+            Signing.generateRandomSeed () 
+        
+        let numOfReps = 1000
+
+        let distinctPairs = 
+            [1..numOfReps]
+            |> List.map (fun _ -> Some(seed) |> Signing.generateWalletInfo)
+            |> List.distinct
+
+        test <@ distinctPairs.Length = numOfReps @>
+
+    [<Fact>]
+    let ``Signing.generateWalletInfo without using seed`` () =        
+        let numOfReps = 1000
+
+        let walletInfoPairs = 
+            [1..numOfReps]
+            |> List.map (fun _ -> Signing.generateWalletInfo None)
+            |> List.distinct
+
+        test <@ walletInfoPairs.Length = numOfReps @>
+
+    [<Fact>]
+    let ``Signing.signMessage same message for multiple users`` () =
+        let numOfReps = 100
+        let messageToSign = "Chainium"
+
+        let generateSignature () =
+            let wallet = Signing.generateWalletInfo None
+            Signing.signMessage wallet.PrivateKey messageToSign
+
+        let distinctMessages = 
+            [1..numOfReps]
+            |> List.map (fun _ -> generateSignature ())
+            |> List.distinct
+         
+        test <@ distinctMessages.Length = numOfReps @>
+
+    [<Fact>]
+    let ``Signing.verifyMessage sign, verify message and check if resulting adress is same`` () =
+        let messageToSign = "Chainium"
+        let wallet = Signing.generateWalletInfo None
+
+        let signature = Signing.signMessage wallet.PrivateKey messageToSign
+        let address = Signing.verifySignature signature messageToSign
+         
+        test <@ address <> None @>
+        test <@ address.Value = wallet.ChainiumAddress @>
+      
+
+    [<Fact>]
+    let ``Signing.verifyMessage sign, verify mutiple messages and check if resulting adress is same`` () =
+        let messageToSign = "Chainium"
+        
+        let wallet = Signing.generateWalletInfo None
+
+        let signAndVerify message=
+            let signature = Signing.signMessage wallet.PrivateKey message
+            let address = Signing.verifySignature signature message
+         
+            test <@ address <> None @>
+            test <@ address.Value = wallet.ChainiumAddress @>
+
+        [1..100]
+        |> List.map(fun i -> sprintf "%s %i" messageToSign i |> signAndVerify)

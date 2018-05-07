@@ -11,7 +11,7 @@ module Cli =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let handleGenerateKeyPairCommand seed =
-        Signing.generateKeyPair seed
+        Signing.generateWalletInfo seed
         |> printfn "Key Pair: %A" // TODO: Decide about the output format
 
     let handleSignMessageCommand privateKey message =

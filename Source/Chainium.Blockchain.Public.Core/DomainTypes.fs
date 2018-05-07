@@ -10,9 +10,9 @@ type PrivateKey = PrivateKey of string
 type PublicKey = PublicKey of string
 type ChainiumAddress = ChainiumAddress of string
 
-type KeyPair = {
+type WalletInfo = {
     PrivateKey : PrivateKey
-    PublicKey : PublicKey
+    ChainiumAddress : ChainiumAddress
 }
 
 type Signature = Signature of string
