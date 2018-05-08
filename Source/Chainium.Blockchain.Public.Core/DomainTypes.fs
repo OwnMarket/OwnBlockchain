@@ -6,14 +6,17 @@ type PrivateKey = PrivateKey of string
 type PublicKey = PublicKey of string
 type ChainiumAddress = ChainiumAddress of string
 
+type RawChainiumAddress = RawChainiumAddress of byte[]
+
 type WalletInfo = {
-    PrivateKey : PrivateKey
-    ChainiumAddress : ChainiumAddress
+    PrivateKey : byte[]
+    ChainiumAddress : RawChainiumAddress
 }
 
 type Signature = {
-    R : string
-    S : string
+    V : byte[]
+    R : byte[]
+    S : byte[]
 }
 
 type TxHash = TxHash of string

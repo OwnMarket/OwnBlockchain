@@ -20,7 +20,12 @@ module Serialization =
         | [| rawTx; signaturePartR; signaturePartS |] ->
             Ok {
                 RawTx = Convert.FromBase64String(rawTx)
-                Signature = { R = signaturePartR; S = signaturePartS }
+                Signature = 
+                    { 
+                      R = signaturePartR |> Convert.FromBase64String
+                      S = signaturePartS |> Convert.FromBase64String 
+                      V = [| byte 0 |] 
+                    }
             }
         | _ -> Error [AppError "SignedTx is expected to have three parts separated by a semicolon ';'."]
 

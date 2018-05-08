@@ -9,8 +9,17 @@ open Chainium.Blockchain.Public.Core.Dtos
 module Validation =
 
     let verifyTxSignature verifySignature (signedTx : SignedTx) : Result<ChainiumAddress * TxHash, AppErrors> =
+        let addressBytes (RawChainiumAddress c) = c
+
         match verifySignature signedTx.Signature signedTx.RawTx with
-        | Some address ->
+        | Some rawaddress ->
+            //TODO: implement proper encoding for address
+            let address =
+                rawaddress
+                |> addressBytes
+                |> System.Convert.ToBase64String
+                |> ChainiumAddress
+
             Ok (address, TxHash "DUMMY_HASH") // TODO: Implement
         | None ->
             Error [AppError "Cannot verify signature"]

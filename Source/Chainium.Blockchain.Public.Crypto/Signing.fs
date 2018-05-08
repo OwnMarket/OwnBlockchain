@@ -13,17 +13,8 @@ open Org.BouncyCastle.Math
 open Org.BouncyCastle.Crypto.Digests
 open Org.BouncyCastle.Crypto.Signers
 open Org.BouncyCastle.Math.EC
-open Org.BouncyCastle.Asn1.X9
 
 module Signing =
-    open Org.BouncyCastle.Asn1
-
-     //TODO: decide on encoding,for now assume it is bas64
-    type String with
-        member this.toBytes() = Convert.FromBase64String(this)
-    
-    let toString (bytes:byte[]) = Convert.ToBase64String(bytes)
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private functions and values used only in this module
@@ -32,12 +23,11 @@ module Signing =
     let private curve = SecNamedCurves.GetByName("secp256k1")
     let private domain = ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H)
 
-    let private compressionArraySize = 33
-
     let private getCompressionArrayBasedOnRecId recId (x : BigInteger)=
         let xUnsigned = x.ToByteArrayUnsigned()
         let defaultVal = byte 0
-        
+        let compressionArraySize = 33
+
         let compEncoding = Array.create<byte> compressionArraySize defaultVal
         let compressionByteVal = byte(0x02 + (recId % 2))
         compEncoding.[0] <- compressionByteVal
@@ -47,7 +37,7 @@ module Signing =
 
         compEncoding
 
-    let private calculateQPoint (message : byte[]) (order : BigInteger) (rComponent : BigInteger) (sComponent : BigInteger) (R : ECPoint)= 
+    let private calculateQPoint (message : byte[]) (order : BigInteger) (rComponent : BigInteger) (sComponent : BigInteger) (R : ECPoint) = 
         let messageE = BigInteger(1, message)
         let e = BigInteger.Zero.Subtract(messageE).Mod(order)
         let rr = rComponent.ModInverse(order)
@@ -91,10 +81,6 @@ module Signing =
         let ecdsa = ECDsaSigner()
         ecdsa.Init(false, publicKeyParameters)
         ecdsa.VerifySignature(message, messageHash, signature) 
-
-    let private getAsBigInteger (str:string)=
-        str.toBytes()
-        |> BigInteger
     
     let rec private getRecordId recordId (publicKey:BigInteger) originalMessage (signature:BigInteger[]) =
         match recordId with
@@ -116,31 +102,6 @@ module Signing =
     let private calculateVComponent publicKey originalMessage signature = 
         getRecordId 0 publicKey originalMessage signature
 
-    let private toDER (vComponent:int) (signature:BigInteger[]) = 
-        let bos = new MemoryStream()
-        let seq = new DerSequenceGenerator(bos)
-        seq.AddObject(DerInteger(vComponent))
-        seq.AddObject(DerInteger(signature.[0]))
-        seq.AddObject(DerInteger(signature.[1]))
-        seq.Close()
-            
-        bos.ToArray()
-    
-    let private fromDER (signatureBytes:byte[]) =
-        let decoder = new Asn1InputStream(signatureBytes)
-        let seq = decoder.ReadObject() :?> DerSequence
-
-        let seqItem iter = (seq.[iter] :?> DerInteger).Value
-
-        let vComponent = (seqItem 0).IntValue
-        let signature = 
-            [|
-                seqItem 1;
-                seqItem 2
-            |]
-        
-        (vComponent,signature)
-
     let private getBouncyCastleSignatureArray privateKeyInt messageBytes= 
         let digest = Sha256Digest()
         let calc = HMacDsaKCalculator(digest)
@@ -153,41 +114,18 @@ module Signing =
         ecdsa.Init(true, paramsWithRandom)
         ecdsa.GenerateSignature(messageBytes)
 
-    let privateKeyString (PrivateKey e) = e
-
-    let private calculatePublicKeyBytes (privateKey : PrivateKey) =
-        let keyAsBigInt = 
-            privateKey 
-            |> privateKeyString 
-            |> getAsBigInteger
-        
-        curve.G.Multiply(keyAsBigInt).GetEncoded()
-
-    let generateRandomBytes byteCount =
-        // TODO: Review
-        let bytes = Array.zeroCreate byteCount
-        use rngCsp = new RNGCryptoServiceProvider()
-        rngCsp.GetBytes(bytes) // Fill the array with a random value.
-        bytes
-
-    let generateRandomSeed () =
-        // TODO: Implement
-        let seed = generateRandomBytes 64;
-        Convert.ToBase64String(seed)
-    
-    let private calculatePublicKeyBigInt (privateKey : PrivateKey) = 
-        privateKey 
-        |> calculatePublicKeyBytes 
-        |> BigInteger
+    let private calculatePublicKeyAsBytes (privateKey : BigInteger) =
+        curve.G.Multiply(privateKey).GetEncoded()
 
     let private getKeyPair (seed : string option) = 
-        let gen = new ECKeyPairGenerator()
+        let gen = ECKeyPairGenerator()
         let secureRandom = SecureRandom()
         
         match seed with
         | None -> ()
         | Some(seedValue) -> 
-            seedValue.toBytes()
+            seedValue
+            |> Convert.FromBase64String
             |> secureRandom.SetSeed
 
         let keyGenParams = ECKeyGenerationParameters(domain, secureRandom)
@@ -201,73 +139,79 @@ module Signing =
 
         (privateKey.D.ToByteArray(), publicKey.Q.GetEncoded())
 
-    let calculatePublicKey (privateKey : PrivateKey) : PublicKey = 
-        privateKey 
-        |> calculatePublicKeyBytes 
-        |> toString 
-        |> PublicKey
+    let generateRandomBytes byteCount =
+        // TODO: Review
+        let bytes = Array.zeroCreate byteCount
+        use rngCsp = new RNGCryptoServiceProvider()
+        rngCsp.GetBytes(bytes) // Fill the array with a random value.
+        bytes
 
-    let calculateAddress (publicKey : PublicKey) : ChainiumAddress =
+    let generateRandomSeed () =
         // TODO: Implement
-        ChainiumAddress "ch1234567890"
+        let seed = generateRandomBytes 64;
+        Convert.ToBase64String(seed)
+
+    let calculatePublicKey (privateKey : byte[]) : byte[] =         
+        privateKey
+        |> BigInteger
+        |> calculatePublicKeyAsBytes
 
     let generateWalletInfo (seed:string option) : WalletInfo =
         let keyPair = getKeyPair(seed)
 
         {
-            PrivateKey=keyPair
-            |> fst
-            |> toString 
-            |> PrivateKey;
-            ChainiumAddress = keyPair
-            |> snd
-            |> Hashing.addressHash 
-            |> toString
-            |> ChainiumAddress
+            PrivateKey =
+                keyPair
+                |> fst
+            ChainiumAddress = 
+                keyPair
+                |> snd
+                |> Hashing.addressHash 
+                |> RawChainiumAddress
         }
-    
-    let convertMessageToBytes (str:String) = System.Text.Encoding.UTF8.GetBytes(str)
 
-    let signMessage (privateKey : PrivateKey) (message : string) : Signature =
-        let privateKeyInt = 
-            privateKey 
-            |> privateKeyString 
-            |> getAsBigInteger
+    let signMessage (privateKey : byte[]) (message : byte[]) : Signature =
+        let privateKeyInt = BigInteger privateKey 
+        let signature = getBouncyCastleSignatureArray privateKeyInt message
 
-        let messageBytes = convertMessageToBytes message
-        let signature = getBouncyCastleSignatureArray privateKeyInt messageBytes
+        let publicKey = 
+            privateKeyInt 
+            |> calculatePublicKeyAsBytes 
+            |> BigInteger
 
-        let publicKey = calculatePublicKeyBigInt privateKey
-        let vComponent = calculateVComponent publicKey messageBytes signature
+        let vComponent = calculateVComponent publicKey message signature
 
-        toDER vComponent signature 
-        |> toString 
-        |> Signature
+        {
+            V = [| (vComponent |> byte) |]
+            R = signature.[0].ToByteArray()
+            S = signature.[1].ToByteArray()
+        }  
 
-    let signatureAsString (Signature s) = s    
+    let verifySignature (signature : Signature) (message : byte[]) : RawChainiumAddress option =
+        
+        let vComponent = 
+            signature.V.[0]  
+            |> int      
+        
+        let rComponent = 
+            signature.R
+            |> BigInteger
 
-    let verifySignature (signature : Signature) (message : string) : ChainiumAddress option =
-        let signatureBytes = (signature |> signatureAsString).toBytes()
-        let signatureData = fromDER signatureBytes
+        let sComponent = 
+            signature.S
+            |> BigInteger
 
-        let vComponent = fst signatureData
-        let signatureInfo = snd signatureData 
-        let rComponent = signatureInfo.[0]
-        let sComponent = signatureInfo.[1]
-
-        let messageAsBytes = convertMessageToBytes message
-        let publicKey = recoverPublicKeyFromSignature vComponent rComponent sComponent messageAsBytes
+        let publicKey = recoverPublicKeyFromSignature vComponent rComponent sComponent message
 
         match publicKey with
         | None -> None
         | Some key ->
-            let isVerified = verify messageAsBytes rComponent sComponent key
+            let isVerified = verify message rComponent sComponent key
 
             match isVerified with
             | false -> None
             | true -> 
                 key.ToByteArray() 
                 |> Hashing.addressHash 
-                |> toString 
-                |> ChainiumAddress 
+                |> RawChainiumAddress 
                 |> Some

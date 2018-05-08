@@ -8,7 +8,7 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Hashing =
 
-    let baseHash()=SHA256.Create() :> HashAlgorithm
+    let private baseHash() = SHA256.Create() :> HashAlgorithm
 
     let hash (data : byte[]) =
         baseHash().ComputeHash(data)
@@ -16,12 +16,13 @@ module Hashing =
     let addressHash (dataToHash : byte[]) =
         let numOfBytesToTake = 20
         
-        let sha160Hash = fun (data : byte[]) -> 
-            let sha512=SHA512.Create() in () 
-            ;  sha512.ComputeHash(data) 
+        let sha160Hash (data : byte[]) = 
+            let sha512 = SHA512.Create()
+            
+            sha512.ComputeHash(data) 
             |> Array.take(numOfBytesToTake)
         
-        let sha256=SHA256.Create()
+        let sha256 = SHA256.Create()
         
         dataToHash 
         |> sha256.ComputeHash 

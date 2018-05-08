@@ -16,9 +16,16 @@ module Cli =
         |> printfn "Key Pair: %A" // TODO: Decide about the output format
 
     let handleSignMessageCommand privateKey message =
+        let privateKeyToString (PrivateKey k) = k
+
+        let keyBytes = 
+            privateKey
+            |> privateKeyToString
+            |> Convert.FromBase64String
+
         message
         |> Serialization.stringToBytes // TODO: Provide input as a file path, so the raw data can be read.
-        |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
+        |> Signing.signMessage keyBytes // TODO: Use key file path, to prevent keys being logged in terminal history.
         |> printfn "Signature: %A" // TODO: Decide about the output format
 
     let handleUnknownCommand args =
