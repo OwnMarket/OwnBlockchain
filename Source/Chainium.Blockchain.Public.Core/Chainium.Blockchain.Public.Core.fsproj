@@ -9,8 +9,11 @@
   <ItemGroup>
     <Compile Include="DomainTypes.fs" />
     <Compile Include="Dtos.fs" />
-    <Compile Include="Serialization.fs" />
     <Compile Include="Validation.fs" />
+    <Compile Include="Serialization.fs" />
     <Compile Include="Workflows.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 </Project>
