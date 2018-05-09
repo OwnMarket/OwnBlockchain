@@ -3,12 +3,13 @@ namespace Chainium.Blockchain.Public.Crypto.Tests
 open System
 open Xunit
 open Swensen.Unquote
+open Multiformats.Base
 open Chainium.Common
 open Chainium.Blockchain.Public.Crypto
 
 module HashingTests =
 
-    let getBytes (str:String)=System.Text.Encoding.UTF8.GetBytes(str)
+    let getBytes (str : String) = System.Text.Encoding.UTF8.GetBytes(str)
 
     [<Fact>]
     let ``Hashing.hash calculates same hash when executed multiple times for same input`` () =
@@ -43,13 +44,13 @@ module HashingTests =
         let hashCount = 10000
         let hashes =
             [1 .. hashCount]
-            |> List.map (fun _ -> Hashing.addressHash message)
+            |> List.map (fun _ -> Hashing.addressHash message |> Multibase.Base58.Decode)
             |> List.distinct
         test <@ hashes.Length = 1 @>
 
-        let longerThan20Bytes = 
-            hashes 
-            |> List.where(fun a->a.Length<>20)
+        let longerThan20Bytes =
+            hashes
+            |> List.where(fun a -> a.Length <> 20)
         test <@ longerThan20Bytes.Length = 0 @>
 
     [<Fact>]
@@ -57,11 +58,11 @@ module HashingTests =
         let hashCount = 10000
         let hashes =
             [1 .. hashCount]
-            |> List.map (fun i -> (sprintf "Chainium %i" i) |> getBytes |> Hashing.addressHash)
+            |> List.map (sprintf "Chainium %i" >> getBytes >> Hashing.addressHash >> Multibase.Base58.Decode)
             |> List.distinct
         test <@ hashes.Length = hashCount @>
 
-        let longerThan20Bytes = 
-            hashes 
-            |> List.where(fun a->a.Length<>20)
+        let longerThan20Bytes =
+            hashes
+            |> List.where(fun a -> a.Length <> 20)
         test <@ longerThan20Bytes.Length = 0 @>
