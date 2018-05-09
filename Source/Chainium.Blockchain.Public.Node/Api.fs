@@ -28,7 +28,7 @@ module Api =
 
     let submitTxHandler : HttpHandler = fun next ctx ->
         task {
-            let! requestDto = ctx.BindJsonAsync<SubmitTxRequestDto>()
+            let! requestDto = ctx.BindJsonAsync<TxEnvelopeDto>()
 
             let response =
                 Composition.submitTx requestDto

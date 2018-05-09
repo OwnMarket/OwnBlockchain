@@ -9,4 +9,4 @@ module Composition =
 
     let saveTx = Raw.saveTx Config.dataDir
 
-    let submitTx = Workflows.submitTx Signing.verifySignature saveTx
+    let submitTx = Workflows.submitTx Signing.verifySignature Hashing.hash saveTx

@@ -8,19 +8,40 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module Validation =
 
-    let verifyTxSignature verifySignature (signedTx : SignedTx) : Result<ChainiumAddress * TxHash, AppErrors> =
-        let addressBytes (RawChainiumAddress c) = c
+    let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
+        [
+            if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
+                yield AppError "Tx is missing from the envelope."
+            if txEnvelopeDto.V.IsNullOrWhiteSpace() then
+                yield AppError "Signature component V is missing from the envelope."
+            if txEnvelopeDto.R.IsNullOrWhiteSpace() then
+                yield AppError "Signature component R is missing from the envelope."
+            if txEnvelopeDto.S.IsNullOrWhiteSpace() then
+                yield AppError "Signature component S is missing from the envelope."
+        ]
+        |> Errors.orElseWith (fun () ->
+            {
+                RawTx = txEnvelopeDto.Tx |> Convert.FromBase64String
+                Signature =
+                    {
+                        V = txEnvelopeDto.V
+                        R = txEnvelopeDto.R
+                        S = txEnvelopeDto.S
+                    }
+            }
+        )
 
-        match verifySignature signedTx.Signature signedTx.RawTx with
-        | Some rawaddress ->
-            //TODO: implement proper encoding for address
-            let address =
-                rawaddress
-                |> addressBytes
-                |> System.Convert.ToBase64String
-                |> ChainiumAddress
+    let verifyTxSignature verifySignature createHash (txEnvelope : TxEnvelope)
+        : Result<ChainiumAddress * TxHash, AppErrors> =
 
-            Ok (address, TxHash "DUMMY_HASH") // TODO: Implement
+        let txHash =
+            txEnvelope.RawTx
+            |> createHash
+            |> TxHash
+
+        match verifySignature txEnvelope.Signature txEnvelope.RawTx with
+        | Some chainiumAddress ->
+            Ok (chainiumAddress, txHash)
         | None ->
             Error [AppError "Cannot verify signature"]
 

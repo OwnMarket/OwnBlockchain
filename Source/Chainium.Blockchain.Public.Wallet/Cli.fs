@@ -1,7 +1,8 @@
 namespace Chainium.Blockchain.Public.Wallet
 
 open System
-open Chainium.Blockchain.Public.Core
+open System.Text
+open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 
@@ -11,22 +12,22 @@ module Cli =
     // Handlers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let handleGenerateKeyPairCommand seed =
-        Signing.generateWalletInfo seed
-        |> printfn "Key Pair: %A" // TODO: Decide about the output format
+    let handleGenerateWalletCommand (seed : string option) =
+        seed
+        |> Option.map Encoding.UTF8.GetBytes
+        |> Signing.generateWallet
+        |> (fun w ->
+            let (PrivateKey pk) = w.PrivateKey
+            let (ChainiumAddress address) = w.Address
+            printfn "Private Key: %s\nAddress: %s" pk address)
 
     let handleSignMessageCommand privateKey message =
-        let privateKeyToString (PrivateKey k) = k
-
-        let keyBytes = 
-            privateKey
-            |> privateKeyToString
-            |> Convert.FromBase64String
+        let privateKey = PrivateKey privateKey
 
         message
-        |> Serialization.stringToBytes // TODO: Provide input as a file path, so the raw data can be read.
-        |> Signing.signMessage keyBytes // TODO: Use key file path, to prevent keys being logged in terminal history.
-        |> printfn "Signature: %A" // TODO: Decide about the output format
+        |> Convert.FromBase64String // TODO: Provide input as a file path, so the raw data can be read.
+        |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
+        |> (fun { V = v; R = r; S = s } -> printfn "Signature:\n  V: %s\n  R: %s\n  S: %s" v r s )
 
     let handleUnknownCommand args =
         // TODO: Show help
@@ -39,7 +40,7 @@ module Cli =
 
     let handleCommand args =
         match args with
-        | ["-g"] -> handleGenerateKeyPairCommand None
-        | ["-g"; seed] -> handleGenerateKeyPairCommand (Some seed)
-        | ["-s"; privateKey; message] -> handleSignMessageCommand (PrivateKey privateKey) message
+        | ["-g"] -> handleGenerateWalletCommand None
+        | ["-g"; seed] -> handleGenerateWalletCommand (Some seed)
+        | ["-s"; privateKey; message] -> handleSignMessageCommand privateKey message
         | _ -> handleUnknownCommand args

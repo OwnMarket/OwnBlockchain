@@ -9,14 +9,14 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module Workflows =
 
-    let submitTx verifySignature saveTx (requestDto : SubmitTxRequestDto) : Result<TxHash, AppErrors> =
-        Serialization.deserializeSignedTx requestDto.SignedTx
-        >>= (fun signedTx ->
-            Validation.verifyTxSignature verifySignature signedTx
+    let submitTx verifySignature createHash saveTx (txEnvelopeDto : TxEnvelopeDto) : Result<TxHash, AppErrors> =
+        Validation.validateTxEnvelope txEnvelopeDto
+        >>= (fun txEnvelope ->
+            Validation.verifyTxSignature verifySignature createHash txEnvelope
             >>= (fun (senderAddress, txHash) ->
-                Serialization.deserializeTx signedTx.RawTx
+                Serialization.deserializeTx txEnvelope.RawTx
                 >>= Validation.validateTx senderAddress txHash
-                >>= (fun _ -> saveTx txHash requestDto.SignedTx)
+                >>= (fun _ -> saveTx txHash txEnvelopeDto)
                 |> Result.map (fun _ -> txHash)
             )
         )

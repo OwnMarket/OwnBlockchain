@@ -3,20 +3,17 @@ namespace Chainium.Blockchain.Public.Core.DomainTypes
 open System
 
 type PrivateKey = PrivateKey of string
-type PublicKey = PublicKey of string
 type ChainiumAddress = ChainiumAddress of string
 
-type RawChainiumAddress = RawChainiumAddress of byte[]
-
 type WalletInfo = {
-    PrivateKey : byte[]
-    ChainiumAddress : RawChainiumAddress
+    PrivateKey : PrivateKey
+    Address : ChainiumAddress
 }
 
 type Signature = {
-    V : byte[]
-    R : byte[]
-    S : byte[]
+    V : string
+    R : string
+    S : string
 }
 
 type TxHash = TxHash of string
@@ -57,7 +54,7 @@ type Tx = {
     Fee : ChxAmount
 }
 
-type SignedTx = {
+type TxEnvelope = {
     RawTx : byte[]
     Signature : Signature
 }
