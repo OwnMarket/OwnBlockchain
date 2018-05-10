@@ -75,25 +75,10 @@ module SigningTests =
         let messageToSign = Encoding.UTF8.GetBytes "Chainium"
         let wallet = Signing.generateWallet None
 
-        let sb = StringBuilder()
-         
-        sprintf "%A" wallet
-        |> sb.AppendLine
-        |> ignore
-
-
         let signature = Signing.signMessage wallet.PrivateKey messageToSign
-
-        signature
-        |> (fun s -> sprintf "%A" s)
-        |> sb.AppendLine
-        |> ignore
-
         let address = Signing.verifySignature signature messageToSign
 
         test <@ address = Some wallet.Address @>
-
-        System.IO.File.WriteAllText("""D:\temp\wallet.txt""",sb.ToString())
 
 
     [<Fact>]
