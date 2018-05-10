@@ -75,10 +75,25 @@ module SigningTests =
         let messageToSign = Encoding.UTF8.GetBytes "Chainium"
         let wallet = Signing.generateWallet None
 
+        let sb = StringBuilder()
+         
+        sprintf "%A" wallet
+        |> sb.AppendLine
+        |> ignore
+
+
         let signature = Signing.signMessage wallet.PrivateKey messageToSign
+
+        signature
+        |> (fun s -> sprintf "%A" s)
+        |> sb.AppendLine
+        |> ignore
+
         let address = Signing.verifySignature signature messageToSign
 
         test <@ address = Some wallet.Address @>
+
+        System.IO.File.WriteAllText("""D:\temp\wallet.txt""",sb.ToString())
 
 
     [<Fact>]
@@ -93,3 +108,21 @@ module SigningTests =
             let address = Signing.verifySignature signature message
 
             test <@ address = Some wallet.Address @>
+    
+    [<Fact>]
+    let ``Signing.verifyMessage sign, verify random generated longer messages`` () =
+        let privateKey = PrivateKey "1ET4E5jQvfKqpaLynddAM73ThEUASi9NikQ9Dvd3fPwuk"
+        let expectedAddress = Some (ChainiumAddress "ch2Wt6j7sbaqbgKphYx9U95wZDX99L")
+
+        let generatRandomMessageAndTest messageSize =
+            let message = Signing.generateRandomBytes messageSize
+
+            let signature = Signing.signMessage privateKey message
+            let address = Signing.verifySignature signature message
+
+            test <@ address = expectedAddress @>
+
+        [33..230]
+        |> List.map (fun i-> generatRandomMessageAndTest i)
+        
+    

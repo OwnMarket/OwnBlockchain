@@ -25,10 +25,9 @@ module Signing =
 
     let private getCompressionArrayBasedOnRecId recId (x : BigInteger) =
         let compressionArraySize = 33
-        let defaultVal = byte 0
         let xUnsigned = x.ToByteArrayUnsigned()
 
-        let compEncoding = Array.create<byte> compressionArraySize defaultVal
+        let compEncoding = Array.zeroCreate compressionArraySize
         let compressionByteVal = byte(0x02 + (recId % 2))
         compEncoding.[0] <- compressionByteVal
 
@@ -58,7 +57,7 @@ module Signing =
         (recId : int)
         (rComponent : BigInteger)
         (sComponent : BigInteger)
-        (message : byte[])
+        (messageHash : byte[])
         =
 
         let fpCurve = curve.Curve :?> FpCurve
@@ -84,16 +83,16 @@ module Signing =
                 |> getEncodingArray
                 |> curve.Curve.DecodePoint
 
-            calculateQPoint message order rComponent sComponent r
+            calculateQPoint messageHash order rComponent sComponent r
             |> Some
 
-    let private verify message messageHash signature (publicKey : BigInteger) =
+    let private verify originalMesageHash messageHash signature (publicKey : BigInteger) =
         let ecPoint = domain.Curve.DecodePoint(publicKey.ToByteArray())
         let publicKeyParameters = ECPublicKeyParameters(ecPoint, domain)
 
         let ecdsa = ECDsaSigner()
         ecdsa.Init(false, publicKeyParameters)
-        ecdsa.VerifySignature(message, messageHash, signature)
+        ecdsa.VerifySignature(originalMesageHash, messageHash, signature)
 
     let rec private getRecordId recordId (publicKey : BigInteger) originalMessage (signature : BigInteger[]) =
         match recordId with
@@ -116,7 +115,7 @@ module Signing =
     let private calculateVComponent publicKey originalMessage signature =
         getRecordId 0 publicKey originalMessage signature
 
-    let private getBouncyCastleSignatureArray privateKeyInt messageBytes =
+    let private getBouncyCastleSignatureArray privateKeyInt messageHash =
         let digest = Sha256Digest()
         let calc = HMacDsaKCalculator(digest)
         let ecdsa = ECDsaSigner(calc)
@@ -126,7 +125,7 @@ module Signing =
         let paramsWithRandom = ParametersWithRandom(privateParams, rnd)
 
         ecdsa.Init(true, paramsWithRandom)
-        ecdsa.GenerateSignature(messageBytes)
+        ecdsa.GenerateSignature(messageHash)
 
     let private calculatePublicKey (privateKey : BigInteger) =
         curve.G.Multiply(privateKey).GetEncoded()
@@ -193,12 +192,13 @@ module Signing =
             privateKey
             |> Multibase.Base58.Decode
             |> BigInteger
-
+        
+        let messageHash = Hashing.hashBytes message
         let publicKey = calculatePublicKey privateKey
-        let signature = getBouncyCastleSignatureArray privateKey message
+        let signature = getBouncyCastleSignatureArray privateKey messageHash
 
         let vComponent =
-            calculateVComponent publicKey message signature
+            calculateVComponent publicKey messageHash signature
             |> (fun v -> [| byte v |])
             |> Multibase.Base58.Encode
 
@@ -224,10 +224,11 @@ module Signing =
             signature.S
             |> Multibase.Base58.Decode
             |> BigInteger
-
-        recoverPublicKeyFromSignature vComponent rComponent sComponent message
+        
+        let messageHash = Hashing.hashBytes message
+        recoverPublicKeyFromSignature vComponent rComponent sComponent messageHash
         |> Option.bind (fun publicKey ->
-            if verify message rComponent sComponent publicKey then
+            if verify messageHash rComponent sComponent publicKey then
                 publicKey.ToByteArray()
                 |> createChainiumAddress
                 |> Some

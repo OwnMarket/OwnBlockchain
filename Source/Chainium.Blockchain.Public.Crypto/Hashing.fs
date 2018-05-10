@@ -8,12 +8,16 @@ open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Hashing =
+    let hashBytes (data : byte[])=
+        let sha256 = SHA256.Create()
+        sha256.ComputeHash(data)
 
     let hash (data : byte[]) =
-        let sha256 = SHA256.Create()
-
-        sha256.ComputeHash(data)
+        data 
+        |> hashBytes
         |> Multibase.Base58.Encode
+    
+
 
     let addressHash (data : byte[]) =
         let numOfBytesToTake = 20

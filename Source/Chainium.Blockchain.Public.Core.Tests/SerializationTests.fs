@@ -54,7 +54,33 @@ module SerializationTests=
 
     [<Fact>]
     let ``Serialization.deserializeTx unknown transaction type added`` () =
-        let json = @"{""Nonce"":120,""Fee"":20,""Actions"":[{""ActionType"":""ChxTransfer"",""ActionData"":{""RecipientAddress"":""Recipient"",""Amount"":20.0}},{""ActionType"":""EquityTransfer"",""ActionData"":{""FromAccount"":""A"",""ToAccount"":""B"",""Equity"":""equity"",""Amount"":12.0}},{""ActionType"":""Unknown"",""ActionData"":""Test""}]}"
+        let json =
+              """
+              {
+                "Nonce": 120,
+                "Fee": 20,
+                "Actions": [{
+                    "ActionType": "ChxTransfer",
+                    "ActionData": {
+                        "RecipientAddress": "Recipient",
+                        "Amount": 20.0
+                    }
+                },
+                {
+                    "ActionType": "EquityTransfer",
+                    "ActionData": {
+                        "FromAccount": "A",
+                        "ToAccount": "B",
+                        "Equity": "equity",
+                        "Amount": 12.0
+                    }
+                },
+                {
+                    "ActionType": "Unknown",
+                    "ActionData": "Test"
+                }]
+            }
+            """
 
         let result = 
             json
@@ -84,30 +110,33 @@ module SerializationTests=
 
     [<Fact>]
     let ``Serialization.deserializeTx invalid json for known transaction`` () =
-        let json = @"{
-                        ""Nonce"": 120,
-                        ""Fee"": 20,
-                        ""Actions"": [{
-                            ""ActionType"": ""ChxTransfer"",
-                            ""ActionData"": {
-                                ""Recipient_Address"": ""Recipient"",
-                                ""_Amount"": 20.0
-                            }
-                        },
-                        {
-                            ""ActionType"": ""EquityTransfer"",
-                            ""ActionData"": {
-                                ""FromAccount"": ""A"",
-                                ""ToAccount"": ""B"",
-                                ""Equity"": ""equity"",
-                                ""Amount"": 12.0
-                            }
-                        },
-                        {
-                            ""ActionType"": ""Unknown"",
-                            ""ActionData"": ""Test""
-                        }]
-                    }"
+        let json = 
+            """
+            {
+                "Nonce": 120,
+                "Fee": 20,
+                "Actions": [{
+                    "ActionType": "ChxTransfer",
+                    "ActionData": {
+                        "Recipient_Address": "Recipient",
+                        "_Amount": 20.0
+                    }
+                },
+                {
+                    "ActionType": "EquityTransfer",
+                    "ActionData": {
+                        "FromAccount": "A",
+                        "ToAccount": "B",
+                        "Equity": "equity",
+                        "Amount": 12.0
+                    }
+                },
+                {
+                    "ActionType": "Unknown",
+                    "ActionData": "Test"
+                }]
+            }
+            """
 
         let result = 
             json
@@ -137,24 +166,27 @@ module SerializationTests=
     
     [<Fact>]
     let ``Serialization.deserializeTx invalid json`` () =
-        let json = @"{
-                        ""Nonce"":""InvaliValue"",
-                        ""Fee"": 20,
-                        ""Actions"": 
+        let json = 
+            """
+            {
+                        "Nonce":"InvaliValue",
+                        "Fee": 20,
+                        "Actions": 
                         {
-                            ""ActionType"": ""EquityTransfer"",
-                            ""ActionData"": {
-                                ""FromAccount"": ""A"",
-                                ""ToAccount"": ""B"",
-                                ""Equity"": ""equity"",
-                                ""Amount"": 12.0
+                            "ActionType": "EquityTransfer",
+                            "ActionData": {
+                                "FromAccount": "A",
+                                "ToAccount": "B",
+                                "Equity": "equity",
+                                "Amount": 12.0
                             }
                         },
                         {
-                            ""ActionType"": ""Unknown"",
-                            ""ActionData"": ""Test""
+                            "ActionType": "Unknown",
+                            "ActionData": "Test"
                         }]
-                    }"
+                    }
+             """
 
         let result = 
             json
