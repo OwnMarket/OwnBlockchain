@@ -11,7 +11,7 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module SerializationTests=
     [<Fact>]
-    let ``Serialization.deserializeTx transaction`` () = 
+    let ``Serialization.deserializeTx transaction`` () =
         let expectedTx = {
                 Nonce = 10L
                 Fee = 20M
@@ -19,7 +19,7 @@ module SerializationTests=
                     [
                         {
                             ActionType = "ChxTransfer"
-                            ActionData = 
+                            ActionData =
                                 {
                                     RecipientAddress = "Recipient"
                                     Amount = 20M
@@ -27,7 +27,7 @@ module SerializationTests=
                         }
                         {
                             ActionType = "EquityTransfer"
-                            ActionData = 
+                            ActionData =
                                 {
                                     FromAccount = "A"
                                     ToAccount = "B"
@@ -37,14 +37,14 @@ module SerializationTests=
                         }
                     ]
             }
-        
+
         //make a call to newtonsoft to get json format
-        let resultTx = 
+        let resultTx =
             expectedTx
-            |> Serialization.serializeTx  
-        
+            |> Serialization.serializeTx
+
         match resultTx with
-        | Ok rawTx -> 
+        | Ok rawTx ->
             let actualTxRes = Serialization.deserializeTx rawTx
             match actualTxRes with
             | Ok actualTx -> test <@ expectedTx = actualTx @>
@@ -55,40 +55,40 @@ module SerializationTests=
     [<Fact>]
     let ``Serialization.deserializeTx unknown transaction type added`` () =
         let json =
-              """
-              {
-                "Nonce": 120,
-                "Fee": 20,
-                "Actions": [{
-                    "ActionType": "ChxTransfer",
-                    "ActionData": {
-                        "RecipientAddress": "Recipient",
-                        "Amount": 20.0
-                    }
-                },
-                {
-                    "ActionType": "EquityTransfer",
-                    "ActionData": {
-                        "FromAccount": "A",
-                        "ToAccount": "B",
-                        "Equity": "equity",
-                        "Amount": 12.0
-                    }
-                },
-                {
-                    "ActionType": "Unknown",
-                    "ActionData": "Test"
-                }]
-            }
             """
+            {
+              "Nonce": 120,
+              "Fee": 20,
+              "Actions": [{
+                  "ActionType": "ChxTransfer",
+                  "ActionData": {
+                      "RecipientAddress": "Recipient",
+                      "Amount": 20.0
+                  }
+              },
+              {
+                  "ActionType": "EquityTransfer",
+                  "ActionData": {
+                      "FromAccount": "A",
+                      "ToAccount": "B",
+                      "Equity": "equity",
+                      "Amount": 12.0
+                  }
+              },
+              {
+                  "ActionType": "Unknown",
+                  "ActionData": "Test"
+              }]
+          }
+          """
 
-        let result = 
+        let result =
             json
             |> Serialization.stringToBytes
             |> Serialization.deserializeTx
 
         match result with
-        | Ok tx -> 
+        | Ok tx ->
             test <@ tx.Actions.Length = 3 @>
 
 
@@ -110,7 +110,7 @@ module SerializationTests=
 
     [<Fact>]
     let ``Serialization.deserializeTx invalid json for known transaction`` () =
-        let json = 
+        let json =
             """
             {
                 "Nonce": 120,
@@ -138,13 +138,13 @@ module SerializationTests=
             }
             """
 
-        let result = 
+        let result =
             json
             |> Serialization.stringToBytes
             |> Serialization.deserializeTx
 
         match result with
-        | Ok tx -> 
+        | Ok tx ->
             test <@ tx.Actions.Length = 3 @>
 
 
@@ -163,15 +163,15 @@ module SerializationTests=
             test <@ invalidTransactions = 1 @>
         | Error appErrors ->
             failwithf "%A" appErrors
-    
+
     [<Fact>]
     let ``Serialization.deserializeTx invalid json`` () =
-        let json = 
+        let json =
             """
             {
                         "Nonce":"InvaliValue",
                         "Fee": 20,
-                        "Actions": 
+                        "Actions":
                         {
                             "ActionType": "EquityTransfer",
                             "ActionData": {
@@ -188,13 +188,13 @@ module SerializationTests=
                     }
              """
 
-        let result = 
+        let result =
             json
             |> Serialization.stringToBytes
             |> Serialization.deserializeTx
 
         match result with
-        | Ok tx -> 
+        | Ok tx ->
             failwith "This serialization attempt should fail"
         | Error appErrors ->
             test <@ appErrors.Length > 0 @>
