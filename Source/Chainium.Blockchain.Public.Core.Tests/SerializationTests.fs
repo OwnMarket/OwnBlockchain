@@ -1,5 +1,5 @@
 ﻿
-namespace Chainium.Blockchain.Public.Crypto.Tests
+namespace Chainium.Blockchain.Public.Core.Tests
 
 open System
 open Xunit

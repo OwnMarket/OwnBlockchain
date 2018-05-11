@@ -45,12 +45,116 @@ module Validation =
         | None ->
             Error [AppError "Cannot verify signature"]
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Initial transaction validation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    let private basicValidation (t : TxDto) =
+        let checkForUnknownTransactions actions =
+            let knownTransactions = 
+                [
+                    typeof<ChxTransferTxActionDto>
+                    typeof<EquityTransferTxActionDto>
+                ]
+            
+             
+            actions
+            |> List.map(fun a -> a.ActionData.GetType())
+            |> List.except knownTransactions
+            |> List.isEmpty
+            |> not
+
+        [
+            if t.Nonce < 0L then
+                yield AppError "Nonce cannot be negative number."
+            if t.Fee <= 0M then
+                yield AppError "Fee must be positive."
+            if t.Actions |> List.isEmpty then
+                yield AppError "There are no actions provided for this transaction."
+            if t.Actions |> checkForUnknownTransactions then 
+                yield AppError "Actions list contains at least one transaction that was not serialized."
+        ]
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Validation rules based on transaction type
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    let private validateChxTransfer chx=
+            [
+                if chx.RecipientAddress.IsNullOrWhiteSpace() then
+                    yield AppError "Recipient address is not valid."
+
+                if chx.Amount <= 0M then
+                    yield AppError "Chx transfer amount must be larger than zero."
+            ]
+
+    let private validateEquityTransfer eq=
+        [
+            if eq.FromAccount.IsNullOrWhiteSpace() then
+                yield AppError "FromAccount value is not valid."
+
+            if eq.ToAccount.IsNullOrWhiteSpace() then
+                yield AppError "ToAccount value is not valid."
+
+            if eq.Equity.IsNullOrWhiteSpace() then
+                yield AppError "Equity value is not valid."
+
+            if eq.Amount <= 0M then
+                yield AppError "Equity amount must be larger than zero" 
+        ]
+
+    let rec private validateTransactions (actions : TxActionDto list) (errors : AppError list) =
+
+        let addAndNext newErrors =
+            newErrors
+            |> List.append errors
+            |> validateTransactions actions.Tail
+
+        match actions.IsEmpty with
+        | true -> errors
+        | false ->
+            let t = actions.Head
+            match t.ActionData with
+            | :? ChxTransferTxActionDto as chx -> chx
+                                                  |> validateChxTransfer
+                                                  |> addAndNext
+            | :? EquityTransferTxActionDto as eq -> eq
+                                                  |> validateEquityTransfer
+                                                  |> addAndNext
+            | _ -> validateTransactions actions.Tail errors 
+    
+
+    let private mapTransactions actions = 
+        let map (action : TxActionDto) =
+            match action.ActionData with
+            | :? ChxTransferTxActionDto as chx -> 
+                                                  {
+                                                     ChxTransferTxAction.RecipientAddress = ChainiumAddress chx.RecipientAddress
+                                                     Amount = ChxAmount chx.Amount
+                                                  }
+                                                  |> ChxTransfer
+            | :? EquityTransferTxActionDto as eq -> 
+                                                  {
+                                                      FromAccountHash = AccountHash eq.FromAccount
+                                                      ToAccountHash = AccountHash eq.ToAccount
+                                                      EquityID = EquityID eq.Equity
+                                                      Amount = EquityAmount eq.Amount
+                                                  }
+                                                  |> EquityTransfer
+            | _ -> failwith "Invalid transaction type to map."
+        
+
+        actions
+        |> List.map(fun a -> map(a))
+
     let validateTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        // TODO: Implement
-        Ok {
-            TxHash = hash
-            Sender = sender
-            Nonce = txDto.Nonce
-            Actions = []
-            Fee = ChxAmount txDto.Fee
-        }
+            txDto
+            |> basicValidation
+            |> validateTransactions txDto.Actions
+            |> Errors.orElseWith(fun () -> 
+                {
+                    TxHash = hash
+                    Sender = sender
+                    Nonce = txDto.Nonce
+                    Actions = mapTransactions txDto.Actions
+                    Fee = ChxAmount txDto.Fee
+                })
