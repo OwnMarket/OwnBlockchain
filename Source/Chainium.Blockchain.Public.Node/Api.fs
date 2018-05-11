@@ -5,6 +5,8 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
+open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 
@@ -52,9 +54,16 @@ module Api =
             ]
         ]
 
+    let errorHandler (ex : Exception) _ =
+        Log.errorf "API request failed: %s" ex.AllMessages
+
+        clearResponse
+        >=> ServerErrors.INTERNAL_ERROR ex.AllMessages
+
     let configureApp (app : IApplicationBuilder) =
         // Add Giraffe to the ASP.NET Core pipeline
-        app.UseGiraffe api
+        app.UseGiraffeErrorHandler(errorHandler)
+            .UseGiraffe(api)
 
     let configureServices (services : IServiceCollection) =
         // Add Giraffe dependencies

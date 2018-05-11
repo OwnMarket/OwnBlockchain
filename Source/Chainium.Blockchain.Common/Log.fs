@@ -12,3 +12,7 @@ module Log =
     let info o = log "INFO" o |> printfn "%s"
     let warning o = log "WARNING" o |> printfn "%s"
     let error o = log "ERROR" o |> eprintfn "%s"
+
+    let infof format = Printf.ksprintf info format
+    let warningf format = Printf.ksprintf warning format
+    let errorf format = Printf.ksprintf error format
