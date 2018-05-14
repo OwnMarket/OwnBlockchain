@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
@@ -9,5 +9,6 @@
     <Compile Include="Log.fs" />
     <Compile Include="Errors.fs" />
     <Compile Include="Framework.fs" />
+    <Compile Include="Utils.fs" />
   </ItemGroup>
 </Project>
