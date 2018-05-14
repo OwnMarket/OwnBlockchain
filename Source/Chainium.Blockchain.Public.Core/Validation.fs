@@ -50,8 +50,8 @@ module Validation =
     // Initial transaction validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     let private basicValidation (t : TxDto) =
-        let checkForUnknownTransactions actions =
-            let knownTransactions =
+        let checkForUnknownActions actions =
+            let knownActions =
                 [
                     typeof<ChxTransferTxActionDto>
                     typeof<EquityTransferTxActionDto>
@@ -59,7 +59,7 @@ module Validation =
 
             actions
             |> List.map(fun a -> a.ActionData.GetType())
-            |> List.except knownTransactions
+            |> List.except knownActions
             |> List.isEmpty
             |> not
 
@@ -70,7 +70,7 @@ module Validation =
                 yield AppError "Fee must be positive."
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
-            if t.Actions |> checkForUnknownTransactions then
+            if t.Actions |> checkForUnknownActions then
                 yield AppError "Actions list contains at least one transaction that was not serialized."
         ]
 
@@ -101,11 +101,11 @@ module Validation =
                 yield AppError "Equity amount must be larger than zero"
         ]
 
-    let rec private validateTransactions (actions : TxActionDto list) (errors : AppError list) =
+    let rec private validateActions (actions : TxActionDto list) (errors : AppError list) =
         let addAndNext newErrors =
             newErrors
             |> List.append errors
-            |> validateTransactions actions.Tail
+            |> validateActions actions.Tail
 
         match actions with
         | [] -> errors
@@ -120,9 +120,9 @@ module Validation =
                 |> validateEquityTransfer
                 |> addAndNext
             | _ ->
-                validateTransactions tail errors
+                validateActions tail errors
 
-    let private mapTransactions actions =
+    let private mapActions actions =
         let map (action : TxActionDto) =
             match action.ActionData with
             | :? ChxTransferTxActionDto as chx ->
@@ -148,13 +148,13 @@ module Validation =
     let validateTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
         txDto
         |> basicValidation
-        |> validateTransactions txDto.Actions
+        |> validateActions txDto.Actions
         |> Errors.orElseWith(fun () ->
             {
                 TxHash = hash
                 Sender = sender
                 Nonce = txDto.Nonce
-                Actions = mapTransactions txDto.Actions
+                Actions = mapActions txDto.Actions
                 Fee = ChxAmount txDto.Fee
             }
         )

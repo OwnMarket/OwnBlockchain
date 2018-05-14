@@ -97,14 +97,14 @@ module SerializationTests=
                 |> List.filter(fun a -> a.ActionData.GetType() = transType)
                 |> List.length
 
-            let chxTransactions = numOfActionsByType typeof<ChxTransferTxActionDto>
-            test <@ chxTransactions = 1 @>
+            let chxActions = numOfActionsByType typeof<ChxTransferTxActionDto>
+            test <@ chxActions = 1 @>
 
-            let equityTransactions = numOfActionsByType typeof<EquityTransferTxActionDto>
-            test <@ equityTransactions = 1 @>
+            let equityActions = numOfActionsByType typeof<EquityTransferTxActionDto>
+            test <@ equityActions = 1 @>
 
-            let invalidTransactions = numOfActionsByType typeof<string>
-            test <@ invalidTransactions = 1 @>
+            let invalidActions = numOfActionsByType typeof<string>
+            test <@ invalidActions = 1 @>
         | Error appErrors ->
             failwithf "%A" appErrors
 
@@ -153,14 +153,14 @@ module SerializationTests=
                 |> List.filter(fun a -> a.ActionData.GetType() = transType)
                 |> List.length
 
-            let chxTransactions = numOfActionsByType typeof<ChxTransferTxActionDto>
-            test <@ chxTransactions = 1 @>
+            let chxActions = numOfActionsByType typeof<ChxTransferTxActionDto>
+            test <@ chxActions = 1 @>
 
-            let equityTransactions = numOfActionsByType typeof<EquityTransferTxActionDto>
-            test <@ equityTransactions = 1 @>
+            let equityActions = numOfActionsByType typeof<EquityTransferTxActionDto>
+            test <@ equityActions = 1 @>
 
-            let invalidTransactions = numOfActionsByType typeof<string>
-            test <@ invalidTransactions = 1 @>
+            let invalidActions = numOfActionsByType typeof<string>
+            test <@ invalidActions = 1 @>
         | Error appErrors ->
             failwithf "%A" appErrors
 
