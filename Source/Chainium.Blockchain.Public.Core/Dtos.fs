@@ -25,8 +25,8 @@ type TxActionDto = {
 [<CLIMutable>]
 type TxDto = {
     Nonce : int64
-    Actions : TxActionDto list
     Fee : decimal
+    Actions : TxActionDto list
 }
 
 [<CLIMutable>]

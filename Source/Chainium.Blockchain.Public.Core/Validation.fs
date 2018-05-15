@@ -154,7 +154,7 @@ module Validation =
                 TxHash = hash
                 Sender = sender
                 Nonce = txDto.Nonce
-                Actions = mapActions txDto.Actions
                 Fee = ChxAmount txDto.Fee
+                Actions = mapActions txDto.Actions
             }
         )
