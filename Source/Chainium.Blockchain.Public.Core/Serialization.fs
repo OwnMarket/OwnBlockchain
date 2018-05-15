@@ -24,44 +24,44 @@ module Serialization =
         | :? string as s -> s
         | _ -> ""
 
-    let private transactionFromToken<'T> transactionType (token : JToken) =
+    let private actionFromToken<'T> actionType (token : JToken) =
         {
-            ActionType = transactionType
+            ActionType = actionType
             ActionData = token.ToObject<'T>()
         } |> box
-    
-    let tokenValue tokenName (jObject:JObject) = 
+
+    let tokenValue tokenName (jObject:JObject) =
         let token = ref (JValue("") :> JToken)
         let isValid = jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase, token)
         match isValid with
-        | true -> 
+        | true ->
            token.Value
            |> Some
         | false -> None
-    
-    let private actionsMap = 
+
+    let private actionsMap =
         [
-            "ChxTransfer",fun trType token -> transactionFromToken<ChxTransferTxActionDto> trType token;
-            "EquityTransfer",fun trType token ->transactionFromToken<EquityTransferTxActionDto> trType token
+            "ChxTransfer",fun trType token -> actionFromToken<ChxTransferTxActionDto> trType token;
+            "EquityTransfer",fun trType token ->actionFromToken<EquityTransferTxActionDto> trType token
         ] |> Map.ofList
-    
-    let private transactionsConverter = { 
+
+    let private actionsConverter = {
         new CustomCreationConverter<TxActionDto>() with
         override this.Create objectType =
             failwith "NotImplemented"
-        
+
         override this.ReadJson ((reader : JsonReader), (objectType : Type), (existingValue : obj), (serializer : JsonSerializer)) =
             let jObject = JObject.Load(reader)
-            
+
             let actionType = tokenValue "ActionType" jObject
 
             match actionType with
             | None -> null
-            | Some transactionType ->
-                if transactionType.HasValues then
+            | Some actionType ->
+                if actionType.HasValues then
                     null
                 else
-                    let realType = transactionType.Value<string>()
+                    let realType = actionType.Value<string>()
                     let map = actionsMap.TryFind(realType)
                     let actionData = tokenValue "ActionData" jObject
                     match map with
@@ -69,16 +69,16 @@ module Serialization =
                     | None ->
                         {
                             ActionType = realType
-                            ActionData = 
+                            ActionData =
                                 match actionData with
                                 | None -> null
                                 | Some x -> x.ToString()
-                        } |> box            
+                        } |> box
     }
 
 
     let deserializeTx (rawTx : byte[]) : Result<TxDto, AppErrors> =
-        let deserialize str = JsonConvert.DeserializeObject<TxDto>(str, transactionsConverter)
+        let deserialize str = JsonConvert.DeserializeObject<TxDto>(str, actionsConverter)
 
         try
             rawTx
@@ -86,8 +86,8 @@ module Serialization =
                 |> deserialize
                 |> Ok
         with
-        | ex ->  
-          let appError = 
+        | ex ->
+          let appError =
             ex.AllMessagesAndStackTraces
             |> AppError
 

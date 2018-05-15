@@ -75,9 +75,9 @@ module Validation =
         ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Validation rules based on transaction type
+    // Validation rules based on action type
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let private validateChxTransfer chx=
+    let private validateChxTransfer chx =
         [
             if chx.RecipientAddress.IsNullOrWhiteSpace() then
                 yield AppError "Recipient address is not valid."
@@ -86,7 +86,7 @@ module Validation =
                 yield AppError "Chx transfer amount must be larger than zero."
         ]
 
-    let private validateEquityTransfer eq=
+    let private validateEquityTransfer eq =
         [
             if eq.FromAccount.IsNullOrWhiteSpace() then
                 yield AppError "FromAccount value is not valid."
@@ -140,7 +140,7 @@ module Validation =
                 }
                 |> EquityTransfer
             | _ ->
-                failwith "Invalid transaction type to map."
+                failwith "Invalid action type to map."
 
         actions
         |> List.map(fun a -> map(a))
