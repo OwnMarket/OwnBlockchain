@@ -2,36 +2,64 @@
 
 module MerkleTree =
     
-    type MerkleNode ={
-        Hash : byte[]
-        Left : MerkleNode option
-        Right : MerkleNode option
-    }
+    type private MerkleNode =
+        {
+            Hash : byte[]
+            Left : MerkleNode option
+            Right : MerkleNode option
+        }
     
-    let rec build 
-        nodeHashingRule 
+    let private nodehash x =
+        match x with
+        | Some l -> l.Hash
+        | None -> Array.zeroCreate 0
+
+    let private buildNode
+        hashFunction
+        (left : MerkleNode option) 
+        (right : MerkleNode option)
+        =
+        let lefthash = nodehash left
+        let righthash = nodehash right
+
+        {
+            Left = left
+            Right = right
+            Hash =  
+                righthash
+                |> Array.append lefthash
+                |> hashFunction
+        }
+        |> Some
+
+    
+    let rec private buildTree 
+        hashFunction 
         (treeNodes : MerkleNode option list)  
         =
         let treeBuilder nodes = 
-            build nodeHashingRule nodes
+            buildTree hashFunction nodes
 
-        let buildNode left right = 
-            {
-                Hash = nodeHashingRule left right
-                Left = left
-                Right = right
-            }
-            |> Some
+        let nodeBuilder left right = 
+            buildNode 
+                hashFunction 
+                left 
+                right
         
         let buildSubTree subTree =
             match subTree with
             | [] -> None
+            
             | [ _ ] -> 
-                buildNode subTree.Head None
-            | [ _; _] -> 
-                buildNode 
+                nodeBuilder 
+                    subTree.Head 
+                    None
+
+            | [ _; _ ] -> 
+                nodeBuilder
                     subTree.[0] 
                     subTree.[1]
+
             | _ -> treeBuilder subTree
             
             
@@ -45,3 +73,20 @@ module MerkleTree =
             subTrees
             |> List.map(fun s -> buildSubTree s)
             |> treeBuilder
+
+
+
+    let build hashFunc leafHashes =  
+        leafHashes
+        |> List.map
+            (
+                fun h -> 
+                    {
+                        Hash = h
+                        Left = None
+                        Right = None
+                    } 
+                    |> Some
+            )
+        |> buildTree hashFunc
+        |> nodehash

@@ -72,24 +72,26 @@ module HashingTests =
     [<Fact>]
     let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` ()=
         let transactionMocks =
-            [for i in 1..100 do yield sprintf "%i" i
+            [
+                for i in 1 .. 100 do yield sprintf "%i" i
                                       |> Encoding.UTF8.GetBytes
                                       |> Multibase.Base58.Encode
             ]
         
 
         let roots =
-            [for i in 1..100 do yield 
-                                    Hashing.merkleTree transactionMocks
-                                    |> fun (MerkleTreeRoot r) -> r
+            [
+                for i in 1 .. 100 do yield Hashing.merkleTree transactionMocks
+                                      |> fun (MerkleTreeRoot r) -> r
             ]
             |> List.distinct
 
         test <@ roots.Length = 1 @>
 
 
-        let bytes = roots.Head
-                    |> Multibase.Base58.Decode
+        let bytes = 
+            roots.Head
+            |> Multibase.Base58.Decode
 
         test <@ bytes.Length = 32 @>
 

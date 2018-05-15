@@ -34,44 +34,11 @@ module Hashing =
         |> sha256.ComputeHash
         |> sha160Hash
         |> Multibase.Base58.Encode
-    
-
-    let private hashChildNodes 
-        (left : MerkleNode option) 
-        (right : MerkleNode option)
-        =
-        let nodehash x=
-            match x with
-            | Some l -> l.Hash
-            | None -> Array.zeroCreate 0
-
-        let lefthash = nodehash left
-        let righthash = nodehash right
-
-        righthash
-        |> Array.append lefthash
-        |> hashBytes
+   
     
     let merkleTree (hashes : string list) =
-        let leafNodes = 
-            hashes
-            |> List.map Multibase.Base58.Decode
-            |> List.map
-                (
-                    fun h -> 
-                    {
-                        Hash = h
-                        Left = None
-                        Right = None
-                    } 
-                    |> Some
-                )
-        let root = MerkleTree.build hashChildNodes leafNodes
-
-        let rootHash = 
-            match root with
-            | Some x -> Multibase.Base58.Encode x.Hash
-            | None -> ""
-
-            
-        MerkleTreeRoot rootHash
+        hashes
+        |> List.map(fun h -> Multibase.Base58.Decode(h))
+        |> MerkleTree.build hashBytes
+        |> Multibase.Base58.Encode
+        |> MerkleTreeRoot
