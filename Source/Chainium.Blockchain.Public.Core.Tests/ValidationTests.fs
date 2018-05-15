@@ -90,7 +90,7 @@ module ValidationTests =
             test <@ errors.Length = 2 @>
 
     [<Fact>]
-    let ``Validation.validateTx.basicValidation unknown transaction type`` () =
+    let ``Validation.validateTx.basicValidation unknown action type`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
@@ -273,7 +273,7 @@ module ValidationTests =
         | EquityTransfer eq -> box eq :?> 'T
 
     [<Fact>]
-    let ``Validation.validateTx validate transaction`` () =
+    let ``Validation.validateTx validate action`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
