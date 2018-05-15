@@ -12,7 +12,8 @@ open Chainium.Blockchain.Public.Core.Dtos
 module SerializationTests=
     [<Fact>]
     let ``Serialization.deserializeTx transaction`` () =
-        let expectedTx = {
+        let expectedTx =
+            {
                 Nonce = 10L
                 Fee = 20M
                 Actions =
@@ -53,32 +54,34 @@ module SerializationTests=
             failwithf "%A" errors
 
     [<Fact>]
-    let ``Serialization.deserializeTx unknown transaction type added`` () =
+    let ``Serialization.deserializeTx unknown action type added`` () =
         let json =
             """
             {
               "Nonce": 120,
               "Fee": 20,
-              "Actions": [{
-                  "ActionType": "ChxTransfer",
-                  "ActionData": {
-                      "RecipientAddress": "Recipient",
-                      "Amount": 20.0
+              "Actions": [
+                  {
+                      "ActionType": "ChxTransfer",
+                      "ActionData": {
+                          "RecipientAddress": "Recipient",
+                          "Amount": 20.0
+                      }
+                  },
+                  {
+                      "ActionType": "EquityTransfer",
+                      "ActionData": {
+                          "FromAccount": "A",
+                          "ToAccount": "B",
+                          "Equity": "equity",
+                          "Amount": 12.0
+                      }
+                  },
+                  {
+                      "ActionType": "Unknown",
+                      "ActionData": "Test"
                   }
-              },
-              {
-                  "ActionType": "EquityTransfer",
-                  "ActionData": {
-                      "FromAccount": "A",
-                      "ToAccount": "B",
-                      "Equity": "equity",
-                      "Amount": 12.0
-                  }
-              },
-              {
-                  "ActionType": "Unknown",
-                  "ActionData": "Test"
-              }]
+              ]
           }
           """
 
@@ -109,32 +112,34 @@ module SerializationTests=
             failwithf "%A" appErrors
 
     [<Fact>]
-    let ``Serialization.deserializeTx invalid json for known transaction`` () =
+    let ``Serialization.deserializeTx invalid json for known action`` () =
         let json =
             """
             {
                 "Nonce": 120,
                 "Fee": 20,
-                "Actions": [{
-                    "ActionType": "ChxTransfer",
-                    "ActionData": {
-                        "Recipient_Address": "Recipient",
-                        "_Amount": 20.0
+                "Actions": [
+                    {
+                        "ActionType": "ChxTransfer",
+                        "ActionData": {
+                            "Recipient_Address": "Recipient",
+                            "_Amount": 20.0
+                        }
+                    },
+                    {
+                        "ActionType": "EquityTransfer",
+                        "ActionData": {
+                            "FromAccount": "A",
+                            "ToAccount": "B",
+                            "Equity": "equity",
+                            "Amount": 12.0
+                        }
+                    },
+                    {
+                        "ActionType": "Unknown",
+                        "ActionData": "Test"
                     }
-                },
-                {
-                    "ActionType": "EquityTransfer",
-                    "ActionData": {
-                        "FromAccount": "A",
-                        "ToAccount": "B",
-                        "Equity": "equity",
-                        "Amount": 12.0
-                    }
-                },
-                {
-                    "ActionType": "Unknown",
-                    "ActionData": "Test"
-                }]
+                ]
             }
             """
 
@@ -169,24 +174,25 @@ module SerializationTests=
         let json =
             """
             {
-                        "Nonce":"InvaliValue",
-                        "Fee": 20,
-                        "Actions":
-                        {
-                            "ActionType": "EquityTransfer",
-                            "ActionData": {
-                                "FromAccount": "A",
-                                "ToAccount": "B",
-                                "Equity": "equity",
-                                "Amount": 12.0
-                            }
-                        },
-                        {
-                            "ActionType": "Unknown",
-                            "ActionData": "Test"
-                        }]
+                "Nonce":"InvaliValue",
+                "Fee": 20,
+                "Actions":
+                    {
+                        "ActionType": "EquityTransfer",
+                        "ActionData": {
+                            "FromAccount": "A",
+                            "ToAccount": "B",
+                            "Equity": "equity",
+                            "Amount": 12.0
+                        }
+                    },
+                    {
+                        "ActionType": "Unknown",
+                        "ActionData": "Test"
                     }
-             """
+                ]
+            }
+            """
 
         let result =
             json

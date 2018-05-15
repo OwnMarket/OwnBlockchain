@@ -2,6 +2,11 @@ namespace Chainium.Blockchain.Public.Core.DomainTypes
 
 open System
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Wallet
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 type PrivateKey = PrivateKey of string
 type ChainiumAddress = ChainiumAddress of string
 
@@ -16,19 +21,17 @@ type Signature = {
     S : string
 }
 
-type TxHash = TxHash of string
-type BlockHash = BlockHash of string
-type MerkleTree = MerkleTree of string
-
-type AccountHash = AccountHash of string
-type EquityID = EquityID of string
-type EquityAmount = EquityAmount of decimal
-type ChxAmount = ChxAmount of decimal
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tx
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type ChxAmount = ChxAmount of decimal
+type AccountHash = AccountHash of string
+type EquityID = EquityID of string
+type EquityAmount = EquityAmount of decimal
+
+type TxHash = TxHash of string
 
 type ChxTransferTxAction = {
     RecipientAddress : ChainiumAddress
@@ -50,13 +53,49 @@ type Tx = {
     TxHash : TxHash
     Sender : ChainiumAddress
     Nonce : int64
-    Actions : TxAction list
     Fee : ChxAmount
+    Actions : TxAction list
 }
 
 type TxEnvelope = {
     RawTx : byte[]
     Signature : Signature
+}
+
+// Processing
+
+type TxProcessedStatus =
+    | Success
+    | Failure
+
+type TxStatus =
+    | Pending
+    | Processed of TxProcessedStatus
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Block
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type Timestamp = Timestamp of int64 // UNIX Timestamp
+type BlockIndex = BlockIndex of int64
+type BlockHash = BlockHash of string
+type MerkleTreeRoot = MerkleTreeRoot of string
+
+type BlockHeader = {
+    Index : BlockIndex
+    Hash : BlockHash
+    PreviousHash : BlockHash
+    Timestamp : Timestamp
+    Validator : ChainiumAddress // Fee beneficiary
+    TxSetRoot : MerkleTreeRoot
+    TxResultSetRoot : MerkleTreeRoot
+    StateRoot : MerkleTreeRoot
+}
+
+type Block = {
+    Header : BlockHeader
+    TxSet : TxHash list
 }
 
 

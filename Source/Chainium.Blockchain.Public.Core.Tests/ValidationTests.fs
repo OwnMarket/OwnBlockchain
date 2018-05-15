@@ -44,8 +44,7 @@ module ValidationTests =
                 ]
         }
 
-
-        let expMessage = AppError "Nonce cannot be negative number.";
+        let expMessage = AppError "Nonce must be positive.";
         let result = Validation.validateTx chAddress txHash testTx
 
         match result with
@@ -90,7 +89,7 @@ module ValidationTests =
             test <@ errors.Length = 2 @>
 
     [<Fact>]
-    let ``Validation.validateTx.basicValidation unknown transaction type`` () =
+    let ``Validation.validateTx.basicValidation unknown action type`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
@@ -273,7 +272,7 @@ module ValidationTests =
         | EquityTransfer eq -> box eq :?> 'T
 
     [<Fact>]
-    let ``Validation.validateTx validate transaction`` () =
+    let ``Validation.validateTx validate action`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
@@ -304,24 +303,21 @@ module ValidationTests =
 
         match result with
         | Ok t ->
-           let expectedChx = (testTx.Actions.[0].ActionData :?> ChxTransferTxActionDto)
-           let actualChx = t.Actions.[0] |> getTx<ChxTransferTxAction>
+            let expectedChx = (testTx.Actions.[0].ActionData :?> ChxTransferTxActionDto)
+            let actualChx = t.Actions.[0] |> getTx<ChxTransferTxAction>
 
-           let expEq = (testTx.Actions.[1].ActionData :?> EquityTransferTxActionDto)
-           let actualEq = t.Actions.[1] |> getTx<EquityTransferTxAction>
+            let expEq = (testTx.Actions.[1].ActionData :?> EquityTransferTxActionDto)
+            let actualEq = t.Actions.[1] |> getTx<EquityTransferTxAction>
 
-           test
-                <@
-                    t.Fee = ChxAmount testTx.Fee
-                    && t.Nonce = testTx.Nonce
-                    && t.TxHash = txHash
-                    && t.Sender = chAddress
-                    && actualChx.Amount = ChxAmount expectedChx.Amount
-                    && actualChx.RecipientAddress = ChainiumAddress expectedChx.RecipientAddress
-                    && actualEq.FromAccountHash = AccountHash expEq.FromAccount
-                    && actualEq.ToAccountHash = AccountHash expEq.ToAccount
-                    && actualEq.EquityID = EquityID expEq.Equity
-                    && actualEq.Amount = EquityAmount expEq.Amount
-                @>
+            test <@ t.Fee = ChxAmount testTx.Fee @>
+            test <@ t.Nonce = testTx.Nonce @>
+            test <@ t.TxHash = txHash @>
+            test <@ t.Sender = chAddress @>
+            test <@ actualChx.Amount = ChxAmount expectedChx.Amount @>
+            test <@ actualChx.RecipientAddress = ChainiumAddress expectedChx.RecipientAddress @>
+            test <@ actualEq.FromAccountHash = AccountHash expEq.FromAccount @>
+            test <@ actualEq.ToAccountHash = AccountHash expEq.ToAccount @>
+            test <@ actualEq.EquityID = EquityID expEq.Equity @>
+            test <@ actualEq.Amount = EquityAmount expEq.Amount @>
         | Error errors ->
             failwithf "%A" errors

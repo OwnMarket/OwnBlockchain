@@ -49,35 +49,20 @@ module Validation =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Initial transaction validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let private basicValidation (t : TxDto) =
-        let checkForUnknownActions actions =
-            let knownActions =
-                [
-                    typeof<ChxTransferTxActionDto>
-                    typeof<EquityTransferTxActionDto>
-                ]
-
-            actions
-            |> List.map(fun a -> a.ActionData.GetType())
-            |> List.except knownActions
-            |> List.isEmpty
-            |> not
-
+    let private validateTxFields (t : TxDto) =
         [
-            if t.Nonce < 0L then
-                yield AppError "Nonce cannot be negative number."
+            if t.Nonce <= 0L then
+                yield AppError "Nonce must be positive."
             if t.Fee <= 0M then
                 yield AppError "Fee must be positive."
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
-            if t.Actions |> checkForUnknownActions then
-                yield AppError "Actions list contains at least one transaction that was not serialized."
         ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Validation rules based on transaction type
+    // Validation rules based on action type
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let private validateChxTransfer chx=
+    let private validateChxTransfer chx =
         [
             if chx.RecipientAddress.IsNullOrWhiteSpace() then
                 yield AppError "Recipient address is not valid."
@@ -86,7 +71,7 @@ module Validation =
                 yield AppError "Chx transfer amount must be larger than zero."
         ]
 
-    let private validateEquityTransfer eq=
+    let private validateEquityTransfer eq =
         [
             if eq.FromAccount.IsNullOrWhiteSpace() then
                 yield AppError "FromAccount value is not valid."
@@ -101,26 +86,19 @@ module Validation =
                 yield AppError "Equity amount must be larger than zero"
         ]
 
-    let rec private validateActions (actions : TxActionDto list) (errors : AppError list) =
-        let addAndNext newErrors =
-            newErrors
-            |> List.append errors
-            |> validateActions actions.Tail
-
-        match actions with
-        | [] -> errors
-        | head :: tail ->
-            match head.ActionData with
+    let private validateTxActions (actions : TxActionDto list) =
+        let validateTxAction (action : TxActionDto) =
+            match action.ActionData with
             | :? ChxTransferTxActionDto as chx ->
-                chx
-                |> validateChxTransfer
-                |> addAndNext
+                validateChxTransfer chx
             | :? EquityTransferTxActionDto as eq ->
-                eq
-                |> validateEquityTransfer
-                |> addAndNext
+                validateEquityTransfer eq
             | _ ->
-                validateActions tail errors
+                let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
+                [AppError error]
+
+        actions
+        |> List.collect validateTxAction
 
     let private mapActions actions =
         let map (action : TxActionDto) =
@@ -140,21 +118,19 @@ module Validation =
                 }
                 |> EquityTransfer
             | _ ->
-                failwith "Invalid transaction type to map."
+                failwith "Invalid action type to map."
 
         actions
         |> List.map(fun a -> map(a))
 
     let validateTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        txDto
-        |> basicValidation
-        |> validateActions txDto.Actions
-        |> Errors.orElseWith(fun () ->
+        validateTxFields txDto @ validateTxActions txDto.Actions
+        |> Errors.orElseWith (fun () ->
             {
                 TxHash = hash
                 Sender = sender
                 Nonce = txDto.Nonce
-                Actions = mapActions txDto.Actions
                 Fee = ChxAmount txDto.Fee
+                Actions = mapActions txDto.Actions
             }
         )

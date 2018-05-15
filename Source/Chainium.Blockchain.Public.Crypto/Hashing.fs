@@ -13,11 +13,9 @@ module Hashing =
         sha256.ComputeHash(data)
 
     let hash (data : byte[]) =
-        data 
+        data
         |> hashBytes
         |> Multibase.Base58.Encode
-    
-
 
     let addressHash (data : byte[]) =
         let numOfBytesToTake = 20
@@ -42,4 +40,4 @@ module Hashing =
 
         // TODO: Calculate Merkle Tree
 
-        MerkleTree ""
+        MerkleTreeRoot ""
