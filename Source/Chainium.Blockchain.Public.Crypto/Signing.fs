@@ -150,12 +150,6 @@ module Signing =
 
         (privateKey.D.ToByteArray(), publicKey.Q.GetEncoded())
 
-    let private createChainiumAddress (publicKey : byte[]) =
-        publicKey
-        |> Hashing.addressHash
-        |> sprintf "ch%s"
-        |> ChainiumAddress
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public facing functions, operating with domain types instead of raw bytes or BigInteger.
@@ -184,7 +178,7 @@ module Signing =
             Address =
                 keyPair
                 |> snd
-                |> createChainiumAddress
+                |> Hashing.chainiumAddress
         }
 
     let signMessage (PrivateKey privateKey) (message : byte[]) : Signature =
@@ -192,7 +186,7 @@ module Signing =
             privateKey
             |> Multibase.Base58.Decode
             |> BigInteger
-        
+
         let messageHash = Hashing.hashBytes message
         let publicKey = calculatePublicKey privateKey
         let signature = getBouncyCastleSignatureArray privateKey messageHash
@@ -224,13 +218,13 @@ module Signing =
             signature.S
             |> Multibase.Base58.Decode
             |> BigInteger
-        
+
         let messageHash = Hashing.hashBytes message
         recoverPublicKeyFromSignature vComponent rComponent sComponent messageHash
         |> Option.bind (fun publicKey ->
             if verify messageHash rComponent sComponent publicKey then
                 publicKey.ToByteArray()
-                |> createChainiumAddress
+                |> Hashing.chainiumAddress
                 |> Some
             else
                 None

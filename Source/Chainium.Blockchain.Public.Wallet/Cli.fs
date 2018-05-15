@@ -27,7 +27,7 @@ module Cli =
         message
         |> Convert.FromBase64String // TODO: Provide input as a file path, so the raw data can be read.
         |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
-        |> (fun { V = v; R = r; S = s } -> printfn "Signature:\n  V: %s\n  R: %s\n  S: %s" v r s )
+        |> (fun { V = v; R = r; S = s } -> printfn "V: %s\nR: %s\nS: %s" v r s )
 
     let handleUnknownCommand args =
         // TODO: Show help

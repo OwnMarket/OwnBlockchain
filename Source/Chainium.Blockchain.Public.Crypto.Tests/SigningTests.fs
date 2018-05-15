@@ -93,13 +93,13 @@ module SigningTests =
             let address = Signing.verifySignature signature message
 
             test <@ address = Some wallet.Address @>
-    
+
     [<Fact>]
     let ``Signing.verifyMessage sign, verify random generated longer messages`` () =
-        let privateKey = PrivateKey "1ET4E5jQvfKqpaLynddAM73ThEUASi9NikQ9Dvd3fPwuk"
-        let expectedAddress = Some (ChainiumAddress "ch2Wt6j7sbaqbgKphYx9U95wZDX99L")
+        let privateKey = PrivateKey "9DeKWSbveJnzgawry3SG6uby3xE1s26UR4X5uXwdG8WT"
+        let expectedAddress = Some (ChainiumAddress "CH8MezjJQbTsy5pyTiNxZRirzMgvwVVGu4a")
 
-        let generatRandomMessageAndTest messageSize =
+        let generateRandomMessageAndTest messageSize =
             let message = Signing.generateRandomBytes messageSize
 
             let signature = Signing.signMessage privateKey message
@@ -107,7 +107,5 @@ module SigningTests =
 
             test <@ address = expectedAddress @>
 
-        [33..230]
-        |> List.map (fun i-> generatRandomMessageAndTest i)
-        
-    
+        [33 .. 230]
+        |> List.map generateRandomMessageAndTest

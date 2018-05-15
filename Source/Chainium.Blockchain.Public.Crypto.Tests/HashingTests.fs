@@ -5,6 +5,7 @@ open Xunit
 open Swensen.Unquote
 open Multiformats.Base
 open Chainium.Common
+open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 
 module HashingTests =
@@ -41,33 +42,41 @@ module HashingTests =
         test <@ distinctHashes.Length = allHashes.Length @>
 
     [<Fact>]
-    let ``Hashing.addressHash calculates same hash not longer than 20 bytes for same input`` () =
+    let ``Hashing.createChainiumAddress calculates same hash not longer than 24 bytes for same input`` () =
         let message = getBytes "Chainium"
         let hashCount = 10000
         let hashes =
             [1 .. hashCount]
-            |> List.map (fun _ -> Hashing.addressHash message |> Multibase.Base58.Decode)
+            |> List.map (fun _ ->
+                Hashing.chainiumAddress message
+                |> fun (ChainiumAddress a) -> a.Substring(2) |> Multibase.Base58.Decode
+            )
             |> List.distinct
         test <@ hashes.Length = 1 @>
 
-        let longerThan20Bytes =
+        let longerThan24Bytes =
             hashes
-            |> List.where(fun a -> a.Length <> 20)
-        test <@ longerThan20Bytes.Length = 0 @>
+            |> List.where(fun a -> a.Length <> 24)
+        test <@ longerThan24Bytes.Length = 0 @>
 
     [<Fact>]
-    let ``Hashing.addressHash calculates different hash not longer than 20 bytes for different input`` () =
+    let ``Hashing.createChainiumAddress calculates different hash not longer than 24 bytes for different input`` () =
         let hashCount = 10000
         let hashes =
             [1 .. hashCount]
-            |> List.map (sprintf "Chainium %i" >> getBytes >> Hashing.addressHash >> Multibase.Base58.Decode)
+            |> List.map (fun i ->
+                sprintf "Chainium %i" i
+                |> getBytes
+                |> Hashing.chainiumAddress
+                |> fun (ChainiumAddress a) -> a.Substring(2) |> Multibase.Base58.Decode
+            )
             |> List.distinct
         test <@ hashes.Length = hashCount @>
 
-        let longerThan20Bytes =
+        let longerThan24Bytes =
             hashes
-            |> List.where(fun a -> a.Length <> 20)
-        test <@ longerThan20Bytes.Length = 0 @>
+            |> List.where(fun a -> a.Length <> 24)
+        test <@ longerThan24Bytes.Length = 0 @>
 
     [<Fact>]
     let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` ()=
@@ -77,7 +86,7 @@ module HashingTests =
                                       |> Encoding.UTF8.GetBytes
                                       |> Multibase.Base58.Encode
             ]
-        
+
 
         let roots =
             [
@@ -89,11 +98,8 @@ module HashingTests =
         test <@ roots.Length = 1 @>
 
 
-        let bytes = 
+        let bytes =
             roots.Head
             |> Multibase.Base58.Decode
 
         test <@ bytes.Length = 32 @>
-
-        
-
