@@ -86,19 +86,19 @@ module Validation =
                 yield AppError "Equity amount must be larger than zero"
         ]
 
-    let private validateActions (actions : TxActionDto list) =
-        let validateAction errors (action : TxActionDto) =
+    let private validateTxActions (actions : TxActionDto list) =
+        let validateTxAction (action : TxActionDto) =
             match action.ActionData with
             | :? ChxTransferTxActionDto as chx ->
-                errors @ validateChxTransfer chx
+                validateChxTransfer chx
             | :? EquityTransferTxActionDto as eq ->
-                errors @ validateEquityTransfer eq
+                validateEquityTransfer eq
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
-                errors @ [AppError error]
+                [AppError error]
 
         actions
-        |> List.fold validateAction []
+        |> List.collect validateTxAction
 
     let private mapActions actions =
         let map (action : TxActionDto) =
@@ -124,7 +124,7 @@ module Validation =
         |> List.map(fun a -> map(a))
 
     let validateTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        validateTxFields txDto @ validateActions txDto.Actions
+        validateTxFields txDto @ validateTxActions txDto.Actions
         |> Errors.orElseWith (fun () ->
             {
                 TxHash = hash
