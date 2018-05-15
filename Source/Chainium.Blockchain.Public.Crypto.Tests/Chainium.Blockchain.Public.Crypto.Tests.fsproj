@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="HashingTests.fs" />
+    <Compile Include="MerkleTreeTests.fs" />
     <Compile Include="SigningTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

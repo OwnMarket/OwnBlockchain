@@ -8,6 +8,8 @@ open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Hashing =
+    open MerkleTree
+
     let hashBytes (data : byte[])=
         let sha256 = SHA256.Create()
         sha256.ComputeHash(data)
@@ -32,12 +34,11 @@ module Hashing =
         |> sha256.ComputeHash
         |> sha160Hash
         |> Multibase.Base58.Encode
-
+   
+    
     let merkleTree (hashes : string list) =
-        let hashes =
-            hashes
-            |> List.map Multibase.Base58.Decode
-
-        // TODO: Calculate Merkle Tree
-
-        MerkleTreeRoot ""
+        hashes
+        |> List.map(fun h -> Multibase.Base58.Decode(h))
+        |> MerkleTree.build hashBytes
+        |> Multibase.Base58.Encode
+        |> MerkleTreeRoot
