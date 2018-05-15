@@ -49,29 +49,14 @@ module Validation =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Initial transaction validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let private basicValidation (t : TxDto) =
-        let checkForUnknownActions actions =
-            let knownActions =
-                [
-                    typeof<ChxTransferTxActionDto>
-                    typeof<EquityTransferTxActionDto>
-                ]
-
-            actions
-            |> List.map(fun a -> a.ActionData.GetType())
-            |> List.except knownActions
-            |> List.isEmpty
-            |> not
-
+    let private validateTxFields (t : TxDto) =
         [
-            if t.Nonce < 0L then
-                yield AppError "Nonce cannot be negative number."
+            if t.Nonce <= 0L then
+                yield AppError "Nonce must be positive."
             if t.Fee <= 0M then
                 yield AppError "Fee must be positive."
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
-            if t.Actions |> checkForUnknownActions then
-                yield AppError "Actions list contains at least one transaction that was not serialized."
         ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,26 +86,19 @@ module Validation =
                 yield AppError "Equity amount must be larger than zero"
         ]
 
-    let rec private validateActions (actions : TxActionDto list) (errors : AppError list) =
-        let addAndNext newErrors =
-            newErrors
-            |> List.append errors
-            |> validateActions actions.Tail
-
-        match actions with
-        | [] -> errors
-        | head :: tail ->
-            match head.ActionData with
+    let private validateActions (actions : TxActionDto list) =
+        let validateAction errors (action : TxActionDto) =
+            match action.ActionData with
             | :? ChxTransferTxActionDto as chx ->
-                chx
-                |> validateChxTransfer
-                |> addAndNext
+                errors @ validateChxTransfer chx
             | :? EquityTransferTxActionDto as eq ->
-                eq
-                |> validateEquityTransfer
-                |> addAndNext
+                errors @ validateEquityTransfer eq
             | _ ->
-                validateActions tail errors
+                let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
+                errors @ [AppError error]
+
+        actions
+        |> List.fold validateAction []
 
     let private mapActions actions =
         let map (action : TxActionDto) =
@@ -146,10 +124,8 @@ module Validation =
         |> List.map(fun a -> map(a))
 
     let validateTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        txDto
-        |> basicValidation
-        |> validateActions txDto.Actions
-        |> Errors.orElseWith(fun () ->
+        validateTxFields txDto @ validateActions txDto.Actions
+        |> Errors.orElseWith (fun () ->
             {
                 TxHash = hash
                 Sender = sender
