@@ -6,9 +6,8 @@
     <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Log.fs" />
     <Compile Include="Errors.fs" />
-    <Compile Include="Framework.fs" />
+    <Compile Include="Log.fs" />
     <Compile Include="Utils.fs" />
   </ItemGroup>
 </Project>
