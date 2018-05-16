@@ -1,6 +1,7 @@
 namespace Chainium.Blockchain.Public.Crypto.Tests
 
 open System
+open System.Text
 open Xunit
 open Swensen.Unquote
 open Multiformats.Base
@@ -9,8 +10,6 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 
 module HashingTests =
-    open System.Text
-    open Chainium.Blockchain.Public.Core.DomainTypes
 
     let getBytes (str : String) = System.Text.Encoding.UTF8.GetBytes(str)
 
@@ -82,21 +81,21 @@ module HashingTests =
     let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` ()=
         let transactionMocks =
             [
-                for i in 1 .. 100 do yield sprintf "%i" i
-                                      |> Encoding.UTF8.GetBytes
-                                      |> Multibase.Base58.Encode
+                for i in 1 .. 100 ->
+                    sprintf "%i" i
+                        |> Encoding.UTF8.GetBytes
+                        |> Multibase.Base58.Encode
             ]
-
 
         let roots =
             [
-                for i in 1 .. 100 do yield Hashing.merkleTree transactionMocks
-                                      |> fun (MerkleTreeRoot r) -> r
+                for _ in 1 .. 100 ->
+                    Hashing.merkleTree transactionMocks
+                        |> fun (MerkleTreeRoot r) -> r
             ]
             |> List.distinct
 
         test <@ roots.Length = 1 @>
-
 
         let bytes =
             roots.Head
