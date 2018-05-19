@@ -22,7 +22,7 @@ module Extensions =
             with get () =
                 this.Flatten()
                 |> Seq.map (fun ex -> sprintf "%s: %s" (ex.GetType().FullName) ex.Message)
-                |> (fun messages -> String.Join("\n>>> ", messages))
+                |> (fun messages -> String.Join(" >>> ", messages))
 
         member this.AllMessagesAndStackTraces
             with get () =
@@ -30,3 +30,9 @@ module Extensions =
                 |> Seq.map (fun ex -> ex.StackTrace)
                 |> (fun stackTraces -> String.Join("\n--- Inner Exception ---\n", stackTraces))
                 |> sprintf "%s\n%s" this.AllMessages
+
+module Map =
+    let inline ofDict dictionary =
+        dictionary
+        |> Seq.map (|KeyValue|)
+        |> Map.ofSeq

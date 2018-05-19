@@ -7,15 +7,15 @@ open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Chainium.Common
 open Chainium.Blockchain.Common
+open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 
 module Api =
 
-    let toApiResponse mapData = function
+    let toApiResponse = function
         | Ok data ->
             data
-            |> mapData
             |> json
         | Error errors ->
             errors
@@ -34,7 +34,8 @@ module Api =
 
             let response =
                 Composition.submitTx requestDto
-                |> toApiResponse (fun (TxHash txHash) -> { SubmitTxResponseDto.TxHash = txHash })
+                |> Result.map Mapping.txSubmittedEventToSubmitTxResponseDto
+                |> toApiResponse
 
             return! response next ctx
         }

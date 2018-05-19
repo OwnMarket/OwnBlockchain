@@ -19,29 +19,12 @@ module Validation =
             if txEnvelopeDto.S.IsNullOrWhiteSpace() then
                 yield AppError "Signature component S is missing from the envelope."
         ]
-        |> Errors.orElseWith (fun () ->
-            {
-                RawTx = txEnvelopeDto.Tx |> Convert.FromBase64String
-                Signature =
-                    {
-                        V = txEnvelopeDto.V
-                        R = txEnvelopeDto.R
-                        S = txEnvelopeDto.S
-                    }
-            }
-        )
+        |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
 
-    let verifyTxSignature verifySignature createHash (txEnvelope : TxEnvelope)
-        : Result<ChainiumAddress * TxHash, AppErrors> =
-
-        let txHash =
-            txEnvelope.RawTx
-            |> createHash
-            |> TxHash
-
+    let verifyTxSignature verifySignature (txEnvelope : TxEnvelope) : Result<ChainiumAddress, AppErrors> =
         match verifySignature txEnvelope.Signature txEnvelope.RawTx with
         | Some chainiumAddress ->
-            Ok (chainiumAddress, txHash)
+            Ok chainiumAddress
         | None ->
             Error [AppError "Cannot verify signature"]
 
@@ -100,37 +83,6 @@ module Validation =
         actions
         |> List.collect validateTxAction
 
-    let private mapActions actions =
-        let map (action : TxActionDto) =
-            match action.ActionData with
-            | :? ChxTransferTxActionDto as chx ->
-                {
-                    ChxTransferTxAction.RecipientAddress = ChainiumAddress chx.RecipientAddress
-                    Amount = ChxAmount chx.Amount
-                }
-                |> ChxTransfer
-            | :? EquityTransferTxActionDto as eq ->
-                {
-                    FromAccountHash = AccountHash eq.FromAccount
-                    ToAccountHash = AccountHash eq.ToAccount
-                    EquityID = EquityID eq.Equity
-                    Amount = EquityAmount eq.Amount
-                }
-                |> EquityTransfer
-            | _ ->
-                failwith "Invalid action type to map."
-
-        actions
-        |> List.map(fun a -> map(a))
-
     let validateTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
         validateTxFields txDto @ validateTxActions txDto.Actions
-        |> Errors.orElseWith (fun () ->
-            {
-                TxHash = hash
-                Sender = sender
-                Nonce = txDto.Nonce
-                Fee = ChxAmount txDto.Fee
-                Actions = mapActions txDto.Actions
-            }
-        )
+        |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)

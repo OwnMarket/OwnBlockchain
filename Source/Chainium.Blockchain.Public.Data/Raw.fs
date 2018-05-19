@@ -10,21 +10,66 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module Raw =
 
-    let saveTx (dataDir : string) (TxHash txHash) (txEnvelopeDto : TxEnvelopeDto) : Result<unit, AppErrors> =
-        // TODO: Implement proper storage for canonical representation of data.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // General
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    type RawDataType =
+        | Tx
+        | Block
+
+    let private createFileName (dataType : RawDataType) (key : string) =
+        sprintf "%s_%s" (unionCaseName dataType) key
+
+    let private saveData (dataDir : string) (dataType : RawDataType) (key : string) data : Result<unit, AppErrors> =
         try
             if not (Directory.Exists(dataDir)) then
                 Directory.CreateDirectory(dataDir) |> ignore
 
-            let path = Path.Combine(dataDir, txHash + ".tx")
+            let dataTypeName = unionCaseName dataType
+            let fileName = createFileName dataType key
+            let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
-                Error [AppError (sprintf "Tx with hash %s already exists." txHash)]
+                Error [AppError (sprintf "%s %s already exists." dataTypeName key)]
             else
-                let json = txEnvelopeDto |> JsonConvert.SerializeObject
+                let json = data |> JsonConvert.SerializeObject
                 File.WriteAllText(path, json)
                 Ok ()
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError "Save failed"]
+
+    let private loadData<'T> (dataDir : string) (dataType : RawDataType) (key : string) : Result<'T, AppErrors> =
+        try
+            let dataTypeName = unionCaseName dataType
+            let fileName = createFileName dataType key
+            let path = Path.Combine(dataDir, fileName)
+
+            if File.Exists(path) then
+                File.ReadAllText path
+                |> JsonConvert.DeserializeObject<'T>
+                |> Ok
+            else
+                Error [AppError (sprintf "%s %s not found." dataTypeName key)]
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Error [AppError "Load failed"]
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Specific
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let saveTx (dataDir : string) (TxHash txHash) (txEnvelopeDto : TxEnvelopeDto) : Result<unit, AppErrors> =
+        saveData dataDir Tx txHash txEnvelopeDto
+
+    let getTx (dataDir : string) (TxHash txHash) : Result<TxEnvelopeDto, AppErrors> =
+        loadData<TxEnvelopeDto> dataDir Tx txHash
+
+    let saveBlock (dataDir : string) (blockDto : BlockDto) : Result<unit, AppErrors> =
+        saveData dataDir Block (string blockDto.Header.Number) blockDto
+
+    let getBlock (dataDir : string) (BlockNumber blockNumber) : Result<BlockDto, AppErrors> =
+        loadData<BlockDto> dataDir Block (string blockNumber)

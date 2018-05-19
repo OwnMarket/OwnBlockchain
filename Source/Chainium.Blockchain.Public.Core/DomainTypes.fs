@@ -23,13 +23,19 @@ type Signature = {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Tx
+// Accounts
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type Nonce = Nonce of int64
 type ChxAmount = ChxAmount of decimal
 type AccountHash = AccountHash of string
 type EquityID = EquityID of string
 type EquityAmount = EquityAmount of decimal
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Tx
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type TxHash = TxHash of string
 
@@ -52,7 +58,7 @@ type TxAction =
 type Tx = {
     TxHash : TxHash
     Sender : ChainiumAddress
-    Nonce : int64
+    Nonce : Nonce
     Fee : ChxAmount
     Actions : TxAction list
 }
@@ -62,7 +68,10 @@ type TxEnvelope = {
     Signature : Signature
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Processing
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type TxProcessedStatus =
     | Success
@@ -72,18 +81,50 @@ type TxStatus =
     | Pending
     | Processed of TxProcessedStatus
 
+type TxInfo = {
+    TxHash : TxHash
+    Sender : ChainiumAddress
+    Nonce : Nonce
+    Fee : ChxAmount
+    Status : TxStatus
+    AppearanceOrder : int64
+}
+
+type PendingTxInfo = {
+    TxHash : TxHash
+    Sender : ChainiumAddress
+    Nonce : Nonce
+    Fee : ChxAmount
+    AppearanceOrder : int64
+}
+
+type ChxBalanceState = {
+    Amount : ChxAmount
+    Nonce : Nonce
+}
+
+type HoldingState = {
+    Amount : EquityAmount
+    Nonce : Nonce
+}
+
+type ProcessingOutput = {
+    TxResults : Map<TxHash, TxProcessedStatus>
+    ChxBalances : Map<ChainiumAddress, ChxBalanceState>
+    Holdings : Map<AccountHash * EquityID, HoldingState>
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Block
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type Timestamp = Timestamp of int64 // UNIX Timestamp
-type BlockIndex = BlockIndex of int64
+type BlockNumber = BlockNumber of int64
 type BlockHash = BlockHash of string
 type MerkleTreeRoot = MerkleTreeRoot of string
 
 type BlockHeader = {
-    Index : BlockIndex
+    Number : BlockNumber
     Hash : BlockHash
     PreviousHash : BlockHash
     Timestamp : Timestamp

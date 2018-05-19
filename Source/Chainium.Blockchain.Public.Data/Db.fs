@@ -80,3 +80,26 @@ module Db =
             ]
 
         DbTools.query dbConnectionString sql sqlParams
+
+    let getLastBlockNumber (dbConnectionString : string) =
+        (*
+        Get block number from DB table, which should contain a single record.
+        This is to enable atomic commit of new state together with an update of the last block number
+        *)
+
+        failwith "TODO: getLastBlockNumber"
+
+    let applyNewState (dbConnectionString : string) state =
+        (*
+        in a single db transaction do
+        apply new state to the db
+        update last applied block number in the db
+        *)
+
+        failwith "TODO: applyNewState"
+
+    let getChxBalanceState (dbConnectionString : string) address =
+        failwith "TODO: getChxBalanceState"
+
+    let getHoldingState (dbConnectionString : string) (accountHash, equityID) =
+        failwith "TODO: getHoldingState"

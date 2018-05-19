@@ -310,7 +310,7 @@ module ValidationTests =
             let actualEq = t.Actions.[1] |> getTx<EquityTransferTxAction>
 
             test <@ t.Fee = ChxAmount testTx.Fee @>
-            test <@ t.Nonce = testTx.Nonce @>
+            test <@ t.Nonce = Nonce testTx.Nonce @>
             test <@ t.TxHash = txHash @>
             test <@ t.Sender = chAddress @>
             test <@ actualChx.Amount = ChxAmount expectedChx.Amount @>
