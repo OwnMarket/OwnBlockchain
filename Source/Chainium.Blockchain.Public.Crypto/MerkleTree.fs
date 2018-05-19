@@ -8,35 +8,34 @@ module MerkleTree =
             Left : MerkleNode option
             Right : MerkleNode option
         }
-    
-    
+
+
     let private nodehash x =
         match x with
         | Some l -> l.Hash
         | None -> Array.zeroCreate 0
 
-    
-    let private concatHashes 
+
+    let private concatHashes
         left
-        right 
+        right
         =
         Array.append left right
 
-    
+
     let private buildNode
         hashFunction
-        (left : MerkleNode option) 
+        (left : MerkleNode option)
         (right : MerkleNode option)
         =
+
         let lefthash = nodehash left
         let righthash = nodehash right
 
-
-        let setParent node parent=
-            
+        let setParent node parent =
             match node with
-            | Some x -> 
-                x.Parent <- Option.map (fun m->m) parent
+            | Some x ->
+                x.Parent <- Option.map id parent
             | None -> ()
 
         let node =
@@ -44,93 +43,92 @@ module MerkleTree =
                 Parent = None
                 Left = left
                 Right = right
-                Hash =  
+                Hash =
                     righthash
                     |> Array.append lefthash
                     |> hashFunction
             }
-        
+
         let nodeResult = node |> Some
-        
+
         setParent node.Left nodeResult
         setParent node.Right nodeResult
-        
+
         nodeResult
-        
-    
-    let rec private buildTree 
-        hashFunction 
-        (treeNodes : MerkleNode option list)  
+
+
+    let rec private buildTree
+        hashFunction
+        (treeNodes : MerkleNode option list)
         =
-        let treeBuilder nodes = 
+        let treeBuilder nodes =
             buildTree hashFunction nodes
 
-        let nodeBuilder left right = 
-            buildNode 
-                hashFunction 
-                left 
+        let nodeBuilder left right =
+            buildNode
+                hashFunction
+                left
                 right
-        
+
         let buildSubTree subTree =
             match subTree with
             | [] -> None
-            
-            | [ _ ] -> 
-                nodeBuilder 
-                    subTree.Head 
+
+            | [ _ ] ->
+                nodeBuilder
+                    subTree.Head
                     None
 
-            | [ _; _ ] -> 
+            | [ _; _ ] ->
                 nodeBuilder
-                    subTree.[0] 
+                    subTree.[0]
                     subTree.[1]
 
             | _ -> treeBuilder subTree
-            
-            
+
         match treeNodes.Length with
         | 0 | 1 | 2 -> buildSubTree treeNodes
-        | _ -> 
-            let subTrees = 
+        | _ ->
+            let subTrees =
                 treeNodes
                 |> List.splitInto 2
-                
+
             subTrees
             |> List.map(fun s -> buildSubTree s)
             |> treeBuilder
 
-    
+
     let private buildNodes leafHashes =
         leafHashes
         |> List.map
             (
-                fun h -> 
+                fun h ->
                     {
                         Parent = None
                         Hash = h
                         Left = None
                         Right = None
-                    } 
+                    }
                     |> Some
             )
 
 
-    let build hashFunc leafHashes =  
+    let build hashFunc leafHashes =
         leafHashes
         |> buildNodes
         |> buildTree hashFunc
         |> nodehash
 
-    
-    let rec private findLeaf 
+
+    let rec private findLeaf
         (node : MerkleNode option)
         (hash : byte[])
         =
         let searchSubTree x =
-            if 
-                x.Left = None 
-                && x.Right = None 
-                && x.Hash = hash 
+            if
+                x.Left = None
+                && x.Right = None
+                && x.Hash = hash
             then
                 node
             else
@@ -142,18 +140,18 @@ module MerkleTree =
                 | None -> right
 
         Option.bind (fun n -> searchSubTree(n)) node
-   
 
-    type MerkleProofSegment = 
+
+    type MerkleProofSegment =
         | LeftHash of byte[]
         | RightHash of byte[]
-    
+
     type MerkleProof = MerkleProofSegment list
-    
+
 
     let rec private merkleProof node segments hash =
         let otherSubtreeHash parent =
-            
+
             let childHash c=
                 match c with
                 | None -> Array.zeroCreate 0
@@ -161,7 +159,7 @@ module MerkleTree =
 
             let leftHash = childHash parent.Left
             let rightHash = childHash parent.Right
-            
+
             if leftHash = hash then
                 RightHash rightHash
             elif rightHash = hash then
@@ -171,31 +169,30 @@ module MerkleTree =
 
         match node.Parent with
         | None -> segments
-        
+
         | Some p ->
-            let newSegments = 
+            let newSegments =
                 [ otherSubtreeHash p ]
                 |> List.append segments
-            
-            merkleProof p newSegments p.Hash  
 
+            merkleProof p newSegments p.Hash
 
 
     let calculateProof
-        hashFunc 
+        hashFunc
         leafHashes
-        leafHash 
+        leafHash
         : MerkleProof
         =
-            let root = 
+            let root =
                 leafHashes
                 |> buildNodes
                 |> buildTree hashFunc
 
             let leaf = findLeaf root leafHash
-            
+
             match leaf with
-            | None -> [] 
+            | None -> []
             | Some l -> merkleProof l [] leafHash
 
     let verifyProof
@@ -203,23 +200,18 @@ module MerkleTree =
         leafHash
         proof
         merkleRoot
-        =  
-        
+        =
+
         let hashFromSegment hash segment =
-            let concated = 
+            let concated =
                 match segment with
                 | LeftHash l -> concatHashes l hash
                 | RightHash r -> concatHashes hash r
-            
-            hashFunc concated
-        
-        let calculatedProof = 
-            proof
-            |> List.fold (fun h x -> hashFromSegment h x) leafHash
-        
-        merkleRoot = calculatedProof
-        
-        
-        
-            
 
+            hashFunc concated
+
+        let calculatedProof =
+            proof
+            |> List.fold hashFromSegment leafHash
+
+        merkleRoot = calculatedProof

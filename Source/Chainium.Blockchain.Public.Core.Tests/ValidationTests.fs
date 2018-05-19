@@ -44,7 +44,7 @@ module ValidationTests =
                 ]
         }
 
-        let expMessage = AppError "Nonce must be positive.";
+        let expMessage = AppError "Nonce must be positive."
         let result = Validation.validateTx chAddress txHash testTx
 
         match result with

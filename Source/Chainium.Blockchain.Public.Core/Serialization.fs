@@ -17,8 +17,6 @@ module Serialization =
     let bytesToString (bytes : byte[]) =
         Encoding.UTF8.GetString(bytes)
 
-
-
     let objToString (data : obj) =
         match data with
         | :? string as s -> s
@@ -41,16 +39,17 @@ module Serialization =
 
     let private actionsMap =
         [
-            "ChxTransfer",fun trType token -> actionFromToken<ChxTransferTxActionDto> trType token;
-            "EquityTransfer",fun trType token ->actionFromToken<EquityTransferTxActionDto> trType token
+            "ChxTransfer", fun trType token -> actionFromToken<ChxTransferTxActionDto> trType token
+            "EquityTransfer", fun trType token -> actionFromToken<EquityTransferTxActionDto> trType token
         ] |> Map.ofList
 
     let private actionsConverter = {
         new CustomCreationConverter<TxActionDto>() with
+
         override this.Create objectType =
             failwith "NotImplemented"
 
-        override this.ReadJson ((reader : JsonReader), (objectType : Type), (existingValue : obj), (serializer : JsonSerializer)) =
+        override this.ReadJson (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer) =
             let jObject = JObject.Load(reader)
 
             let actionType = tokenValue "ActionType" jObject
@@ -76,23 +75,17 @@ module Serialization =
                         } |> box
     }
 
-
     let deserializeTx (rawTx : byte[]) : Result<TxDto, AppErrors> =
         let deserialize str = JsonConvert.DeserializeObject<TxDto>(str, actionsConverter)
 
         try
             rawTx
-                |> bytesToString
-                |> deserialize
-                |> Ok
+            |> bytesToString
+            |> deserialize
+            |> Ok
         with
         | ex ->
-          let appError =
-            ex.AllMessagesAndStackTraces
-            |> AppError
-
-          [appError]
-          |> Error
+            Error [AppError ex.AllMessagesAndStackTraces]
 
     let serializeTx (txDto : TxDto) =
         txDto
