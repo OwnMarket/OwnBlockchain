@@ -10,6 +10,9 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AppSettings.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />
     <ProjectReference Include="..\Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj" />
     <ProjectReference Include="..\Chainium.Blockchain.Public.Core\Chainium.Blockchain.Public.Core.fsproj" />
@@ -18,6 +21,7 @@
     <ProjectReference Include="..\Chainium.Blockchain.Public.Net\Chainium.Blockchain.Public.Net.fsproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.2" />
     <PackageReference Include="Giraffe" Version="1.1.0" />
   </ItemGroup>
