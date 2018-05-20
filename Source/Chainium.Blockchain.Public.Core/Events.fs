@@ -10,3 +10,7 @@ type TxSubmittedEvent = {
 type BlockCreatedEvent = {
     BlockNumber : BlockNumber
 }
+
+type AppEvent =
+    | TxSubmitted of TxSubmittedEvent
+    | BlockCreated of BlockCreatedEvent

@@ -4,6 +4,9 @@ open System
 
 module Result =
 
+    let iter (f : _ -> unit) result =
+        Result.map f result |> ignore
+
     let combine combineOks combineErrors f1 f2 x =
         match (f1 x), (f2 x) with
         | Ok v1, Ok v2 -> Ok (combineOks v1 v2)

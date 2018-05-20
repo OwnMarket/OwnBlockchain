@@ -9,5 +9,6 @@
     <Compile Include="Errors.fs" />
     <Compile Include="Log.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="Agent.fs" />
   </ItemGroup>
 </Project>

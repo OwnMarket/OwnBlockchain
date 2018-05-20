@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -6,10 +6,9 @@
   <ItemGroup>
     <Compile Include="Config.fs" />
     <Compile Include="Composition.fs" />
+    <Compile Include="Agents.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="Program.fs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="AppSettings.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>

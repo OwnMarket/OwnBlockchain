@@ -10,6 +10,7 @@ open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
+open Chainium.Blockchain.Public.Core.Events
 
 module Api =
 
@@ -34,6 +35,7 @@ module Api =
 
             let response =
                 Composition.submitTx requestDto
+                |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
                 |> Result.map Mapping.txSubmittedEventToSubmitTxResponseDto
                 |> toApiResponse
 
