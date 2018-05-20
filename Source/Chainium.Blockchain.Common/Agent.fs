@@ -1,11 +1,13 @@
 namespace Chainium.Blockchain.Common
 
 open System
+open Chainium.Common
+open Chainium.Blockchain.Common
 
 module Agent =
 
     let start messageHandler =
-        MailboxProcessor.Start <| fun inbox ->
+        let agent = MailboxProcessor.Start <| fun inbox ->
             let rec messageLoop () =
                 async {
                     let! message = inbox.Receive()
@@ -15,8 +17,12 @@ module Agent =
 
             messageLoop ()
 
+        agent.Error.Add (fun ex -> Log.error ex.AllMessagesAndStackTraces)
+
+        agent
+
     let startStateful messageHandler initialState =
-        MailboxProcessor.Start <| fun inbox ->
+        let agent = MailboxProcessor.Start <| fun inbox ->
             let rec messageLoop oldState =
                 async {
                     let! message = inbox.Receive()
@@ -25,3 +31,7 @@ module Agent =
                 }
 
             messageLoop initialState
+
+        agent.Error.Add (fun ex -> Log.error ex.AllMessagesAndStackTraces)
+
+        agent
