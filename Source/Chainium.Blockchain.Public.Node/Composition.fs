@@ -5,6 +5,7 @@ open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Data
+open Chainium.Blockchain.Public.Net
 
 module Composition =
 
@@ -48,3 +49,7 @@ module Composition =
             applyNewState
             Config.MaxTxCountPerBlock
             (ChainiumAddress Config.ValidatorAddress)
+
+    let propagateTx = Workflows.propagateTx Peers.sendMessage
+
+    let propagateBlock = Workflows.propagateBlock Peers.sendMessage

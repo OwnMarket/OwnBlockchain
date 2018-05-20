@@ -58,3 +58,11 @@ module Workflows =
                 return { BlockNumber = block.Header.Number }
             }
             |> Some
+
+    let propagateTx sendMessageToPeers (txHash : TxHash) =
+        sprintf "%A" txHash
+        |> sendMessageToPeers
+
+    let propagateBlock sendMessageToPeers (blockNumber : BlockNumber) =
+        sprintf "%A" blockNumber
+        |> sendMessageToPeers

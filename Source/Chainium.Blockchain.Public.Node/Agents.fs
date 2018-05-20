@@ -5,22 +5,17 @@ open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Events
-open Chainium.Blockchain.Public.Net
 
 module Agents =
 
     let private txPropagator = Agent.start <| fun (message : TxSubmittedEvent) ->
         async {
-            // TODO: Implement in Workflow module, compose in Composition module, call here.
-            sprintf "%A" message.TxHash
-            |> Peers.sendMessage
+            Composition.propagateTx message.TxHash
         }
 
     let private blockPropagator = Agent.start <| fun (message : BlockCreatedEvent) ->
         async {
-            // TODO: Implement in Workflow module, compose in Composition module, call here.
-            sprintf "%A" message.BlockNumber
-            |> Peers.sendMessage
+            Composition.propagateBlock message.BlockNumber
         }
 
     let publishEvent event =
