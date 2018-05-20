@@ -23,6 +23,8 @@ module Composition =
 
     let getPendingTxs = Db.getPendingTxs Config.DbConnectionString
 
+    let getLastBlockTimestamp () = Db.getLastBlockTimestamp Config.DbConnectionString
+
     let getLastBlockNumber () = Db.getLastBlockNumber Config.DbConnectionString
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString

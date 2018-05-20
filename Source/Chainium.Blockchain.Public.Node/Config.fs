@@ -24,6 +24,8 @@ type Config () =
         with get () =
             config.["DbConnectionString"]
 
+    static member BlockCreationInterval = 5 // Seconds
+
     static member MaxTxCountPerBlock = 100 // TODO: Shall this be part of the consensus protocol?
 
     static member ValidatorAddress
