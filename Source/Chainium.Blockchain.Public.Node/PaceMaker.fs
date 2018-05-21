@@ -31,9 +31,4 @@ module PaceMaker =
     }
 
     let start () =
-        let cts = new System.Threading.CancellationTokenSource()
-        Async.Start(
-            Config.BlockCreationInterval |> int64 |> loop,
-            cts.Token
-        )
-        cts
+        Async.Start (Config.BlockCreationInterval |> int64 |> loop)
