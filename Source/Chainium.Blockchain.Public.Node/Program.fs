@@ -11,8 +11,7 @@ let main argv =
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
         Thread.CurrentThread.CurrentUICulture <- CultureInfo.InvariantCulture
 
-        PaceMaker.start ()
-        Api.start ()
+        argv |> Array.toList |> Cli.handleCommand
     with
     | ex -> Log.error ex.AllMessagesAndStackTraces
 

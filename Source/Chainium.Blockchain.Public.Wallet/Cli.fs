@@ -2,6 +2,7 @@ namespace Chainium.Blockchain.Public.Wallet
 
 open System
 open System.Text
+open System.Reflection
 open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
@@ -11,6 +12,11 @@ module Cli =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Handlers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let handleShowVersionCommand () =
+        let assembly = System.Reflection.Assembly.GetExecutingAssembly()
+        assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
+        |> printfn "%s"
 
     let handleGenerateWalletCommand (seed : string option) =
         seed
@@ -29,7 +35,7 @@ module Cli =
         |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
         |> (fun { V = v; R = r; S = s } -> printfn "V: %s\nR: %s\nS: %s" v r s )
 
-    let handleUnknownCommand args =
+    let handleHelpCommand args =
         // TODO: Show help
         printfn "TODO: Print short command reference"
 
@@ -40,7 +46,8 @@ module Cli =
 
     let handleCommand args =
         match args with
+        | ["-v"] -> handleShowVersionCommand ()
         | ["-g"] -> handleGenerateWalletCommand None
         | ["-g"; seed] -> handleGenerateWalletCommand (Some seed)
         | ["-s"; privateKey; message] -> handleSignMessageCommand privateKey message
-        | _ -> handleUnknownCommand args
+        | ["--help"] | _ -> handleHelpCommand args
