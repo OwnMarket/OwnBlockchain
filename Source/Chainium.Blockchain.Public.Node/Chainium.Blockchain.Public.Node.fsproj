@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyInfo.fs" />
     <Compile Include="Config.fs" />
     <Compile Include="Composition.fs" />
     <Compile Include="Agents.fs" />

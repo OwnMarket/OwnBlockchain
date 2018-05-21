@@ -7,6 +7,7 @@
     <ProjectReference Include="..\Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyInfo.fs" />
     <Compile Include="DomainTypes.fs" />
     <Compile Include="Dtos.fs" />
     <Compile Include="Events.fs" />

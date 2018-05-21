@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyInfo.fs" />
     <Compile Include="Peers.fs" />
   </ItemGroup>
   <ItemGroup>
