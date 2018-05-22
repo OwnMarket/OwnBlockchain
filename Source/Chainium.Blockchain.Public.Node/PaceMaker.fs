@@ -8,27 +8,28 @@ open Chainium.Blockchain.Public.Core.Events
 
 module PaceMaker =
 
-    let rec private loop blockCreationInterval = async {
-        do! Async.Sleep(1000)
+    let rec private loop blockCreationInterval =
+        async {
+            do! Async.Sleep(1000)
 
-        try
-            let (Timestamp lastBlockTimestamp) = Composition.getLastBlockTimestamp ()
-            let timeSinceLastBlock = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - lastBlockTimestamp
-            if timeSinceLastBlock >= blockCreationInterval then
-                Composition.createNewBlock ()
-                |> Option.iter (fun result ->
-                    match result with
-                    | Ok event ->
-                        event |> BlockCreated |> Agents.publishEvent
-                    | Error errors ->
-                        for (AppError err) in errors do
-                            Log.error err
-                )
-        with
-        | ex -> Log.error ex.AllMessagesAndStackTraces
+            try
+                let (Timestamp lastBlockTimestamp) = Composition.getLastBlockTimestamp ()
+                let timeSinceLastBlock = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - lastBlockTimestamp
+                if timeSinceLastBlock >= blockCreationInterval then
+                    Composition.createNewBlock ()
+                    |> Option.iter (fun result ->
+                        match result with
+                        | Ok event ->
+                            event |> BlockCreated |> Agents.publishEvent
+                        | Error errors ->
+                            for (AppError err) in errors do
+                                Log.error err
+                    )
+            with
+            | ex -> Log.error ex.AllMessagesAndStackTraces
 
-        return! loop blockCreationInterval
-    }
+            return! loop blockCreationInterval
+        }
 
     let start () =
         Async.Start (Config.BlockCreationInterval |> int64 |> loop)
