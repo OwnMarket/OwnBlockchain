@@ -7,21 +7,10 @@ module Result =
     let iter (f : _ -> unit) result =
         Result.map f result |> ignore
 
-    let combine combineOks combineErrors f1 f2 x =
-        match (f1 x), (f2 x) with
-        | Ok v1, Ok v2 -> Ok (combineOks v1 v2)
-        | Error e1, Ok _  -> Error e1
-        | Ok _ , Error e2 -> Error e2
-        | Error e1, Error e2 -> Error (combineErrors e1 e2)
-
 [<AutoOpen>]
 module ResultOperators =
 
     let (>>=) r f = Result.bind f r
-
-    let (&&&) f1 f2 x = Result.combine (fun _ v2 -> v2) (@) f1 f2 x
-
-    let (&&&!) f1 f2 x = Result.combine (@) (@) f1 f2 x
 
 [<AutoOpen>]
 module ResultComputationExpression =
