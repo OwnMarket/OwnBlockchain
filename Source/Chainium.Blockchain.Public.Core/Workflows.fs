@@ -26,8 +26,8 @@ module Workflows =
         getPendingTxs
         getTx
         verifySignature
-        getChxBalanceState
-        getHoldingState
+        getChxBalanceStateFromStorage
+        getHoldingStateFromStorage
         getLastBlockNumber
         getBlock
         createHash
@@ -38,7 +38,10 @@ module Workflows =
         : Result<BlockCreatedEvent, AppErrors> option
         =
 
-        match Processing.getTxSetForNewBlock getPendingTxs maxTxCountPerBlock with
+        let getChxBalanceState = memoize getChxBalanceStateFromStorage
+        let getHoldingState = memoize getHoldingStateFromStorage
+
+        match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with
         | [] -> None // Nothing to process.
         | txSet ->
             result {

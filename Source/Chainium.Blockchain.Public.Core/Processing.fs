@@ -92,18 +92,44 @@ module Processing =
     // Tx Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let excludeUnprocessableTxs (txSet : PendingTxInfo list) =
-        // group the txs by sender address and order each group by nonce
-        // exclude the txs after nonce gap (e.g. if 5 txs with nonces 1, 2, 3, 5, 6, then discard two last ones)
-        txSet
+    let excludeUnprocessableTxs
+        (getChxBalanceState : ChainiumAddress -> ChxBalanceState)
+        (txSet : PendingTxInfo list)
+        =
 
-    let getTxSetForNewBlock getPendingTxs maxTxCountPerBlock : PendingTxInfo list =
+        let excludeUnprocessableTxsForAddress senderAddress (txSet : PendingTxInfo list) =
+            let stateNonce = (getChxBalanceState senderAddress).Nonce
+
+            let (destinedToFailDueToLowNonce, rest) =
+                txSet
+                |> List.partition(fun tx -> tx.Nonce <= stateNonce)
+
+            rest
+            |> List.sortBy (fun tx -> tx.Nonce)
+            |> List.mapi (fun i tx ->
+                let nonceGap =
+                    (stateNonce, tx.Nonce)
+                    |> fun (Nonce stateNonce, Nonce txNonce) ->
+                        let expectedNonce = stateNonce + (int64 (i + 1))
+                        txNonce - expectedNonce
+                (tx, nonceGap)
+            )
+            |> List.takeWhile (fun (_, nonceGap) -> nonceGap = 0L)
+            |> List.map fst
+            |> List.append destinedToFailDueToLowNonce
+
+        txSet
+        |> List.groupBy (fun tx -> tx.Sender)
+        |> List.collect (fun (senderAddress, txs) -> excludeUnprocessableTxsForAddress senderAddress txs)
+        |> List.sortBy (fun tx -> tx.AppearanceOrder)
+
+    let getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock : PendingTxInfo list =
         let rec getTxSet txHashesToSkip (txSet : PendingTxInfo list) =
             let txCountToFetch = maxTxCountPerBlock - txSet.Length
             let fetchedTxs =
                 getPendingTxs txHashesToSkip txCountToFetch
                 |> List.map Mapping.pendingTxInfoFromDto
-            let txSet = excludeUnprocessableTxs (txSet @ fetchedTxs)
+            let txSet = excludeUnprocessableTxs getChxBalanceState (txSet @ fetchedTxs)
             if txSet.Length = maxTxCountPerBlock || fetchedTxs.Length = 0 then
                 txSet
             else
