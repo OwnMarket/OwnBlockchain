@@ -143,34 +143,31 @@ module Processing =
         getTxSet [] []
 
     let orderTxSet (txSet : PendingTxInfo list) : TxHash list =
-        let senders =
-            txSet
-            |> List.map (fun tx -> tx.Sender)
-            |> List.distinct
-
-        let detectTxWithWrongPosition txSet =
-            failwith "TODO: detectTxWithWrongPosition"
-            // for each distinct sender in the set do
-            //     if there are multiple txs in the set coming from the same sender then
-            //         for each tx in the set belonging to the sender do
-            //             if nonce is smaller then the nonce of some other tx (from same sender of course)
-            //             or nonce is equal, but fee is higher, then
-            //                 move it before that other tx
-
-        let moveTxIntoCorrectPosition txSet (tx, oldPosition, newPosition) =
-            failwith "TODO: moveTxIntoCorrectPosition"
-
-        let rec orderSet txSet =
-            // Keep ordering set recursively until everything is ordered
-            match detectTxWithWrongPosition txSet with
-            | None -> txSet
-            | Some (tx, oldPosition, newPosition) ->
-                let txSet = moveTxIntoCorrectPosition txSet (tx, oldPosition, newPosition)
-                orderSet txSet
+        let rec orderSet orderedSet unorderedSet =
+            match unorderedSet with
+            | [] -> orderedSet
+            | head :: tail ->
+                let (precedingTxsForSameSender, rest) =
+                    tail
+                    |> List.partition (fun tx ->
+                        tx.Sender = head.Sender
+                        && (
+                            tx.Nonce < head.Nonce
+                            || (tx.Nonce = head.Nonce && tx.Fee > head.Fee)
+                        )
+                    )
+                let precedingTxsForSameSender =
+                    precedingTxsForSameSender
+                    |> List.sortBy (fun tx -> tx.Nonce, tx.Fee |> fun (ChxAmount a) -> -a)
+                let orderedSet =
+                    orderedSet
+                    @ precedingTxsForSameSender
+                    @ [head]
+                orderSet orderedSet rest
 
         txSet
         |> List.sortBy (fun tx -> tx.AppearanceOrder)
-        |> orderSet
+        |> orderSet []
         |> List.map (fun tx -> tx.TxHash)
 
     let getTxBody getTx verifySignature txHash =
