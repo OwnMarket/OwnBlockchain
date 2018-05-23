@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        git(url: 'https://github.com/Chainium/Chainium.git', branch: 'master', credentialsId: '8475894346057f343aafe756b4857ba634b243ca', poll: true)
+        git(url: 'https://github.com/Chainium/Chainium.git', branch: 'master', poll: true)
       }
     }
     stage('Unit tests') {
