@@ -12,31 +12,38 @@ module Processing =
         (
         getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState,
         getHoldingStateFromStorage : AccountHash * EquityID -> HoldingState,
+        getAccountControllerFromStorage : AccountHash -> ChainiumAddress,
         txResults : ConcurrentDictionary<TxHash, TxProcessedStatus>,
         chxBalances : ConcurrentDictionary<ChainiumAddress, ChxBalanceState>,
-        holdings : ConcurrentDictionary<AccountHash * EquityID, HoldingState>
+        holdings : ConcurrentDictionary<AccountHash * EquityID, HoldingState>,
+        accountControllers : ConcurrentDictionary<AccountHash, ChainiumAddress>
         ) =
 
         new
             (
             getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState,
-            getHoldingStateFromStorage : AccountHash * EquityID -> HoldingState
+            getHoldingStateFromStorage : AccountHash * EquityID -> HoldingState,
+            getAccountControllerFromStorage : AccountHash -> ChainiumAddress
             ) =
             ProcessingState(
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
+                getAccountControllerFromStorage,
                 ConcurrentDictionary<TxHash, TxProcessedStatus>(),
                 ConcurrentDictionary<ChainiumAddress, ChxBalanceState>(),
-                ConcurrentDictionary<AccountHash * EquityID, HoldingState>()
+                ConcurrentDictionary<AccountHash * EquityID, HoldingState>(),
+                ConcurrentDictionary<AccountHash, ChainiumAddress>()
             )
 
         member __.Clone () =
             ProcessingState(
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
+                getAccountControllerFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(chxBalances),
-                ConcurrentDictionary(holdings)
+                ConcurrentDictionary(holdings),
+                ConcurrentDictionary(accountControllers)
             )
 
         member __.SetTxStatus (txHash : TxHash, txStatus : TxProcessedStatus) =
@@ -47,6 +54,9 @@ module Processing =
 
         member __.GetHolding (accountHash : AccountHash, equityID : EquityID) =
             holdings.GetOrAdd((accountHash, equityID), getHoldingStateFromStorage)
+
+        member __.GetAccountController (accountHash : AccountHash) =
+            accountControllers.GetOrAdd(accountHash, getAccountControllerFromStorage)
 
         member __.SetChxBalance (address : ChainiumAddress, state : ChxBalanceState) =
             chxBalances.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
@@ -94,20 +104,23 @@ module Processing =
         : Result<ProcessingState, AppErrors>
         =
 
-        let fromState = state.GetHolding(action.FromAccountHash, action.EquityID)
-        let toState = state.GetHolding(action.ToAccountHash, action.EquityID)
-
-        if fromState.Amount < action.Amount then
-            Error [AppError "Holding balance too low."]
+        if senderAddress <> state.GetAccountController(action.FromAccountHash) then
+            Error [AppError "Tx signer doesn't control the source account."]
         else
-            let (EquityAmount fromBalance) = fromState.Amount
-            let (EquityAmount toBalance) = toState.Amount
-            let (EquityAmount amountToTransfer) = action.Amount
-            let fromState = { fromState with Amount = EquityAmount (fromBalance - amountToTransfer) }
-            let toState = { toState with Amount = EquityAmount (toBalance + amountToTransfer) }
-            state.SetHolding(action.FromAccountHash, action.EquityID, fromState)
-            state.SetHolding(action.ToAccountHash, action.EquityID, toState)
-            Ok state
+            let fromState = state.GetHolding(action.FromAccountHash, action.EquityID)
+            let toState = state.GetHolding(action.ToAccountHash, action.EquityID)
+
+            if fromState.Amount < action.Amount then
+                Error [AppError "Holding balance too low."]
+            else
+                let (EquityAmount fromBalance) = fromState.Amount
+                let (EquityAmount toBalance) = toState.Amount
+                let (EquityAmount amountToTransfer) = action.Amount
+                let fromState = { fromState with Amount = EquityAmount (fromBalance - amountToTransfer) }
+                let toState = { toState with Amount = EquityAmount (toBalance + amountToTransfer) }
+                state.SetHolding(action.FromAccountHash, action.EquityID, fromState)
+                state.SetHolding(action.ToAccountHash, action.EquityID, toState)
+                Ok state
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
@@ -247,6 +260,7 @@ module Processing =
         verifySignature
         (getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState)
         (getHoldingStateFromStorage : AccountHash * EquityID -> HoldingState)
+        (getAccountControllerFromStorage : AccountHash -> ChainiumAddress)
         (validator : ChainiumAddress)
         (txSet : TxHash list)
         =
@@ -274,7 +288,12 @@ module Processing =
                 newState.SetTxStatus(txHash, Success)
                 newState
 
-        let initialState = ProcessingState (getChxBalanceStateFromStorage, getHoldingStateFromStorage)
+        let initialState =
+            ProcessingState (
+                getChxBalanceStateFromStorage,
+                getHoldingStateFromStorage,
+                getAccountControllerFromStorage
+            )
 
         let state =
             txSet

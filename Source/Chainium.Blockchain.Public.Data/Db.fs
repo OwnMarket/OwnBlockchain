@@ -109,3 +109,6 @@ module Db =
 
     let getHoldingState (dbConnectionString : string) (accountHash, equityID) =
         failwith "TODO: getHoldingState"
+
+    let getAccountController (dbConnectionString : string) accountHash =
+        failwith "TODO: getAccountController"

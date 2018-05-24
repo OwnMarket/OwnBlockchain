@@ -31,6 +31,8 @@ module Composition =
 
     let getHoldingState = Db.getHoldingState Config.DbConnectionString
 
+    let getAccountController = Db.getAccountController Config.DbConnectionString
+
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
     // Workflows
@@ -44,6 +46,7 @@ module Composition =
             Signing.verifySignature
             getChxBalanceState
             getHoldingState
+            getAccountController
             getLastBlockNumber
             getBlock
             Hashing.hash

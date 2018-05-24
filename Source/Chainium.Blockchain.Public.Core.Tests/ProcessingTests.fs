@@ -120,6 +120,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -127,6 +130,7 @@ module ProcessingTests =
                 Signing.verifySignature
                 getChxBalanceState
                 getHoldingState
+                getAccountController
                 validatorWallet.Address
                 txSet
 

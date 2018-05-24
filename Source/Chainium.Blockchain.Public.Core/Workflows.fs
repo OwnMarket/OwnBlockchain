@@ -28,6 +28,7 @@ module Workflows =
         verifySignature
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
+        getAccountControllerFromStorage
         getLastBlockNumber
         getBlock
         createHash
@@ -40,6 +41,7 @@ module Workflows =
 
         let getChxBalanceState = memoize getChxBalanceStateFromStorage
         let getHoldingState = memoize getHoldingStateFromStorage
+        let getAccountController = memoize getAccountControllerFromStorage
 
         match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with
         | [] -> None // Nothing to process.
@@ -48,7 +50,13 @@ module Workflows =
                 let output =
                     txSet
                     |> Processing.orderTxSet
-                    |> Processing.processTxSet getTx verifySignature getChxBalanceState getHoldingState validatorAddress
+                    |> Processing.processTxSet
+                        getTx
+                        verifySignature
+                        getChxBalanceState
+                        getHoldingState
+                        getAccountController
+                        validatorAddress
 
                 let! previousBlockDto = getLastBlockNumber () |> getBlock
                 let previousBlock = Mapping.blockFromDto previousBlockDto
