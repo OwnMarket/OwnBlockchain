@@ -28,41 +28,11 @@ module ProcessingTests =
 
         let txSet =
             [
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx2"
-                    Sender = w1.Address
-                    Nonce = Nonce 12L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 2L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx3"
-                    Sender = w1.Address
-                    Nonce = Nonce 10L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 3L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx4"
-                    Sender = w1.Address
-                    Nonce = Nonce 14L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 4L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx5"
-                    Sender = w1.Address
-                    Nonce = Nonce 11L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 5L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx1"
-                    Sender = w2.Address
-                    Nonce = Nonce 21L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 1L
-                }
+                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 2L
+                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1M) 3L
+                Helpers.newPendingTxInfo (TxHash "Tx4") w1.Address (Nonce 14L) (ChxAmount 1M) 4L
+                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1M) 5L
+                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1M) 1L
             ]
 
         // ACT
@@ -90,41 +60,11 @@ module ProcessingTests =
 
         let txSet =
             [
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx1"
-                    Sender = w2.Address
-                    Nonce = Nonce 21L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 1L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx2"
-                    Sender = w1.Address
-                    Nonce = Nonce 12L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 2L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx3"
-                    Sender = w1.Address
-                    Nonce = Nonce 10L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 3L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx6"
-                    Sender = w2.Address
-                    Nonce = Nonce 21L
-                    Fee = ChxAmount 2M
-                    AppearanceOrder = 6L
-                }
-                {
-                    PendingTxInfo.TxHash = TxHash "Tx5"
-                    Sender = w1.Address
-                    Nonce = Nonce 11L
-                    Fee = ChxAmount 1M
-                    AppearanceOrder = 5L
-                }
+                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1M) 1L
+                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 2L
+                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1M) 3L
+                Helpers.newPendingTxInfo (TxHash "Tx6") w2.Address (Nonce 21L) (ChxAmount 2M) 6L
+                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1M) 5L
             ]
 
         // ACT
