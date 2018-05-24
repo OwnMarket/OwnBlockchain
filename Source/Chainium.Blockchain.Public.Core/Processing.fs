@@ -1,10 +1,10 @@
 namespace Chainium.Blockchain.Public.Core
 
 open System
+open System.Collections.Concurrent
 open Chainium.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
-open System.Collections.Concurrent
 
 module Processing =
 
@@ -75,17 +75,38 @@ module Processing =
         let fromState = state.GetChxBalance(senderAddress)
         let toState = state.GetChxBalance(action.RecipientAddress)
 
-        let (ChxAmount fromBalance) = fromState.Amount
-        let (ChxAmount toBalance) = toState.Amount
-        let (ChxAmount amountToTransfer) = action.Amount
-
-        if fromBalance < amountToTransfer then
+        if fromState.Amount < action.Amount then
             Error [AppError "CHX balance too low."]
         else
+            let (ChxAmount fromBalance) = fromState.Amount
+            let (ChxAmount toBalance) = toState.Amount
+            let (ChxAmount amountToTransfer) = action.Amount
             let fromState = { fromState with Amount = ChxAmount (fromBalance - amountToTransfer) }
             let toState = { toState with Amount = ChxAmount (toBalance + amountToTransfer) }
             state.SetChxBalance(senderAddress, fromState)
             state.SetChxBalance(action.RecipientAddress, toState)
+            Ok state
+
+    let processEquityTransferTxAction
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (action : EquityTransferTxAction)
+        : Result<ProcessingState, AppErrors>
+        =
+
+        let fromState = state.GetHolding(action.FromAccountHash, action.EquityID)
+        let toState = state.GetHolding(action.ToAccountHash, action.EquityID)
+
+        if fromState.Amount < action.Amount then
+            Error [AppError "Holding balance too low."]
+        else
+            let (EquityAmount fromBalance) = fromState.Amount
+            let (EquityAmount toBalance) = toState.Amount
+            let (EquityAmount amountToTransfer) = action.Amount
+            let fromState = { fromState with Amount = EquityAmount (fromBalance - amountToTransfer) }
+            let toState = { toState with Amount = EquityAmount (toBalance + amountToTransfer) }
+            state.SetHolding(action.FromAccountHash, action.EquityID, fromState)
+            state.SetHolding(action.ToAccountHash, action.EquityID, toState)
             Ok state
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,21 +210,34 @@ module Processing =
         let (ChxAmount fee) = tx.Fee
         fee * (decimal tx.Actions.Length) |> ChxAmount
 
-    let processValidatorReward (state : ProcessingState) (tx : Tx) validator =
+    let updateChxBalanceNonce senderAddress txNonce (state : ProcessingState) =
+        let senderState = state.GetChxBalance senderAddress
+        match senderState.Nonce, txNonce with
+        | (Nonce senderNonce, Nonce txNonce) ->
+            if txNonce <= senderNonce then
+                Error [AppError "Nonce too low."]
+            elif txNonce = (senderNonce + 1L) then
+                state.SetChxBalance (senderAddress, {senderState with Nonce = Nonce txNonce})
+                Ok state
+            else
+                failwith "Nonce too high." // This shouldn't really happen, due to the logic in excludeUnprocessableTxs.
+
+    let processValidatorReward (tx : Tx) validator (state : ProcessingState) =
         {
             ChxTransferTxAction.RecipientAddress = validator
             Amount = calculateTotalFee tx
         }
         |> processChxTransferTxAction state tx.Sender
 
-    let processTxAction (state : ProcessingState) (senderAddress : ChainiumAddress) = function
+    let processTxAction (senderAddress : ChainiumAddress) (action : TxAction) (state : ProcessingState) =
+        match action with
         | ChxTransfer action -> processChxTransferTxAction state senderAddress action
-        | EquityTransfer action -> failwith "TODO: EquityTransfer"
+        | EquityTransfer action -> processEquityTransferTxAction state senderAddress action
 
-    let processTxActions (state : ProcessingState) (senderAddress : ChainiumAddress) (actions : TxAction list) =
+    let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
         let processAction result action =
             result
-            >>= fun state -> processTxAction state senderAddress action
+            >>= processTxAction senderAddress action
 
         actions
         |> List.fold processAction (Ok state)
@@ -225,16 +259,16 @@ module Processing =
                     let! tx = getTxBody getTx verifySignature txHash
 
                     let! state =
-                        processValidatorReward newState tx validator
-                        >>= fun state -> processTxActions state tx.Sender tx.Actions
+                        updateChxBalanceNonce tx.Sender tx.Nonce newState
+                        >>= processValidatorReward tx validator
+                        >>= processTxActions tx.Sender tx.Actions
 
                     return state
                 }
 
             match processingResult with
-            | Error _ ->
-                // TODO: Persist error message as well
-                oldState.SetTxStatus(txHash, Failure)
+            | Error errors ->
+                oldState.SetTxStatus(txHash, Failure errors)
                 oldState
             | Ok _ ->
                 newState.SetTxStatus(txHash, Success)
