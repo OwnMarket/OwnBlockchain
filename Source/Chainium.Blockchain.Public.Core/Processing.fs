@@ -88,13 +88,14 @@ module Processing =
         if fromState.Amount < action.Amount then
             Error [AppError "CHX balance too low."]
         else
-            let (ChxAmount fromBalance) = fromState.Amount
-            let (ChxAmount toBalance) = toState.Amount
-            let (ChxAmount amountToTransfer) = action.Amount
-            let fromState = { fromState with Amount = ChxAmount (fromBalance - amountToTransfer) }
-            let toState = { toState with Amount = ChxAmount (toBalance + amountToTransfer) }
-            state.SetChxBalance(senderAddress, fromState)
-            state.SetChxBalance(action.RecipientAddress, toState)
+            state.SetChxBalance(
+                senderAddress,
+                { fromState with Amount = fromState.Amount - action.Amount }
+            )
+            state.SetChxBalance(
+                action.RecipientAddress,
+                { toState with Amount = toState.Amount + action.Amount }
+            )
             Ok state
 
     let processEquityTransferTxAction
@@ -113,13 +114,16 @@ module Processing =
             if fromState.Amount < action.Amount then
                 Error [AppError "Holding balance too low."]
             else
-                let (EquityAmount fromBalance) = fromState.Amount
-                let (EquityAmount toBalance) = toState.Amount
-                let (EquityAmount amountToTransfer) = action.Amount
-                let fromState = { fromState with Amount = EquityAmount (fromBalance - amountToTransfer) }
-                let toState = { toState with Amount = EquityAmount (toBalance + amountToTransfer) }
-                state.SetHolding(action.FromAccountHash, action.EquityID, fromState)
-                state.SetHolding(action.ToAccountHash, action.EquityID, toState)
+                state.SetHolding(
+                    action.FromAccountHash,
+                    action.EquityID,
+                    { fromState with Amount = fromState.Amount - action.Amount }
+                )
+                state.SetHolding(
+                    action.ToAccountHash,
+                    action.EquityID,
+                    { toState with Amount = toState.Amount + action.Amount }
+                )
                 Ok state
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,11 +145,8 @@ module Processing =
             rest
             |> List.sortBy (fun tx -> tx.Nonce)
             |> List.mapi (fun i tx ->
-                let nonceGap =
-                    (stateNonce, tx.Nonce)
-                    |> fun (Nonce stateNonce, Nonce txNonce) ->
-                        let expectedNonce = stateNonce + (int64 (i + 1))
-                        txNonce - expectedNonce
+                let expectedNonce = stateNonce + (int64 (i + 1))
+                let (Nonce nonceGap) = tx.Nonce - expectedNonce
                 (tx, nonceGap)
             )
             |> List.takeWhile (fun (_, nonceGap) -> nonceGap = 0L)
@@ -220,20 +221,18 @@ module Processing =
         }
 
     let calculateTotalFee (tx : Tx) =
-        let (ChxAmount fee) = tx.Fee
-        fee * (decimal tx.Actions.Length) |> ChxAmount
+        tx.Fee * (decimal tx.Actions.Length)
 
     let updateChxBalanceNonce senderAddress txNonce (state : ProcessingState) =
         let senderState = state.GetChxBalance senderAddress
-        match senderState.Nonce, txNonce with
-        | (Nonce senderNonce, Nonce txNonce) ->
-            if txNonce <= senderNonce then
-                Error [AppError "Nonce too low."]
-            elif txNonce = (senderNonce + 1L) then
-                state.SetChxBalance (senderAddress, {senderState with Nonce = Nonce txNonce})
-                Ok state
-            else
-                failwith "Nonce too high." // This shouldn't really happen, due to the logic in excludeUnprocessableTxs.
+
+        if txNonce <= senderState.Nonce then
+            Error [AppError "Nonce too low."]
+        elif txNonce = (senderState.Nonce + 1L) then
+            state.SetChxBalance (senderAddress, {senderState with Nonce = txNonce})
+            Ok state
+        else
+            failwith "Nonce too high." // This shouldn't really happen, due to the logic in excludeUnprocessableTxs.
 
     let processValidatorReward (tx : Tx) validator (state : ProcessingState) =
         {

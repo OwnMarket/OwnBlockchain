@@ -100,8 +100,8 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = 1M
-        let amountToTransfer = 10M
+        let fee = ChxAmount 1M
+        let amountToTransfer = ChxAmount 10M
 
         let txHash, txEnvelope =
             [
@@ -110,11 +110,11 @@ module ProcessingTests =
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
-                            Amount = amountToTransfer
+                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce (ChxAmount fee)
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
 
         let txSet = [txHash]
 
@@ -145,13 +145,13 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance =
             getChxBalanceState senderWallet.Address
-            |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance - amountToTransfer - fee)
+            |> fun state -> state.Amount - amountToTransfer - fee
         let recipientChxBalance =
             getChxBalanceState recipientWallet.Address
-            |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance + amountToTransfer)
+            |> fun state -> state.Amount + amountToTransfer
         let validatorChxBalance =
             getChxBalanceState validatorWallet.Address
-            |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance + fee)
+            |> fun state -> state.Amount + fee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Success @>
@@ -187,8 +187,8 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = 1M
-        let amountToTransfer = 10M
+        let fee = ChxAmount 1M
+        let amountToTransfer = EquityAmount 10M
 
         let txHash, txEnvelope =
             [
@@ -199,11 +199,11 @@ module ProcessingTests =
                             FromAccount = senderAccountHash |> fun (AccountHash h) -> h
                             ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
                             Equity = equityID |> fun (EquityID e) -> e
-                            Amount = amountToTransfer
+                            Amount = amountToTransfer |> fun (EquityAmount a) -> a
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce (ChxAmount fee)
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
 
         let txSet = [txHash]
 
@@ -234,16 +234,16 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance =
             getChxBalanceState senderWallet.Address
-            |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance - fee)
+            |> fun state -> state.Amount - fee
         let validatorChxBalance =
             getChxBalanceState validatorWallet.Address
-            |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance + fee)
+            |> fun state -> state.Amount + fee
         let senderEquityBalance =
             getHoldingState (senderAccountHash, equityID)
-            |> fun { Amount = (EquityAmount balance); Nonce = _ } -> EquityAmount (balance - amountToTransfer)
+            |> fun state -> state.Amount - amountToTransfer
         let recipientEquityBalance =
             getHoldingState (recipientAccountHash, equityID)
-            |> fun { Amount = (EquityAmount balance); Nonce = _ } -> EquityAmount (balance + amountToTransfer)
+            |> fun state -> state.Amount + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Success @>

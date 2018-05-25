@@ -34,11 +34,60 @@ type Signature = {
 // Accounts
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type Nonce = Nonce of int64
-type ChxAmount = ChxAmount of decimal
 type AccountHash = AccountHash of string
 type EquityID = EquityID of string
+
+type Nonce = Nonce of int64
+type ChxAmount = ChxAmount of decimal
 type EquityAmount = EquityAmount of decimal
+
+// Arithmetic
+
+type Nonce with
+    static member (+) (Nonce n1, Nonce n2) =
+        Nonce (n1 + n2)
+    static member (+) (Nonce n1, n2) =
+        Nonce (n1 + n2)
+    static member (-) (Nonce n1, Nonce n2) =
+        Nonce (n1 - n2)
+    static member (-) (Nonce n1, n2) =
+        Nonce (n1 - n2)
+
+type ChxAmount with
+    static member (+) (ChxAmount a1, ChxAmount a2) =
+        ChxAmount (Decimal.Round(a1 + a2, 18))
+    static member (+) (ChxAmount a1, a2) =
+        ChxAmount (Decimal.Round(a1 + a2, 18))
+    static member (-) (ChxAmount a1, ChxAmount a2) =
+        ChxAmount (Decimal.Round(a1 - a2, 18))
+    static member (-) (ChxAmount a1, a2) =
+        ChxAmount (Decimal.Round(a1 - a2, 18))
+    static member (*) (ChxAmount a1, ChxAmount a2) =
+        ChxAmount (Decimal.Round(a1 * a2, 18))
+    static member (*) (ChxAmount a1, a2) =
+        ChxAmount (Decimal.Round(a1 * a2, 18))
+    static member (/) (ChxAmount a1, ChxAmount a2) =
+        ChxAmount (Decimal.Round(a1 / a2, 18))
+    static member (/) (ChxAmount a1, a2) =
+        ChxAmount (Decimal.Round(a1 / a2, 18))
+
+type EquityAmount with
+    static member (+) (EquityAmount a1, EquityAmount a2) =
+        EquityAmount (Decimal.Round(a1 + a2, 18))
+    static member (+) (EquityAmount a1, a2) =
+        EquityAmount (Decimal.Round(a1 + a2, 18))
+    static member (-) (EquityAmount a1, EquityAmount a2) =
+        EquityAmount (Decimal.Round(a1 - a2, 18))
+    static member (-) (EquityAmount a1, a2) =
+        EquityAmount (Decimal.Round(a1 - a2, 18))
+    static member (*) (EquityAmount a1, EquityAmount a2) =
+        EquityAmount (Decimal.Round(a1 * a2, 18))
+    static member (*) (EquityAmount a1, a2) =
+        EquityAmount (Decimal.Round(a1 * a2, 18))
+    static member (/) (EquityAmount a1, EquityAmount a2) =
+        EquityAmount (Decimal.Round(a1 / a2, 18))
+    static member (/) (EquityAmount a1, a2) =
+        EquityAmount (Decimal.Round(a1 / a2, 18))
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
