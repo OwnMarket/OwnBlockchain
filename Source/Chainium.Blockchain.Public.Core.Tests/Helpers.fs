@@ -83,14 +83,14 @@ module Helpers =
 
         fun address -> state.[address]
 
-    let mockGetHoldingState (state : ((AccountHash * EquityID) * (decimal * int64)) list) =
+    let mockGetHoldingState (state : ((AccountHash * EquityID) * (EquityAmount * Nonce)) list) =
         let state =
             state
             |> List.map (fun (key, (equityAmount, nonce)) ->
                 let holdingState =
                     {
-                        HoldingState.Amount = EquityAmount equityAmount
-                        Nonce = Nonce nonce
+                        HoldingState.Amount = equityAmount
+                        Nonce = nonce
                     }
                 (key, holdingState)
             )

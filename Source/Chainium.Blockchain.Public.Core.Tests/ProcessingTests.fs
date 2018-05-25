@@ -12,6 +12,10 @@ open Chainium.Blockchain.Public.Crypto
 
 module ProcessingTests =
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Tx preparation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     [<Fact>]
     let ``Processing.excludeUnprocessableTxs excludes txs after nonce gap`` () =
         let w1 = Signing.generateWallet None
@@ -76,8 +80,12 @@ module ProcessingTests =
 
         test <@ txHashes = ["Tx6"; "Tx1"; "Tx3"; "Tx5"; "Tx2"] @>
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ChxTransfer
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     [<Fact>]
-    let ``Processing.processTxSet transfers CHX correctly`` () =
+    let ``Processing.processTxSet ChxTransfer`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet None
         let recipientWallet = Signing.generateWallet None
@@ -90,7 +98,7 @@ module ProcessingTests =
                 validatorWallet.Address, (ChxAmount 100M, Nonce 30L)
             ]
 
-        // TX
+        // PREPARE TX
         let nonce = Nonce 11L
         let fee = 1M
         let amountToTransfer = 10M
@@ -135,19 +143,112 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderBalance =
+        let senderChxBalance =
             getChxBalanceState senderWallet.Address
             |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance - amountToTransfer - fee)
-        let recipientBalance =
+        let recipientChxBalance =
             getChxBalanceState recipientWallet.Address
             |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance + amountToTransfer)
-        let validatorBalance =
+        let validatorChxBalance =
             getChxBalanceState validatorWallet.Address
             |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance + fee)
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Success @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderBalance @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorBalance @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // EquityTransfer
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processTxSet EquityTransfer`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet None
+        let validatorWallet = Signing.generateWallet None
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let equityID = EquityID "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, (ChxAmount 100M, Nonce 10L)
+                validatorWallet.Address, (ChxAmount 100M, Nonce 30L)
+            ]
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, equityID), (EquityAmount 50M, Nonce 10L)
+                (recipientAccountHash, equityID), (EquityAmount 0M, Nonce 20L)
+            ]
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = 1M
+        let amountToTransfer = 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "EquityTransfer"
+                    ActionData =
+                        {
+                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
+                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
+                            Equity = equityID |> fun (EquityID e) -> e
+                            Amount = amountToTransfer
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce (ChxAmount fee)
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState =
+            Helpers.mockGetChxBalanceState initialChxState
+
+        let getHoldingState =
+            Helpers.mockGetHoldingState initialHoldingState
+
+        let getAccountController _ =
+            senderWallet.Address
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                validatorWallet.Address
+                txSet
+
+        // ASSERT
+        let senderChxBalance =
+            getChxBalanceState senderWallet.Address
+            |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance - fee)
+        let validatorChxBalance =
+            getChxBalanceState validatorWallet.Address
+            |> fun { Amount = (ChxAmount balance); Nonce = _ } -> ChxAmount (balance + fee)
+        let senderEquityBalance =
+            getHoldingState (senderAccountHash, equityID)
+            |> fun { Amount = (EquityAmount balance); Nonce = _ } -> EquityAmount (balance - amountToTransfer)
+        let recipientEquityBalance =
+            getHoldingState (recipientAccountHash, equityID)
+            |> fun { Amount = (EquityAmount balance); Nonce = _ } -> EquityAmount (balance + amountToTransfer)
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash] = Success @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings.[senderAccountHash, equityID].Amount = senderEquityBalance @>
+        test <@ output.Holdings.[recipientAccountHash, equityID].Amount = recipientEquityBalance @>
