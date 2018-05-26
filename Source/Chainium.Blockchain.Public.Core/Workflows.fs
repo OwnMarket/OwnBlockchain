@@ -39,8 +39,8 @@ module Workflows =
         : Result<BlockCreatedEvent, AppErrors> option
         =
 
-        let getChxBalanceState = memoize getChxBalanceStateFromStorage
-        let getHoldingState = memoize getHoldingStateFromStorage
+        let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
+        let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getAccountController = memoize getAccountControllerFromStorage
 
         match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with

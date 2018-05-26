@@ -67,33 +67,3 @@ module Helpers =
             }
 
         (txHash, txEnvelopeDto)
-
-    let mockGetChxBalanceState (state : (ChainiumAddress * (ChxAmount * Nonce)) list) =
-        let state =
-            state
-            |> List.map (fun (address, (chxAmount, nonce)) ->
-                let chxBalanceState =
-                    {
-                        ChxBalanceState.Amount = chxAmount
-                        Nonce = nonce
-                    }
-                (address, chxBalanceState)
-            )
-            |> Map.ofList
-
-        fun address -> state.[address]
-
-    let mockGetHoldingState (state : ((AccountHash * EquityID) * (EquityAmount * Nonce)) list) =
-        let state =
-            state
-            |> List.map (fun (key, (equityAmount, nonce)) ->
-                let holdingState =
-                    {
-                        HoldingState.Amount = equityAmount
-                        Nonce = nonce
-                    }
-                (key, holdingState)
-            )
-            |> Map.ofList
-
-        fun key -> state.[key]

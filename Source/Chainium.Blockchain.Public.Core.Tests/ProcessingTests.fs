@@ -29,7 +29,7 @@ module ProcessingTests =
                 ]
                 |> Map.ofSeq
 
-            fun (address : ChainiumAddress) -> data.[address]
+            fun (address : ChainiumAddress) -> data |> Map.tryFind address
 
         let txSet =
             [
@@ -93,10 +93,11 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, (ChxAmount 100M, Nonce 10L)
-                recipientWallet.Address, (ChxAmount 100M, Nonce 20L)
-                validatorWallet.Address, (ChxAmount 100M, Nonce 30L)
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
             ]
+            |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
@@ -122,8 +123,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState =
-            Helpers.mockGetChxBalanceState initialChxState
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
@@ -144,13 +145,13 @@ module ProcessingTests =
 
         // ASSERT
         let senderChxBalance =
-            getChxBalanceState senderWallet.Address
+            initialChxState.[senderWallet.Address]
             |> fun state -> state.Amount - amountToTransfer - fee
         let recipientChxBalance =
-            getChxBalanceState recipientWallet.Address
+            initialChxState.[recipientWallet.Address]
             |> fun state -> state.Amount + amountToTransfer
         let validatorChxBalance =
-            getChxBalanceState validatorWallet.Address
+            initialChxState.[validatorWallet.Address]
             |> fun state -> state.Amount + fee
 
         test <@ output.TxResults.Count = 1 @>
@@ -175,15 +176,17 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, (ChxAmount 100M, Nonce 10L)
-                validatorWallet.Address, (ChxAmount 100M, Nonce 30L)
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
             ]
+            |> Map.ofList
 
         let initialHoldingState =
             [
-                (senderAccountHash, equityID), (EquityAmount 50M, Nonce 10L)
-                (recipientAccountHash, equityID), (EquityAmount 0M, Nonce 20L)
+                (senderAccountHash, equityID), {HoldingState.Amount = EquityAmount 50M; Nonce = Nonce 10L}
+                (recipientAccountHash, equityID), {HoldingState.Amount = EquityAmount 0M; Nonce = Nonce 20L}
             ]
+            |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
@@ -211,14 +214,14 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState =
-            Helpers.mockGetChxBalanceState initialChxState
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
 
-        let getHoldingState =
-            Helpers.mockGetHoldingState initialHoldingState
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
 
         let getAccountController _ =
-            senderWallet.Address
+            Some senderWallet.Address
 
         // ACT
         let output =
@@ -233,16 +236,16 @@ module ProcessingTests =
 
         // ASSERT
         let senderChxBalance =
-            getChxBalanceState senderWallet.Address
+            initialChxState.[senderWallet.Address]
             |> fun state -> state.Amount - fee
         let validatorChxBalance =
-            getChxBalanceState validatorWallet.Address
+            initialChxState.[validatorWallet.Address]
             |> fun state -> state.Amount + fee
         let senderEquityBalance =
-            getHoldingState (senderAccountHash, equityID)
+            initialHoldingState.[senderAccountHash, equityID]
             |> fun state -> state.Amount - amountToTransfer
         let recipientEquityBalance =
-            getHoldingState (recipientAccountHash, equityID)
+            initialHoldingState.[recipientAccountHash, equityID]
             |> fun state -> state.Amount + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
