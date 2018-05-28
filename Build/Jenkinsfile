@@ -4,7 +4,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'dotnet publish $SOLUTION_NAME -c $BUILD_CONFIG -o $PROJECT_OUTPUT_FOLDER'
+        sh 'dotnet publish $SOLUTION_PATH -c $BUILD_CONFIG -o $PROJECT_OUTPUT_FOLDER'
       }
     }
     stage('Unit tests') {
@@ -15,7 +15,7 @@ pipeline {
       steps {
         
         sh "mkdir $RESULTS_OUTPUT_PATH"
-        sh 'bash ./Build/run_tests.sh $SOLUTION_NAME $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.Tests*'
+        sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.Tests*'
         xunit testTimeMargin: "3000", 
               thresholdMode: 1, 
               thresholds: [
@@ -37,7 +37,7 @@ pipeline {
       steps {
         
         sh "mkdir $RESULTS_OUTPUT_PATH"
-        sh 'bash ./Build/run_tests.sh $SOLUTION_NAME $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.IntegrationTests*'
+        sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.IntegrationTests*'
         xunit testTimeMargin: "3000", 
               thresholdMode: 1, 
               thresholds: [
@@ -57,17 +57,18 @@ pipeline {
         }
         steps {
             sh "mkdir $PUBLISH_DIR"
-            sh 'bash ./Build/package.sh $SOLUTION_NAME $PROJECTS $PUBLISH_DIR $PROJECT_OUTPUT_FOLDER'
+            sh 'bash ./Build/package.sh $SOLUTION_PATH $PROJECTS $PUBLISH_DIR $PROJECT_OUTPUT_FOLDER $SOLUTION_NAME'
         }
     }
   }
   
   
   environment {
-    SOLUTION_NAME = 'ChainiumBlockchain'
+    SOLUTION_PATH = 'Source'
     BUILD_CONFIG = 'Release'
     PROJECT_OUTPUT_FOLDER = 'Release'
     PUBLISH_DIR = 'publish'
+	SOLUTION_NAME = 'ChainiumBlockchain'
   }
   
   post {
