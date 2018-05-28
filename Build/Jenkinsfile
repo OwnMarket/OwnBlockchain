@@ -72,9 +72,6 @@ pipeline {
   }
   
   post {
-        always {
-            
-        }
         success {
 			archiveArtifacts artifacts: "$PUBLISH_DIR/*.tar.gz,$PUBLISH_DIR/*.zip", fingerprint: true
             slackSend color: "good", message: "Completed: ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
