@@ -151,6 +151,8 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Success @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
@@ -222,6 +224,8 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient CHX balance."] @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
@@ -293,6 +297,8 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient CHX balance."] @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
@@ -378,6 +384,90 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Success @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings.[senderAccountHash, equityID].Amount = senderEquityBalance @>
+        test <@ output.Holdings.[recipientAccountHash, equityID].Amount = recipientEquityBalance @>
+
+    [<Fact>]
+    let ``Processing.processTxSet EquityTransfer with insufficient balance`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet None
+        let validatorWallet = Signing.generateWallet None
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let equityID = EquityID "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, equityID), {HoldingState.Amount = EquityAmount 9M; Nonce = Nonce 10L}
+                (recipientAccountHash, equityID), {HoldingState.Amount = EquityAmount 0M; Nonce = Nonce 20L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let amountToTransfer = EquityAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "EquityTransfer"
+                    ActionData =
+                        {
+                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
+                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
+                            Equity = equityID |> fun (EquityID e) -> e
+                            Amount = amountToTransfer |> fun (EquityAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getAccountController _ =
+            Some senderWallet.Address
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                validatorWallet.Address
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let senderEquityBalance = initialHoldingState.[senderAccountHash, equityID].Amount
+        let recipientEquityBalance = initialHoldingState.[recipientAccountHash, equityID].Amount
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient equity holding balance."] @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
