@@ -58,7 +58,10 @@ module Workflows =
                         getAccountController
                         validatorAddress
 
-                let! previousBlockDto = getLastBlockNumber () |> getBlock
+                let! previousBlockDto =
+                    getLastBlockNumber ()
+                    |? BlockNumber 0L // TODO: Once genesis block init is added, this should throw.
+                    |> getBlock
                 let previousBlock = Mapping.blockFromDto previousBlockDto
                 let blockNumber = previousBlock.Header.Number |> fun (BlockNumber n) -> BlockNumber (n + 1L)
                 let block = Blocks.assembleBlock createHash blockNumber previousBlock.Header.Hash txSet output

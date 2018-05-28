@@ -13,7 +13,9 @@ module PaceMaker =
             do! Async.Sleep(1000)
 
             try
-                let (Timestamp lastBlockTimestamp) = Composition.getLastBlockTimestamp ()
+                let (Timestamp lastBlockTimestamp) =
+                    Composition.getLastBlockTimestamp ()
+                    |? Timestamp 0L // TODO: Once genesis block init is added, this should throw.
                 let timeSinceLastBlock = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - lastBlockTimestamp
                 if timeSinceLastBlock >= blockCreationInterval then
                     Composition.createNewBlock ()

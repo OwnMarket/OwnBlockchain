@@ -79,7 +79,7 @@ module Db =
 
         DbTools.query dbConnectionString sql sqlParams
 
-    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp =
+    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option =
         (*
         Get block number from DB table, which should contain a single record.
         This is to enable atomic commit of new state together with an update of the last block number
@@ -87,7 +87,7 @@ module Db =
 
         failwith "TODO: getLastBlockNumber"
 
-    let getLastBlockNumber (dbConnectionString : string) : BlockNumber =
+    let getLastBlockNumber (dbConnectionString : string) : BlockNumber option =
         (*
         Get block number from DB table, which should contain a single record.
         This is to enable atomic commit of new state together with an update of the last block number

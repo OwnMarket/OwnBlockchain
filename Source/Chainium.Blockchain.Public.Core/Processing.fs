@@ -219,8 +219,7 @@ module Processing =
     let getTxBody getTx verifySignature txHash =
         result {
             let! txEnvelopeDto = getTx txHash
-            let txEnvelope = Mapping.txEnvelopeFromDto txEnvelopeDto
-
+            let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
             let! sender = Validation.verifyTxSignature verifySignature txEnvelope
 
             let! tx =
