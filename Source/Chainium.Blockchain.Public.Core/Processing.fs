@@ -53,10 +53,20 @@ module Processing =
                 ConcurrentDictionary(accountControllers)
             )
 
-        member __.GetChxBalance (address : ChainiumAddress) =
+        member __.MergeNonces (otherState : ProcessingState) =
+            let otherOutput = otherState.ToProcessingOutput ()
+            for other in otherOutput.ChxBalances do
+                let current = __.GetChxBalance (other.Key)
+                __.SetChxBalance (other.Key, { current with Nonce = other.Value.Nonce })
+            for other in otherOutput.Holdings do
+                let current = __.GetHolding (other.Key)
+                let accountHash, equityID = other.Key
+                __.SetHolding (accountHash, equityID, { current with Nonce = other.Value.Nonce })
+
+        member __.GetChxBalance (address : ChainiumAddress) : ChxBalanceState =
             chxBalances.GetOrAdd(address, getChxBalanceState)
 
-        member __.GetHolding (accountHash : AccountHash, equityID : EquityID) =
+        member __.GetHolding (accountHash : AccountHash, equityID : EquityID) : HoldingState =
             holdings.GetOrAdd((accountHash, equityID), getHoldingState)
 
         member __.GetAccountController (accountHash : AccountHash) =
@@ -93,7 +103,7 @@ module Processing =
         let toState = state.GetChxBalance(action.RecipientAddress)
 
         if fromState.Amount < action.Amount then
-            Error [AppError "CHX balance too low."]
+            Error [AppError "Insufficient CHX balance."]
         else
             state.SetChxBalance(
                 senderAddress,
@@ -118,7 +128,7 @@ module Processing =
             let toState = state.GetHolding(action.ToAccountHash, action.EquityID)
 
             if fromState.Amount < action.Amount then
-                Error [AppError "Holding balance too low."]
+                Error [AppError "Insufficient equity holding balance."]
             else
                 state.SetHolding(
                     action.FromAccountHash,
@@ -292,6 +302,7 @@ module Processing =
             match processingResult with
             | Error errors ->
                 oldState.SetTxStatus(txHash, Failure errors)
+                oldState.MergeNonces(newState)
                 oldState
             | Ok _ ->
                 newState.SetTxStatus(txHash, Success)

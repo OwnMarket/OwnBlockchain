@@ -155,6 +155,148 @@ module ProcessingTests =
         test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
+    [<Fact>]
+    let ``Processing.processTxSet ChxTransfer with insufficient balance`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet None
+        let recipientWallet = Signing.generateWallet None
+        let validatorWallet = Signing.generateWallet None
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 10M; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let amountToTransfer = ChxAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "ChxTransfer"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                validatorWallet.Address
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient CHX balance."] @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+    [<Fact>]
+    let ``Processing.processTxSet ChxTransfer with insufficient balance to cover fee`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet None
+        let recipientWallet = Signing.generateWallet None
+        let validatorWallet = Signing.generateWallet None
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 9.5M; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let amountToTransfer = ChxAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "ChxTransfer"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                validatorWallet.Address
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient CHX balance."] @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquityTransfer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
