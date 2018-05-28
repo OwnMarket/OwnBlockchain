@@ -24,9 +24,7 @@ module DbTools =
     let private dbParameter (name : string, value : obj) =
          SqliteParameter(name, value)
         :> DbParameter
-        
-
-
+       
     let execute (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : int =
         use conn = newConnection(dbConnectionString)
         try
@@ -44,58 +42,17 @@ module DbTools =
         finally
             conn.Close()
 
-    type private DbParams () =
-        let parameters = System.Collections.Generic.List<IDbDataParameter>()
-
-        interface System.Collections.Generic.IEnumerable<IDbDataParameter> with
-            member this.GetEnumerator () 
-                : System.Collections.Generic.IEnumerator<IDbDataParameter> 
-                =
-                    parameters.GetEnumerator() 
-                    :> System.Collections.Generic.IEnumerator<IDbDataParameter>
-            
-            member this.GetEnumerator () 
-                : System.Collections.IEnumerator 
-                =
-                    parameters.GetEnumerator()
-                    :> System.Collections.IEnumerator
-        
-
-
-        interface SqlMapper.IDynamicParameters with 
-            member this.AddParameters 
-                (
-                    (command  : IDbCommand),
-                    (identity : SqlMapper.Identity)
-                )
-                : unit
-                =
-                    for p in parameters do
-                        command.Parameters.Add p
-
-                        |> ignore
-        
-
-        member this.Add value =
-            parameters.Add(value)
-
-
-
     let query<'T> (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : 'T list =
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores <- true
         use conn = newConnection(dbConnectionString)
         try
-            let dbParams = DbParams()
-            let addSqlParam = 
-                fun (name, value) -> 
-                    dbParameter(name, value)
-                    |> dbParams.Add 
-
-            parameters
-            |> Seq.iter addSqlParam
 
             conn.Open()
-            conn.Query<'T>(sql, dbParams)
+
+            if parameters |> Seq.isEmpty then
+                conn.Query<'T>(sql)
+            else 
+                conn.Query<'T>(sql, dict parameters)
             |> List.ofSeq
         finally
             conn.Close()

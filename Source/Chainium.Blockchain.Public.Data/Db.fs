@@ -61,7 +61,7 @@ module Db =
             SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
             FROM tx
             WHERE status = 0
-            --AND tx_hash NOT IN (@txsToSkip)
+            AND tx_hash NOT IN @txsToSkip
             ORDER BY fee DESC, tx_id
             LIMIT @txCountToFetch
             """
@@ -79,21 +79,33 @@ module Db =
 
         DbTools.query dbConnectionString sql sqlParams
 
-    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option =
-        (*
-        Get block number from DB table, which should contain a single record.
-        This is to enable atomic commit of new state together with an update of the last block number
-        *)
+    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option
+        =
+        let sql =
+            """
+            SELECT block_timestamp
+            FROM block
+            ORDER BY block_id DESC
+            LIMIT 1
+            """
 
-        failwith "TODO: getLastBlockNumber"
+        DbTools.query<BlockInfoDto> dbConnectionString sql []
+        |> List.tryHead
+        |> Option.map (fun item -> Timestamp item.BlockTimestamp)
 
     let getLastBlockNumber (dbConnectionString : string) : BlockNumber option =
-        (*
-        Get block number from DB table, which should contain a single record.
-        This is to enable atomic commit of new state together with an update of the last block number
-        *)
+        let sql =
+            """
+            SELECT block_number
+            FROM block
+            ORDER BY block_id DESC
+            LIMIT 1
+            """
 
-        failwith "TODO: getLastBlockNumber"
+        DbTools.query<BlockInfoDto> dbConnectionString sql []
+        |> List.tryHead
+        |> Option.map (fun item -> BlockNumber item.BlockNumber)
+
 
     let applyNewState (dbConnectionString : string) state =
         (*
@@ -105,10 +117,60 @@ module Db =
         failwith "TODO: applyNewState"
 
     let getChxBalanceState (dbConnectionString : string) address =
-        failwith "TODO: getChxBalanceState"
+        let sql =
+            """
+            SELECT amount, nonce
+            FROM chx_balance
+            WHERE chainium_address = @address
+            """
+
+        let sqlParams =
+            [
+                "@address", address |> box
+            ]
+
+        match DbTools.query<ChxBalanceStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [chxAddressDetails] -> Some chxAddressDetails
+        | _ -> failwith "More than one Chx Address exists"
 
     let getHoldingState (dbConnectionString : string) (accountHash, equityID) =
-        failwith "TODO: getHoldingState"
+        let sql =
+            """
+            SELECT h.amount, h.nonce
+            FROM holding h
+            JOIN account a
+            USING (account_id)
+            WHERE a.account_hash = @accountHash
+            AND h.asset = @equityId  
+            """
 
-    let getAccountController (dbConnectionString : string) accountHash =
-        failwith "TODO: getAccountController"
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+                "@equityId", equityID |> box
+            ]
+
+        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [holdingDetails] -> Some holdingDetails
+        | _ -> failwith "More than one Holding exists"
+
+    let getAccountController (dbConnectionString : string) accountHash : ChainiumAddress option =
+        let sql =
+            """
+            SELECT chainium_address
+            FROM account
+            WHERE account_hash = @accountHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+            ]
+
+        match DbTools.query<AccountControllerDto> dbConnectionString sql sqlParams with
+        | [] -> None 
+        | [accountDetails] -> accountDetails.ChainiumAddress |> ChainiumAddress |> Some
+        | _ -> failwith "More than one Controller exists"
+        
