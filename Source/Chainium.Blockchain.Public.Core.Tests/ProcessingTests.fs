@@ -144,15 +144,9 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance =
-            initialChxState.[senderWallet.Address]
-            |> fun state -> state.Amount - amountToTransfer - fee
-        let recipientChxBalance =
-            initialChxState.[recipientWallet.Address]
-            |> fun state -> state.Amount + amountToTransfer
-        let validatorChxBalance =
-            initialChxState.[validatorWallet.Address]
-            |> fun state -> state.Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - fee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Success @>
@@ -235,18 +229,10 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance =
-            initialChxState.[senderWallet.Address]
-            |> fun state -> state.Amount - fee
-        let validatorChxBalance =
-            initialChxState.[validatorWallet.Address]
-            |> fun state -> state.Amount + fee
-        let senderEquityBalance =
-            initialHoldingState.[senderAccountHash, equityID]
-            |> fun state -> state.Amount - amountToTransfer
-        let recipientEquityBalance =
-            initialHoldingState.[recipientAccountHash, equityID]
-            |> fun state -> state.Amount + amountToTransfer
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderEquityBalance = initialHoldingState.[senderAccountHash, equityID].Amount - amountToTransfer
+        let recipientEquityBalance = initialHoldingState.[recipientAccountHash, equityID].Amount + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash] = Success @>
