@@ -4,6 +4,7 @@ open System
 open System.Text
 open Chainium.Common
 open Chainium.Blockchain.Common
+open Chainium.Blockchain.Common.Conversion
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 open Newtonsoft.Json
@@ -11,11 +12,6 @@ open Newtonsoft.Json.Converters
 open Newtonsoft.Json.Linq
 
 module Serialization =
-    let stringToBytes (str : string) =
-        Encoding.UTF8.GetBytes(str)
-
-    let bytesToString (bytes : byte[]) =
-        Encoding.UTF8.GetString(bytes)
 
     let objToString (data : obj) =
         match data with

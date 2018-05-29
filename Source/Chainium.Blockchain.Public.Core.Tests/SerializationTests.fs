@@ -87,7 +87,7 @@ module SerializationTests=
 
         let result =
             json
-            |> Serialization.stringToBytes
+            |> Conversion.stringToBytes
             |> Serialization.deserializeTx
 
         match result with
@@ -145,7 +145,7 @@ module SerializationTests=
 
         let result =
             json
-            |> Serialization.stringToBytes
+            |> Conversion.stringToBytes
             |> Serialization.deserializeTx
 
         match result with
@@ -196,7 +196,7 @@ module SerializationTests=
 
         let result =
             json
-            |> Serialization.stringToBytes
+            |> Conversion.stringToBytes
             |> Serialization.deserializeTx
 
         match result with
