@@ -34,7 +34,7 @@ module SigningTests =
         let seed =
             Signing.generateRandomSeed ()
 
-        let numOfReps = 1000
+        let numOfReps = 100
 
         let distinctPairs =
             [1 .. numOfReps]
@@ -45,7 +45,7 @@ module SigningTests =
 
     [<Fact>]
     let ``Signing.generateWallet without using seed`` () =
-        let numOfReps = 1000
+        let numOfReps = 100
 
         let walletInfoPairs =
             [1 .. numOfReps]
@@ -113,5 +113,5 @@ module SigningTests =
 
             test <@ address = expectedAddress @>
 
-        [33 .. 230]
+        [1 .. 100]
         |> List.map generateRandomMessageAndTest

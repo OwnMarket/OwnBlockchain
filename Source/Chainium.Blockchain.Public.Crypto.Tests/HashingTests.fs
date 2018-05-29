@@ -17,7 +17,7 @@ module HashingTests =
         let message = getBytes "Chainium"
 
         let hashes =
-            [1 .. 10000]
+            [1 .. 1000]
             |> List.map (fun _ -> Hashing.hash message)
             |> List.distinct
 
@@ -26,7 +26,7 @@ module HashingTests =
     [<Fact>]
     let ``Hashing.hash calculates different hash for different input`` () =
         let message = "Chainium"
-        let hashCount = 10000
+        let hashCount = 1000
 
         let allHashes =
             [1 .. hashCount]
@@ -42,7 +42,7 @@ module HashingTests =
     [<Fact>]
     let ``Hashing.createChainiumAddress calculates same hash not longer than 26 bytes for same input`` () =
         let message = getBytes "Chainium"
-        let hashCount = 10000
+        let hashCount = 1000
         let hashes =
             [1 .. hashCount]
             |> List.map (fun _ ->
@@ -58,8 +58,8 @@ module HashingTests =
         test <@ longerThan26Bytes.Length = 0 @>
 
     [<Fact>]
-        let hashCount = 10000
     let ``Hashing.createChainiumAddress calculates different hash not longer than 26 bytes for different input`` () =
+        let hashCount = 1000
         let hashes =
             [1 .. hashCount]
             |> List.map (fun i ->
