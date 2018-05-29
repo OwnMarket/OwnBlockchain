@@ -21,7 +21,7 @@ tar -zcvf $PUBLISH_DIRECTORY/$PACKAGE_NAME.tar.gz $PUBLISH_DIRECTORY/*
 
 if `command -v zip >/dev/null`
 then
-	find $PUBLISH_DIRECTORY ! -name "*.tar.gz" | zip $PUBLISH_DIRECTORY/$PACKAGE_NAME.zip -@
+	find $PUBLISH_DIRECTORY/* ! -name "*.tar.gz" | zip $PUBLISH_DIRECTORY/$PACKAGE_NAME.zip -@
 else
 	echo "Zip is not installed. Unable to create zip archive."
 fi

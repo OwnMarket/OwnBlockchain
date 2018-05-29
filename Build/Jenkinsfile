@@ -74,18 +74,44 @@ pipeline {
   post {
         success {
 			archiveArtifacts artifacts: "$PUBLISH_DIR/*.tar.gz,$PUBLISH_DIR/*.zip", fingerprint: true
-            slackSend color: "good", message: "Completed: ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+			sendSlackMessage("Completed","good")
         }
         failure {
-           slackSend color: "danger", message: "Failed: ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+           sendSlackMessage("Failed","danger")
         }
         unstable {
-            slackSend color: "warning", message: "Unstable: ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+			sendSlackMessage("Unstable","warning")
         }
         changed {
             slackSend color: "good", message: "${env.JOB_NAME}  has changed status. More info at: (<${env.BUILD_URL}|Open>)"
         }
 
     }
+	
+	@NonCPS
+	def getChangeString() {
+		MAX_MSG_LEN = 100
+		def changeString = ""
+
+		echo "Gathering SCM changes"
+		def changeLogSets = currentBuild.changeSets
+		for (int i = 0; i < changeLogSets.size(); i++) {
+			def entries = changeLogSets[i].items
+			for (int j = 0; j < entries.length; j++) {
+			def entry = entries[j]
+			truncated_msg = entry.msg.take(MAX_MSG_LEN)
+		changeString += " - ${truncated_msg} [${entry.author}]\n"
+		}
+		}
+
+		if (!changeString) {
+			changeString = " - No new changes"
+		}
+		return changeString
+	}
+	
+	def sendSlackMessage(status,color){
+		slackSend color: color, message: status+ ": ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nChanges:"+getChangeString()
+	}
 
 }
