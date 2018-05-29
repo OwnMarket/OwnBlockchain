@@ -15,16 +15,16 @@ module DbTools =
 
     let private newCommand (sql : string) (conn : DbConnection) : DbCommand =
         match conn with
-        | :? SqliteConnection as sqlliteconn -> 
+        | :? SqliteConnection as sqlliteconn ->
             new SqliteCommand(sql, sqlliteconn)
             :> DbCommand
 
-        | _ -> failwith "Unknon connection type"
-    
+        | _ -> failwith "Unknown connection type"
+
     let private dbParameter (name : string, value : obj) =
          SqliteParameter(name, value)
         :> DbParameter
-       
+
     let execute (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : int =
         use conn = newConnection(dbConnectionString)
         try
@@ -35,7 +35,7 @@ module DbTools =
             for p in parameters do
                 let queryParam = sqlParam p
                 cmd.Parameters.Add queryParam
-                |> ignore          
+                |> ignore
 
             conn.Open()
             cmd.ExecuteNonQuery()
@@ -51,7 +51,7 @@ module DbTools =
 
             if parameters |> Seq.isEmpty then
                 conn.Query<'T>(sql)
-            else 
+            else
                 conn.Query<'T>(sql, dict parameters)
             |> List.ofSeq
         finally
