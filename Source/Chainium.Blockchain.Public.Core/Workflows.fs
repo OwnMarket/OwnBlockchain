@@ -2,6 +2,7 @@
 
 open System
 open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Events
@@ -31,7 +32,9 @@ module Workflows =
         getAccountControllerFromStorage
         getLastBlockNumber
         getBlock
+        decodeHash
         createHash
+        createMerkleTree
         saveBlock
         applyNewState
         maxTxCountPerBlock
@@ -47,9 +50,12 @@ module Workflows =
         | [] -> None // Nothing to process.
         | txSet ->
             result {
-                let output =
+                let txSet =
                     txSet
                     |> Processing.orderTxSet
+
+                let output =
+                    txSet
                     |> Processing.processTxSet
                         getTx
                         verifySignature
@@ -64,7 +70,18 @@ module Workflows =
                     |> getBlock
                 let previousBlock = Mapping.blockFromDto previousBlockDto
                 let blockNumber = previousBlock.Header.Number |> fun (BlockNumber n) -> BlockNumber (n + 1L)
-                let block = Blocks.assembleBlock createHash blockNumber previousBlock.Header.Hash txSet output
+                let timestamp = Utils.getUnixTimestamp () |> Timestamp
+                let block =
+                    Blocks.assembleBlock
+                        decodeHash
+                        createHash
+                        createMerkleTree
+                        validatorAddress
+                        blockNumber
+                        timestamp
+                        previousBlock.Header.Hash
+                        txSet
+                        output
 
                 do! block |> Mapping.blockToDto |> saveBlock
                 do! applyNewState block.Header.Number output

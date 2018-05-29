@@ -49,7 +49,9 @@ module Composition =
             getAccountController
             getLastBlockNumber
             getBlock
+            Hashing.decode
             Hashing.hash
+            Hashing.merkleTree
             saveBlock
             applyNewState
             Config.MaxTxCountPerBlock

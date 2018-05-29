@@ -61,6 +61,14 @@ module Mapping =
             AppearanceOrder = dto.AppearanceOrder
         }
 
+    let txStatusToCode txStatus : byte =
+        match txStatus with
+        | Pending -> 0uy
+        | Processed processedStatus ->
+            match processedStatus with
+            | Success -> 1uy
+            | Failure _ -> 2uy
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,10 +119,22 @@ module Mapping =
             Nonce = Nonce dto.Nonce
         }
 
+    let chxBalanceStateToDto (state : ChxBalanceState) : ChxBalanceStateDto =
+        {
+            Amount = state.Amount |> (fun (ChxAmount a) -> a)
+            Nonce = state.Nonce |> (fun (Nonce n) -> n)
+        }
+
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
         {
             Amount = EquityAmount dto.Amount
             Nonce = Nonce dto.Nonce
+        }
+
+    let holdingStateToDto (state : HoldingState) : HoldingStateDto =
+        {
+            Amount = state.Amount |> (fun (EquityAmount a) -> a)
+            Nonce = state.Nonce |> (fun (Nonce n) -> n)
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
