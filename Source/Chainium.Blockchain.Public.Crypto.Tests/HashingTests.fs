@@ -40,7 +40,7 @@ module HashingTests =
         test <@ distinctHashes.Length = allHashes.Length @>
 
     [<Fact>]
-    let ``Hashing.createChainiumAddress calculates same hash not longer than 24 bytes for same input`` () =
+    let ``Hashing.createChainiumAddress calculates same hash not longer than 26 bytes for same input`` () =
         let message = getBytes "Chainium"
         let hashCount = 10000
         let hashes =
@@ -52,14 +52,14 @@ module HashingTests =
             |> List.distinct
         test <@ hashes.Length = 1 @>
 
-        let longerThan24Bytes =
+        let longerThan26Bytes =
             hashes
-            |> List.where(fun a -> a.Length <> 24)
-        test <@ longerThan24Bytes.Length = 0 @>
+            |> List.where(fun a -> a.Length <> 26)
+        test <@ longerThan26Bytes.Length = 0 @>
 
     [<Fact>]
-    let ``Hashing.createChainiumAddress calculates different hash not longer than 24 bytes for different input`` () =
         let hashCount = 10000
+    let ``Hashing.createChainiumAddress calculates different hash not longer than 26 bytes for different input`` () =
         let hashes =
             [1 .. hashCount]
             |> List.map (fun i ->
@@ -71,10 +71,10 @@ module HashingTests =
             |> List.distinct
         test <@ hashes.Length = hashCount @>
 
-        let longerThan24Bytes =
+        let longerThan26Bytes =
             hashes
-            |> List.where(fun a -> a.Length <> 24)
-        test <@ longerThan24Bytes.Length = 0 @>
+            |> List.where(fun a -> a.Length <> 26)
+        test <@ longerThan26Bytes.Length = 0 @>
 
     [<Fact>]
     let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` ()=

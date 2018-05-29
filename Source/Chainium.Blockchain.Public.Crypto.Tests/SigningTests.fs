@@ -55,6 +55,12 @@ module SigningTests =
         test <@ walletInfoPairs.Length = numOfReps @>
 
     [<Fact>]
+    let ``Signing.generateWallet produces address starting with "CH"`` () =
+        for _ in [1 .. 100] do
+            let (ChainiumAddress address) = (Signing.generateWallet None).Address
+            test <@ address.StartsWith("CH") @>
+
+    [<Fact>]
     let ``Signing.signMessage same message for multiple users`` () =
         let numOfReps = 100
         let messageToSign = Encoding.UTF8.GetBytes "Chainium"
@@ -97,7 +103,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.verifyMessage sign, verify random generated longer messages`` () =
         let privateKey = PrivateKey "9DeKWSbveJnzgawry3SG6uby3xE1s26UR4X5uXwdG8WT"
-        let expectedAddress = Some (ChainiumAddress "CH8MezjJQbTsy5pyTiNxZRirzMgvwVVGu4a")
+        let expectedAddress = Some (ChainiumAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG")
 
         let generateRandomMessageAndTest messageSize =
             let message = Signing.generateRandomBytes messageSize

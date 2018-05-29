@@ -33,7 +33,7 @@ module Hashing =
         |> encode
 
     let chainiumAddress (publicKey : byte[]) =
-        let prefix = "CH"
+        let prefix = [| 6uy; 90uy |] // "CH"
 
         let hash =
             publicKey
@@ -46,10 +46,9 @@ module Hashing =
             |> sha256
             |> Array.take 4
 
-        [hash; checksum]
+        [prefix; hash; checksum]
         |> Array.concat
         |> encode
-        |> sprintf "%s%s" prefix
         |> ChainiumAddress
 
     let merkleTree (hashes : string list) =
