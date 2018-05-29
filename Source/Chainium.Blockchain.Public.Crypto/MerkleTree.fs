@@ -1,6 +1,7 @@
 ﻿namespace Chainium.Blockchain.Public.Crypto
 
 module MerkleTree =
+
     type private MerkleNode =
         {
             mutable Parent : MerkleNode option
@@ -9,6 +10,15 @@ module MerkleTree =
             Right : MerkleNode option
         }
 
+    type MerkleProofSegment =
+        | LeftHash of byte[]
+        | RightHash of byte[]
+
+    type MerkleProof = MerkleProofSegment list
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Build
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let private nodehash x =
         match x with
@@ -141,13 +151,9 @@ module MerkleTree =
 
         Option.bind (fun n -> searchSubTree(n)) node
 
-
-    type MerkleProofSegment =
-        | LeftHash of byte[]
-        | RightHash of byte[]
-
-    type MerkleProof = MerkleProofSegment list
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Proof
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let rec private merkleProof node segments hash =
         let otherSubtreeHash parent =
