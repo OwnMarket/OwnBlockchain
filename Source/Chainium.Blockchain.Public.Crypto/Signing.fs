@@ -10,7 +10,6 @@ open Org.BouncyCastle.Math
 open Org.BouncyCastle.Crypto.Digests
 open Org.BouncyCastle.Crypto.Signers
 open Org.BouncyCastle.Math.EC
-open Multiformats.Base
 open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 
@@ -173,7 +172,7 @@ module Signing =
             PrivateKey =
                 keyPair
                 |> fst
-                |> Multibase.Base58.Encode
+                |> Hashing.encode
                 |> PrivateKey
             Address =
                 keyPair
@@ -184,7 +183,7 @@ module Signing =
     let signMessage (PrivateKey privateKey) (message : byte[]) : Signature =
         let privateKey =
             privateKey
-            |> Multibase.Base58.Decode
+            |> Hashing.decode
             |> BigInteger
 
         let messageHash = Hashing.hashBytes message
@@ -194,29 +193,29 @@ module Signing =
         let vComponent =
             calculateVComponent publicKey messageHash signature
             |> (fun v -> [| byte v |])
-            |> Multibase.Base58.Encode
+            |> Hashing.encode
 
         {
             V = vComponent
-            R = signature.[0].ToByteArray() |> Multibase.Base58.Encode
-            S = signature.[1].ToByteArray() |> Multibase.Base58.Encode
+            R = signature.[0].ToByteArray() |> Hashing.encode
+            S = signature.[1].ToByteArray() |> Hashing.encode
         }
 
     let verifySignature (signature : Signature) (message : byte[]) : ChainiumAddress option =
         let vComponent =
             signature.V
-            |> Multibase.Base58.Decode
+            |> Hashing.decode
             |> (fun arr -> arr.[0])
             |> int
 
         let rComponent =
             signature.R
-            |> Multibase.Base58.Decode
+            |> Hashing.decode
             |> BigInteger
 
         let sComponent =
             signature.S
-            |> Multibase.Base58.Decode
+            |> Hashing.decode
             |> BigInteger
 
         let messageHash = Hashing.hashBytes message

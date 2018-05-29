@@ -4,7 +4,6 @@ open System
 open System.Text
 open Xunit
 open Swensen.Unquote
-open Multiformats.Base
 open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
@@ -48,7 +47,7 @@ module HashingTests =
             [1 .. hashCount]
             |> List.map (fun _ ->
                 Hashing.chainiumAddress message
-                |> fun (ChainiumAddress a) -> a.Substring(2) |> Multibase.Base58.Decode
+                |> fun (ChainiumAddress a) -> Hashing.decode a
             )
             |> List.distinct
         test <@ hashes.Length = 1 @>
@@ -67,7 +66,7 @@ module HashingTests =
                 sprintf "Chainium %i" i
                 |> getBytes
                 |> Hashing.chainiumAddress
-                |> fun (ChainiumAddress a) -> a.Substring(2) |> Multibase.Base58.Decode
+                |> fun (ChainiumAddress a) -> Hashing.decode a
             )
             |> List.distinct
         test <@ hashes.Length = hashCount @>
@@ -84,7 +83,7 @@ module HashingTests =
                 for i in 1 .. 100 ->
                     sprintf "%i" i
                         |> Encoding.UTF8.GetBytes
-                        |> Multibase.Base58.Encode
+                        |> Hashing.encode
             ]
 
         let roots =
@@ -99,6 +98,6 @@ module HashingTests =
 
         let bytes =
             roots.Head
-            |> Multibase.Base58.Decode
+            |> Hashing.decode
 
         test <@ bytes.Length = 32 @>
