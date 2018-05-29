@@ -2,17 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="../AssemblyInfo.fs" />
     <Compile Include="ApiTests.fs" />
     <Compile Include="Program.fs" />
+    <Content Include="AppSettings.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="AppSettings.json" />
+    <ProjectReference Include="..\Chainium.Blockchain.Public.Node\Chainium.Blockchain.Public.Node.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,10 +25,6 @@
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Node\Chainium.Blockchain.Public.Node.fsproj" />
   </ItemGroup>
 
 </Project>

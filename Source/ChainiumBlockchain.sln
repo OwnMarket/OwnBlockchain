@@ -31,6 +31,8 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.
 EndProject
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.Crypto.Tests", "Chainium.Blockchain.Public.Crypto.Tests\Chainium.Blockchain.Public.Crypto.Tests.fsproj", "{C4E8E947-93AD-40BA-A08E-DB281212146A}"
 EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.IntegrationTests", "Chainium.Blockchain.Public.IntegrationTests\Chainium.Blockchain.Public.IntegrationTests.fsproj", "{A655D1F6-0BA7-4843-8D64-54A4CC42F8AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{C4E8E947-93AD-40BA-A08E-DB281212146A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4E8E947-93AD-40BA-A08E-DB281212146A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4E8E947-93AD-40BA-A08E-DB281212146A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A655D1F6-0BA7-4843-8D64-54A4CC42F8AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A655D1F6-0BA7-4843-8D64-54A4CC42F8AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A655D1F6-0BA7-4843-8D64-54A4CC42F8AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A655D1F6-0BA7-4843-8D64-54A4CC42F8AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{09FEAE5D-825C-4066-8068-6F8A4BA1ED09} = {B21B8E5B-35AE-4845-9CF8-9432222B025A}
@@ -89,5 +95,6 @@ Global
 		{6016F6E7-7760-422B-8AED-3E346B38DAA0} = {BC5EB361-3612-4183-A6EA-38F1B68D810C}
 		{390F1174-A42A-439A-8EF3-9B50C9E46B1D} = {214B2395-B936-4A78-8D95-0A96DF46B4C5}
 		{C4E8E947-93AD-40BA-A08E-DB281212146A} = {214B2395-B936-4A78-8D95-0A96DF46B4C5}
+		{A655D1F6-0BA7-4843-8D64-54A4CC42F8AF} = {214B2395-B936-4A78-8D95-0A96DF46B4C5}
 	EndGlobalSection
 EndGlobal
