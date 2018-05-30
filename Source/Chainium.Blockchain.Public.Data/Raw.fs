@@ -72,4 +72,24 @@ module Raw =
         saveData dataDir Block (string blockDto.Header.Number) blockDto
 
     let getBlock (dataDir : string) (BlockNumber blockNumber) : Result<BlockDto, AppErrors> =
-        loadData<BlockDto> dataDir Block (string blockNumber)
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // TODO: Store genesis block during initalization and remove this dummy
+        if blockNumber = 0L then
+            let header = {
+                Number = 0L
+                Hash = "0"
+                PreviousHash = "0"
+                Timestamp = 0L
+                Validator = "0"
+                TxSetRoot = "0"
+                TxResultSetRoot = "0"
+                StateRoot = "0"
+            }
+
+            Ok {
+                Header = header
+                TxSet = []
+            }
+        else
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+            loadData<BlockDto> dataDir Block (string blockNumber)
