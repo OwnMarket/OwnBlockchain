@@ -203,9 +203,9 @@ module MerkleTree =
 
     let verifyProof
         hashFunc
+        merkleRoot
         leafHash
         proof
-        merkleRoot
         =
 
         let hashFromSegment hash segment =

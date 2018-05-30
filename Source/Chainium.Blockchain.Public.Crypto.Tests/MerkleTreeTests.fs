@@ -86,7 +86,7 @@ module MerkleTreeTests =
                 RightHash [| byte(3); byte(4) |]
             ]
         
-        let isVerified = MerkleTree.verifyProof hashFunc record proof root
+        let isVerified = MerkleTree.verifyProof hashFunc root record proof
 
         test <@ isVerified @>
 
@@ -100,7 +100,7 @@ module MerkleTreeTests =
                 RightHash [| byte(3); byte(4) |]
             ]
         
-        let isVerified = MerkleTree.verifyProof hashFunc record proof root
+        let isVerified = MerkleTree.verifyProof hashFunc root record proof
 
         test <@ isVerified = false @>
 
@@ -143,7 +143,7 @@ module MerkleTreeTests =
                 |]
             ]
 
-        let expectedroot = 
+        let expectedRoot =
             concatAndHash
                 (
                     concatAndHash leafs.[0] leafs.[1]
@@ -155,7 +155,7 @@ module MerkleTreeTests =
             
 
         let actualroot = MerkleTree.build shaHash leafs
-        test <@ actualroot = expectedroot @>
+        test <@ actualroot = expectedRoot @>
 
         let record = leafs.[1]
         let expectedProof =
@@ -172,7 +172,7 @@ module MerkleTreeTests =
         let actualProof = MerkleTree.calculateProof shaHash leafs record
         test <@ actualProof = expectedProof @>
 
-        let isVerified = MerkleTree.verifyProof shaHash record expectedProof expectedroot
+        let isVerified = MerkleTree.verifyProof shaHash expectedRoot record expectedProof
         test <@ isVerified @>
 
         let nonExistingHash = Array.zeroCreate 32
