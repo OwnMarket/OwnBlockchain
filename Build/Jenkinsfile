@@ -1,6 +1,11 @@
 #!/usr/bin/env groovy
 pipeline {
   agent any
+  parameters {
+        string(name: 'MAJOR_NUMBER', defaultValue: '0', description: 'Major number for this build')
+		string(name: 'MINOR_NUMBER', defaultValue: '1', description: 'Minor number for this build')
+		string(name: 'BUILD', defaultValue: '0', description: '')
+    }
   stages {
     stage('Build') {
       steps {

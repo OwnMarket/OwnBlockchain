@@ -7,13 +7,17 @@
 
   <ItemGroup>
     <Compile Include="../AssemblyInfo.fs" />
-    <Compile Include="ApiTests.fs" />
+    <Compile Include="Helper.fs" />
+    <Compile Include="NodeTests.fs" />
     <Compile Include="Program.fs" />
-    <Content Include="AppSettings.json" />
+    <Content Include="AppSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Chainium.Blockchain.Public.Node\Chainium.Blockchain.Public.Node.fsproj" />
+    <ProjectReference Include="..\Chainium.Blockchain.Public.Wallet\Chainium.Blockchain.Public.Wallet.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
