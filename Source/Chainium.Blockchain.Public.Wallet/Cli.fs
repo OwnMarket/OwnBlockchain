@@ -36,7 +36,6 @@ module Cli =
         |> (fun { V = v; R = r; S = s } -> printfn "V: %s\nR: %s\nS: %s" v r s )
 
     let handleHelpCommand args =
-        // TODO: Show help
         printfn "TODO: Print short command reference"
 
 

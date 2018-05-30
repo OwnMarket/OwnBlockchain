@@ -21,6 +21,8 @@ module Composition =
 
     // DB
 
+    let initDb () = DbInit.init Config.DbEngineType Config.DbConnectionString
+
     let getPendingTxs = Db.getPendingTxs Config.DbConnectionString
 
     let getLastBlockTimestamp () = Db.getLastBlockTimestamp Config.DbConnectionString
