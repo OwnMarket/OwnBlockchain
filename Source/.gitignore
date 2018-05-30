@@ -1,6 +1,12 @@
-.vs
+# Tools
+**/.idea
+**/.vs
+*.user
+
+# SQLite
 *.db
 
+# Binaries
 package
 bin
 obj
