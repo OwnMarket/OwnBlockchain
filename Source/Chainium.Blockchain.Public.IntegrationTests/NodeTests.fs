@@ -19,31 +19,32 @@ module NodeTests =
 
     let addressToString (ChainiumAddress a) = a
 
-    let private transactionData = 
-        receiverWallet.Address
-        |> addressToString
-        |> sprintf 
-            """
-            {
-                Nonce: 1,
-                Fee: 1,
-                Actions: [
-                {
-                        ActionType: "ChxTransfer",
-                        ActionData: {
-                            RecipientAddress: "%s",
-                            Amount: 10
+    let transactionDto = 
+        {
+            Nonce = 1L
+            Fee = 1M
+            Actions = 
+                [
+                    {
+                        ActionType = "ChxTransfer"
+                        ActionData = 
+                            {
+                                RecipientAddress = (addressToString receiverWallet.Address)
+                                ChxTransferTxActionDto.Amount = 10M
+                            }
                         }
-                }
-                ]
-            }
-            """
+                    ]
+         }
+
+    let private transactionAsString = 
+        transactionDto
+        |> JsonConvert.SerializeObject
         |> Encoding.UTF8.GetBytes
 
     let private expectedTx = 
-        let signature = Signing.signMessage senderWallet.PrivateKey transactionData
+        let signature = Signing.signMessage senderWallet.PrivateKey transactionAsString
         {
-            Tx = System.Convert.ToBase64String(transactionData)
+            Tx = System.Convert.ToBase64String(transactionAsString)
             V = signature.V
             S = signature.S
             R = signature.R
@@ -70,7 +71,7 @@ module NodeTests =
         let testServer = Helper.testServer()
         let client = testServer.CreateClient()
         Helper.dataFolderCleanup()
-
+        DbInit.init Config.DbEngineType Config.DbConnectionString
 
         let txHash = submitTransaction expectedTx client 
         let fileName = sprintf "Tx_%s" txHash.TxHash
@@ -84,6 +85,28 @@ module NodeTests =
                 |> JsonConvert.DeserializeObject<TxEnvelopeDto>
 
         test <@ expectedTx = savedData @>
+
+        let selectStatement = 
+            """
+            select * from tx
+            """
+
+        let transactions = DbTools.query<TxInfoDto> Config.DbConnectionString selectStatement []
+
+        test <@ transactions.Length = 1 @>
+
+        let actual = 
+            transactions
+            |> List.tryHead
+        
+        match actual with
+        | None -> failwith "Transaction is not stored into database"
+        | Some txInfo -> 
+            test <@ txHash.TxHash = txInfo.TxHash @>
+            test <@ transactionDto.Fee = txInfo.Fee @>
+            test <@ transactionDto.Nonce = txInfo.Nonce @>
+            test <@ txInfo.Status = byte(0) @>
+            test <@ txInfo.SenderAddress = (addressToString senderWallet.Address) @>
 
     let private insertBalance address (balance : decimal) =
         let insertSQL =
@@ -110,29 +133,5 @@ module NodeTests =
         Helper.dataFolderCleanup()
 
         let txHash = submitTransaction expectedTx client
-
-        Helper.databaseInit()
-        insertBalance senderWallet.Address 100m
-        insertBalance receiverWallet.Address 100m
-
-        let trans = 
-            {
-                BlockNumber = 1L
-                SenderAddress = addressToString senderWallet.Address
-                Nonce = 1L
-                Fee = 1M
-                Status = int16 0 
-                TxHash = txHash.TxHash
-            }
-
-        match Db.saveTx Config.DbConnectionString trans with
-        | Ok r -> ()
-        | Error errs -> 
-            errs 
-            |> List.fold (fun acc x -> sprintf "%s %A\n " acc x) ""
-            |> failwith
-            
-           
-
         PaceMaker.start()
         System.Threading.Thread.Sleep(10000)

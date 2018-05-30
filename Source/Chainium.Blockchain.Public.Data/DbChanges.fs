@@ -95,7 +95,7 @@ module DbChanges =
                 Script =
                     """
                     CREATE TABLE IF NOT EXISTS db_version (
-                        version_number SERIAL NOT NULL,
+                        version_number INTEGER NOT NULL,
                         execution_timestamp BIGINT NOT NULL,
 
                         CONSTRAINT db_version__pk PRIMARY KEY (version_number)
