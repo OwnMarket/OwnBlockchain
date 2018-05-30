@@ -8,6 +8,7 @@
     <Compile Include="ValidationTests.fs" />
     <Compile Include="SerializationTests.fs" />
     <Compile Include="ProcessingTests.fs" />
+    <Compile Include="BlocksTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
