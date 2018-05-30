@@ -116,7 +116,7 @@ module Db =
 
         failwith "TODO: applyNewState"
 
-    let getChxBalanceState (dbConnectionString : string) address =
+    let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) =
         let sql =
             """
             SELECT amount, nonce
@@ -142,7 +142,7 @@ module Db =
             JOIN account a
             USING (account_id)
             WHERE a.account_hash = @accountHash
-            AND h.asset = @equityId  
+            AND h.asset = @equityId
             """
 
         let sqlParams =
@@ -170,7 +170,6 @@ module Db =
             ]
 
         match DbTools.query<AccountControllerDto> dbConnectionString sql sqlParams with
-        | [] -> None 
+        | [] -> None
         | [accountDetails] -> accountDetails.ChainiumAddress |> ChainiumAddress |> Some
         | _ -> failwith "More than one Controller exists"
-        

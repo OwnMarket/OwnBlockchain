@@ -17,11 +17,11 @@ module Cli =
         |> printfn "%s"
 
     let handleStartNodeCommand () =
+        Composition.initDb ()
         PaceMaker.start ()
         Api.start ()
 
     let handleHelpCommand args =
-        // TODO: Show help
         printfn "TODO: Print short command reference"
 
 

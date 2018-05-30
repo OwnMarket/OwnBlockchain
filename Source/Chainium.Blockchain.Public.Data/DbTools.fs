@@ -1,10 +1,10 @@
 namespace Chainium.Blockchain.Public.Data
 
-open Microsoft.Data.Sqlite
-open System.Data.Common
-open Dapper
-open System.Data
 open System
+open System.Data
+open System.Data.Common
+open Microsoft.Data.Sqlite
+open Dapper
 open Chainium.Common
 
 module DbTools =
@@ -46,7 +46,6 @@ module DbTools =
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores <- true
         use conn = newConnection(dbConnectionString)
         try
-
             conn.Open()
 
             if parameters |> Seq.isEmpty then

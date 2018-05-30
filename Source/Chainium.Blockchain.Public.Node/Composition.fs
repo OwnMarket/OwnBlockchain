@@ -21,6 +21,10 @@ module Composition =
 
     // DB
 
+    let initDb () = DbInit.init Config.DbEngineType Config.DbConnectionString
+
+    let saveTxToDb = Db.saveTx Config.DbConnectionString
+
     let getPendingTxs = Db.getPendingTxs Config.DbConnectionString
 
     let getLastBlockTimestamp () = Db.getLastBlockTimestamp Config.DbConnectionString
@@ -37,7 +41,7 @@ module Composition =
 
     // Workflows
 
-    let submitTx = Workflows.submitTx Signing.verifySignature Hashing.hash saveTx
+    let submitTx = Workflows.submitTx Signing.verifySignature Hashing.hash saveTx saveTxToDb
 
     let createNewBlock () =
         Workflows.createNewBlock

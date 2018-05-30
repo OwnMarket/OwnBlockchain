@@ -138,15 +138,6 @@ type TxStatus =
     | Pending
     | Processed of TxProcessedStatus
 
-type TxInfo = {
-    TxHash : TxHash
-    Sender : ChainiumAddress
-    Nonce : Nonce
-    Fee : ChxAmount
-    Status : TxStatus
-    AppearanceOrder : int64
-}
-
 type PendingTxInfo = {
     TxHash : TxHash
     Sender : ChainiumAddress
@@ -170,6 +161,7 @@ type ProcessingOutput = {
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
     Holdings : Map<AccountHash * EquityID, HoldingState>
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Block

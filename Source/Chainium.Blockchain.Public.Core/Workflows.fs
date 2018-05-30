@@ -9,16 +9,19 @@ open Chainium.Blockchain.Public.Core.Events
 
 module Workflows =
 
-    let submitTx verifySignature createHash saveTx txEnvelopeDto : Result<TxSubmittedEvent, AppErrors> =
+    let submitTx verifySignature createHash saveTx saveTxToDb txEnvelopeDto : Result<TxSubmittedEvent, AppErrors> =
         result {
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
             let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
             let txHash = txEnvelope.RawTx |> createHash |> TxHash
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-            let! _ = Validation.validateTx senderAddress txHash txDto
+            let! tx = Validation.validateTx senderAddress txHash txDto
 
             do! saveTx txHash txEnvelopeDto
+            do! tx
+                |> Mapping.txToTxInfoDto Pending
+                |> saveTxToDb
 
             return { TxHash = txHash }
         }

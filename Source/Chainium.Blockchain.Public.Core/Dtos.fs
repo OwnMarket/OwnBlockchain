@@ -47,8 +47,7 @@ type TxInfoDto = {
     SenderAddress : string
     Nonce : int64
     Fee : decimal
-    Status : int16
-    BlockNumber : int64
+    Status : byte
 }
 
 [<CLIMutable>]
