@@ -17,20 +17,22 @@ module Blocks =
             |> Processed
             |> Mapping.txStatusToCode
 
-        txHash
-        |> decodeHash
-        |> flip Array.append [| txStatusCode |] // Status code after the Tx hash
+        [
+            decodeHash txHash
+            [| txStatusCode |]
+        ]
+        |> Array.concat
         |> createHash
 
     let createChxBalanceStateHash decodeHash createHash (ChainiumAddress address, state : ChxBalanceState) =
         let (ChxAmount amount) = state.Amount
         let (Nonce nonce) = state.Nonce
 
-        [|
+        [
             decodeHash address
             decimalToBytes amount
             int64ToBytes nonce
-        |]
+        ]
         |> Array.concat
         |> createHash
 
@@ -43,12 +45,12 @@ module Blocks =
         let (EquityAmount amount) = state.Amount
         let (Nonce nonce) = state.Nonce
 
-        [|
+        [
             decodeHash accountHash
             Encoding.UTF8.GetBytes equityID
             decimalToBytes amount
             int64ToBytes nonce
-        |]
+        ]
         |> Array.concat
         |> createHash
 
