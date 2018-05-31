@@ -130,13 +130,9 @@ module Signing =
         curve.G.Multiply(privateKey).GetEncoded()
         |> BigInteger
 
-    let private generateKeyPair (seed : byte[] option) =
+    let private generateKeyPair () =
         let gen = ECKeyPairGenerator()
         let secureRandom = SecureRandom()
-
-        match seed with
-        | None -> ()
-        | Some seedValue -> secureRandom.SetSeed seedValue
 
         let keyGenParams = ECKeyGenerationParameters(domain, secureRandom)
 
@@ -155,18 +151,13 @@ module Signing =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let generateRandomBytes byteCount =
-        // TODO: Review
         let bytes = Array.zeroCreate byteCount
         use rngCsp = new RNGCryptoServiceProvider()
         rngCsp.GetBytes(bytes) // Fill the array with a random value.
         bytes
 
-    let generateRandomSeed () =
-        // TODO: Review
-        generateRandomBytes 64
-
-    let generateWallet (seed : byte[] option) : WalletInfo =
-        let keyPair = generateKeyPair seed
+    let generateWallet () : WalletInfo =
+        let keyPair = generateKeyPair ()
 
         {
             PrivateKey =

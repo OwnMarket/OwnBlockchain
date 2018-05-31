@@ -18,8 +18,8 @@ module ProcessingTests =
 
     [<Fact>]
     let ``Processing.excludeUnprocessableTxs excludes txs after nonce gap`` () =
-        let w1 = Signing.generateWallet None
-        let w2 = Signing.generateWallet None
+        let w1 = Signing.generateWallet ()
+        let w2 = Signing.generateWallet ()
 
         let getChxBalanceState =
             let data =
@@ -50,8 +50,8 @@ module ProcessingTests =
 
     [<Fact>]
     let ``Processing.orderTxSet puts txs in correct order`` () =
-        let w1 = Signing.generateWallet None
-        let w2 = Signing.generateWallet None
+        let w1 = Signing.generateWallet ()
+        let w2 = Signing.generateWallet ()
 
         let getChxBalanceState =
             let data =
@@ -87,9 +87,9 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processTxSet ChxTransfer`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet None
-        let recipientWallet = Signing.generateWallet None
-        let validatorWallet = Signing.generateWallet None
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
 
         let initialChxState =
             [
@@ -160,9 +160,9 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processTxSet ChxTransfer with insufficient balance`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet None
-        let recipientWallet = Signing.generateWallet None
-        let validatorWallet = Signing.generateWallet None
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
 
         let initialChxState =
             [
@@ -233,9 +233,9 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processTxSet ChxTransfer with insufficient balance to cover fee`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet None
-        let recipientWallet = Signing.generateWallet None
-        let validatorWallet = Signing.generateWallet None
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
 
         let initialChxState =
             [
@@ -310,8 +310,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processTxSet EquityTransfer`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet None
-        let validatorWallet = Signing.generateWallet None
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
         let senderAccountHash = AccountHash "Acc1"
         let recipientAccountHash = AccountHash "Acc2"
         let equityID = EquityID "EQ1"
@@ -394,8 +394,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processTxSet EquityTransfer with insufficient balance`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet None
-        let validatorWallet = Signing.generateWallet None
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
         let senderAccountHash = AccountHash "Acc1"
         let recipientAccountHash = AccountHash "Acc2"
         let equityID = EquityID "EQ1"

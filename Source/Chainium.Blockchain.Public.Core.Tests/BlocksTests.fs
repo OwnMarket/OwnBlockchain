@@ -156,9 +156,9 @@ module BlocksTests =
 
     [<Fact>]
     let ``Blocks.assembleBlock and verify merkle proofs`` () =
-        let wallet1 = Signing.generateWallet None
-        let wallet2 = Signing.generateWallet None
-        let validatorWallet = Signing.generateWallet None
+        let wallet1 = Signing.generateWallet ()
+        let wallet2 = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
         let blockNumber = BlockNumber 1L
         let timestamp = Utils.getUnixTimestamp () |> Timestamp
 

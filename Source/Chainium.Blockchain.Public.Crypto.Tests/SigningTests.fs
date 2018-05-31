@@ -12,44 +12,12 @@ module SigningTests =
     open System.Text
 
     [<Fact>]
-    let ``Signing.generateRandomSeed generates an array of 64 bytes`` () =
-        let seed = Signing.generateRandomSeed ()
-
-        test <@ seed.Length = 64 @>
-
-    [<Fact>]
-    let ``Signing.generateRandomSeed always returns a different value`` () =
-        let allSeeds =
-            [1 .. 10000]
-            |> List.map (fun _ -> Signing.generateRandomSeed ())
-
-        let distinctSeeds =
-            allSeeds
-            |> List.distinct
-
-        test <@ distinctSeeds.Length = allSeeds.Length @>
-
-    [<Fact>]
-    let ``Signing.generateWallet using seed`` () =
-        let seed =
-            Signing.generateRandomSeed ()
-
-        let numOfReps = 100
-
-        let distinctPairs =
-            [1 .. numOfReps]
-            |> List.map (fun _ -> Some seed |> Signing.generateWallet)
-            |> List.distinct
-
-        test <@ distinctPairs.Length = numOfReps @>
-
-    [<Fact>]
-    let ``Signing.generateWallet without using seed`` () =
+    let ``Signing.generateWallet`` () =
         let numOfReps = 100
 
         let walletInfoPairs =
             [1 .. numOfReps]
-            |> List.map (fun _ -> Signing.generateWallet None)
+            |> List.map (fun _ -> Signing.generateWallet ())
             |> List.distinct
 
         test <@ walletInfoPairs.Length = numOfReps @>
@@ -57,7 +25,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.generateWallet produces address starting with "CH"`` () =
         for _ in [1 .. 100] do
-            let (ChainiumAddress address) = (Signing.generateWallet None).Address
+            let (ChainiumAddress address) = (Signing.generateWallet ()).Address
             test <@ address.StartsWith("CH") @>
 
     [<Fact>]
@@ -66,7 +34,7 @@ module SigningTests =
         let messageToSign = Encoding.UTF8.GetBytes "Chainium"
 
         let generateSignature () =
-            let wallet = Signing.generateWallet None
+            let wallet = Signing.generateWallet ()
             Signing.signMessage wallet.PrivateKey messageToSign
 
         let distinctMessages =
@@ -79,7 +47,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.verifyMessage sign, verify message and check if resulting adress is same`` () =
         let messageToSign = Encoding.UTF8.GetBytes "Chainium"
-        let wallet = Signing.generateWallet None
+        let wallet = Signing.generateWallet ()
 
         let signature = Signing.signMessage wallet.PrivateKey messageToSign
         let address = Signing.verifySignature signature messageToSign
@@ -91,7 +59,7 @@ module SigningTests =
     let ``Signing.verifyMessage sign, verify mutiple messages and check if resulting adress is same`` () =
         let messagePrefix = "Chainium"
 
-        let wallet = Signing.generateWallet None
+        let wallet = Signing.generateWallet ()
 
         for i in [1 .. 100] do
             let message = sprintf "%s %i" messagePrefix i |> Encoding.UTF8.GetBytes

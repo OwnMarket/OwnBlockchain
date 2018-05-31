@@ -75,8 +75,8 @@ module NodeTests =
         testServer.CreateClient()
 
     let private prepareAndSubmitTransaction client isValid=
-        let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet None
-        let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet None
+        let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+        let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
 
         let fee = 
             match isValid with

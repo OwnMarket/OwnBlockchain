@@ -18,14 +18,11 @@ module Cli =
         assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
         |> printfn "%s"
 
-    let handleGenerateWalletCommand (seed : string option) =
-        seed
-        |> Option.map Encoding.UTF8.GetBytes
-        |> Signing.generateWallet
-        |> (fun w ->
-            let (PrivateKey pk) = w.PrivateKey
-            let (ChainiumAddress address) = w.Address
-            printfn "Private Key: %s\nAddress: %s" pk address)
+    let handleGenerateWalletCommand () =
+        let wallet = Signing.generateWallet ()
+        let (PrivateKey pk) = wallet.PrivateKey
+        let (ChainiumAddress address) = wallet.Address
+        printfn "Private Key: %s\nAddress: %s" pk address
 
     let handleSignMessageCommand privateKey message =
         let privateKey = PrivateKey privateKey
@@ -46,7 +43,6 @@ module Cli =
     let handleCommand args =
         match args with
         | ["-v"] -> handleShowVersionCommand ()
-        | ["-g"] -> handleGenerateWalletCommand None
-        | ["-g"; seed] -> handleGenerateWalletCommand (Some seed)
+        | ["-g"] -> handleGenerateWalletCommand ()
         | ["-s"; privateKey; message] -> handleSignMessageCommand privateKey message
         | ["--help"] | _ -> handleHelpCommand args
