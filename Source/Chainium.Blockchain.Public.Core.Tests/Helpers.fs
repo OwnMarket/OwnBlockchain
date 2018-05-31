@@ -67,3 +67,15 @@ module Helpers =
             }
 
         (txHash, txEnvelopeDto)
+
+    let verifyMerkleProofs (MerkleTreeRoot merkleRoot) leafs =
+        let leafs = leafs |> List.map Hashing.decode
+
+        // Performance is not priority in unit tests, so avoid exposing hashBytes out of Crypto assembly.
+        let hashBytes = Hashing.hash >> Hashing.decode
+
+        [
+            for leaf in leafs ->
+                MerkleTree.calculateProof hashBytes leafs leaf
+                |> MerkleTree.verifyProof hashBytes (Hashing.decode merkleRoot) leaf
+        ]
