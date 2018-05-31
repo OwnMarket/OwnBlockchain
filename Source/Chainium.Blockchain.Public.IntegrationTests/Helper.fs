@@ -13,25 +13,16 @@ open Chainium.Blockchain.Public.Data
 
 
 module Helper =
-    let dataFolderCleanup() =
-        if Directory.Exists(Config.DataDir) 
-            then do
+    let testCleanup() =
+        if Directory.Exists(Config.DataDir) then do
                 Directory.Delete(Config.DataDir,true)
+        
+        if Config.DbEngineType = "SQLite"  then do 
+            let conn = new SqliteConnection(Config.DbConnectionString)
+            if File.Exists conn.DataSource then do
+                File.Delete conn.DataSource
 
-    let databaseInit() =
-        (* TODO: use dbinit to initialize database, for now initialize using script *)
-        let baseFolder = 
-            Assembly.GetExecutingAssembly().Location
-            |> Path.GetDirectoryName
-
-        let dbScript = Path.Combine(baseFolder, "public_chx_database.sql")
-        let sql = System.IO.File.ReadAllText(dbScript)
-
-        let conn = new SqliteConnection(Config.DbConnectionString)
-        File.Delete(conn.DataSource)
-
-        DbTools.execute Config.DbConnectionString sql []
-        |> ignore
+            
 
     let testServer() =
         let hostBuilder = 
@@ -41,3 +32,18 @@ module Helper =
 
         new TestServer(hostBuilder)
 
+    let addBalanceAndAccount (address : string) (amount : decimal) =
+        let insertParams =
+            [
+                "@amount", amount |> box
+                "@chainium_address", address |> box
+            ]
+            |> Seq.ofList 
+        
+        let insertStatement = 
+            """
+            insert into chx_balance(chainium_address, amount,nonce) values (@chainium_address, @amount,0);
+            insert into account(account_hash,chainium_address) values (@chainium_address,@chainium_address);
+            """
+        DbTools.execute Config.DbConnectionString insertStatement insertParams
+        |> ignore
