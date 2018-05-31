@@ -1,21 +1,18 @@
-namespace Chainium.Blockchain.Public.IntegrationTests
+﻿namespace Chainium.Blockchain.Public.IntegrationTests.Common
 
-open System
 open System.IO
 open System.Text
 open System.Threading
 open System.Net.Http
-open Xunit
 open Newtonsoft.Json
 open Swensen.Unquote
-open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Node
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core.DomainTypes
 
-module NodeTests =
+module SharedTests =
 
     let addressToString (ChainiumAddress a) = a
 
@@ -50,7 +47,7 @@ module NodeTests =
             R = signature.R
         }
 
-    let private submitTransaction txToSubmit (client : HttpClient)=
+    let private submitTransaction txToSubmit (client : HttpClient) =
         let tx = JsonConvert.SerializeObject(txToSubmit)
         let content = new StringContent(tx, System.Text.Encoding.UTF8, "application/json")
 
@@ -66,9 +63,9 @@ module NodeTests =
             |> Async.RunSynchronously
             |> JsonConvert.DeserializeObject<SubmitTxResponseDto>
 
-    let private testInit() =
-        Helper.testCleanup()
-        DbInit.init Config.DbEngineType Config.DbConnectionString
+    let private testInit engineType connectionString =
+        Helper.testCleanup engineType connectionString
+        DbInit.init engineType connectionString
 
         let testServer = Helper.testServer()
         testServer.CreateClient()
@@ -102,6 +99,7 @@ module NodeTests =
             (txHash : SubmitTxResponseDto)
         )
         shouldExist
+        connectionString
         =
 
         let fileName = sprintf "Tx_%s" txHash.TxHash
@@ -142,28 +140,24 @@ module NodeTests =
             test <@ txInfo.Status = byte(0) @>
             test <@ txInfo.SenderAddress = (addressToString senderWallet.Address) @>
 
-    [<Fact>]
-    let ``Api - submit transaction`` () =
-        let client = testInit()
-        let isValidTransaction = true
+    let transactionSubmitTest engineType connString isValidTransaction =
+        let client = testInit engineType connString
         let data = prepareAndSubmitTransaction client isValidTransaction
-        submissionChecks data isValidTransaction
+        submissionChecks data isValidTransaction connString
 
-    [<Fact>]
-    let ``Node - submit and process transactions`` () =
-        let client = testInit()
-
+    let transactionProcessingTest engineType connString =
+        let client = testInit engineType connString
         [1..4]
         |> List.map
             (
                 fun i ->
                     let isValid = i % 2 = 0
                     let submissionResult = prepareAndSubmitTransaction client isValid
-                    submissionChecks submissionResult isValid
+                    submissionChecks submissionResult isValid connString
 
                     let setbalances (s, r) =
-                        Helper.addBalanceAndAccount s 100M
-                        Helper.addBalanceAndAccount r 0M
+                        Helper.addBalanceAndAccount connString s 100M
+                        Helper.addBalanceAndAccount connString r 0M
 
                     let storeChxBalances (a, b, _, _, _) =
                         (
@@ -182,8 +176,23 @@ module NodeTests =
         let mutable iter = 0
         let sleepTime = 2
 
-        while File.Exists(expectedBlockPath) |> not && iter < Helper.blockCreationWaitingTime do
+        while File.Exists(expectedBlockPath) |> not && iter < Helper.BlockCreationWaitingTime do
             Thread.Sleep(sleepTime * 1000)
             iter <- iter + sleepTime
 
         test <@ File.Exists(expectedBlockPath) @>
+
+    let private numOfUpdatesExecuted connectionString =
+        let sql =
+            """
+                SELECT version_number
+                FROM db_version;
+            """
+        DbTools.query<int> connectionString sql []
+
+    let initDatabaseTest engineType connString =
+        Helper.testCleanup engineType connString
+        DbInit.init engineType connString
+        let changes = numOfUpdatesExecuted connString
+        test <@ changes.Length > 0 @>
+

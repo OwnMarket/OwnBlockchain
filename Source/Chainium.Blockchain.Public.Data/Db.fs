@@ -57,26 +57,33 @@ module Db =
         : PendingTxInfoDto list
         =
 
-        // TODO: add condition to skip transactions
-        let sql =
-            """
-            SELECT tx_hash, sender_address, nonce, fee, action_count, tx_id AS appearance_order
-            FROM tx
-            WHERE status = 0
-            AND tx_hash NOT IN @txsToSkip
-            ORDER BY fee DESC, tx_id
-            LIMIT @txCountToFetch
-            """
-
         let txsToSkipParamValue =
-            txsToSkip
-            |> List.map (fun (TxHash t) -> t)
-            |> List.toSeq
+            (
+                txsToSkip
+                |> List.fold (fun acc (TxHash t) -> acc + sprintf "'%s'," t) ""
+            )
+
+        let pattern =
+            if txsToSkipParamValue <> "" then
+                sprintf "AND tx_hash NOT IN (%s)" (txsToSkipParamValue.TrimEnd(','))
+            else
+                ""
+
+        let sql =
+            sprintf
+                """
+                SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
+                FROM tx
+                WHERE status = 0
+                %s
+                ORDER BY fee DESC, tx_id
+                LIMIT @txCountToFetch
+                """
+                pattern
 
         let sqlParams =
             [
                 "@txCountToFetch", txCountToFetch |> box
-                "@txsToSkip", txsToSkipParamValue |> box
             ]
 
         DbTools.query dbConnectionString sql sqlParams
@@ -351,7 +358,7 @@ module Db =
         | _ ->
             transaction.Rollback()
             conn.Close()
-            Error [AppError ("Failed to ypply new state")]
+            Error [AppError ("Failed to apply new state")]
 
     let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) =
         let sql =

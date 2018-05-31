@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>Chainium.Blockchain.IntegrationTests.Common</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\AssemblyInfo.fs" Link="AssemblyInfo.fs" />
+    <Compile Include="Helper.fs" />
+    <Compile Include="SharedTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Unquote" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Chainium.Blockchain.Public.Node\Chainium.Blockchain.Public.Node.fsproj" />
+    <ProjectReference Include="..\Chainium.Blockchain.Public.Wallet\Chainium.Blockchain.Public.Wallet.fsproj" />
+  </ItemGroup>
+
+</Project>

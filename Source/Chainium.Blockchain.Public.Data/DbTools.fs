@@ -1,52 +1,89 @@
 namespace Chainium.Blockchain.Public.Data
 
-open System
-open System.Data
+open System.Linq
 open System.Data.Common
+open System.Collections.Generic
 open Microsoft.Data.Sqlite
 open Dapper
 open Chainium.Common
+open Npgsql
 
 module DbTools =
 
-    let newConnection dbConnectionString =
-        new SqliteConnection(dbConnectionString)
-        :> DbConnection
+    type private DatabaseActions =
+        {
+            CreateCommand : string -> DbConnection -> DbCommand
+            CreateParam : (string * obj) -> DbParameter
+            CreateTransactionCommand : string -> DbConnection -> DbTransaction -> DbCommand
+        }
 
-    let private newCommand (sql : string) (conn : DbConnection) : DbCommand =
-        match conn with
-        | :? SqliteConnection as sqlliteconn ->
-            new SqliteCommand(sql, sqlliteconn)
-            :> DbCommand
-
-        | _ -> failwith "Unknown connection type"
-
-    let private newCommandTransaction (sql : string) (conn : DbConnection) (transaction : DbTransaction) : DbCommand =
-        match conn with
-        | :? SqliteConnection as sqlliteconn ->
-            match transaction with
-            | :? SqliteTransaction as sqliteTrans ->
-                new SqliteCommand(sql, sqlliteconn, sqliteTrans)
-                :> DbCommand
-            | _ -> failwith "Transaction type mismatch"
-
-        | _ -> failwith "Unknon connection type"
-
-    let private dbParameter (name : string, value : obj) =
+    let sqlLiteCommand sql (conn : DbConnection) =
+        new SqliteCommand(sql, conn :?> SqliteConnection)
+        :> DbCommand
+    let sqlLiteParam (name : string, value : obj) =
         SqliteParameter(name, value)
         :> DbParameter
+    let sqlLiteTransactionCmd (sql : string) (conn : DbConnection) (transaction : DbTransaction) =
+        new SqliteCommand(sql, conn :?> SqliteConnection, transaction :?> SqliteTransaction)
+        :> DbCommand
+
+    let postgresCommand sql (conn : DbConnection) =
+        new NpgsqlCommand(sql, conn :?> NpgsqlConnection)
+        :> DbCommand
+    let postgresParam (name : string, value : obj)=
+        NpgsqlParameter(name, value)
+        :> DbParameter
+    let postgresTransactionCmd (sql : string) (conn : DbConnection) (transaction : DbTransaction) =
+        new NpgsqlCommand(sql, conn :?> NpgsqlConnection, transaction :?> NpgsqlTransaction)
+        :> DbCommand
+
+    let private databaseSetup =
+        dict [
+            typeof<SqliteConnection>,
+            {
+                CreateCommand = sqlLiteCommand
+                CreateParam = sqlLiteParam
+                CreateTransactionCommand = sqlLiteTransactionCmd
+            }
+            typeof<NpgsqlConnection>,
+            {
+                CreateCommand = postgresCommand
+                CreateParam = postgresParam
+                CreateTransactionCommand = postgresTransactionCmd
+            }
+        ]
+
+    let newConnection (dbConnectionString : string) =
+        try
+            let builder = SqliteConnectionStringBuilder dbConnectionString
+            new SqliteConnection(builder.ConnectionString) :> DbConnection
+        with
+            | ex ->
+                let postgresBuilder = NpgsqlConnectionStringBuilder dbConnectionString
+                new NpgsqlConnection(postgresBuilder.ConnectionString) :> DbConnection
+
+    let private connectionBasedActions dbConnection =
+        let connType = dbConnection.GetType()
+        if databaseSetup.ContainsKey(connType) then
+            databaseSetup.[connType]
+        else failwith "Unknown connection type"
 
     let execute (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : int =
         use conn = newConnection(dbConnectionString)
         try
-            use cmd = newCommand sql conn
+            let dbActions = connectionBasedActions conn
 
-            let sqlParam = fun (name, value) -> dbParameter(name, value)
+            let cmd = dbActions.CreateCommand sql conn
 
-            for p in parameters do
-                let queryParam = sqlParam p
-                cmd.Parameters.Add queryParam
-                |> ignore
+            parameters
+            |> Seq.iter
+                (
+                    fun p ->
+                        p
+                        |> dbActions.CreateParam
+                        |> cmd.Parameters.Add
+                        |> ignore
+                )
 
             conn.Open()
             cmd.ExecuteNonQuery()
@@ -61,20 +98,25 @@ module DbTools =
         : int
         =
 
-        use cmd = newCommandTransaction sql conn transaction
+        let dbActions = connectionBasedActions conn
+        let cmd = dbActions.CreateTransactionCommand sql conn transaction
 
-        let sqlParam = fun (name, value) -> dbParameter(name, value)
-
-        for p in parameters do
-            let queryParam = sqlParam p
-            cmd.Parameters.Add queryParam
-            |> ignore
+        parameters
+        |> Seq.iter
+            (
+                fun p ->
+                    p
+                    |> dbActions.CreateParam
+                    |> cmd.Parameters.Add
+                    |> ignore
+            )
 
         cmd.ExecuteNonQuery()
 
     let query<'T> (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : 'T list =
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores <- true
         use conn = newConnection(dbConnectionString)
+
         try
             conn.Open()
 

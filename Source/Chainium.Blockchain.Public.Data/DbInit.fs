@@ -46,7 +46,10 @@ module DbInit =
             |> Option.map (fun v -> v.VersionNumber)
             |? 0
         with
-        | ex when ex.AllMessages.Contains "no such table: db_version" -> 0
+        | ex when
+            ex.AllMessages.Contains "no such table: db_version"
+            || ex.AllMessages.Contains """relation "db_version" does not exist"""
+            -> 0
 
     let private ensureDbChangeNumberConsistency (dbChanges : DbChange list) =
         let numbers =
