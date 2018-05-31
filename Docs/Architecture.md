@@ -49,6 +49,7 @@ This diagram explains how to construct the handling of a command from its entran
 3. Command handler takes command parameters (e.g. DTO constructed from JSON payload, or command line arguments) and passes them to the corresponding workflow, unless the workflow has dependencies.
 4. If workflow has dependencies, we first have to compose it in the Composition module and make the handler call the composed function, which in turn calls the workflow function.
 5. Workflow function then takes the input and executes the required business logic.
+    - In the case that the command can be handled by a single function from business logic layer, it is not necessary to create separate workflow just for that.
 
 The code in the infrastructure layer of the application (upper part of the diagram) should be kept as thin and as "dumb" as possible. All business rules should be contained within the application core, which makes the codebase highly testable.
 
