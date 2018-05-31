@@ -40,7 +40,7 @@ More information about this approach can be found in [the work of Scott Wlaschin
 
 ## High Level Flow
 
-![High Level Flow](Architecture/HighLevelFlow.png)
+![High Level Flow](HighLevelFlow.png)
 
 This diagram explains how to construct the handling of a command from its entrance into the system, until the business logic.
 

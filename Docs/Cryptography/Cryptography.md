@@ -12,4 +12,4 @@ All cryptographic artifacts (private/public keys, hashes, etc...) are encoded as
 
 Chainium address is created using following algorithm:
 
-![Chainium Address Algorithm](Cryptography/ChainiumAddress.png)
+![Chainium Address Algorithm](ChainiumAddress.png)
