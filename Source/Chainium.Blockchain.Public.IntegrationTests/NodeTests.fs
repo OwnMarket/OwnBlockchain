@@ -3,6 +3,7 @@ namespace Chainium.Blockchain.Public.IntegrationTests
 
 open System.IO
 open System.Text
+open System.Threading
 open System.Net.Http
 open Xunit
 open Newtonsoft.Json
@@ -14,6 +15,9 @@ open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module NodeTests =
+    open Chainium.Blockchain.Common
+    open System
+
     let addressToString (ChainiumAddress a) = a
     
     let transactionDto receiver fee= 
@@ -88,11 +92,12 @@ module NodeTests =
 
         let txHash = submitTransaction expectedTx client 
 
-        (senderWallet, dto, expectedTx, txHash)
+        (senderWallet, receiverWallet, dto, expectedTx, txHash)
     
     let submissionChecks  
         (
-            senderWallet, 
+            senderWallet,
+            receiverWallet,
             (dto : TxDto), 
             expectedTx, 
             (txHash : SubmitTxResponseDto)
@@ -146,7 +151,7 @@ module NodeTests =
         submissionChecks data isValidTransaction      
 
     [<Fact>]
-    let ``Node - process transactions`` () =
+    let ``Node - submit and process transactions`` () =
         let client = testInit()
 
         [1..4]
@@ -157,37 +162,31 @@ module NodeTests =
                     let submissionResult = prepareAndSubmitTransaction client isValid
                     submissionChecks submissionResult isValid
 
-                    let address (a,_,_,_) = a.Address |> addressToString
-                    Helper.addBalanceAndAccount (address submissionResult) 100M
+                    let setbalances (s, r) =
+                        Helper.addBalanceAndAccount s 100M
+                        Helper.addBalanceAndAccount r 0M
 
+                    let storeChxBalances (a,b,_,_,_) = 
+                        (
+                            a.Address |> addressToString,
+                            b.Address |> addressToString
+                        )
+                        |> setbalances
+
+                    storeChxBalances submissionResult
             )
         |> ignore
 
+        let expectedBlockPath = sprintf "%s/Block_1" Config.DataDir
         PaceMaker.start()
-        System.Threading.Thread.Sleep(10000)
 
-    [<Fact>]
-    let simpleTest() =
-        let sql =
-            """
-            SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
-            FROM tx
-            WHERE status = 0
-            AND tx_hash NOT IN @txsToSkip
-            ORDER BY fee DESC, tx_id
-            LIMIT @txCountToFetch
-            """
+        let mutable iter = 0
+        let sleepTime = 2
+        
+        while File.Exists(expectedBlockPath) |> not && iter < Helper.blockCreationWaitingTime do
+            Thread.Sleep(sleepTime * 1000)
+            iter <- iter + sleepTime
 
-        let txsToSkipParamValue =
-            ["37TVTTmUbgCpzRnjLNeRAamwdQVt8LkwwiEVQTfK6mk4"]
-            |> List.toSeq
-
-        let sqlParams =
-            [
-                "@txCountToFetch", 100 |> box
-                "@txsToSkip", [] |> box
-            ]
-
-        let data = DbTools.query<PendingTxInfoDto> Config.DbConnectionString sql sqlParams
-
-        ()
+        test <@ File.Exists(expectedBlockPath) @>
+       
+        

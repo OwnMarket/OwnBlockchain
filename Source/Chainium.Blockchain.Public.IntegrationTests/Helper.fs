@@ -13,6 +13,8 @@ open Chainium.Blockchain.Public.Data
 
 
 module Helper =
+    open Microsoft.Extensions.Configuration
+
     let testCleanup() =
         if Directory.Exists(Config.DataDir) then do
                 Directory.Delete(Config.DataDir,true)
@@ -21,8 +23,6 @@ module Helper =
             let conn = new SqliteConnection(Config.DbConnectionString)
             if File.Exists conn.DataSource then do
                 File.Delete conn.DataSource
-
-            
 
     let testServer() =
         let hostBuilder = 
@@ -47,3 +47,14 @@ module Helper =
             """
         DbTools.execute Config.DbConnectionString insertStatement insertParams
         |> ignore
+    
+    let private appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    let private config =
+        (
+            ConfigurationBuilder()
+                .SetBasePath(appDir)
+                .AddJsonFile("AppSettings.json")
+        ).Build()
+    
+    let blockCreationWaitingTime  =
+        config.["BlockCreationWaitingTimeInSeconds"] |> int
