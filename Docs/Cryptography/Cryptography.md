@@ -12,7 +12,7 @@ Chainium blockchain uses [SHA256](https://en.wikipedia.org/wiki/SHA-256) as the 
 
 ## Encoding
 
-All cryptographic artifacts (private/public keys, hashes, etc...) are encoded as [Base58](https://en.wikipedia.org/wiki/Base58) string and used as such throughout the application and external interfaces. Base58 dictionary used is the same as the one used in Bitcoin.
+All cryptographic artifacts (private/public keys, hashes, etc...) are encoded as [Base58](https://en.wikipedia.org/wiki/Base58) strings and used as such throughout the application and external interfaces. Base58 dictionary used is the same as the one used in Bitcoin implementation.
 
 Chainium blockchain uses the implementation of Base58 encoding from [Multiformats project](https://multiformats.io).
 
