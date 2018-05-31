@@ -12,7 +12,7 @@ Chainium blockchain uses [SHA256](https://en.wikipedia.org/wiki/SHA-256) as the 
 
 ## Encoding
 
-All cryptographic artifacts (private/public keys, hashes, etc...) are encoded as [Base58](https://en.wikipedia.org/wiki/Base58) strings and used as such throughout the application and external interfaces. Base58 dictionary used is the same as the one used in Bitcoin implementation.
+All cryptographic artifacts (private/public keys, hashes, etc.) are encoded as [Base58](https://en.wikipedia.org/wiki/Base58) strings and used as such throughout the application and external interfaces. Base58 dictionary used is the same as the one used in Bitcoin implementation.
 
 Chainium blockchain uses the implementation of Base58 encoding from [Multiformats project](https://multiformats.io).
 
@@ -21,3 +21,7 @@ Chainium blockchain uses the implementation of Base58 encoding from [Multiformat
 Chainium address is created using following algorithm:
 
 ![Chainium Address Algorithm](ChainiumAddress.png)
+
+Here is a sample address generated using this algorithm:
+
+    CHJvrnPJ3YCWsoe16F3Vj3wSyP8DxqLBfs1
