@@ -22,6 +22,10 @@ Chainium address is created using following algorithm:
 
 ![Chainium Address Algorithm](ChainiumAddress.png)
 
-Here is a sample address generated using this algorithm:
+Here is a sample address generated from a private key using this algorithm:
 
-    CHJvrnPJ3YCWsoe16F3Vj3wSyP8DxqLBfs1
+Private Key | Address
+---|---
+`1ApCvGVAk3qZVY3VGLxLVvAw3Azuhf5SXBWYDag3oUie2` | `CHbcUgieDDKQBVzCw2vsKvArNkt6Sr8VdkM`
+
+**DO NOT USE THIS PRIVATE KEY AND ADDRESS ON THE NETWORK!!!**
