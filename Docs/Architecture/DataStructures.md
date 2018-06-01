@@ -16,4 +16,4 @@ Timestamp | 64-bit integer containing UNIX timestamp.
 Validator Address | Chainium address of the block creator.
 Tx Set Merkle Root | Merkle tree root of all Tx hashes from Tx Set
 Tx Results Merkle Root | Merkle tree root of all Tx hashes and corresponding processing results.
-State Merkle Root | Merkle tree root of all state entries affected by Tx Set belonging to the block.
+State Merkle Root | Merkle tree root of all state entries related to Tx Set belonging to the block.
