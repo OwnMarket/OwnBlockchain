@@ -86,8 +86,12 @@ module Workflows =
                         txSet
                         output
 
-                do! block |> Mapping.blockToDto |> saveBlock
-                do! applyNewState block.Header.Number output
+                let blockDto = Mapping.blockToDto block
+                let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
+                let outputDto = Mapping.outputToDto output
+
+                do! saveBlock blockDto
+                do! applyNewState blockInfoDto outputDto
 
                 return { BlockNumber = block.Header.Number }
             }

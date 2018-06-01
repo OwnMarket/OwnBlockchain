@@ -118,6 +118,13 @@ module Mapping =
             TxSet = block.TxSet |> List.map (fun (TxHash h) -> h)
         }
 
+    let blockInfoDtoFromBlockHeaderDto (blockHeaderDto : BlockHeaderDto) : BlockInfoDto =
+        {
+            BlockNumber = blockHeaderDto.Number
+            BlockHash = blockHeaderDto.Hash
+            BlockTimestamp = blockHeaderDto.Timestamp
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +152,32 @@ module Mapping =
             Amount = state.Amount |> (fun (EquityAmount a) -> a)
             Nonce = state.Nonce |> (fun (Nonce n) -> n)
         }
+
+    let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
+        let txResults =
+            output.TxResults
+            |> Map.toList
+            |> List.map (fun (TxHash h, s : TxProcessedStatus) -> h, s |> Processed |> txStatusToCode)
+            |> Map.ofList
+
+        let chxBalances =
+            output.ChxBalances
+            |> Map.toList
+            |> List.map (fun (ChainiumAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
+            |> Map.ofList
+
+        let holdings =
+            output.Holdings
+            |> Map.toList
+            |> List.map (fun ((AccountHash a, EquityID e), s : HoldingState) -> (a, e), holdingStateToDto s)
+            |> Map.ofList
+
+        {
+            ProcessingOutputDto.TxResults = txResults
+            ChxBalances = chxBalances
+            Holdings = holdings
+        }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Events

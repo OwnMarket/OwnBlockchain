@@ -104,7 +104,7 @@ module BlocksTests =
 
         let processingOutput =
             {
-                TxResults = txResults
+                ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
             }
@@ -193,7 +193,7 @@ module BlocksTests =
 
         let processingOutput =
             {
-                TxResults = txResults
+                ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
             }

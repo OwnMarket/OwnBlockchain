@@ -107,7 +107,13 @@ module Db =
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
 
 
-    let applyNewState (dbConnectionString : string) state =
+    let applyNewState
+        (dbConnectionString : string)
+        (blockInfoDto : BlockInfoDto)
+        (state : ProcessingOutputDto)
+        : Result<unit, AppErrors>
+        =
+
         (*
         in a single db transaction do
         apply new state to the db

@@ -105,6 +105,12 @@ type HoldingStateDto = {
     Nonce : int64
 }
 
+type ProcessingOutputDto = {
+    TxResults : Map<string, byte>
+    ChxBalances : Map<string, ChxBalanceStateDto>
+    Holdings : Map<string * string, HoldingStateDto>
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Account
