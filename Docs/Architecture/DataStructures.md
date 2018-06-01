@@ -11,7 +11,7 @@ Element | Description
 ---|---
 Block Number | 64-bit integer
 Block Hash | SHA256 hash of other fields combined together.
-Previous Block Hash | SHA256 has of the previous block in the chain.
+Previous Block Hash | SHA256 hash of the previous block in the chain.
 Timestamp | 64-bit integer containing UNIX timestamp.
 Validator Address | Chainium address of the block creator.
 Tx Set Merkle Root | Merkle tree root of all Tx hashes from Tx Set
