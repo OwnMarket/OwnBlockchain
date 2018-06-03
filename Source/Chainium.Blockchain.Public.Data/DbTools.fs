@@ -8,7 +8,7 @@ open Dapper
 open Chainium.Common
 
 module DbTools =
-    let private newConnection dbConnectionString =
+    let newConnection dbConnectionString =
         new SqliteConnection(dbConnectionString)
         :> DbConnection
 
@@ -20,6 +20,20 @@ module DbTools =
             :> DbCommand
 
         | _ -> failwith "Unknown connection type"
+
+
+    let private newCommandTransaction (sql : string) (conn : DbConnection) (transaction : DbTransaction) : DbCommand =
+        match conn with
+        | :? SqliteConnection as sqlliteconn -> 
+
+            match transaction with 
+            | :? SqliteTransaction as sqliteTrans ->
+                new SqliteCommand(sql, sqlliteconn, sqliteTrans)
+                :> DbCommand
+            | _ -> failwith "Transaction type mismatch"
+
+        | _ -> failwith "Unknon connection type"
+
 
     let private dbParameter (name : string, value : obj) =
          SqliteParameter(name, value)
@@ -41,6 +55,18 @@ module DbTools =
             cmd.ExecuteNonQuery()
         finally
             conn.Close()
+
+    let executeWithinTransaction (conn : DbConnection) (transaction : DbTransaction) (sql : string) (parameters : (string * obj) seq) : int =
+        use cmd = newCommandTransaction sql conn transaction
+
+        let sqlParam = fun (name, value) -> dbParameter(name, value)
+
+        for p in parameters do
+            let queryParam = sqlParam p
+            cmd.Parameters.Add queryParam
+            |> ignore          
+
+        cmd.ExecuteNonQuery()
 
     let query<'T> (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : 'T list =
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores <- true
