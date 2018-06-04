@@ -17,12 +17,11 @@ sudo apt upgrade -y
 sudo apt install -y curl git vim tmux htop mc
 
 # .NET Core
-curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > ~/Downloads/microsoft.gpg
-sudo mv ~/Downloads/microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
+wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
 sudo apt-get install -y apt-transport-https
 sudo apt-get update
-sudo apt-get install -y dotnet-sdk-2.1.104
+sudo apt-get install -y dotnet-sdk-2.1
 
 # Mono (prerequisite for Ionide)
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
