@@ -6,6 +6,8 @@ open System.Text.RegularExpressions
 // Config
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
+
 let sourceDirs =
     [
         "../Source"
@@ -279,3 +281,5 @@ for file, lineNumber, error in errors do
     printfn "%s (%i): %s" file lineNumber error
 
 printfn "%i errors" errors.Length
+
+errors.Length // Return number of errors
