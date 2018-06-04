@@ -125,7 +125,14 @@ let rules =
         createRule (
             function
             | _, Some line when Regex.IsMatch(line, "\w\=") ->
-                Some "There should be a space before and after equal sign."
+                Some "There should be a space before and after the equal sign."
+            | _ -> None
+        )
+
+        createRule (
+            function
+            | _, Some line when Regex.IsMatch(line, "\w\:\:") || Regex.IsMatch(line, "\:\:\w") ->
+                Some "There should be a space before and after the cons '::' operator."
             | _ -> None
         )
 
@@ -134,6 +141,13 @@ let rules =
             function
             | _, Some line when Regex.IsMatch(line, "\w\:") || Regex.IsMatch(line, "\:\w") ->
                 Some "There should be a space before and after colon sign."
+            | _ -> None
+        )
+
+        createRule (
+            function
+            | _, Some line when line.Trim().EndsWith(";") ->
+                Some "There should be no semicolon at the end of the line."
             | _ -> None
         )
         *)
