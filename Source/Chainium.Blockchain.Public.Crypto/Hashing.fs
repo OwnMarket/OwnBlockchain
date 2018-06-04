@@ -7,6 +7,7 @@ open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Hashing =
+
     let private sha256 (data : byte[]) =
         let sha256 = SHA256.Create()
         sha256.ComputeHash data

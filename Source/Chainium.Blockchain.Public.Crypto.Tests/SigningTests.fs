@@ -1,6 +1,7 @@
 ﻿namespace Chainium.Blockchain.Public.Crypto.Tests
 
 open System
+open System.Text
 open Xunit
 open Swensen.Unquote
 open Chainium.Common
@@ -8,7 +9,6 @@ open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module SigningTests =
-    open System.Text
 
     [<Fact>]
     let ``Signing.generateWallet`` () =

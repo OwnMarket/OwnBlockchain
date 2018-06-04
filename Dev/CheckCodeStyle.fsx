@@ -22,8 +22,9 @@ let patternsToSkip =
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type String with
-    member this.IsNullOrEmpty() = String.IsNullOrEmpty(this)
-    member this.IsNullOrWhiteSpace() = String.IsNullOrWhiteSpace(this)
+    member this.IsEmpty
+        with get () =
+            String.IsNullOrWhiteSpace(this)
     member this.Indentation
         with get () =
             this.Length - this.TrimStart([|' '|]).Length
@@ -43,28 +44,35 @@ let rules =
 
         createRule (
             function
-            | None, Some line when line.IsNullOrWhiteSpace() ->
+            | None, Some line when line.IsEmpty ->
                 Some "There should be no empty lines at the top of the file."
             | _ -> None
         )
 
         createRule (
             function
-            | Some line, None when line.IsNullOrWhiteSpace() ->
+            | Some line, None when line.IsEmpty ->
                 Some "There should be no empty lines at the bottom of the file."
             | _ -> None
         )
 
         createRule (
             function
-            | Some line1, Some line2 when (line1.IsNullOrWhiteSpace()) && (line2.IsNullOrWhiteSpace()) ->
+            | Some line1, Some line2 when (line1.IsEmpty) && (line2.IsEmpty) ->
                 Some "There should be no multiple consecutive empty lines."
             | _ -> None
         )
 
         createRule (
             function
-            | Some line1, Some line2 when line1.Trim().EndsWith("->") && line2.IsNullOrWhiteSpace() ->
+            | Some line1, Some line2 when line1.Trim().StartsWith("module ") && not line2.IsEmpty ->
+                Some "There should be an empty line after module declaration."
+            | _ -> None
+        )
+
+        createRule (
+            function
+            | Some line1, Some line2 when line1.Trim().EndsWith("->") && line2.IsEmpty ->
                 Some "There should be no empty lines after function arrow."
             | _ -> None
         )
@@ -124,7 +132,7 @@ let rules =
 
         createRule (
             function
-            | _, Some line when Regex.IsMatch(line, "\w\=") ->
+            | _, Some line when Regex.IsMatch(line, "\w\=") || Regex.IsMatch(line, "\=\w") ->
                 Some "There should be a space before and after the equal sign."
             | _ -> None
         )
@@ -173,7 +181,7 @@ let rules =
         createRule (
             function
             | Some line1, Some line2 when
-                not (line1.IsNullOrWhiteSpace())
+                not (line1.IsEmpty)
                 && line2.Indentation > line1.Indentation
                 && line2.Indentation - line1.Indentation <> 4 ->
                 Some "Don't indent for more than one level at a time."
@@ -197,6 +205,26 @@ let rules =
                 Some "Section header should have 100 slashes."
             | _ -> None
         )
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Comments
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        createRule (
+            function
+            | _, Some line when Regex.IsMatch(line, "\/\/\w") && not (Regex.IsMatch(line, "\:\/\/\w")) ->
+                Some "There should be a space between comment slashes and comment text."
+            | _ -> None
+        )
+
+        (*
+        createRule (
+            function
+            | _, Some line when Regex.IsMatch(line, "\/\/ [a-z]") || Regex.IsMatch(line, "\/\/[a-z]") ->
+                Some "Comment text should start with capital letter."
+            | _ -> None
+        )
+        *)
     ]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

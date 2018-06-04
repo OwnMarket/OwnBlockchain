@@ -7,6 +7,7 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 
 module Db =
+
     let private dbParams (paramsList : (string * obj) list) =
         let paramsString =
             paramsList

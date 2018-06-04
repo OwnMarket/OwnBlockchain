@@ -14,8 +14,8 @@ module ResultOperators =
 
 [<AutoOpen>]
 module ResultComputationExpression =
-    // Source: https://github.com/swlaschin/DomainModelingMadeFunctional/blob/master/src/OrderTaking/Result.fs
 
+    // Source: https://github.com/swlaschin/DomainModelingMadeFunctional/blob/master/src/OrderTaking/Result.fs
     type ResultBuilder() =
         member __.Return(x) = Ok x
         member __.Bind(x, f) = Result.bind f x

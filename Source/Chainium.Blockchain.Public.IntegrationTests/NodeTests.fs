@@ -1,5 +1,6 @@
 namespace Chainium.Blockchain.Public.IntegrationTests
 
+open System
 open System.IO
 open System.Text
 open System.Threading
@@ -7,6 +8,7 @@ open System.Net.Http
 open Xunit
 open Newtonsoft.Json
 open Swensen.Unquote
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Node
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
@@ -14,8 +16,6 @@ open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module NodeTests =
-    open Chainium.Blockchain.Common
-    open System
 
     let addressToString (ChainiumAddress a) = a
 

@@ -8,6 +8,7 @@ open Dapper
 open Chainium.Common
 
 module DbTools =
+
     let newConnection dbConnectionString =
         new SqliteConnection(dbConnectionString)
         :> DbConnection

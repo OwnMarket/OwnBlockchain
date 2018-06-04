@@ -10,6 +10,7 @@ open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module ValidationTests =
+
     let chAddress = ChainiumAddress "ch2Wt6j7sbaqbgKphYx9U95wZDX99L"
     let txHash = TxHash "SampleHash"
     let chxTransfer = "ChxTransfer"

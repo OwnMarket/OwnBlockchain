@@ -9,6 +9,7 @@ open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.Dtos
 
 module SerializationTests =
+
     [<Fact>]
     let ``Serialization.deserializeTx transaction`` () =
         let expectedTx =
@@ -38,7 +39,7 @@ module SerializationTests =
                     ]
             }
 
-        //make a call to newtonsoft to get json format
+        // Make a call to Newtonsoft to get JSON format.
         let resultTx =
             expectedTx
             |> Serialization.serializeTx

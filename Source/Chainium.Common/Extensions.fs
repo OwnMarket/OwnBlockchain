@@ -32,6 +32,7 @@ module Extensions =
                 |> sprintf "%s\n%s" this.AllMessages
 
 module Map =
+
     let inline ofDict dictionary =
         dictionary
         |> Seq.map (|KeyValue|)
