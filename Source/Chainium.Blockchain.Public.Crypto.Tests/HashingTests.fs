@@ -30,7 +30,7 @@ module HashingTests =
 
         let allHashes =
             [1 .. hashCount]
-            |> List.map (fun i ->  (sprintf "%s %i" message i) |> getBytes |> Hashing.hash)
+            |> List.map (fun i -> (sprintf "%s %i" message i) |> getBytes |> Hashing.hash)
 
         let distinctHashes =
             allHashes

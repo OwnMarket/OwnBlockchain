@@ -79,7 +79,6 @@ module Blocks =
         |> createHash
         |> BlockHash
 
-
     let assembleBlock
         (decodeHash : string -> byte[])
         (createHash : byte[] -> string)

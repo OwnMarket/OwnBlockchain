@@ -1,5 +1,4 @@
-﻿
-namespace Chainium.Blockchain.Public.Core.Tests
+﻿namespace Chainium.Blockchain.Public.Core.Tests
 
 open System
 open Xunit
@@ -37,7 +36,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                Equity= "equity"
+                                Equity = "equity"
                                 Amount = 12M
                             }
                     }
@@ -74,7 +73,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                Equity= "equity"
+                                Equity = "equity"
                                 Amount = 12M
                             }
                     }
@@ -166,13 +165,13 @@ module ValidationTests =
             Fee = 1M
             Actions =
                 [
-                   {
+                    {
                         ActionType = equityTransfer
                         ActionData =
                             {
                                 FromAccount = ""
                                 ToAccount = "B"
-                                Equity= "equity"
+                                Equity = "equity"
                                 Amount = 12M
                             }
                     }
@@ -193,13 +192,13 @@ module ValidationTests =
             Fee = 1M
             Actions =
                 [
-                   {
+                    {
                         ActionType = equityTransfer
                         ActionData =
                             {
                                 FromAccount = "A"
                                 ToAccount = ""
-                                Equity= "equity"
+                                Equity = "equity"
                                 Amount = 12M
                             }
                     }
@@ -220,13 +219,13 @@ module ValidationTests =
             Fee = 1M
             Actions =
                 [
-                   {
+                    {
                         ActionType = equityTransfer
                         ActionData =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                Equity= ""
+                                Equity = ""
                                 Amount = 12M
                             }
                     }
@@ -247,13 +246,13 @@ module ValidationTests =
             Fee = 1M
             Actions =
                 [
-                   {
+                    {
                         ActionType = equityTransfer
                         ActionData =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                Equity= "equity"
+                                Equity = "equity"
                                 Amount = 0M
                             }
                     }
@@ -292,7 +291,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                Equity= "equity"
+                                Equity = "equity"
                                 Amount = 1M
                             }
                     }

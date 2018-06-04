@@ -106,14 +106,13 @@ module Db =
         |> List.tryHead
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
 
-
-    let updateTx conn transaction (txHash : string) (txStatus : byte) : Result<unit, AppErrors> = 
+    let updateTx conn transaction (txHash : string) (txStatus : byte) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE tx
             SET status = @txStatus
             WHERE tx_hash = @txHash
-            """            
+            """
 
         let sqlParams =
             [
@@ -121,7 +120,7 @@ module Db =
                 "@txStatus", txStatus |> box
             ]
 
-        try                
+        try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
             | _ -> Error [AppError ("Failed to update Transaction")]
@@ -131,22 +130,22 @@ module Db =
             Error [AppError ("Failed to insert update Transaction")]
 
     let updateTxs conn transaction (txResults : Map<string, byte>) : Result<unit, AppErrors> =
-        let foldFn result (txHash, txStatus) = 
+        let foldFn result (txHash, txStatus) =
             result
-            >>= (fun _ -> 
-                updateTx conn transaction txHash txStatus 
+            >>= (fun _ ->
+                updateTx conn transaction txHash txStatus
             )
 
-        txResults 
-        |> Map.toList 
-        |> List.fold foldFn (Ok()) 
+        txResults
+        |> Map.toList
+        |> List.fold foldFn (Ok())
 
-    let addBlock conn transaction (blockInfo: BlockInfoDto) : Result<unit, AppErrors> =        
+    let addBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO block (block_number, block_hash, block_timestamp)
             VALUES (@blockNumber, @blockHash, @blockTimestamp)
-            """            
+            """
 
         let sqlParams =
             [
@@ -155,7 +154,7 @@ module Db =
                 "@blockTimestamp", blockInfo.BlockTimestamp |> box
             ]
 
-        try               
+        try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
             | _ -> Error [AppError ("Failed to insert Block")]
@@ -164,13 +163,12 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert Block")]
 
-
-    let updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =        
+    let updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE block
             SET block_number = @blockNumber, block_hash = @blockHash, block_timestamp = @blockTimestamp
-            """            
+            """
 
         let sqlParams =
             [
@@ -178,8 +176,8 @@ module Db =
                 "@blockHash", blockInfo.BlockHash |> box
                 "@blockTimestamp", blockInfo.BlockTimestamp |> box
             ]
-        
-        try 
+
+        try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addBlock conn transaction blockInfo
             | 1 -> Ok ()
@@ -188,22 +186,22 @@ module Db =
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to update Block number")]
-            
-    let addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =        
+
+    let addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO chx_balance (chainium_address, amount, nonce)
             VALUES (@chainiumAddress, @amount, @nonce)
-            """            
+            """
 
         let sqlParams =
             [
-                "@chainiumAddress", chxBalanceInfo.ChainiumAddress  |> box
+                "@chainiumAddress", chxBalanceInfo.ChainiumAddress |> box
                 "@amount", chxBalanceInfo.ChxBalanceState.Amount |> box
                 "@nonce", chxBalanceInfo.ChxBalanceState.Nonce |> box
             ]
 
-        try               
+        try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
             | _ -> Error [AppError ("Failed to insert Chainium balance")]
@@ -212,23 +210,22 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert Chainium balance")]
 
-
-    let updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =        
+    let updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE chx_balance
             SET amount = @amount, nonce = @nonce
-            WHERE chainium_address = @chainiumAddress 
-            """            
+            WHERE chainium_address = @chainiumAddress
+            """
 
         let sqlParams =
             [
-                "@chainiumAddress", chxBalanceInfo.ChainiumAddress  |> box
+                "@chainiumAddress", chxBalanceInfo.ChainiumAddress |> box
                 "@amount", chxBalanceInfo.ChxBalanceState.Amount |> box
                 "@nonce", chxBalanceInfo.ChxBalanceState.Nonce |> box
             ]
-        
-        try 
+
+        try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addChxBalance conn transaction chxBalanceInfo
             | 1 -> Ok ()
@@ -237,34 +234,34 @@ module Db =
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to update Chainium balance")]
-            
 
-    let updateChxBalances conn transaction (chxBalances: Map<string, ChxBalanceStateDto>) : Result<unit, AppErrors> =
-        let foldFn result (chainiumAddress, chxBalanceState : ChxBalanceStateDto) = 
+    let updateChxBalances conn transaction (chxBalances : Map<string, ChxBalanceStateDto>) : Result<unit, AppErrors> =
+        let foldFn result (chainiumAddress, chxBalanceState : ChxBalanceStateDto) =
             result
-            >>= (fun _ -> 
-                let chxBalanceInfo = {
-                    ChainiumAddress = chainiumAddress 
-                    ChxBalanceState = {
-                                        Amount = chxBalanceState.Amount
-                                        Nonce = chxBalanceState.Nonce
-                    }
+            >>= (fun _ ->
+                {
+                    ChainiumAddress = chainiumAddress
+                    ChxBalanceState =
+                        {
+                            Amount = chxBalanceState.Amount
+                            Nonce = chxBalanceState.Nonce
+                        }
                 }
-                updateChxBalance conn transaction chxBalanceInfo
+                |> updateChxBalance conn transaction
             )
 
-        chxBalances 
-        |> Map.toList 
-        |> List.fold foldFn (Ok()) 
+        chxBalances
+        |> Map.toList
+        |> List.fold foldFn (Ok())
 
-    let addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =        
+    let addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO holding 
+            INSERT INTO holding
             SELECT null, account_id, @equityId, @amount, @nonce
-            FROM account 
+            FROM account
             WHERE account_hash = @accountHash
-            """            
+            """
 
         let sqlParams =
             [
@@ -283,15 +280,14 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert Holding")]
 
-
-    let updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =        
+    let updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE holding
             SET amount = @amount, nonce = @nonce
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
             AND asset = @equityId
-            """            
+            """
 
         let sqlParams =
             [
@@ -311,26 +307,26 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to update Holding")]
 
-    let updateHoldings conn transaction (holdings: Map<string * string, HoldingStateDto>) : Result<unit, AppErrors> =
-        let foldFn result (accountEquity, holdingState : HoldingStateDto) = 
+    let updateHoldings conn transaction (holdings : Map<string * string, HoldingStateDto>) : Result<unit, AppErrors> =
+        let foldFn result (accountEquity, holdingState : HoldingStateDto) =
             result
-            >>= (fun _ -> 
-                let holdingInfo = {
-                    AccountHash = fst(accountEquity) 
+            >>= (fun _ ->
+                {
+                    AccountHash = fst(accountEquity)
                     EquityId = snd(accountEquity)
-                    HoldingState = {
-                                    Amount = holdingState.Amount
-                                    Nonce = holdingState.Nonce
-                    }
+                    HoldingState =
+                        {
+                            Amount = holdingState.Amount
+                            Nonce = holdingState.Nonce
+                        }
                 }
-                updateHolding conn transaction holdingInfo
+                |> updateHolding conn transaction
             )
 
-        holdings 
-        |> Map.toList 
-        |> List.fold foldFn (Ok()) 
+        holdings
+        |> Map.toList
+        |> List.fold foldFn (Ok())
 
-            
     let applyNewState
         (dbConnectionString : string)
         (blockInfoDto : BlockInfoDto)
@@ -344,16 +340,16 @@ module Db =
 
         let result =
             updateTxs conn transaction state.TxResults
-            >>= (fun _ -> updateChxBalances conn transaction state.ChxBalances) 
+            >>= (fun _ -> updateChxBalances conn transaction state.ChxBalances)
             >>= (fun _ -> updateHoldings conn transaction state.Holdings)
             >>= (fun _ -> updateBlock conn transaction blockInfoDto)
 
-        match result with 
-        | Ok() -> 
+        match result with
+        | Ok() ->
             transaction.Commit()
             conn.Close()
             Ok ()
-        | _ -> 
+        | _ ->
             transaction.Rollback()
             conn.Close()
             Error [AppError ("Failed to ypply new state")]

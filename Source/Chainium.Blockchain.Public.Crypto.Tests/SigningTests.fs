@@ -7,7 +7,6 @@ open Chainium.Common
 open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Core.DomainTypes
 
-
 module SigningTests =
     open System.Text
 
@@ -53,7 +52,6 @@ module SigningTests =
         let address = Signing.verifySignature signature messageToSign
 
         test <@ address = Some wallet.Address @>
-
 
     [<Fact>]
     let ``Signing.verifyMessage sign, verify mutiple messages and check if resulting adress is same`` () =

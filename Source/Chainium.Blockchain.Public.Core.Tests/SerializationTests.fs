@@ -1,5 +1,4 @@
-﻿
-namespace Chainium.Blockchain.Public.Core.Tests
+﻿namespace Chainium.Blockchain.Public.Core.Tests
 
 open System
 open Xunit
@@ -9,7 +8,7 @@ open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.Dtos
 
-module SerializationTests=
+module SerializationTests =
     [<Fact>]
     let ``Serialization.deserializeTx transaction`` () =
         let expectedTx =
@@ -32,7 +31,7 @@ module SerializationTests=
                                 {
                                     FromAccount = "A"
                                     ToAccount = "B"
-                                    Equity= "equity"
+                                    Equity = "equity"
                                     Amount = 12M
                                 }
                         }
@@ -58,32 +57,32 @@ module SerializationTests=
         let json =
             """
             {
-              "Nonce": 120,
-              "Fee": 20,
-              "Actions": [
-                  {
-                      "ActionType": "ChxTransfer",
-                      "ActionData": {
-                          "RecipientAddress": "Recipient",
-                          "Amount": 20.0
-                      }
-                  },
-                  {
-                      "ActionType": "EquityTransfer",
-                      "ActionData": {
-                          "FromAccount": "A",
-                          "ToAccount": "B",
-                          "Equity": "equity",
-                          "Amount": 12.0
-                      }
-                  },
-                  {
-                      "ActionType": "Unknown",
-                      "ActionData": "Test"
-                  }
-              ]
-          }
-          """
+                "Nonce": 120,
+                "Fee": 20,
+                "Actions": [
+                    {
+                        "ActionType": "ChxTransfer",
+                        "ActionData": {
+                            "RecipientAddress": "Recipient",
+                            "Amount": 20.0
+                        }
+                    },
+                    {
+                        "ActionType": "EquityTransfer",
+                        "ActionData": {
+                            "FromAccount": "A",
+                            "ToAccount": "B",
+                            "Equity": "equity",
+                            "Amount": 12.0
+                        }
+                    },
+                    {
+                        "ActionType": "Unknown",
+                        "ActionData": "Test"
+                    }
+                ]
+            }
+            """
 
         let result =
             json
@@ -93,7 +92,6 @@ module SerializationTests=
         match result with
         | Ok tx ->
             test <@ tx.Actions.Length = 3 @>
-
 
             let numOfActionsByType transType =
                 tx.Actions
@@ -151,7 +149,6 @@ module SerializationTests=
         match result with
         | Ok tx ->
             test <@ tx.Actions.Length = 3 @>
-
 
             let numOfActionsByType transType =
                 tx.Actions

@@ -12,7 +12,6 @@ module DbTools =
         new SqliteConnection(dbConnectionString)
         :> DbConnection
 
-
     let private newCommand (sql : string) (conn : DbConnection) : DbCommand =
         match conn with
         | :? SqliteConnection as sqlliteconn ->
@@ -21,12 +20,10 @@ module DbTools =
 
         | _ -> failwith "Unknown connection type"
 
-
     let private newCommandTransaction (sql : string) (conn : DbConnection) (transaction : DbTransaction) : DbCommand =
         match conn with
-        | :? SqliteConnection as sqlliteconn -> 
-
-            match transaction with 
+        | :? SqliteConnection as sqlliteconn ->
+            match transaction with
             | :? SqliteTransaction as sqliteTrans ->
                 new SqliteCommand(sql, sqlliteconn, sqliteTrans)
                 :> DbCommand
@@ -34,9 +31,8 @@ module DbTools =
 
         | _ -> failwith "Unknon connection type"
 
-
     let private dbParameter (name : string, value : obj) =
-         SqliteParameter(name, value)
+        SqliteParameter(name, value)
         :> DbParameter
 
     let execute (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : int =
@@ -56,7 +52,14 @@ module DbTools =
         finally
             conn.Close()
 
-    let executeWithinTransaction (conn : DbConnection) (transaction : DbTransaction) (sql : string) (parameters : (string * obj) seq) : int =
+    let executeWithinTransaction
+        (conn : DbConnection)
+        (transaction : DbTransaction)
+        (sql : string)
+        (parameters : (string * obj) seq)
+        : int
+        =
+
         use cmd = newCommandTransaction sql conn transaction
 
         let sqlParam = fun (name, value) -> dbParameter(name, value)
@@ -64,7 +67,7 @@ module DbTools =
         for p in parameters do
             let queryParam = sqlParam p
             cmd.Parameters.Add queryParam
-            |> ignore          
+            |> ignore
 
         cmd.ExecuteNonQuery()
 

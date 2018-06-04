@@ -24,13 +24,11 @@ module Serialization =
             ActionData = token.ToObject<'T>()
         } |> box
 
-    let tokenValue tokenName (jObject:JObject) =
+    let tokenValue tokenName (jObject : JObject) =
         let token = ref (JValue("") :> JToken)
         let isValid = jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase, token)
         match isValid with
-        | true ->
-           token.Value
-           |> Some
+        | true -> Some token.Value
         | false -> None
 
     let private actionsMap =

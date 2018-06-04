@@ -25,13 +25,11 @@ module MerkleTree =
         | Some l -> l.Hash
         | None -> Array.zeroCreate 0
 
-
     let private concatHashes
         left
         right
         =
         Array.append left right
-
 
     let private buildNode
         hashFunction
@@ -65,7 +63,6 @@ module MerkleTree =
         setParent node.Right nodeResult
 
         nodeResult
-
 
     let rec private buildTree
         hashFunction
@@ -107,7 +104,6 @@ module MerkleTree =
             |> List.map(fun s -> buildSubTree s)
             |> treeBuilder
 
-
     let private buildNodes leafHashes =
         leafHashes
         |> List.map
@@ -122,13 +118,11 @@ module MerkleTree =
                     |> Some
             )
 
-
     let build hashFunc leafHashes =
         leafHashes
         |> buildNodes
         |> buildTree hashFunc
         |> nodehash
-
 
     let rec private findLeaf
         (node : MerkleNode option)
@@ -158,7 +152,7 @@ module MerkleTree =
     let rec private merkleProof node segments hash =
         let otherSubtreeHash parent =
 
-            let childHash c=
+            let childHash c =
                 match c with
                 | None -> Array.zeroCreate 0
                 | Some c -> c.Hash
@@ -182,7 +176,6 @@ module MerkleTree =
                 |> List.append segments
 
             merkleProof p newSegments p.Hash
-
 
     let calculateProof
         hashFunc

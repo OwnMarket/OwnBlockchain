@@ -102,7 +102,7 @@ Formatting rules defined here apply not only to F# code, but are generally appli
 ### Empty Lines
 
 - Don't put empty lines at the top or bottom of the file.
-- Don't put more than two empty lines between sections of the code.
+- Don't put multiple consecutive empty lines in the code.
 - Don't put empty lines at the beginning of a function, except when signature is multi-line (which usually happens when explicit type declaration is involved). E.g.:
     ```fsharp
     // Good

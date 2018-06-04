@@ -6,7 +6,7 @@ open System
 module Operators =
 
     let (|?) = defaultArg
-    
+
     let (|?>) opt f =
         match opt with
         | Some x -> x

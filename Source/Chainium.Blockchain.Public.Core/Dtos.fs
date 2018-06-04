@@ -88,7 +88,6 @@ type BlockInfoDto = {
     BlockTimestamp : int64
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // State
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,17 +112,16 @@ type ProcessingOutputDto = {
 
 [<CLIMutable>]
 type ChxBalanceInfoDto = {
-    ChainiumAddress: string
-    ChxBalanceState: ChxBalanceStateDto
+    ChainiumAddress : string
+    ChxBalanceState : ChxBalanceStateDto
 }
 
 [<CLIMutable>]
 type HoldingInfoDto = {
-    AccountHash: string
+    AccountHash : string
     EquityId : string
-    HoldingState: HoldingStateDto
+    HoldingState : HoldingStateDto
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Account
@@ -132,9 +130,8 @@ type HoldingInfoDto = {
 [<CLIMutable>]
 type AccountControllerDto = {
     AccountHash : string
-    ChainiumAddress: string
+    ChainiumAddress : string
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // API
