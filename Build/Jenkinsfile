@@ -65,7 +65,7 @@ pipeline {
     stage('Publish'){
         environment {
             PROJECTS ='Chainium.Blockchain.Public.Node;Chainium.Blockchain.Public.Wallet;'
-			PACKAGE_NAME="${SOLUTION_NAME}v.${MAJOR_NUMBER}.{MINOR_NUMBER}.{BUILD}.{BUILD_NUMBER}"
+			PACKAGE_NAME="${SOLUTION_NAME}v.${MAJOR_NUMBER}.${MINOR_NUMBER}.${BUILD}.${BUILD_NUMBER}"
         }
         steps {
             sh "mkdir $PUBLISH_DIR"
