@@ -148,7 +148,6 @@ type ChxBalanceState = {
 
 type HoldingState = {
     Amount : EquityAmount
-    Nonce : Nonce
 }
 
 type ProcessingOutput = {

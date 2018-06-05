@@ -101,7 +101,6 @@ type ChxBalanceStateDto = {
 [<CLIMutable>]
 type HoldingStateDto = {
     Amount : decimal
-    Nonce : int64
 }
 
 type ProcessingOutputDto = {

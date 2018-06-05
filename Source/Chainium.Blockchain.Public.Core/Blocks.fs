@@ -43,13 +43,11 @@ module Blocks =
         =
 
         let (EquityAmount amount) = state.Amount
-        let (Nonce nonce) = state.Nonce
 
         [
             decodeHash accountHash
             Encoding.UTF8.GetBytes equityID
             decimalToBytes amount
-            int64ToBytes nonce
         ]
         |> Array.concat
         |> createHash

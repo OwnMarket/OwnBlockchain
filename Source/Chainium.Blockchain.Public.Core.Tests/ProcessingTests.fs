@@ -325,8 +325,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, equityID), {HoldingState.Amount = EquityAmount 50M; Nonce = Nonce 10L}
-                (recipientAccountHash, equityID), {HoldingState.Amount = EquityAmount 0M; Nonce = Nonce 20L}
+                (senderAccountHash, equityID), {HoldingState.Amount = EquityAmount 50M}
+                (recipientAccountHash, equityID), {HoldingState.Amount = EquityAmount 0M}
             ]
             |> Map.ofList
 
@@ -409,8 +409,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, equityID), {HoldingState.Amount = EquityAmount 9M; Nonce = Nonce 10L}
-                (recipientAccountHash, equityID), {HoldingState.Amount = EquityAmount 0M; Nonce = Nonce 20L}
+                (senderAccountHash, equityID), {HoldingState.Amount = EquityAmount 9M}
+                (recipientAccountHash, equityID), {HoldingState.Amount = EquityAmount 0M}
             ]
             |> Map.ofList
 

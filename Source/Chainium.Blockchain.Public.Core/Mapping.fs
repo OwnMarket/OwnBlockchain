@@ -144,13 +144,11 @@ module Mapping =
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
         {
             Amount = EquityAmount dto.Amount
-            Nonce = Nonce dto.Nonce
         }
 
     let holdingStateToDto (state : HoldingState) : HoldingStateDto =
         {
             Amount = state.Amount |> (fun (EquityAmount a) -> a)
-            Nonce = state.Nonce |> (fun (Nonce n) -> n)
         }
 
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =

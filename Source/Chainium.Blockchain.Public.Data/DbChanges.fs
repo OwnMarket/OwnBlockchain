@@ -65,7 +65,6 @@ module DbChanges =
                         account_id BIGINT NOT NULL,
                         asset TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
-                        nonce BIGINT NOT NULL,
 
                         CONSTRAINT holding__pk PRIMARY KEY (holding_id),
                         CONSTRAINT holding__uk__account_id__asset UNIQUE (account_id, asset),
@@ -143,7 +142,6 @@ module DbChanges =
                         account_id BIGINT NOT NULL,
                         asset TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
-                        nonce BIGINT NOT NULL,
 
                         CONSTRAINT holding__pk PRIMARY KEY (holding_id),
                         CONSTRAINT holding__uk__account_id__asset UNIQUE (account_id, asset),

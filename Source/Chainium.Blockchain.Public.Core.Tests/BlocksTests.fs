@@ -38,13 +38,13 @@ module BlocksTests =
     let ``Blocks.createHoldingStateHash`` () =
         let account = AccountHash "HHH"
         let equity = EquityID "EE" // E => 69 % 10 => 9 => I
-        let state = {HoldingState.Amount = EquityAmount 7M; Nonce = Nonce 4L}
+        let state = {HoldingState.Amount = EquityAmount 7M}
 
         // ACT
         let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (account, equity, state)
 
         // ASSERT
-        test <@ stateHash = "HHHII...G...................D" @>
+        test <@ stateHash = "HHHII...G............" @>
 
     [<Fact>]
     let ``Blocks.createBlockHash`` () =
@@ -97,8 +97,8 @@ module BlocksTests =
 
         let holdings =
             [
-                (AccountHash "DDD", EquityID "EEE"), {HoldingState.Amount = EquityAmount 1M; Nonce = Nonce 3L}
-                (AccountHash "FFF", EquityID "GGG"), {HoldingState.Amount = EquityAmount 2M; Nonce = Nonce 4L}
+                (AccountHash "DDD", EquityID "EEE"), {HoldingState.Amount = EquityAmount 1M}
+                (AccountHash "FFF", EquityID "GGG"), {HoldingState.Amount = EquityAmount 2M}
             ]
             |> Map.ofList
 
@@ -113,8 +113,8 @@ module BlocksTests =
             [
                 "HH...E...................G" // CHX balance 1
                 "II...F...................H" // CHX balance 2
-                "DDDIII...A...................C" // Holding balance 1
-                "FFFAAA...B...................D" // Holding balance 2
+                "DDDIII...A............" // Holding balance 1
+                "FFFAAA...B............" // Holding balance 2
             ]
             |> String.Concat
 
@@ -186,8 +186,8 @@ module BlocksTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", EquityID "Eq1"), {HoldingState.Amount = EquityAmount 100M; Nonce = Nonce 10L}
-                (AccountHash "Acc2", EquityID "Eq2"), {HoldingState.Amount = EquityAmount 200M; Nonce = Nonce 20L}
+                (AccountHash "Acc1", EquityID "Eq1"), {HoldingState.Amount = EquityAmount 100M}
+                (AccountHash "Acc2", EquityID "Eq2"), {HoldingState.Amount = EquityAmount 200M}
             ]
             |> Map.ofList
 

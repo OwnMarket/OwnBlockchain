@@ -24,7 +24,7 @@ module Processing =
             |? {Amount = ChxAmount 0M; Nonce = Nonce 0L}
         let getHoldingState (accountHash, equityID) =
             getHoldingStateFromStorage (accountHash, equityID)
-            |? {Amount = EquityAmount 0M; Nonce = Nonce 0L}
+            |? {Amount = EquityAmount 0M}
 
         new
             (
@@ -53,15 +53,13 @@ module Processing =
                 ConcurrentDictionary(accountControllers)
             )
 
-        member __.MergeNonces (otherState : ProcessingState) =
+        member __.MergeStateAfterFailedTx (otherState : ProcessingState) =
             let otherOutput = otherState.ToProcessingOutput ()
             for other in otherOutput.ChxBalances do
                 let current = __.GetChxBalance (other.Key)
                 __.SetChxBalance (other.Key, { current with Nonce = other.Value.Nonce })
             for other in otherOutput.Holdings do
-                let current = __.GetHolding (other.Key)
-                let accountHash, equityID = other.Key
-                __.SetHolding (accountHash, equityID, { current with Nonce = other.Value.Nonce })
+                __.GetHolding (other.Key) |> ignore // Just making sure we have all involved accounts loaded.
 
         member __.GetChxBalance (address : ChainiumAddress) : ChxBalanceState =
             chxBalances.GetOrAdd(address, getChxBalanceState)
@@ -302,7 +300,7 @@ module Processing =
             match processingResult with
             | Error errors ->
                 oldState.SetTxStatus(txHash, Failure errors)
-                oldState.MergeNonces(newState)
+                oldState.MergeStateAfterFailedTx(newState)
                 oldState
             | Ok _ ->
                 newState.SetTxStatus(txHash, Success)

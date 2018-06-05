@@ -20,11 +20,11 @@ module Db =
         try
             let txParams =
                 [
-                "@tx_hash", txInfoDto.TxHash |> box
-                "@sender_address", txInfoDto.SenderAddress |> box
-                "@nonce", txInfoDto.Nonce |> box
-                "@fee", txInfoDto.Fee |> box
-                "@status", txInfoDto.Status |> box
+                    "@tx_hash", txInfoDto.TxHash |> box
+                    "@sender_address", txInfoDto.SenderAddress |> box
+                    "@nonce", txInfoDto.Nonce |> box
+                    "@fee", txInfoDto.Fee |> box
+                    "@status", txInfoDto.Status |> box
                 ]
 
             let paramData = dbParams txParams
@@ -258,8 +258,8 @@ module Db =
     let addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO holding
-            SELECT null, account_id, @equityId, @amount, @nonce
+            INSERT INTO holding (account_id, asset, amount)
+            SELECT account_id, @equityId, @amount
             FROM account
             WHERE account_hash = @accountHash
             """
@@ -269,7 +269,6 @@ module Db =
                 "@accountHash", holdingInfo.AccountHash |> box
                 "@equityId", holdingInfo.EquityId |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
-                "@nonce", holdingInfo.HoldingState.Nonce |> box
             ]
 
         try
@@ -285,7 +284,7 @@ module Db =
         let sql =
             """
             UPDATE holding
-            SET amount = @amount, nonce = @nonce
+            SET amount = @amount
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
             AND asset = @equityId
             """
@@ -295,7 +294,6 @@ module Db =
                 "@accountHash", holdingInfo.AccountHash |> box
                 "@equityId", holdingInfo.EquityId |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
-                "@nonce", holdingInfo.HoldingState.Nonce |> box
             ]
 
         try
@@ -318,7 +316,6 @@ module Db =
                     HoldingState =
                         {
                             Amount = holdingState.Amount
-                            Nonce = holdingState.Nonce
                         }
                 }
                 |> updateHolding conn transaction
