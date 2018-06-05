@@ -13,10 +13,10 @@ type ChxTransferTxActionDto = {
 }
 
 [<CLIMutable>]
-type EquityTransferTxActionDto = {
+type AssetTransferTxActionDto = {
     FromAccount : string
     ToAccount : string
-    Equity : string
+    AssetCode : string
     Amount : decimal
 }
 
@@ -118,7 +118,7 @@ type ChxBalanceInfoDto = {
 [<CLIMutable>]
 type HoldingInfoDto = {
     AccountHash : string
-    EquityId : string
+    AssetCode : string
     HoldingState : HoldingStateDto
 }
 

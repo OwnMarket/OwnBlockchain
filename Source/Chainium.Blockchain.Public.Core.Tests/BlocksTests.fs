@@ -37,11 +37,11 @@ module BlocksTests =
     [<Fact>]
     let ``Blocks.createHoldingStateHash`` () =
         let account = AccountHash "HHH"
-        let equity = EquityID "EE" // E => 69 % 10 => 9 => I
-        let state = {HoldingState.Amount = EquityAmount 7M}
+        let assetCode = AssetCode "EE" // E => 69 % 10 => 9 => I
+        let state = {HoldingState.Amount = AssetAmount 7M}
 
         // ACT
-        let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (account, equity, state)
+        let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (account, assetCode, state)
 
         // ASSERT
         test <@ stateHash = "HHHII...G............" @>
@@ -97,8 +97,8 @@ module BlocksTests =
 
         let holdings =
             [
-                (AccountHash "DDD", EquityID "EEE"), {HoldingState.Amount = EquityAmount 1M}
-                (AccountHash "FFF", EquityID "GGG"), {HoldingState.Amount = EquityAmount 2M}
+                (AccountHash "DDD", AssetCode "EEE"), {HoldingState.Amount = AssetAmount 1M}
+                (AccountHash "FFF", AssetCode "GGG"), {HoldingState.Amount = AssetAmount 2M}
             ]
             |> Map.ofList
 
@@ -186,8 +186,8 @@ module BlocksTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", EquityID "Eq1"), {HoldingState.Amount = EquityAmount 100M}
-                (AccountHash "Acc2", EquityID "Eq2"), {HoldingState.Amount = EquityAmount 200M}
+                (AccountHash "Acc1", AssetCode "Eq1"), {HoldingState.Amount = AssetAmount 100M}
+                (AccountHash "Acc2", AssetCode "Eq2"), {HoldingState.Amount = AssetAmount 200M}
             ]
             |> Map.ofList
 
@@ -241,8 +241,8 @@ module BlocksTests =
 
                 holdings
                 |> Map.toList
-                |> List.map (fun ((accountHash, equityID), state) ->
-                    Blocks.createHoldingStateHash Hashing.decode Hashing.hash (accountHash, equityID, state)
+                |> List.map (fun ((accountHash, assetCode), state) ->
+                    Blocks.createHoldingStateHash Hashing.decode Hashing.hash (accountHash, assetCode, state)
                 )
             ]
             |> List.concat

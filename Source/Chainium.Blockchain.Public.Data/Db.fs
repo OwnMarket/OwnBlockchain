@@ -259,7 +259,7 @@ module Db =
         let sql =
             """
             INSERT INTO holding (account_id, asset_code, amount)
-            SELECT account_id, @equityId, @amount
+            SELECT account_id, @assetCode, @amount
             FROM account
             WHERE account_hash = @accountHash
             """
@@ -267,7 +267,7 @@ module Db =
         let sqlParams =
             [
                 "@accountHash", holdingInfo.AccountHash |> box
-                "@equityId", holdingInfo.EquityId |> box
+                "@assetCode", holdingInfo.AssetCode |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
             ]
 
@@ -286,13 +286,13 @@ module Db =
             UPDATE holding
             SET amount = @amount
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
-            AND asset_code = @equityId
+            AND asset_code = @assetCode
             """
 
         let sqlParams =
             [
                 "@accountHash", holdingInfo.AccountHash |> box
-                "@equityId", holdingInfo.EquityId |> box
+                "@assetCode", holdingInfo.AssetCode |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
             ]
 
@@ -307,12 +307,12 @@ module Db =
             Error [AppError ("Failed to update Holding")]
 
     let updateHoldings conn transaction (holdings : Map<string * string, HoldingStateDto>) : Result<unit, AppErrors> =
-        let foldFn result (accountEquity, holdingState : HoldingStateDto) =
+        let foldFn result (accountAsset, holdingState : HoldingStateDto) =
             result
             >>= (fun _ ->
                 {
-                    AccountHash = fst(accountEquity)
-                    EquityId = snd(accountEquity)
+                    AccountHash = fst(accountAsset)
+                    AssetCode = snd(accountAsset)
                     HoldingState =
                         {
                             Amount = holdingState.Amount
@@ -370,20 +370,20 @@ module Db =
         | [chxAddressDetails] -> Some chxAddressDetails
         | _ -> failwith "More than one Chx Address exists"
 
-    let getHoldingState (dbConnectionString : string) (accountHash, equityID) =
+    let getHoldingState (dbConnectionString : string) (accountHash, assetCode) =
         let sql =
             """
             SELECT h.amount, h.nonce
             FROM holding AS h
             JOIN account AS a USING (account_id)
             WHERE a.account_hash = @accountHash
-            AND h.asset_code = @equityId
+            AND h.asset_code = @assetCode
             """
 
         let sqlParams =
             [
                 "@accountHash", accountHash |> box
-                "@equityId", equityID |> box
+                "@assetCode", assetCode |> box
             ]
 
         match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with

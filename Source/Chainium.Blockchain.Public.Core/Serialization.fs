@@ -34,7 +34,7 @@ module Serialization =
     let private actionsMap =
         [
             "ChxTransfer", fun trType token -> actionFromToken<ChxTransferTxActionDto> trType token
-            "EquityTransfer", fun trType token -> actionFromToken<EquityTransferTxActionDto> trType token
+            "AssetTransfer", fun trType token -> actionFromToken<AssetTransferTxActionDto> trType token
         ] |> Map.ofList
 
     let private actionsConverter = {

@@ -39,14 +39,14 @@ module Blocks =
     let createHoldingStateHash
         decodeHash
         createHash
-        (AccountHash accountHash, EquityID equityID, state : HoldingState)
+        (AccountHash accountHash, AssetCode assetCode, state : HoldingState)
         =
 
-        let (EquityAmount amount) = state.Amount
+        let (AssetAmount amount) = state.Amount
 
         [
             decodeHash accountHash
-            Encoding.UTF8.GetBytes equityID
+            Encoding.UTF8.GetBytes assetCode
             decimalToBytes amount
         ]
         |> Array.concat
@@ -113,7 +113,9 @@ module Blocks =
             output.Holdings
             |> Map.toList
             |> List.sort // We need a predictable order
-            |> List.map (fun ((acc, eqID), state) -> createHoldingStateHash decodeHash createHash (acc, eqID, state))
+            |> List.map (fun ((accountHash, assetCode), state) ->
+                createHoldingStateHash decodeHash createHash (accountHash, assetCode, state)
+            )
 
         let stateRoot =
             chxBalanceHashes @ holdingHashes

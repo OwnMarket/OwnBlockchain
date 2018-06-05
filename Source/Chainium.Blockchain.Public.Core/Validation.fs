@@ -44,37 +44,37 @@ module Validation =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Validation rules based on action type
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let private validateChxTransfer chx =
+    let private validateChxTransfer action =
         [
-            if chx.RecipientAddress.IsNullOrWhiteSpace() then
+            if action.RecipientAddress.IsNullOrWhiteSpace() then
                 yield AppError "Recipient address is not valid."
 
-            if chx.Amount <= 0M then
+            if action.Amount <= 0M then
                 yield AppError "Chx transfer amount must be larger than zero."
         ]
 
-    let private validateEquityTransfer eq =
+    let private validateAssetTransfer action =
         [
-            if eq.FromAccount.IsNullOrWhiteSpace() then
+            if action.FromAccount.IsNullOrWhiteSpace() then
                 yield AppError "FromAccount value is not valid."
 
-            if eq.ToAccount.IsNullOrWhiteSpace() then
+            if action.ToAccount.IsNullOrWhiteSpace() then
                 yield AppError "ToAccount value is not valid."
 
-            if eq.Equity.IsNullOrWhiteSpace() then
-                yield AppError "Equity value is not valid."
+            if action.AssetCode.IsNullOrWhiteSpace() then
+                yield AppError "Asset code is not valid."
 
-            if eq.Amount <= 0M then
-                yield AppError "Equity amount must be larger than zero"
+            if action.Amount <= 0M then
+                yield AppError "Asset amount must be larger than zero"
         ]
 
     let private validateTxActions (actions : TxActionDto list) =
         let validateTxAction (action : TxActionDto) =
             match action.ActionData with
-            | :? ChxTransferTxActionDto as chx ->
-                validateChxTransfer chx
-            | :? EquityTransferTxActionDto as eq ->
-                validateEquityTransfer eq
+            | :? ChxTransferTxActionDto as a ->
+                validateChxTransfer a
+            | :? AssetTransferTxActionDto as a ->
+                validateAssetTransfer a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

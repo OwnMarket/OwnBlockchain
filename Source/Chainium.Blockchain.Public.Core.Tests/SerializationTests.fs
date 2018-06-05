@@ -27,12 +27,12 @@ module SerializationTests =
                                 }
                         }
                         {
-                            ActionType = "EquityTransfer"
+                            ActionType = "AssetTransfer"
                             ActionData =
                                 {
                                     FromAccount = "A"
                                     ToAccount = "B"
-                                    Equity = "equity"
+                                    AssetCode = "asset"
                                     Amount = 12M
                                 }
                         }
@@ -69,11 +69,11 @@ module SerializationTests =
                         }
                     },
                     {
-                        "ActionType": "EquityTransfer",
+                        "ActionType": "AssetTransfer",
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
-                            "Equity": "equity",
+                            "AssetCode": "asset",
                             "Amount": 12.0
                         }
                     },
@@ -102,8 +102,8 @@ module SerializationTests =
             let chxActions = numOfActionsByType typeof<ChxTransferTxActionDto>
             test <@ chxActions = 1 @>
 
-            let equityActions = numOfActionsByType typeof<EquityTransferTxActionDto>
-            test <@ equityActions = 1 @>
+            let assetActions = numOfActionsByType typeof<AssetTransferTxActionDto>
+            test <@ assetActions = 1 @>
 
             let invalidActions = numOfActionsByType typeof<string>
             test <@ invalidActions = 1 @>
@@ -126,11 +126,11 @@ module SerializationTests =
                         }
                     },
                     {
-                        "ActionType": "EquityTransfer",
+                        "ActionType": "AssetTransfer",
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
-                            "Equity": "equity",
+                            "AssetCode": "asset",
                             "Amount": 12.0
                         }
                     },
@@ -159,8 +159,8 @@ module SerializationTests =
             let chxActions = numOfActionsByType typeof<ChxTransferTxActionDto>
             test <@ chxActions = 1 @>
 
-            let equityActions = numOfActionsByType typeof<EquityTransferTxActionDto>
-            test <@ equityActions = 1 @>
+            let assetActions = numOfActionsByType typeof<AssetTransferTxActionDto>
+            test <@ assetActions = 1 @>
 
             let invalidActions = numOfActionsByType typeof<string>
             test <@ invalidActions = 1 @>
@@ -176,11 +176,11 @@ module SerializationTests =
                 "Fee": 20,
                 "Actions":
                     {
-                        "ActionType": "EquityTransfer",
+                        "ActionType": "AssetTransfer",
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
-                            "Equity": "equity",
+                            "AssetCode": "asset",
                             "Amount": 12.0
                         }
                     },

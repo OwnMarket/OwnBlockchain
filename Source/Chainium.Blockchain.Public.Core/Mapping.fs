@@ -34,20 +34,20 @@ module Mapping =
 
     let txActionFromDto (action : TxActionDto) =
         match action.ActionData with
-        | :? ChxTransferTxActionDto as chx ->
+        | :? ChxTransferTxActionDto as a ->
             {
-                ChxTransferTxAction.RecipientAddress = ChainiumAddress chx.RecipientAddress
-                Amount = ChxAmount chx.Amount
+                ChxTransferTxAction.RecipientAddress = ChainiumAddress a.RecipientAddress
+                Amount = ChxAmount a.Amount
             }
             |> ChxTransfer
-        | :? EquityTransferTxActionDto as eq ->
+        | :? AssetTransferTxActionDto as a ->
             {
-                FromAccountHash = AccountHash eq.FromAccount
-                ToAccountHash = AccountHash eq.ToAccount
-                EquityID = EquityID eq.Equity
-                Amount = EquityAmount eq.Amount
+                FromAccountHash = AccountHash a.FromAccount
+                ToAccountHash = AccountHash a.ToAccount
+                AssetCode = AssetCode a.AssetCode
+                Amount = AssetAmount a.Amount
             }
-            |> EquityTransfer
+            |> AssetTransfer
         | _ ->
             failwith "Invalid action type to map."
 
@@ -143,12 +143,12 @@ module Mapping =
 
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
         {
-            Amount = EquityAmount dto.Amount
+            Amount = AssetAmount dto.Amount
         }
 
     let holdingStateToDto (state : HoldingState) : HoldingStateDto =
         {
-            Amount = state.Amount |> (fun (EquityAmount a) -> a)
+            Amount = state.Amount |> (fun (AssetAmount a) -> a)
         }
 
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
@@ -167,7 +167,7 @@ module Mapping =
         let holdings =
             output.Holdings
             |> Map.toList
-            |> List.map (fun ((AccountHash a, EquityID e), s : HoldingState) -> (a, e), holdingStateToDto s)
+            |> List.map (fun ((AccountHash ah, AssetCode ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
             |> Map.ofList
 
         {

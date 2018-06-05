@@ -32,11 +32,11 @@ type Signature = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type AccountHash = AccountHash of string
-type EquityID = EquityID of string
+type AssetCode = AssetCode of string
 
 type Nonce = Nonce of int64
 type ChxAmount = ChxAmount of decimal
-type EquityAmount = EquityAmount of decimal
+type AssetAmount = AssetAmount of decimal
 
 // Arithmetic
 
@@ -68,23 +68,23 @@ type ChxAmount with
     static member (/) (ChxAmount a1, a2) =
         ChxAmount (Decimal.Round(a1 / a2, 18))
 
-type EquityAmount with
-    static member (+) (EquityAmount a1, EquityAmount a2) =
-        EquityAmount (Decimal.Round(a1 + a2, 18))
-    static member (+) (EquityAmount a1, a2) =
-        EquityAmount (Decimal.Round(a1 + a2, 18))
-    static member (-) (EquityAmount a1, EquityAmount a2) =
-        EquityAmount (Decimal.Round(a1 - a2, 18))
-    static member (-) (EquityAmount a1, a2) =
-        EquityAmount (Decimal.Round(a1 - a2, 18))
-    static member (*) (EquityAmount a1, EquityAmount a2) =
-        EquityAmount (Decimal.Round(a1 * a2, 18))
-    static member (*) (EquityAmount a1, a2) =
-        EquityAmount (Decimal.Round(a1 * a2, 18))
-    static member (/) (EquityAmount a1, EquityAmount a2) =
-        EquityAmount (Decimal.Round(a1 / a2, 18))
-    static member (/) (EquityAmount a1, a2) =
-        EquityAmount (Decimal.Round(a1 / a2, 18))
+type AssetAmount with
+    static member (+) (AssetAmount a1, AssetAmount a2) =
+        AssetAmount (Decimal.Round(a1 + a2, 18))
+    static member (+) (AssetAmount a1, a2) =
+        AssetAmount (Decimal.Round(a1 + a2, 18))
+    static member (-) (AssetAmount a1, AssetAmount a2) =
+        AssetAmount (Decimal.Round(a1 - a2, 18))
+    static member (-) (AssetAmount a1, a2) =
+        AssetAmount (Decimal.Round(a1 - a2, 18))
+    static member (*) (AssetAmount a1, AssetAmount a2) =
+        AssetAmount (Decimal.Round(a1 * a2, 18))
+    static member (*) (AssetAmount a1, a2) =
+        AssetAmount (Decimal.Round(a1 * a2, 18))
+    static member (/) (AssetAmount a1, AssetAmount a2) =
+        AssetAmount (Decimal.Round(a1 / a2, 18))
+    static member (/) (AssetAmount a1, a2) =
+        AssetAmount (Decimal.Round(a1 / a2, 18))
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tx
@@ -97,16 +97,16 @@ type ChxTransferTxAction = {
     Amount : ChxAmount
 }
 
-type EquityTransferTxAction = {
+type AssetTransferTxAction = {
     FromAccountHash : AccountHash
     ToAccountHash : AccountHash
-    EquityID : EquityID
-    Amount : EquityAmount
+    AssetCode : AssetCode
+    Amount : AssetAmount
 }
 
 type TxAction =
     | ChxTransfer of ChxTransferTxAction
-    | EquityTransfer of EquityTransferTxAction
+    | AssetTransfer of AssetTransferTxAction
 
 type Tx = {
     TxHash : TxHash
@@ -147,13 +147,13 @@ type ChxBalanceState = {
 }
 
 type HoldingState = {
-    Amount : EquityAmount
+    Amount : AssetAmount
 }
 
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxProcessedStatus>
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
-    Holdings : Map<AccountHash * EquityID, HoldingState>
+    Holdings : Map<AccountHash * AssetCode, HoldingState>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
