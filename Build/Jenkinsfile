@@ -7,6 +7,11 @@ pipeline {
 		string(name: 'BUILD', defaultValue: '0', description: '')
     }
   stages {
+	stage('Pre Build') {
+      steps {
+        sh 'bash fsharpi ./Dev/CheckCodeStyle.fsx'
+      }
+    }
     stage('Build') {
       steps {
         sh 'dotnet publish $SOLUTION_PATH -c $BUILD_CONFIG -o $PROJECT_OUTPUT_FOLDER'
