@@ -65,10 +65,11 @@ pipeline {
     stage('Publish'){
         environment {
             PROJECTS ='Chainium.Blockchain.Public.Node;Chainium.Blockchain.Public.Wallet;'
+			PACKAGE_NAME="${SOLUTION_NAME}v.${MAJOR_NUMBER}.{MINOR_NUMBER}.{BUILD}.{BUILD_NUMBER}"
         }
         steps {
             sh "mkdir $PUBLISH_DIR"
-            sh "bash ./Build/package.sh $SOLUTION_PATH $PROJECTS $PUBLISH_DIR $PROJECT_OUTPUT_FOLDER $SOLUTION_NAME.$ARTIFACT_SUFIX"
+            sh 'bash ./Build/package.sh $SOLUTION_PATH $PROJECTS $PUBLISH_DIR $PROJECT_OUTPUT_FOLDER $PACKAGE_NAME'
         }
     }
   }
@@ -80,7 +81,6 @@ pipeline {
     PROJECT_OUTPUT_FOLDER='Release'
     PUBLISH_DIR='publish'
 	SOLUTION_NAME ='ChainiumBlockchain'
-	ARTIFACT_SUFIX="$MAJOR_NUMBER.$MINOR_NUMBER.$BUILD.$BUILD_NUMBER"
   }
   
   post {
