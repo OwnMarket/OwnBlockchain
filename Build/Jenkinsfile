@@ -14,7 +14,7 @@ pipeline {
     }
     stage('Build') {
       steps {
-		sh 'bash ./Build/update_build_numbers.sh $MAJOR_NUMBER $MINOR_NUMBER $BUILD $BUILD_NUMBER'
+		sh 'bash ./Build/update_build_numbers.sh ./Source/AssemblyInfo.fs $MAJOR_NUMBER $MINOR_NUMBER $BUILD $BUILD_NUMBER'
         sh 'dotnet publish $SOLUTION_PATH -c $BUILD_CONFIG -o $PROJECT_OUTPUT_FOLDER'
       }
     }
