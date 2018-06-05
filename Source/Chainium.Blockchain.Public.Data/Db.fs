@@ -24,6 +24,7 @@ module Db =
                     "@sender_address", txInfoDto.SenderAddress |> box
                     "@nonce", txInfoDto.Nonce |> box
                     "@fee", txInfoDto.Fee |> box
+                    "@action_count", txInfoDto.ActionCount |> box
                     "@status", txInfoDto.Status |> box
                 ]
 
@@ -59,7 +60,7 @@ module Db =
         // TODO: add condition to skip transactions
         let sql =
             """
-            SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
+            SELECT tx_hash, sender_address, nonce, fee, action_count, tx_id AS appearance_order
             FROM tx
             WHERE status = 0
             AND tx_hash NOT IN @txsToSkip

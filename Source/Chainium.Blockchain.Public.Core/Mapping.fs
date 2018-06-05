@@ -66,6 +66,7 @@ module Mapping =
             SenderAddress = tx.Sender |> (fun (ChainiumAddress a) -> a)
             Nonce = tx.Nonce |> (fun (Nonce n) -> n)
             Fee = tx.Fee |> (fun (ChxAmount a) -> a)
+            ActionCount = Convert.ToInt16 tx.Actions.Length
             Status = txStatusToCode status
         }
 
@@ -75,6 +76,7 @@ module Mapping =
             Sender = ChainiumAddress dto.SenderAddress
             Nonce = Nonce dto.Nonce
             Fee = ChxAmount dto.Fee
+            ActionCount = dto.ActionCount
             AppearanceOrder = dto.AppearanceOrder
         }
 

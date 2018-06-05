@@ -138,6 +138,7 @@ type PendingTxInfo = {
     Sender : ChainiumAddress
     Nonce : Nonce
     Fee : ChxAmount
+    ActionCount : int16
     AppearanceOrder : int64
 }
 

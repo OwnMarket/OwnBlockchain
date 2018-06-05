@@ -34,6 +34,7 @@ module DbChanges =
                         sender_address TEXT NOT NULL,
                         nonce BIGINT NOT NULL,
                         fee DECIMAL(30, 18) NOT NULL,
+                        action_count SMALLINT NOT NULL,
                         status SMALLINT NOT NULL DEFAULT 0, -- 0: Pending, 1: Success, 2: Failure
                         block_number BIGINT,
 
@@ -111,6 +112,7 @@ module DbChanges =
                         sender_address TEXT NOT NULL,
                         nonce BIGINT NOT NULL,
                         fee DECIMAL(30, 18) NOT NULL,
+                        action_count SMALLINT NOT NULL,
                         status SMALLINT NOT NULL DEFAULT 0, -- 0: Pending, 1: Success, 2: Failure
                         block_number BIGINT,
 

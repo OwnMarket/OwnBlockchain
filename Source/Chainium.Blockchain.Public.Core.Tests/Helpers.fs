@@ -17,6 +17,7 @@ module Helpers =
         (senderAddress : ChainiumAddress)
         (nonce : Nonce)
         (fee : ChxAmount)
+        (actionCount : int16)
         (appearanceOrder : int64)
         =
 
@@ -25,6 +26,7 @@ module Helpers =
             Sender = senderAddress
             Nonce = nonce
             Fee = fee
+            ActionCount = actionCount
             AppearanceOrder = appearanceOrder
         }
 

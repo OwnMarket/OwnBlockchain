@@ -47,6 +47,7 @@ type TxInfoDto = {
     SenderAddress : string
     Nonce : int64
     Fee : decimal
+    ActionCount : int16
     Status : byte
 }
 
@@ -56,6 +57,7 @@ type PendingTxInfoDto = {
     SenderAddress : string
     Nonce : int64
     Fee : decimal
+    ActionCount : int16
     AppearanceOrder : int64
 }
 
