@@ -164,7 +164,7 @@ module Processing =
             rest
             |> List.sortBy (fun tx -> tx.Nonce)
             |> List.mapi (fun i tx ->
-                let expectedNonce = stateNonce + (int64 (i + 1))
+                let expectedNonce = stateNonce + (Convert.ToInt64 (i + 1))
                 let (Nonce nonceGap) = tx.Nonce - expectedNonce
                 (tx, nonceGap)
             )
