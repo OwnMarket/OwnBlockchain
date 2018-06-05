@@ -3,7 +3,7 @@ pipeline {
   agent any
   parameters {
         string(name: 'MAJOR_NUMBER', defaultValue: '0', description: 'Major number for this build')
-		string(name: 'MINOR_NUMBER', defaultValue: '1', description: 'Minor number for this build')
+		string(name: 'MINOR_NUMBER', defaultValue: '3', description: 'Minor number for this build')
 		string(name: 'BUILD', defaultValue: '0', description: '')
     }
   stages {
@@ -14,6 +14,7 @@ pipeline {
     }
     stage('Build') {
       steps {
+		sh 'bash bash ./Build/update_build_numbers.sh $MAJOR_NUMBER $MINOR_NUMBER $BUILD $BUILD_NUMBER'
         sh 'dotnet publish $SOLUTION_PATH -c $BUILD_CONFIG -o $PROJECT_OUTPUT_FOLDER'
       }
     }
@@ -67,18 +68,19 @@ pipeline {
         }
         steps {
             sh "mkdir $PUBLISH_DIR"
-            sh 'bash ./Build/package.sh $SOLUTION_PATH $PROJECTS $PUBLISH_DIR $PROJECT_OUTPUT_FOLDER $SOLUTION_NAME'
+            sh "bash ./Build/package.sh $SOLUTION_PATH $PROJECTS $PUBLISH_DIR $PROJECT_OUTPUT_FOLDER $SOLUTION_NAME.$ARTIFACT_SUFIX"
         }
     }
   }
   
   
   environment {
-    SOLUTION_PATH = 'Source'
-    BUILD_CONFIG = 'Release'
-    PROJECT_OUTPUT_FOLDER = 'Release'
-    PUBLISH_DIR = 'publish'
-	SOLUTION_NAME = 'ChainiumBlockchain'
+    SOLUTION_PATH='Source'
+    BUILD_CONFIG='Release'
+    PROJECT_OUTPUT_FOLDER='Release'
+    PUBLISH_DIR='publish'
+	SOLUTION_NAME ='ChainiumBlockchain'
+	ARTIFACT_SUFIX="$MAJOR_NUMBER.$MINOR_NUMBER.$BUILD.$BUILD_NUMBER"
   }
   
   post {
