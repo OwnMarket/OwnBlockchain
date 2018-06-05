@@ -258,7 +258,7 @@ module Db =
     let addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO holding (account_id, asset, amount)
+            INSERT INTO holding (account_id, asset_code, amount)
             SELECT account_id, @equityId, @amount
             FROM account
             WHERE account_hash = @accountHash
@@ -286,7 +286,7 @@ module Db =
             UPDATE holding
             SET amount = @amount
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
-            AND asset = @equityId
+            AND asset_code = @equityId
             """
 
         let sqlParams =
@@ -374,11 +374,10 @@ module Db =
         let sql =
             """
             SELECT h.amount, h.nonce
-            FROM holding h
-            JOIN account a
-            USING (account_id)
+            FROM holding AS h
+            JOIN account AS a USING (account_id)
             WHERE a.account_hash = @accountHash
-            AND h.asset = @equityId
+            AND h.asset_code = @equityId
             """
 
         let sqlParams =

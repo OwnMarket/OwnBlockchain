@@ -63,11 +63,11 @@ module DbChanges =
                     CREATE TABLE IF NOT EXISTS holding (
                         holding_id INTEGER NOT NULL,
                         account_id BIGINT NOT NULL,
-                        asset TEXT NOT NULL,
+                        asset_code TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
 
                         CONSTRAINT holding__pk PRIMARY KEY (holding_id),
-                        CONSTRAINT holding__uk__account_id__asset UNIQUE (account_id, asset),
+                        CONSTRAINT holding__uk__account_id__asset_code UNIQUE (account_id, asset_code),
                         CONSTRAINT holding__fk__account FOREIGN KEY (account_id)
                             REFERENCES account (account_id)
                     );
@@ -140,11 +140,11 @@ module DbChanges =
                     CREATE TABLE IF NOT EXISTS holding (
                         holding_id BIGSERIAL NOT NULL,
                         account_id BIGINT NOT NULL,
-                        asset TEXT NOT NULL,
+                        asset_code TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
 
                         CONSTRAINT holding__pk PRIMARY KEY (holding_id),
-                        CONSTRAINT holding__uk__account_id__asset UNIQUE (account_id, asset),
+                        CONSTRAINT holding__uk__account_id__asset_code UNIQUE (account_id, asset_code),
                         CONSTRAINT holding__fk__account FOREIGN KEY (account_id)
                             REFERENCES account (account_id)
                     );
