@@ -44,10 +44,16 @@ pipeline {
       environment {
         RESULTS_OUTPUT_PATH = 'integrationtestresults'
         FULL_RESULTS_PATH ="$WORKSPACE/$RESULTS_OUTPUT_PATH"
+		APP_SETTINGS_TO_REPLACE="$SOLUTION_PATH/Chainium.Blockchain.Public.Postgres.IntegrationTests/$PROJECT_OUTPUT_FOLDER/AppSettings.json"
       }
       steps {
         
         sh "mkdir $RESULTS_OUTPUT_PATH"
+		withCredentials([string(credentialsId: '', variable: 'POSTGRES_CONNECTION_STRING')]) {
+            // replace connection string for postgres integration tests
+			sh 'bash sed -i '/DBConnectionString/c\"DBConnectionString": "$POSTGRES_CONNECTION_STRING",' $APP_SETTINGS_TO_REPLACE' 
+		}
+		
         sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.IntegrationTests'
         xunit testTimeMargin: "3000", 
               thresholdMode: 1, 
