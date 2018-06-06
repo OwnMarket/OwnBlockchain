@@ -119,7 +119,7 @@ module SharedTests =
             sprintf
                 """
                 select * from tx
-                where tx_hash = "%s"
+                where tx_hash = '%s'
                 """
                 txHash.TxHash
 
