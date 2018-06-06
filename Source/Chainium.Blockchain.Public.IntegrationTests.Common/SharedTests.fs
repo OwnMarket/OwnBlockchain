@@ -123,7 +123,7 @@ module SharedTests =
                 """
                 txHash.TxHash
 
-        let transactions = DbTools.query<TxInfoDto> Config.DbConnectionString selectStatement []
+        let transactions = DbTools.query<TxInfoDto> connectionString selectStatement []
 
         let actual =
             transactions
