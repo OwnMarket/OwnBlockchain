@@ -3,18 +3,18 @@ pipeline {
   agent any
   parameters {
         string(name: 'MAJOR_NUMBER', defaultValue: '0', description: 'Major number for this build')
-		string(name: 'MINOR_NUMBER', defaultValue: '3', description: 'Minor number for this build')
-		string(name: 'BUILD', defaultValue: '0', description: '')
+        string(name: 'MINOR_NUMBER', defaultValue: '3', description: 'Minor number for this build')
+        string(name: 'BUILD', defaultValue: '0', description: '')
     }
   stages {
-	stage('Pre Build') {
+    stage('Pre Build') {
       steps {
         sh 'bash fsharpi ./Dev/CheckCodeStyle.fsx'
       }
     }
     stage('Build') {
       steps {
-		sh 'bash ./Build/update_build_numbers.sh ./Source/AssemblyInfo.fs $MAJOR_NUMBER $MINOR_NUMBER $BUILD $BUILD_NUMBER'
+        sh 'bash ./Build/update_build_numbers.sh ./Source/AssemblyInfo.fs $MAJOR_NUMBER $MINOR_NUMBER $BUILD $BUILD_NUMBER'
         sh 'dotnet publish $SOLUTION_PATH -c $BUILD_CONFIG -o $PROJECT_OUTPUT_FOLDER'
       }
     }
@@ -48,7 +48,7 @@ pipeline {
       steps {
         
         sh "mkdir $RESULTS_OUTPUT_PATH"
-        sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.IntegrationTests*'
+        sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.IntegrationTests'
         xunit testTimeMargin: "3000", 
               thresholdMode: 1, 
               thresholds: [
@@ -65,7 +65,7 @@ pipeline {
     stage('Publish'){
         environment {
             PROJECTS ='Chainium.Blockchain.Public.Node;Chainium.Blockchain.Public.Wallet;'
-			PACKAGE_NAME="${SOLUTION_NAME}-${MAJOR_NUMBER}.${MINOR_NUMBER}.${BUILD}.${BUILD_NUMBER}"
+            PACKAGE_NAME="${SOLUTION_NAME}-${MAJOR_NUMBER}.${MINOR_NUMBER}.${BUILD}.${BUILD_NUMBER}"
         }
         steps {
             sh "mkdir $PUBLISH_DIR"
@@ -80,18 +80,18 @@ pipeline {
     BUILD_CONFIG='Release'
     PROJECT_OUTPUT_FOLDER='Release'
     PUBLISH_DIR='publish'
-	SOLUTION_NAME ='Chainium'
+    SOLUTION_NAME ='Chainium'
   }
   
   post {
         success {
-			archiveArtifacts artifacts: "$PUBLISH_DIR/*.tar.gz,$PUBLISH_DIR/*.zip", fingerprint: true
+            archiveArtifacts artifacts: "$PUBLISH_DIR/*.tar.gz,$PUBLISH_DIR/*.zip", fingerprint: true
         }
         failure {
            sendSlackMessage("Failed","danger")
         }
         unstable {
-			sendSlackMessage("Unstable","warning")
+            sendSlackMessage("Unstable","warning")
         }
         changed {
             slackSend color: "good", message: "${env.JOB_NAME}  has changed status. More info at: (<${env.BUILD_URL}|Open>)"
@@ -102,26 +102,26 @@ pipeline {
 
 @NonCPS
 def getChangeString() {
-	MAX_MSG_LEN = 100
-	def changeString = ""
+    MAX_MSG_LEN = 100
+    def changeString = ""
 
-	echo "Gathering SCM changes"
-	def changeLogSets = currentBuild.changeSets
-	for (int i = 0; i < changeLogSets.size(); i++) {
-		def entries = changeLogSets[i].items
-		for (int j = 0; j < entries.length; j++) {
-		def entry = entries[j]
-		truncated_msg = entry.msg.take(MAX_MSG_LEN)
-	changeString += " - ${truncated_msg} [${entry.author}]\n"
-	}
-	}
+    echo "Gathering SCM changes"
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+        def entry = entries[j]
+        truncated_msg = entry.msg.take(MAX_MSG_LEN)
+    changeString += " - ${truncated_msg} [${entry.author}]\n"
+    }
+    }
 
-	if (!changeString) {
-		changeString = " - No new changes"
-	}
-	return changeString
+    if (!changeString) {
+        changeString = " - No new changes"
+    }
+    return changeString
 }
-	
+    
 def sendSlackMessage(status,color){
-	slackSend color: color, message: status+ ": ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nChanges:\n"+getChangeString()
+    slackSend color: color, message: status+ ": ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\nChanges:\n"+getChangeString()
 }
