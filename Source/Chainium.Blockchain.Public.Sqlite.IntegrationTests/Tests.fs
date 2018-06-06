@@ -9,7 +9,7 @@ module Tests =
 
     [<Fact>]
     let ``DbInit - Init SQLite database`` () =
-         SharedTests.initDatabaseTest Config.DbEngineType Config.DbConnectionString
+        SharedTests.initDatabaseTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
     let ``Api - submit transaction for SQLite`` () =

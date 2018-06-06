@@ -13,7 +13,6 @@ open Chainium.Blockchain.Public.Node
 
 module internal Helper =
 
-
     let SQLite = "SQLite"
     let Postgres = "PostgreSQL"
 
@@ -29,19 +28,18 @@ module internal Helper =
         if sqlEngineType = Postgres then
             let removeAllTables =
                 """
-                  DO $$ DECLARE
-                    tabname RECORD;
-                  BEGIN
-                    FOR tabname IN (SELECT tablename
-                    FROM pg_tables
+                    DO $$ DECLARE
+                        tabname RECORD;
+                    BEGIN
+                        FOR tabname IN (SELECT tablename
+                        FROM pg_tables
                     WHERE schemaname = current_schema())
-                  LOOP
-                      EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(tabname.tablename) || ' CASCADE';
-                  END LOOP;
-                  END $$;
+                    LOOP
+                        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(tabname.tablename) || ' CASCADE';
+                    END LOOP;
+                    END $$;
                 """
             DbTools.execute connString removeAllTables [] |> ignore
-
 
     let testServer () =
         let hostBuilder =

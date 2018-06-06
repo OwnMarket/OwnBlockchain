@@ -195,4 +195,3 @@ module SharedTests =
         DbInit.init engineType connString
         let changes = numOfUpdatesExecuted connString
         test <@ changes.Length > 0 @>
-
