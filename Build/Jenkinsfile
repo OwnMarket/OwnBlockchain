@@ -86,7 +86,6 @@ pipeline {
   post {
         success {
 			archiveArtifacts artifacts: "$PUBLISH_DIR/*.tar.gz,$PUBLISH_DIR/*.zip", fingerprint: true
-			sendSlackMessage("Completed","good")
         }
         failure {
            sendSlackMessage("Failed","danger")
