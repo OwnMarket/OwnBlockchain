@@ -21,8 +21,7 @@ module Conversion =
 
     let decimalToBytes (x : decimal) =
         Decimal.GetBits x
-        |> Array.map int32ToBytes
-        |> Array.concat
+        |> Array.collect int32ToBytes
 
     let stringToBytes (str : string) =
         Encoding.UTF8.GetBytes str
