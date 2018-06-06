@@ -59,9 +59,9 @@ module SharedTests =
         let httpResult = res.EnsureSuccessStatusCode()
 
         httpResult.Content.ReadAsStringAsync()
-            |> Async.AwaitTask
-            |> Async.RunSynchronously
-            |> JsonConvert.DeserializeObject<SubmitTxResponseDto>
+        |> Async.AwaitTask
+        |> Async.RunSynchronously
+        |> JsonConvert.DeserializeObject<SubmitTxResponseDto>
 
     let private testInit engineType connectionString =
         Helper.testCleanup engineType connectionString
@@ -110,8 +110,8 @@ module SharedTests =
         if shouldExist then do
             let savedData =
                 txFile
-                    |> File.ReadAllText
-                    |> JsonConvert.DeserializeObject<TxEnvelopeDto>
+                |> File.ReadAllText
+                |> JsonConvert.DeserializeObject<TxEnvelopeDto>
 
             test <@ expectedTx = savedData @>
 

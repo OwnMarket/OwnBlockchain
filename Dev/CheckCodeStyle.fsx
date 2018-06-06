@@ -65,7 +65,7 @@ let rules =
             | _ -> None
 
         createRule <| function
-            | Some line1, Some line2 when line1.TrimStart().StartsWith("let ") && line2.Trim() = "=" ->
+            | Some line1, Some line2 when line1.Trim().StartsWith("let ") && line2.Trim() = "=" ->
                 Some "Equal sign should be on a separate line only in multiline function declaration."
             | Some line1, Some line2 when line1.Trim() = "=" && not line2.IsEmpty ->
                 Some "There should be an empty line after multiline function declaration."
@@ -157,6 +157,15 @@ let rules =
                 && line2.Indentation > line1.Indentation
                 && line2.Indentation - line1.Indentation <> 4 ->
                 Some "Don't indent for more than one level at a time."
+            | _ -> None
+
+        createRule <| function
+            | Some line1, Some line2 when
+                line2.Trim().StartsWith("|>")
+                && line2.Indentation > line1.Indentation
+                && not (line1.Trim().StartsWith("do!")) ->
+
+                Some "If a line starts with pipe operator |>, it should not be indented more than the preciding line."
             | _ -> None
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////

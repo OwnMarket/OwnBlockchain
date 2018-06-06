@@ -82,15 +82,15 @@ module HashingTests =
             [
                 for i in 1 .. 100 ->
                     sprintf "%i" i
-                        |> Encoding.UTF8.GetBytes
-                        |> Hashing.encode
+                    |> Encoding.UTF8.GetBytes
+                    |> Hashing.encode
             ]
 
         let roots =
             [
                 for _ in 1 .. 100 ->
                     Hashing.merkleTree transactionMocks
-                        |> fun (MerkleTreeRoot r) -> r
+                    |> fun (MerkleTreeRoot r) -> r
             ]
             |> List.distinct
 
