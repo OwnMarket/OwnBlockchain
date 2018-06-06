@@ -44,7 +44,7 @@ pipeline {
       environment {
         RESULTS_OUTPUT_PATH = 'integrationtestresults'
         FULL_RESULTS_PATH ="$WORKSPACE/$RESULTS_OUTPUT_PATH"
-		APP_SETTINGS_TO_REPLACE="$SOLUTION_PATH/Chainium.Blockchain.Public.Postgres.IntegrationTests/$PROJECT_OUTPUT_FOLDER/AppSettings.json"
+		APP_SETTINGS_TO_REPLACE="$SOLUTION_PATH/Chainium.Blockchain.Public.IntegrationTests.Postgres/$PROJECT_OUTPUT_FOLDER/AppSettings.json"
 		INTEGRATION_TEST_FILTER="'*.IntegrationTests.*' -a ! -name '*.IntegrationTests.Common*'"
       }
       steps {
