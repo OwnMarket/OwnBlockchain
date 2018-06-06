@@ -25,10 +25,7 @@ module MerkleTree =
         | Some l -> l.Hash
         | None -> Array.zeroCreate 0
 
-    let private concatHashes
-        left
-        right
-        =
+    let private concatHashes left right =
         Array.append left right
 
     let private buildNode
@@ -68,6 +65,7 @@ module MerkleTree =
         hashFunction
         (treeNodes : MerkleNode option list)
         =
+
         let treeBuilder nodes =
             buildTree hashFunction nodes
 
@@ -128,6 +126,7 @@ module MerkleTree =
         (node : MerkleNode option)
         (hash : byte[])
         =
+
         let searchSubTree x =
             if
                 x.Left = None
@@ -183,16 +182,17 @@ module MerkleTree =
         leafHash
         : MerkleProof
         =
-            let root =
-                leafHashes
-                |> buildNodes
-                |> buildTree hashFunc
 
-            let leaf = findLeaf root leafHash
+        let root =
+            leafHashes
+            |> buildNodes
+            |> buildTree hashFunc
 
-            match leaf with
-            | None -> []
-            | Some l -> merkleProof l [] leafHash
+        let leaf = findLeaf root leafHash
+
+        match leaf with
+        | None -> []
+        | Some l -> merkleProof l [] leafHash
 
     let verifyProof
         hashFunc

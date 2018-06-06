@@ -74,6 +74,15 @@ let rules =
 
         createRule (
             function
+            | Some line1, Some line2 when line1.TrimStart().StartsWith("let ") && line2.Trim() = "=" ->
+                Some "Equal sign should be on a separate line only in multiline function declaration."
+            | Some line1, Some line2 when line1.Trim() = "=" && not line2.IsEmpty ->
+                Some "There should be an empty line after multiline function declaration."
+            | _ -> None
+        )
+
+        createRule (
+            function
             | Some line1, Some line2 when line1.Trim().EndsWith("->") && line2.IsEmpty ->
                 Some "There should be no empty lines after function arrow."
             | _ -> None

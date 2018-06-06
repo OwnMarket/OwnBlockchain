@@ -81,8 +81,7 @@ module Db =
 
         DbTools.query dbConnectionString sql sqlParams
 
-    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option
-        =
+    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option =
         let sql =
             """
             SELECT block_timestamp
@@ -332,6 +331,7 @@ module Db =
         (state : ProcessingOutputDto)
         : Result<unit, AppErrors>
         =
+
         use conn = DbTools.newConnection dbConnectionString
 
         conn.Open()

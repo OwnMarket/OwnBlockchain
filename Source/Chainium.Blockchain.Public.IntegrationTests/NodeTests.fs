@@ -103,43 +103,44 @@ module NodeTests =
         )
         shouldExist
         =
-            let fileName = sprintf "Tx_%s" txHash.TxHash
-            let txFile = Path.Combine(Config.DataDir, fileName)
 
-            test <@ txFile |> File.Exists = shouldExist @>
+        let fileName = sprintf "Tx_%s" txHash.TxHash
+        let txFile = Path.Combine(Config.DataDir, fileName)
 
+        test <@ txFile |> File.Exists = shouldExist @>
+
+        if shouldExist then do
+            let savedData =
+                txFile
+                    |> File.ReadAllText
+                    |> JsonConvert.DeserializeObject<TxEnvelopeDto>
+
+            test <@ expectedTx = savedData @>
+
+        let selectStatement =
+            sprintf
+                """
+                select * from tx
+                where tx_hash = "%s"
+                """
+                txHash.TxHash
+
+        let transactions = DbTools.query<TxInfoDto> Config.DbConnectionString selectStatement []
+
+        let actual =
+            transactions
+            |> List.tryHead
+
+        match actual with
+        | None ->
             if shouldExist then do
-                let savedData =
-                    txFile
-                        |> File.ReadAllText
-                        |> JsonConvert.DeserializeObject<TxEnvelopeDto>
-
-                test <@ expectedTx = savedData @>
-
-            let selectStatement =
-                sprintf
-                    """
-                    select * from tx
-                    where tx_hash = "%s"
-                    """
-                    txHash.TxHash
-
-            let transactions = DbTools.query<TxInfoDto> Config.DbConnectionString selectStatement []
-
-            let actual =
-                transactions
-                |> List.tryHead
-
-            match actual with
-            | None ->
-                if shouldExist then do
-                    failwith "Transaction is not stored into database"
-            | Some txInfo ->
-                test <@ txHash.TxHash = txInfo.TxHash @>
-                test <@ dto.Fee = txInfo.Fee @>
-                test <@ dto.Nonce = txInfo.Nonce @>
-                test <@ txInfo.Status = byte(0) @>
-                test <@ txInfo.SenderAddress = (addressToString senderWallet.Address) @>
+                failwith "Transaction is not stored into database"
+        | Some txInfo ->
+            test <@ txHash.TxHash = txInfo.TxHash @>
+            test <@ dto.Fee = txInfo.Fee @>
+            test <@ dto.Nonce = txInfo.Nonce @>
+            test <@ txInfo.Status = byte(0) @>
+            test <@ txInfo.SenderAddress = (addressToString senderWallet.Address) @>
 
     [<Fact>]
     let ``Api - submit transaction`` () =
