@@ -1,10 +1,8 @@
 namespace Chainium.Blockchain.Public.Core.Tests
 
-open System
 open Xunit
 open Swensen.Unquote
 open Chainium.Common
-open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
@@ -137,6 +135,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
+                Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
                 getAccountController
@@ -210,6 +209,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
+                Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
                 getAccountController
@@ -283,6 +283,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
+                Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
                 getAccountController
@@ -370,6 +371,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
+                Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
                 getAccountController
@@ -454,6 +456,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
+                Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
                 getAccountController

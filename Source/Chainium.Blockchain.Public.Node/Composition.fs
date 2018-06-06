@@ -1,6 +1,5 @@
 ﻿namespace Chainium.Blockchain.Public.Node
 
-open System
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
@@ -41,13 +40,20 @@ module Composition =
 
     // Workflows
 
-    let submitTx = Workflows.submitTx Signing.verifySignature Hashing.hash saveTx saveTxToDb
+    let submitTx = 
+        Workflows.submitTx 
+            Signing.verifySignature 
+            Hashing.isValidChainiumAddress 
+            Hashing.hash 
+            saveTx 
+            saveTxToDb
 
     let createNewBlock () =
         Workflows.createNewBlock
             getPendingTxs
             getTx
-            Signing.verifySignature
+            Signing.verifySignature 
+            Hashing.isValidChainiumAddress 
             getChxBalanceState
             getHoldingState
             getAccountController

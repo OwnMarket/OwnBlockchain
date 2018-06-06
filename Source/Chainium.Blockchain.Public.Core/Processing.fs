@@ -224,7 +224,7 @@ module Processing =
         |> orderSet []
         |> List.map (fun tx -> tx.TxHash)
 
-    let getTxBody getTx verifySignature txHash =
+    let getTxBody getTx verifySignature isValidAddress txHash =
         result {
             let! txEnvelopeDto = getTx txHash
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
@@ -233,7 +233,7 @@ module Processing =
             let! tx =
                 txEnvelope.RawTx
                 |> Serialization.deserializeTx
-                >>= (Validation.validateTx sender txHash)
+                >>= (Validation.validateTx sender isValidAddress txHash)
 
             return tx
         }
@@ -275,6 +275,7 @@ module Processing =
     let processTxSet
         getTx
         verifySignature
+        isValidAddress
         (getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState option)
         (getHoldingStateFromStorage : AccountHash * AssetCode -> HoldingState option)
         (getAccountControllerFromStorage : AccountHash -> ChainiumAddress option)
@@ -287,7 +288,7 @@ module Processing =
 
             let processingResult =
                 result {
-                    let! tx = getTxBody getTx verifySignature txHash
+                    let! tx = getTxBody getTx verifySignature isValidAddress txHash
 
                     let! state =
                         updateChxBalanceNonce tx.Sender tx.Nonce newState

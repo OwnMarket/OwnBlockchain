@@ -1,6 +1,5 @@
 ﻿namespace Chainium.Blockchain.Public.Core
 
-open System
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
@@ -44,9 +43,12 @@ module Validation =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Validation rules based on action type
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let private validateChxTransfer action =
+    let private validateChxTransfer isValidAddress action =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
+                yield AppError "Recipient address is not presend."
+
+            if not (isValidAddress (ChainiumAddress action.RecipientAddress)) then
                 yield AppError "Recipient address is not valid."
 
             if action.Amount <= 0M then
@@ -68,11 +70,11 @@ module Validation =
                 yield AppError "Asset amount must be larger than zero"
         ]
 
-    let private validateTxActions (actions : TxActionDto list) =
+    let private validateTxActions (actions : TxActionDto list) isValidAddress =
         let validateTxAction (action : TxActionDto) =
             match action.ActionData with
             | :? ChxTransferTxActionDto as a ->
-                validateChxTransfer a
+                validateChxTransfer isValidAddress a 
             | :? AssetTransferTxActionDto as a ->
                 validateAssetTransfer a
             | _ ->
@@ -82,6 +84,6 @@ module Validation =
         actions
         |> List.collect validateTxAction
 
-    let validateTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        validateTxFields txDto @ validateTxActions txDto.Actions
+    let validateTx sender isValidAddress hash (txDto : TxDto) : Result<Tx, AppErrors> =
+        validateTxFields txDto @ validateTxActions txDto.Actions isValidAddress
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)

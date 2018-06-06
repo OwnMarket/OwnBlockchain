@@ -52,6 +52,32 @@ module Hashing =
         |> encode
         |> ChainiumAddress
 
+    let isValidChainiumAddress (ChainiumAddress address) =        
+        match address with 
+        | address when address.IsNullOrWhiteSpace() || not (address.StartsWith("CH")) -> false 
+        | _ -> 
+            let hash = decode address;
+            
+            if Array.length hash <> 26 then 
+                false
+            else       
+                let addressChecksum = 
+                    hash
+                    |> Array.skip 22
+
+                let address20ByteHash =
+                    hash
+                    |> Array.skip 2
+                    |> Array.take 20
+
+                let address20ByteHashChecksum = 
+                    address20ByteHash
+                    |> sha256
+                    |> sha256
+                    |> Array.take 4
+
+                addressChecksum = address20ByteHashChecksum
+
     let merkleTree (hashes : string list) =
         hashes
         |> List.map decode

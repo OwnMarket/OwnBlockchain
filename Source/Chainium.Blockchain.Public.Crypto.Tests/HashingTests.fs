@@ -77,6 +77,62 @@ module HashingTests =
         test <@ longerThan26Bytes.Length = 0 @>
 
     [<Fact>]
+    let ``Hashing.isValidChainiumAddress valid specific Chainium address`` () =
+        // ARRANGE
+        let address = ChainiumAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG";
+
+        // ACT
+        let isValid = Hashing.isValidChainiumAddress address;  
+        
+        // ASSERT
+        test <@ isValid = true @>
+
+    [<Fact>]
+    let ``Hashing.isValidChainiumAddress valid address created with createChainiumAddress`` () =   
+        // ARRANGE
+        let isAlwaysValid = Hashing.chainiumAddress >> Hashing.isValidChainiumAddress
+        let bytes = Signing.generateRandomBytes 100;
+
+        // ACT        
+        let isValid = isAlwaysValid bytes
+
+        // ASSERT
+        test <@ isValid = true @>
+
+    [<Fact>]
+    let ``Hashing.isValidChainiumAddress invalid address prefix`` () =
+        // ARRANGE
+        let address = ChainiumAddress "XRPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG";
+
+        // ACT
+        let isValid = Hashing.isValidChainiumAddress address;
+
+        // ASSERT
+        test <@ isValid = false @>
+
+    [<Fact>]
+    let ``Hashing.isValidChainiumAddress invalid address hash length`` () =        
+        // ARRANGE
+        let address = ChainiumAddress "CHPvS1Hxs4oLcgKccYmubSBjurjUHmRMG";
+
+        // ACT
+        let isValid = Hashing.isValidChainiumAddress address;
+
+        // ASSERT
+        test <@ isValid = false @>
+
+    [<Fact>]
+    let ``Hashing.isValidChainiumAddress invalid checksum`` () =           
+        // ARRANGE
+        let address = ChainiumAddress "CHPvS1Hxs4oLcrbgKccYmubSBjurjUHmRMG";
+
+        // ACT
+        let isValid = Hashing.isValidChainiumAddress address;
+
+        // ASSERT
+        test <@ isValid = false @>
+
+    [<Fact>]
     let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` ()=
         let transactionMocks =
             [
