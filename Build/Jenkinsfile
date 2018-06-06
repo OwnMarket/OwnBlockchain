@@ -50,7 +50,7 @@ pipeline {
       steps {
         
         sh "mkdir $RESULTS_OUTPUT_PATH"
-		withCredentials([string(credentialsId: '', variable: 'POSTGRES_CONNECTION_STRING')]) {
+		withCredentials([string(credentialsId: 'POSTGRES_CONNECTION_STRING', variable: 'POSTGRES_CONNECTION_STRING')]) {
             // replace connection string for postgres integration tests
 			sh 'bash sed -i \'/DBConnectionString/c\\"DBConnectionString": "$POSTGRES_CONNECTION_STRING",\' $APP_SETTINGS_TO_REPLACE'
 		}
