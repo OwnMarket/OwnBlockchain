@@ -45,6 +45,7 @@ pipeline {
         RESULTS_OUTPUT_PATH = 'integrationtestresults'
         FULL_RESULTS_PATH ="$WORKSPACE/$RESULTS_OUTPUT_PATH"
 		APP_SETTINGS_TO_REPLACE="$SOLUTION_PATH/Chainium.Blockchain.Public.Postgres.IntegrationTests/$PROJECT_OUTPUT_FOLDER/AppSettings.json"
+		INTEGRATION_TEST_FILTER="'*.IntegrationTests.*' -a ! -name '*.IntegrationTests.Common*'"
       }
       steps {
         
@@ -54,7 +55,7 @@ pipeline {
 			sh 'bash sed -i \'/DBConnectionString/c\\"DBConnectionString": "$POSTGRES_CONNECTION_STRING",\' $APP_SETTINGS_TO_REPLACE'
 		}
 		
-        sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.IntegrationTests'
+        sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH "$INTEGRATION_TEST_FILTER"'
         xunit testTimeMargin: "3000", 
               thresholdMode: 1, 
               thresholds: [

@@ -33,9 +33,9 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "Chainium.Blockchain.Public.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.IntegrationTests.Common", "Chainium.Blockchain.Public.IntegrationTests.Common\Chainium.Blockchain.Public.IntegrationTests.Common.fsproj", "{A086B9CC-BE0D-4727-BA7B-A8D1EAFD71AE}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Sqlite.IntegrationTests", "Chainium.Blockchain.Public.Sqlite.IntegrationTests\Chainium.Blockchain.Public.Sqlite.IntegrationTests.fsproj", "{346AC764-5D7B-4697-8EB3-875C293A4426}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.IntegrationTests.Sqlite", "Chainium.Blockchain.Public.IntegrationTests.Sqlite\Chainium.Blockchain.Public.IntegrationTests.Sqlite.fsproj", "{346AC764-5D7B-4697-8EB3-875C293A4426}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Postgres.IntegrationTests", "Chainium.Blockchain.Public.Postgres.IntegrationTests\Chainium.Blockchain.Public.Postgres.IntegrationTests.fsproj", "{71647845-4ABE-4D72-89B1-D59BB02D5FED}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.IntegrationTests.Postgres", "Chainium.Blockchain.Public.IntegrationTests.Postgres\Chainium.Blockchain.Public.IntegrationTests.Postgres.fsproj", "{71647845-4ABE-4D72-89B1-D59BB02D5FED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
