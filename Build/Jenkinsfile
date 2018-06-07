@@ -90,9 +90,6 @@ pipeline {
   }
   
   post {
-		always {
-		    mstest testResultsFile:"**/*/*.trx", keepLongStdio: true 
-		}
         success {
             archiveArtifacts artifacts: "$PUBLISH_DIR/*.tar.gz,$PUBLISH_DIR/*.zip", fingerprint: true
         }
