@@ -10,10 +10,11 @@ open Chainium.Blockchain.Public.Crypto
 
 module ValidationTests =
 
-    let chAddress = ChainiumAddress "ch2Wt6j7sbaqbgKphYx9U95wZDX99L"
+    let chAddress = ChainiumAddress "CHMHABow7Liry6TqswwzxHnMfcYNbrJBAtp"
     let txHash = TxHash "SampleHash"
     let chxTransfer = "ChxTransfer"
     let assetTransfer = "AssetTransfer"
+    let controllerChange = "AccountControllerChange"
 
     [<Fact>]
     let ``Validation.validateTx.basicValidation single validation error`` () =
@@ -329,3 +330,59 @@ module ValidationTests =
             test <@ actualAsset.Amount = AssetAmount expAsset.Amount @>
         | Error errors ->
             failwithf "%A" errors
+
+    let private mockIsValidChainiumAddress (address : ChainiumAddress) =
+        let item = address |> fun (ChainiumAddress a) -> a
+        String.IsNullOrWhiteSpace(item) |> not
+
+    [<Fact>]
+    let ``Validation.validateTx.accountControllerChange validate action`` () =
+        let expected =
+            {
+                AccountControllerChangeTxActionDto.AccountHash = "A"
+                ControllerAddress = chAddress |> fun (ChainiumAddress a) -> a
+            }
+
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = controllerChange
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx mockIsValidChainiumAddress chAddress txHash tx with
+        | Ok t ->
+            let actual = getTx<AccountControllerChangeTxAction> t.Actions.Head
+            test <@ AccountHash expected.AccountHash = actual.AccountHash @>
+            test <@ ChainiumAddress expected.ControllerAddress = actual.ControllerAddress @>
+        | Error e -> failwithf "%A" e
+
+    [<Fact>]
+    let ``Validation.validateTx.accountControllerChange invalid action`` () =
+        let expected =
+            {
+                AccountControllerChangeTxActionDto.AccountHash = ""
+                ControllerAddress = ""
+            }
+
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = controllerChange
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx mockIsValidChainiumAddress chAddress txHash tx with
+        | Ok t -> failwith "This test should fail."
+        | Error e ->
+            test <@ e.Length = 2 @>

@@ -47,6 +47,12 @@ module Mapping =
                 Amount = AssetAmount a.Amount
             }
             |> AssetTransfer
+        | :? AccountControllerChangeTxActionDto as a ->
+            {
+                AccountControllerChangeTxAction.AccountHash = AccountHash a.AccountHash
+                ControllerAddress = ChainiumAddress a.ControllerAddress
+            }
+            |> AccountControllerChange
         | _ ->
             failwith "Invalid action type to map."
 
