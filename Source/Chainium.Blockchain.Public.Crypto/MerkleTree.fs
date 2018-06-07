@@ -150,7 +150,6 @@ module MerkleTree =
 
     let rec private merkleProof node segments hash =
         let otherSubtreeHash parent =
-
             let childHash c =
                 match c with
                 | None -> Array.zeroCreate 0

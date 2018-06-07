@@ -61,21 +61,6 @@ let rules =
 
         createRule <| function
             | Some line1, Some line2 when
-                line2.Trim().StartsWith("module ")
-                && not line1.IsEmpty
-                && not (line1.StartsWith("[<"))
-                && not (line1.StartsWith("//"))
-                ->
-                Some "There should be an empty line before module declaration."
-            | _ -> None
-
-        createRule <| function
-            | Some line1, Some line2 when line1.Trim().StartsWith("module ") && not line2.IsEmpty ->
-                Some "There should be an empty line after module declaration."
-            | _ -> None
-
-        createRule <| function
-            | Some line1, Some line2 when
                 line2.StartsWith("open ")
                 && line1.Trim() <> ""
                 && not (line1.StartsWith("open "))
@@ -94,6 +79,21 @@ let rules =
             | _ -> None
 
         createRule <| function
+            | Some line1, Some line2 when
+                line2.Trim().StartsWith("module ")
+                && not line1.IsEmpty
+                && not (line1.StartsWith("[<"))
+                && not (line1.StartsWith("//"))
+                ->
+                Some "There should be an empty line before module declaration."
+            | _ -> None
+
+        createRule <| function
+            | Some line1, Some line2 when line1.Trim().StartsWith("module ") && not line2.IsEmpty ->
+                Some "There should be an empty line after module declaration."
+            | _ -> None
+
+        createRule <| function
             | Some line1, Some line2 when line1.Trim().StartsWith("let ") && line2.Trim() = "=" ->
                 Some "Equal sign should be on a separate line only in multiline function declaration."
             | Some line1, Some line2 when line1.Trim() = "=" && not line2.IsEmpty ->
@@ -103,6 +103,17 @@ let rules =
         createRule <| function
             | Some line1, Some line2 when line1.Trim().EndsWith("->") && line2.IsEmpty ->
                 Some "There should be no empty lines after function arrow."
+            | _ -> None
+
+        createRule <| function
+            | Some line1, Some line2 when
+                line1.Trim().EndsWith("=")
+                && line1.Trim().StartsWith("let ")
+                && line2.IsEmpty
+                ->
+                "Code block belonging to 'let' binding or a single line function declaration "
+                + "should not start with an empty line."
+                |> Some
             | _ -> None
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
