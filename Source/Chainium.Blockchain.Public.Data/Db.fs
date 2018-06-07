@@ -402,7 +402,7 @@ module Db =
     let getAccountController (dbConnectionString : string) accountHash : ChainiumAddress option =
         let sql =
             """
-            SELECT chainium_address
+            SELECT controller_address
             FROM account
             WHERE account_hash = @accountHash
             """
@@ -414,5 +414,5 @@ module Db =
 
         match DbTools.query<AccountControllerDto> dbConnectionString sql sqlParams with
         | [] -> None
-        | [accountDetails] -> accountDetails.ChainiumAddress |> ChainiumAddress |> Some
+        | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
         | _ -> failwith "More than one Controller exists"

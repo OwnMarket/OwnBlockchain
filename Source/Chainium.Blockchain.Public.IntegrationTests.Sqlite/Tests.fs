@@ -1,4 +1,4 @@
-namespace Chainium.Blockchain.Public.Sqlite.IntegrationTests
+namespace Chainium.Blockchain.Public.IntegrationTests.Sqlite
 
 open System
 open Xunit
@@ -18,3 +18,7 @@ module Tests =
     [<Fact>]
     let ``Node - submit and process transactions for SQLite`` () =
         SharedTests.transactionProcessingTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
+    let ``AccountManagement - get account controller for SQLite`` () =
+        SharedTests.getAccountControllerTest Config.DbEngineType Config.DbConnectionString

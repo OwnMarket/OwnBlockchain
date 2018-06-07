@@ -131,7 +131,7 @@ type HoldingInfoDto = {
 [<CLIMutable>]
 type AccountControllerDto = {
     AccountHash : string
-    ChainiumAddress : string
+    ControllerAddress : string
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

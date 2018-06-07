@@ -1,4 +1,4 @@
-namespace Chainium.Blockchain.Public.Postgres.IntegrationTests
+namespace Chainium.Blockchain.Public.IntegrationTests.Postgres
 
 open System
 open Xunit
@@ -18,3 +18,7 @@ module Tests =
     [<Fact>]
     let ``Node - submit and process transactions for Postgres`` () =
         SharedTests.transactionProcessingTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
+    let ``AccountManagement - get account controller for Postgres`` () =
+        SharedTests.getAccountControllerTest Config.DbEngineType Config.DbConnectionString

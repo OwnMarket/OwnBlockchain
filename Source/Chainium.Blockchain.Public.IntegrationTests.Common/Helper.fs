@@ -60,7 +60,7 @@ module internal Helper =
         let insertStatement =
             """
             insert into chx_balance(chainium_address, amount, nonce) values (@chainium_address, @amount, 0);
-            insert into account(account_hash, chainium_address) values (@chainium_address, @chainium_address);
+            insert into account(account_hash, controller_address) values (@chainium_address, @chainium_address);
             """
         DbTools.execute connectionString insertStatement insertParams
         |> ignore

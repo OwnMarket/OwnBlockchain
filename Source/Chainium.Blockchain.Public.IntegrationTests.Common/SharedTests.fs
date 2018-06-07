@@ -13,6 +13,7 @@ open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module SharedTests =
+    open System
 
     let addressToString (ChainiumAddress a) = a
 
@@ -195,3 +196,31 @@ module SharedTests =
         DbInit.init engineType connString
         let changes = numOfUpdatesExecuted connString
         test <@ changes.Length > 0 @>
+
+    let getAccountControllerTest engineType connectionString =
+        Helper.testCleanup engineType connectionString
+        DbInit.init engineType connectionString
+        let wallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+
+        let paramName = "@chainium_address"
+
+        let insertSql =
+                String.Format
+                    (
+                        """
+                            insert into account(account_hash, controller_address)
+                            values ({0}, {0})
+                        """,
+                        paramName
+                    )
+
+        let address = addressToString wallet.Address
+
+        [paramName, address |> box]
+        |> Seq.ofList
+        |> DbTools.execute connectionString insertSql
+        |> ignore
+
+        match Db.getAccountController connectionString address with
+            | None -> failwith "Unable to get controller."
+            | Some resultingAddress -> test <@ resultingAddress = wallet.Address @>
