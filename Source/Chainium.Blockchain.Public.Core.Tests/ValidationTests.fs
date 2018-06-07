@@ -1,5 +1,6 @@
 ﻿namespace Chainium.Blockchain.Public.Core.Tests
 
+open System
 open Xunit
 open Swensen.Unquote
 open Chainium.Blockchain.Public.Core
@@ -274,6 +275,7 @@ module ValidationTests =
     let getTx<'T> = function
         | ChxTransfer action -> box action :?> 'T
         | AssetTransfer action -> box action :?> 'T
+        | AccountControllerChange action -> box action :?> 'T
 
     [<Fact>]
     let ``Validation.validateTx validate action`` () =

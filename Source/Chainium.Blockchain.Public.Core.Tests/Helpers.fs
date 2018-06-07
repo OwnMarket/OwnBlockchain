@@ -12,6 +12,26 @@ open Chainium.Blockchain.Public.Crypto
 
 module Helpers =
 
+    let newTxDto
+        (nonce : int64)
+        (fee : decimal)
+        (actions : obj list)
+        =
+         let json =
+            sprintf
+                """
+                {
+                    Nonce: %i,
+                    Fee: %s,
+                    Actions: %s
+                }
+                """
+                nonce
+                (fee.ToString())
+                (JsonConvert.SerializeObject(actions))
+
+         Encoding.UTF8.GetBytes json
+
     let newPendingTxInfo
         (txHash : TxHash)
         (senderAddress : ChainiumAddress)

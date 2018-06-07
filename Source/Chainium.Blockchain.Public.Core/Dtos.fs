@@ -21,6 +21,12 @@ type AssetTransferTxActionDto = {
 }
 
 [<CLIMutable>]
+type AccountControllerChangeTxActionDto = {
+    AccountHash : string
+    ControllerAddress : string
+}
+
+[<CLIMutable>]
 type TxActionDto = {
     ActionType : string
     ActionData : obj

@@ -11,29 +11,34 @@ open Newtonsoft.Json.Linq
 
 module Serialization =
 
-    let objToString (data : obj) =
-        match data with
-        | :? string as s -> s
-        | _ -> ""
+    let private tokenToAction<'T> actionType (token : JToken option) =
+        if token.IsSome then
+            {
+                ActionType = actionType
+                ActionData = token.Value.ToObject<'T>()
+            }
+            |> box
+        else
+            token
+            |> box
 
-    let private actionFromToken<'T> actionType (token : JToken) =
-        {
-            ActionType = actionType
-            ActionData = token.ToObject<'T>()
-        } |> box
+    let private actionsBasedOnTransactionType =
+        let chxTransferAction trType token= tokenToAction<ChxTransferTxActionDto> trType token
+        let assetTransferAction trType token = tokenToAction<AssetTransferTxActionDto> trType token
+        let controllerChangeAction trType token = tokenToAction<AccountControllerChangeTxActionDto> trType token
 
-    let tokenValue tokenName (jObject : JObject) =
+        [
+            "ChxTransfer", chxTransferAction
+            "AssetTransfer", assetTransferAction
+            "AccountControllerChange", controllerChangeAction
+        ] |> Map.ofList
+
+    let private tokenValue tokenName (jObject : JObject) =
         let token = ref (JValue("") :> JToken)
         let isValid = jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase, token)
         match isValid with
         | true -> Some token.Value
         | false -> None
-
-    let private actionsMap =
-        [
-            "ChxTransfer", fun trType token -> actionFromToken<ChxTransferTxActionDto> trType token
-            "AssetTransfer", fun trType token -> actionFromToken<AssetTransferTxActionDto> trType token
-        ] |> Map.ofList
 
     let private actionsConverter = {
         new CustomCreationConverter<TxActionDto>() with
@@ -44,27 +49,24 @@ module Serialization =
         override this.ReadJson (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer) =
             let jObject = JObject.Load(reader)
 
-            let actionType = tokenValue "ActionType" jObject
+            let actionData = tokenValue "ActionData"
 
-            match actionType with
-            | None -> null
+            match (tokenValue "ActionType" jObject) with
+            | None -> jObject |> box
             | Some actionType ->
-                if actionType.HasValues then
-                    null
-                else
-                    let realType = actionType.Value<string>()
-                    let map = actionsMap.TryFind(realType)
-                    let actionData = tokenValue "ActionData" jObject
-                    match map with
-                    | Some expr -> expr realType actionData.Value
-                    | None ->
-                        {
-                            ActionType = realType
-                            ActionData =
-                                match actionData with
-                                | None -> null
-                                | Some x -> x.ToString()
-                        } |> box
+                let txType = actionType.Value<string>()
+                match  txType |> actionsBasedOnTransactionType.TryFind with
+                | Some create ->
+                    actionData jObject
+                    |> create txType
+                | None ->
+                    {
+                        ActionType = txType
+                        ActionData =
+                            match actionData jObject with
+                            | None -> null
+                            | Some x -> x.ToString()
+                    } |> box
     }
 
     let serialize<'T> (dto : 'T) =

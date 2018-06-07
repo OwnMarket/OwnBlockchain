@@ -200,3 +200,26 @@ module SerializationTests =
             failwith "This serialization attempt should fail"
         | Error appErrors ->
             test <@ appErrors.Length > 0 @>
+
+    [<Fact>]
+    let ``Serialization.deserializeTx AccountControllerChange`` ()=
+        let expectedTransaction =
+            {
+                ActionType = "AccountControllerChange"
+                ActionData =
+                    {
+                        AccountControllerChangeTxActionDto.AccountHash = "FooAccount"
+                        ControllerAddress = "FooController"
+                    }
+            }
+
+        let serializedTx =
+            [ expectedTransaction |> box ]
+            |> Helpers.newTxDto 10L 20M
+
+        match Serialization.deserializeTx serializedTx with
+        | Ok r ->
+            let actual = r.Actions.Head
+            test <@ actual = expectedTransaction @>
+        | Error appErrors ->
+             failwithf "%A" appErrors

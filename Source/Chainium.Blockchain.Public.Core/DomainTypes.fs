@@ -108,9 +108,15 @@ type AssetTransferTxAction = {
     Amount : AssetAmount
 }
 
+type AccountControllerChangeTxAction = {
+    AccountHash : AccountHash
+    ControllerAddress : ChainiumAddress
+}
+
 type TxAction =
     | ChxTransfer of ChxTransferTxAction
     | AssetTransfer of AssetTransferTxAction
+    | AccountControllerChange of AccountControllerChangeTxAction
 
 type Tx = {
     TxHash : TxHash
