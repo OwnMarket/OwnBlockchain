@@ -26,6 +26,8 @@ module Composition =
 
     let getPendingTxs = Db.getPendingTxs Config.DbConnectionString
 
+    let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbConnectionString
+
     let getLastBlockTimestamp () = Db.getLastBlockTimestamp Config.DbConnectionString
 
     let getLastBlockNumber () = Db.getLastBlockNumber Config.DbConnectionString
@@ -45,6 +47,8 @@ module Composition =
             Signing.verifySignature
             Hashing.isValidChainiumAddress
             Hashing.hash
+            getChxBalanceState
+            getTotalFeeForPendingTxs
             saveTx
             saveTxToDb
 

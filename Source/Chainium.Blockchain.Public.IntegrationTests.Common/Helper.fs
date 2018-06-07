@@ -28,16 +28,17 @@ module internal Helper =
         if sqlEngineType = Postgres then
             let removeAllTables =
                 """
-                    DO $$ DECLARE
-                        tabname RECORD;
-                    BEGIN
-                        FOR tabname IN (SELECT tablename
+                DO $$ DECLARE
+                    v_table_name TEXT;
+                BEGIN
+                    FOR v_table_name IN
+                        SELECT tablename
                         FROM pg_tables
-                    WHERE schemaname = current_schema())
+                        WHERE schemaname = current_schema()
                     LOOP
-                        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(tabname.tablename) || ' CASCADE';
+                        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(v_table_name.tablename) || ' CASCADE';
                     END LOOP;
-                    END $$;
+                END $$;
                 """
             DbTools.execute connString removeAllTables [] |> ignore
 
@@ -50,19 +51,16 @@ module internal Helper =
         new TestServer(hostBuilder)
 
     let addBalanceAndAccount connectionString (address : string) (amount : decimal) =
-        let insertParams =
-            [
-                "@amount", amount |> box
-                "@chainium_address", address |> box
-            ]
-            |> Seq.ofList
-
         let insertStatement =
             """
-            insert into chx_balance(chainium_address, amount, nonce) values (@chainium_address, @amount, 0);
-            insert into account(account_hash, controller_address) values (@chainium_address, @chainium_address);
+            INSERT INTO chx_balance (chainium_address, amount, nonce) VALUES (@chainium_address, @amount, 0);
+            INSERT INTO account (account_hash, controller_address) VALUES (@chainium_address, @chainium_address);
             """
-        DbTools.execute connectionString insertStatement insertParams
+        [
+            "@amount", amount |> box
+            "@chainium_address", address |> box
+        ]
+        |> DbTools.execute connectionString insertStatement
         |> ignore
 
     let private appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)

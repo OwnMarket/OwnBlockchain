@@ -1,5 +1,6 @@
 ﻿namespace Chainium.Blockchain.Public.IntegrationTests.Common
 
+open System
 open System.IO
 open System.Text
 open System.Threading
@@ -13,7 +14,6 @@ open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module SharedTests =
-    open System
 
     let addressToString (ChainiumAddress a) = a
 
@@ -71,10 +71,7 @@ module SharedTests =
         let testServer = Helper.testServer()
         testServer.CreateClient()
 
-    let private prepareAndSubmitTransaction client isValid =
-        let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
-        let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
-
+    let private prepareAndSubmitTransaction client senderWallet receiverWallet isValid =
         let fee =
             match isValid with
             | true -> 10M
@@ -92,6 +89,8 @@ module SharedTests =
         (senderWallet, receiverWallet, dto, expectedTx, txHash)
 
     let submissionChecks
+        connectionString
+        shouldExist
         (
             senderWallet,
             receiverWallet,
@@ -99,8 +98,6 @@ module SharedTests =
             expectedTx,
             (txHash : SubmitTxResponseDto)
         )
-        shouldExist
-        connectionString
         =
 
         let fileName = sprintf "Tx_%s" txHash.TxHash
@@ -108,7 +105,7 @@ module SharedTests =
 
         test <@ txFile |> File.Exists = shouldExist @>
 
-        if shouldExist then do
+        if shouldExist then
             let savedData =
                 txFile
                 |> File.ReadAllText
@@ -119,8 +116,9 @@ module SharedTests =
         let selectStatement =
             sprintf
                 """
-                select * from tx
-                where tx_hash = '%s'
+                SELECT *
+                FROM tx
+                WHERE tx_hash = '%s'
                 """
                 txHash.TxHash
 
@@ -132,7 +130,7 @@ module SharedTests =
 
         match actual with
         | None ->
-            if shouldExist then do
+            if shouldExist then
                 failwith "Transaction is not stored into database"
         | Some txInfo ->
             test <@ txHash.TxHash = txInfo.TxHash @>
@@ -143,33 +141,25 @@ module SharedTests =
 
     let transactionSubmitTest engineType connString isValidTransaction =
         let client = testInit engineType connString
-        let data = prepareAndSubmitTransaction client isValidTransaction
-        submissionChecks data isValidTransaction connString
+        let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+        let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+
+        prepareAndSubmitTransaction client senderWallet receiverWallet isValidTransaction
+        |> submissionChecks connString isValidTransaction
 
     let transactionProcessingTest engineType connString =
         let client = testInit engineType connString
-        [1..4]
-        |> List.map
-            (
-                fun i ->
-                    let isValid = i % 2 = 0
-                    let submissionResult = prepareAndSubmitTransaction client isValid
-                    submissionChecks submissionResult isValid connString
 
-                    let setbalances (s, r) =
-                        Helper.addBalanceAndAccount connString s 100M
-                        Helper.addBalanceAndAccount connString r 0M
+        for i in [1 .. 4] do
+            let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+            let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
 
-                    let storeChxBalances (a, b, _, _, _) =
-                        (
-                            a.Address |> addressToString,
-                            b.Address |> addressToString
-                        )
-                        |> setbalances
+            Helper.addBalanceAndAccount connString (addressToString senderWallet.Address) 100M
+            Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0M
 
-                    storeChxBalances submissionResult
-            )
-        |> ignore
+            let isValid = i % 2 = 0
+            prepareAndSubmitTransaction client senderWallet receiverWallet isValid
+            |> submissionChecks connString isValid
 
         let expectedBlockPath = sprintf "%s/Block_1" Config.DataDir
         PaceMaker.start()
@@ -186,8 +176,8 @@ module SharedTests =
     let private numOfUpdatesExecuted connectionString =
         let sql =
             """
-                SELECT version_number
-                FROM db_version;
+            SELECT version_number
+            FROM db_version;
             """
         DbTools.query<int> connectionString sql []
 
@@ -208,8 +198,8 @@ module SharedTests =
                 String.Format
                     (
                         """
-                            insert into account(account_hash, controller_address)
-                            values ({0}, {0})
+                        INSERT INTO account (account_hash, controller_address)
+                        VALUES ({0}, {0});
                         """,
                         paramName
                     )

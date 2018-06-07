@@ -6,6 +6,7 @@ open System.Reflection
 open Microsoft.Extensions.Configuration
 
 type Config () =
+
     static let appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
     static let config =

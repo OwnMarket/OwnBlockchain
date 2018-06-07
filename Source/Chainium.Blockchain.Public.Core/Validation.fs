@@ -28,21 +28,9 @@ module Validation =
             Error [AppError "Cannot verify signature"]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Initial transaction validation
+    // TxAction validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let private validateTxFields (t : TxDto) =
-        [
-            if t.Nonce <= 0L then
-                yield AppError "Nonce must be positive."
-            if t.Fee <= 0M then
-                yield AppError "Fee must be positive."
-            if t.Actions |> List.isEmpty then
-                yield AppError "There are no actions provided for this transaction."
-        ]
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Validation rules based on action type
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     let private validateChxTransfer isValidAddress action =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
@@ -70,6 +58,20 @@ module Validation =
                 yield AppError "Asset amount must be larger than zero"
         ]
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Tx validation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let private validateTxFields (t : TxDto) =
+        [
+            if t.Nonce <= 0L then
+                yield AppError "Nonce must be positive."
+            if t.Fee <= 0M then
+                yield AppError "Fee must be positive."
+            if t.Actions |> List.isEmpty then
+                yield AppError "There are no actions provided for this transaction."
+        ]
+
     let private validateTxActions isValidAddress (actions : TxActionDto list) =
         let validateTxAction (action : TxActionDto) =
             match action.ActionData with
@@ -87,3 +89,28 @@ module Validation =
     let validateTx isValidAddress sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
         validateTxFields txDto @ validateTxActions isValidAddress txDto.Actions
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
+
+    let validateTxFee
+        getChxBalanceState
+        getTotalFeeForPendingTxs
+        senderAddress
+        txFee
+        : Result<unit, AppErrors>
+        =
+
+        let chxBalance =
+            senderAddress
+            |> getChxBalanceState
+            |> Option.map (Mapping.chxBalanceStateFromDto >> fun state -> state.Amount)
+            |? ChxAmount 0M
+
+        if txFee > chxBalance then
+            Error [AppError "CHX balance is insufficient to cover the fee."]
+        else
+            let totalFeeForPendingTxs = getTotalFeeForPendingTxs senderAddress
+
+            if (totalFeeForPendingTxs + txFee) > chxBalance then
+                Error [AppError "CHX balance is insufficient to cover the fee for all pending transactions."]
+            else
+                Ok ()
+

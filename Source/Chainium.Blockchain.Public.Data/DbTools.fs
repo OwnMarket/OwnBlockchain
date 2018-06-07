@@ -73,17 +73,10 @@ module DbTools =
         try
             let dbActions = connectionBasedActions conn
 
-            let cmd = dbActions.CreateCommand sql conn
+            use cmd = dbActions.CreateCommand sql conn
 
             parameters
-            |> Seq.iter
-                (
-                    fun p ->
-                        p
-                        |> dbActions.CreateParam
-                        |> cmd.Parameters.Add
-                        |> ignore
-                )
+            |> Seq.iter (dbActions.CreateParam >> cmd.Parameters.Add >> ignore)
 
             conn.Open()
             cmd.ExecuteNonQuery()
@@ -99,17 +92,10 @@ module DbTools =
         =
 
         let dbActions = connectionBasedActions conn
-        let cmd = dbActions.CreateTransactionCommand sql conn transaction
+        use cmd = dbActions.CreateTransactionCommand sql conn transaction
 
         parameters
-        |> Seq.iter
-            (
-                fun p ->
-                    p
-                    |> dbActions.CreateParam
-                    |> cmd.Parameters.Add
-                    |> ignore
-            )
+        |> Seq.iter (dbActions.CreateParam >> cmd.Parameters.Add >> ignore)
 
         cmd.ExecuteNonQuery()
 

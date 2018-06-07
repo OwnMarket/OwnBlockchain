@@ -88,6 +88,24 @@ module Db =
 
         DbTools.query dbConnectionString sql sqlParams
 
+    let getTotalFeeForPendingTxs (dbConnectionString : string) (ChainiumAddress senderAddress) : ChxAmount =
+        let sql =
+            """
+            SELECT SUM(fee * action_count)
+            FROM tx
+            WHERE status = 0
+            AND sender_address = @senderAddress
+            """
+
+        [
+            "@senderAddress", senderAddress |> box
+        ]
+        |> DbTools.query<Nullable<decimal>> dbConnectionString sql
+        |> List.tryHead
+        |> Option.bind Option.ofNullable
+        |? 0M
+        |> ChxAmount
+
     let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option =
         let sql =
             """

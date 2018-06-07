@@ -56,7 +56,7 @@ module Api =
         ]
 
     let errorHandler (ex : Exception) _ =
-        Log.errorf "API request failed: %s" ex.AllMessages
+        Log.errorf "API request failed: %s" ex.AllMessagesAndStackTraces
 
         clearResponse
         >=> ServerErrors.INTERNAL_ERROR ex.AllMessages

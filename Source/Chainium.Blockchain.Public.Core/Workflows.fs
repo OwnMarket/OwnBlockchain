@@ -4,6 +4,7 @@ open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
+open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Core.Events
 
 module Workflows =
@@ -12,6 +13,8 @@ module Workflows =
         verifySignature
         isValidAddress
         createHash
+        getChxBalanceState
+        getTotalFeeForPendingTxs
         saveTx
         saveTxToDb
         txEnvelopeDto
@@ -25,6 +28,10 @@ module Workflows =
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
             let! tx = Validation.validateTx isValidAddress senderAddress txHash txDto
+
+            do! tx
+                |> Processing.calculateTotalFee
+                |> Validation.validateTxFee getChxBalanceState getTotalFeeForPendingTxs senderAddress
 
             do! saveTx txHash txEnvelopeDto
             do! tx
