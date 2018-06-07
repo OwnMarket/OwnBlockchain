@@ -60,8 +60,37 @@ let rules =
             | _ -> None
 
         createRule <| function
+            | Some line1, Some line2 when
+                line2.Trim().StartsWith("module ")
+                && not line1.IsEmpty
+                && not (line1.StartsWith("[<"))
+                && not (line1.StartsWith("//"))
+                ->
+                Some "There should be an empty line before module declaration."
+            | _ -> None
+
+        createRule <| function
             | Some line1, Some line2 when line1.Trim().StartsWith("module ") && not line2.IsEmpty ->
                 Some "There should be an empty line after module declaration."
+            | _ -> None
+
+        createRule <| function
+            | Some line1, Some line2 when
+                line2.StartsWith("open ")
+                && line1.Trim() <> ""
+                && not (line1.StartsWith("open "))
+                && not (line1.StartsWith("//"))
+                ->
+                Some "There should be an empty line before open statements."
+            | _ -> None
+
+        createRule <| function
+            | Some line1, Some line2 when
+                line1.StartsWith("open ")
+                && line2.Trim() <> ""
+                && not (line2.StartsWith("open "))
+                ->
+                Some "There should be an empty line after open statements."
             | _ -> None
 
         createRule <| function
@@ -155,7 +184,8 @@ let rules =
             | Some line1, Some line2 when
                 not (line1.IsEmpty)
                 && line2.Indentation > line1.Indentation
-                && line2.Indentation - line1.Indentation <> 4 ->
+                && line2.Indentation - line1.Indentation <> 4
+                ->
                 Some "Don't indent for more than one level at a time."
             | _ -> None
 
@@ -163,8 +193,8 @@ let rules =
             | Some line1, Some line2 when
                 line2.Trim().StartsWith("|>")
                 && line2.Indentation > line1.Indentation
-                && not (line1.Trim().StartsWith("do!")) ->
-
+                && not (line1.Trim().StartsWith("do!"))
+                ->
                 Some "If a line starts with pipe operator |>, it should not be indented more than the preciding line."
             | _ -> None
 
