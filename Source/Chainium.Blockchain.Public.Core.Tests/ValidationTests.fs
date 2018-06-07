@@ -26,7 +26,7 @@ module ValidationTests =
                         ActionType = chxTransfer
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress = 
+                                ChxTransferTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 20M
                             }
@@ -45,7 +45,7 @@ module ValidationTests =
         }
 
         let expMessage = AppError "Nonce must be positive."
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -65,7 +65,7 @@ module ValidationTests =
                         ActionType = chxTransfer
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress = 
+                                ChxTransferTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 20M
                             }
@@ -83,7 +83,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -104,7 +104,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -123,7 +123,7 @@ module ValidationTests =
                         ActionType = chxTransfer
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress = 
+                                ChxTransferTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 0M
                             }
@@ -131,7 +131,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -156,7 +156,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -183,7 +183,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -210,7 +210,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -237,7 +237,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -264,7 +264,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -287,7 +287,7 @@ module ValidationTests =
                         ActionType = chxTransfer
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress = 
+                                ChxTransferTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 10M
                             }
@@ -305,7 +305,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx chAddress Hashing.isValidChainiumAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
 
         match result with
         | Ok t ->

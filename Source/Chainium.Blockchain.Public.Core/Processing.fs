@@ -233,7 +233,7 @@ module Processing =
             let! tx =
                 txEnvelope.RawTx
                 |> Serialization.deserializeTx
-                >>= (Validation.validateTx sender isValidAddress txHash)
+                >>= (Validation.validateTx isValidAddress sender txHash)
 
             return tx
         }

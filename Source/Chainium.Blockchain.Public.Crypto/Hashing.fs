@@ -52,16 +52,16 @@ module Hashing =
         |> encode
         |> ChainiumAddress
 
-    let isValidChainiumAddress (ChainiumAddress address) =        
-        match address with 
-        | address when address.IsNullOrWhiteSpace() || not (address.StartsWith("CH")) -> false 
-        | _ -> 
-            let hash = decode address;
-            
-            if Array.length hash <> 26 then 
+    let isValidChainiumAddress (ChainiumAddress address) =
+        if address.IsNullOrWhiteSpace() || not (address.StartsWith("CH")) then
+            false
+        else
+            let hash = decode address
+
+            if Array.length hash <> 26 then
                 false
-            else       
-                let addressChecksum = 
+            else
+                let addressChecksum =
                     hash
                     |> Array.skip 22
 
@@ -70,7 +70,7 @@ module Hashing =
                     |> Array.skip 2
                     |> Array.take 20
 
-                let address20ByteHashChecksum = 
+                let address20ByteHashChecksum =
                     address20ByteHash
                     |> sha256
                     |> sha256

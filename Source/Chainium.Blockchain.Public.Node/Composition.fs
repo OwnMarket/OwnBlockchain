@@ -40,20 +40,20 @@ module Composition =
 
     // Workflows
 
-    let submitTx = 
-        Workflows.submitTx 
-            Signing.verifySignature 
-            Hashing.isValidChainiumAddress 
-            Hashing.hash 
-            saveTx 
+    let submitTx =
+        Workflows.submitTx
+            Signing.verifySignature
+            Hashing.isValidChainiumAddress
+            Hashing.hash
+            saveTx
             saveTxToDb
 
     let createNewBlock () =
         Workflows.createNewBlock
             getPendingTxs
             getTx
-            Signing.verifySignature 
-            Hashing.isValidChainiumAddress 
+            Signing.verifySignature
+            Hashing.isValidChainiumAddress
             getChxBalanceState
             getHoldingState
             getAccountController

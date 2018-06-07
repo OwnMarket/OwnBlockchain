@@ -82,18 +82,18 @@ module HashingTests =
         let address = ChainiumAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG";
 
         // ACT
-        let isValid = Hashing.isValidChainiumAddress address;  
-        
+        let isValid = Hashing.isValidChainiumAddress address
+
         // ASSERT
         test <@ isValid = true @>
 
     [<Fact>]
-    let ``Hashing.isValidChainiumAddress valid address created with createChainiumAddress`` () =   
+    let ``Hashing.isValidChainiumAddress valid address created with createChainiumAddress`` () =
         // ARRANGE
         let isAlwaysValid = Hashing.chainiumAddress >> Hashing.isValidChainiumAddress
-        let bytes = Signing.generateRandomBytes 100;
+        let bytes = Signing.generateRandomBytes 100
 
-        // ACT        
+        // ACT
         let isValid = isAlwaysValid bytes
 
         // ASSERT
@@ -105,13 +105,13 @@ module HashingTests =
         let address = ChainiumAddress "XRPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG";
 
         // ACT
-        let isValid = Hashing.isValidChainiumAddress address;
+        let isValid = Hashing.isValidChainiumAddress address
 
         // ASSERT
         test <@ isValid = false @>
 
     [<Fact>]
-    let ``Hashing.isValidChainiumAddress invalid address hash length`` () =        
+    let ``Hashing.isValidChainiumAddress invalid address hash length`` () =
         // ARRANGE
         let address = ChainiumAddress "CHPvS1Hxs4oLcgKccYmubSBjurjUHmRMG";
 
@@ -122,7 +122,7 @@ module HashingTests =
         test <@ isValid = false @>
 
     [<Fact>]
-    let ``Hashing.isValidChainiumAddress invalid checksum`` () =           
+    let ``Hashing.isValidChainiumAddress invalid checksum`` () =
         // ARRANGE
         let address = ChainiumAddress "CHPvS1Hxs4oLcrbgKccYmubSBjurjUHmRMG";
 
