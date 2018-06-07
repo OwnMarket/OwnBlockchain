@@ -51,7 +51,7 @@ pipeline {
         sh "mkdir $RESULTS_OUTPUT_PATH"
 		withCredentials([string(credentialsId: 'POSTGRES_CONNECTION_STRING', variable: 'POSTGRES_CONNECTION_STRING')]) {
             // replace connection string for postgres integration tests
-			sh 'sed -i \'/DBConnectionString/c\\"DBConnectionString": "$POSTGRES_CONNECTION_STRING",\' $APP_SETTINGS_TO_REPLACE'
+			sh "sed -i '/DBConnectionString/c\\\"DBConnectionString\": \"$POSTGRES_CONNECTION_STRING\",' $APP_SETTINGS_TO_REPLACE"
 		}
 		
         sh 'bash ./Build/run_tests.sh $SOLUTION_PATH $BUILD_CONFIG $PROJECT_OUTPUT_FOLDER $FULL_RESULTS_PATH *.IntegrationTests.*[^Common]'
@@ -92,6 +92,7 @@ pipeline {
   post {
         success {
             archiveArtifacts artifacts: "$PUBLISH_DIR/*.tar.gz,$PUBLISH_DIR/*.zip", fingerprint: true
+			step([$class: 'MSTestPublisher', testResultsFile:"**/*/*.trx", failOnError: true, keepLongStdio: true])
         }
         failure {
            sendSlackMessage("Failed","danger")
