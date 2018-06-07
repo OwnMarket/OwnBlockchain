@@ -202,7 +202,7 @@ module SerializationTests =
             test <@ appErrors.Length > 0 @>
 
     [<Fact>]
-    let ``Serialization.deserializeTx AccountControllerChange`` ()=
+    let ``Serialization.deserializeTx.accountControllerChange`` ()=
         let expectedTransaction =
             {
                 ActionType = "AccountControllerChange"
