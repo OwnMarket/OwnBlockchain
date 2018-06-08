@@ -146,35 +146,60 @@ module Processing =
     // Tx Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let excludeUnprocessableTxs
+    let excludeTxsWithNonceGap
         (getChxBalanceState : ChainiumAddress -> ChxBalanceState option)
+        senderAddress
         (txSet : PendingTxInfo list)
         =
 
-        let excludeUnprocessableTxsForAddress senderAddress (txSet : PendingTxInfo list) =
-            let stateNonce =
-                getChxBalanceState senderAddress
-                |> Option.map (fun s -> s.Nonce)
-                |? Nonce 0L
+        let stateNonce =
+            getChxBalanceState senderAddress
+            |> Option.map (fun s -> s.Nonce)
+            |? Nonce 0L
 
-            let (destinedToFailDueToLowNonce, rest) =
-                txSet
-                |> List.partition(fun tx -> tx.Nonce <= stateNonce)
+        let (destinedToFailDueToLowNonce, rest) =
+            txSet
+            |> List.partition(fun tx -> tx.Nonce <= stateNonce)
 
-            rest
-            |> List.sortBy (fun tx -> tx.Nonce)
-            |> List.mapi (fun i tx ->
-                let expectedNonce = stateNonce + (Convert.ToInt64 (i + 1))
-                let (Nonce nonceGap) = tx.Nonce - expectedNonce
-                (tx, nonceGap)
-            )
-            |> List.takeWhile (fun (_, nonceGap) -> nonceGap = 0L)
-            |> List.map fst
-            |> List.append destinedToFailDueToLowNonce
+        rest
+        |> List.sortBy (fun tx -> tx.Nonce)
+        |> List.mapi (fun i tx ->
+            let expectedNonce = stateNonce + (Convert.ToInt64 (i + 1))
+            let (Nonce nonceGap) = tx.Nonce - expectedNonce
+            (tx, nonceGap)
+        )
+        |> List.takeWhile (fun (_, nonceGap) -> nonceGap = 0L)
+        |> List.map fst
+        |> List.append destinedToFailDueToLowNonce
+
+    let excludeTxsIfBalanceCannotCoverFees
+        (getChxBalanceState : ChainiumAddress -> ChxBalanceState option)
+        senderAddress
+        (txSet : PendingTxInfo list)
+        =
+
+        let senderBalance =
+            getChxBalanceState senderAddress
+            |> Option.map (fun s -> s.Amount)
+            |? ChxAmount 0M
 
         txSet
+        |> List.sortBy (fun tx -> tx.Nonce)
+        |> List.scan (fun newSet tx -> newSet @ [tx]) []
+        |> List.takeWhile (fun newSet ->
+            let totalTxSetFee = newSet |> List.sumBy (fun tx -> tx.Fee)
+            totalTxSetFee <= senderBalance
+        )
+        |> List.last
+
+    let excludeUnprocessableTxs getChxBalanceState (txSet : PendingTxInfo list) =
+        txSet
         |> List.groupBy (fun tx -> tx.Sender)
-        |> List.collect (fun (senderAddress, txs) -> excludeUnprocessableTxsForAddress senderAddress txs)
+        |> List.collect (fun (senderAddress, txs) ->
+            txs
+            |> excludeTxsWithNonceGap getChxBalanceState senderAddress
+            |> excludeTxsIfBalanceCannotCoverFees getChxBalanceState senderAddress
+        )
         |> List.sortBy (fun tx -> tx.AppearanceOrder)
 
     let getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock : PendingTxInfo list =
