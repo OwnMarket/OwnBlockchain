@@ -2,7 +2,6 @@ namespace Chainium.Blockchain.Public.Core
 
 open System
 open Chainium.Common
-open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Core.Events
@@ -79,17 +78,6 @@ module Mapping =
             ActionCount = dto.ActionCount
             AppearanceOrder = dto.AppearanceOrder
         }
-
-    let private optionToNullableInt16 convertHandler number =
-        match number with
-        | Some number -> number |> convertHandler |> System.Nullable<int16>
-        | None -> System.Nullable<int16>()
-
-    let private optionFromNullableInt16 convertHandler number =
-        let optionType = number |> Option.ofNullable
-        match optionType with
-        | Some number -> number |> convertHandler |> Some
-        | None -> None
 
     let txResultToDto (txResult: TxResult) =
         {

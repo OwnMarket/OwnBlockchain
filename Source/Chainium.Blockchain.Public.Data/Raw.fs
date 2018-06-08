@@ -1,6 +1,5 @@
 namespace Chainium.Blockchain.Public.Data
 
-open System
 open System.IO
 open Newtonsoft.Json
 open Chainium.Common

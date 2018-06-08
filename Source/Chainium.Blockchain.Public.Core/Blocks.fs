@@ -1,13 +1,10 @@
 namespace Chainium.Blockchain.Public.Core
 
-open System
 open System.Text
 open Chainium.Common
-open Chainium.Blockchain.Common
 open Chainium.Blockchain.Common.Conversion
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
 
 module Blocks =
 

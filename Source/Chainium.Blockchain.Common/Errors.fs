@@ -1,8 +1,5 @@
 namespace Chainium.Blockchain.Common
 
-open System
-open Chainium.Common
-
 type Errors<'T> = 'T list
 
 module Errors =

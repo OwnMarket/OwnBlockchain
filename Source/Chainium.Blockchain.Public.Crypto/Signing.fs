@@ -10,7 +10,6 @@ open Org.BouncyCastle.Math
 open Org.BouncyCastle.Crypto.Digests
 open Org.BouncyCastle.Crypto.Signers
 open Org.BouncyCastle.Math.EC
-open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Signing =

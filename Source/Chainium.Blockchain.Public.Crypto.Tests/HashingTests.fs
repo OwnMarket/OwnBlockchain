@@ -4,7 +4,6 @@ open System
 open System.Text
 open Xunit
 open Swensen.Unquote
-open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 
