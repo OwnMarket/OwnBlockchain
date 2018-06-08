@@ -533,3 +533,136 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Holdings.[senderAccountHash, assetCode].Amount = senderAssetBalance @>
         test <@ output.Holdings.[recipientAccountHash, assetCode].Amount = recipientAssetBalance @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // AccountControllerChange
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    let addressToString = fun (ChainiumAddress a) -> a
+    let accountControllerChangeTestData ()=
+        let account = Signing.generateWallet()
+        let newController = Signing.generateWallet()
+        let validator = Signing.generateWallet()
+
+        let initialChxState =
+            [
+                account.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 1L}
+                validator.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 1L}
+                newController.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 1L}
+            ]
+            |> Map.ofList
+
+        let addressToHash accountAddress =
+            accountAddress
+            |> addressToString
+            |> AccountHash
+
+        [
+            //account controller change success
+            yield
+               [|
+                   account.PrivateKey |> box
+                   account.Address |> addressToHash |> box
+                   account.Address |> box
+                   newController.Address |> box
+                   validator.Address |> box
+                   Nonce 2L |> box
+                   ChxAmount 1M |> box
+                   (fun (a : AccountHash) -> account.Address |> Some) |> box
+                   (fun (a : ChainiumAddress) -> initialChxState.[account.Address] |> Some) |> box
+                   initialChxState |> box
+                   false |> box //expecting execution error
+                   "" |> box
+                |]
+            //current signer is not controller
+            yield
+                [|
+                   newController.PrivateKey |> box
+                   account.Address |> addressToHash |> box
+                   newController.Address |> box
+                   newController.Address |> box
+                   validator.Address |> box
+                   Nonce 2L |> box
+                   ChxAmount 1M |> box
+                   (fun (a : AccountHash) -> account.Address |> Some) |> box
+                   (fun (a : ChainiumAddress) -> initialChxState.[account.Address] |> Some) |> box
+                   initialChxState |> box
+                   true |> box //expecting execution error
+                   "Tx signer doesn't control the source account." |> box //expected error message
+                |]
+        ]
+
+    [<Theory>]
+    [<MemberData("accountControllerChangeTestData")>]
+    let ``Processing.processTxSet AccountControllerChange``
+        (
+            (privateKey : PrivateKey),
+            (account : AccountHash),
+            (currentController : ChainiumAddress),
+            (newController : ChainiumAddress),
+            (validator : ChainiumAddress),
+            (nonce : Nonce),
+            (fee : ChxAmount),
+            getAccountController,
+            getChxBalanceState,
+            (initialChxState : Map<ChainiumAddress, ChxBalanceState>),
+            isError,
+            expectedErrorMessage
+        )
+        =
+        let getHoldingState key =
+            failwith "getHoldingState - should not be called"
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "AccountControllerChange"
+                    ActionData =
+                        {
+                            AccountControllerChangeTxActionDto.AccountHash = account |> fun (AccountHash a) -> a
+                            ControllerAddress = addressToString newController
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx privateKey nonce fee
+
+        let txSet = [txHash]
+
+        let getTx _ = Ok txEnvelope
+
+        let isValidAddress (chxAddress : ChainiumAddress) =
+            chxAddress
+            |> fun (ChainiumAddress a) -> a
+            |> System.String.IsNullOrWhiteSpace
+            |> not
+
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                isValidAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                validator
+                txSet
+
+        test <@ output.TxResults.Count = 1 @>
+        if isError then
+            test <@ output.TxResults.[txHash] = Failure [AppError expectedErrorMessage] @>
+            test <@ output.ChxBalances.[currentController].Nonce = nonce @>
+            test <@ output.ChxBalances.[currentController].Amount = initialChxState.[currentController].Amount @>
+            test <@ output.ChxBalances.[validator].Amount = initialChxState.[validator].Amount @>
+            test <@ output.AccountControllerChanges.TryFind account = None @>
+        else
+            let senderChxBalance = initialChxState.[currentController].Amount - fee
+            let validatorChxBalance = initialChxState.[validator].Amount + fee
+
+            test <@ output.TxResults.[txHash] = Success @>
+            test <@ output.ChxBalances.[currentController].Nonce = nonce @>
+            test <@ output.AccountControllerChanges.[account] = newController @>
+            test <@ output.ChxBalances.[currentController].Nonce = nonce @>
+            test <@ output.ChxBalances.[validator].Nonce = initialChxState.[validator].Nonce @>
+            test <@ output.ChxBalances.[currentController].Amount = senderChxBalance @>
+            test <@ output.ChxBalances.[validator].Amount = validatorChxBalance @>
+
+
