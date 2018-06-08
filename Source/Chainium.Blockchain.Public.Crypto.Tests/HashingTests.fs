@@ -76,16 +76,20 @@ module HashingTests =
             |> List.where(fun a -> a.Length <> 26)
         test <@ longerThan26Bytes.Length = 0 @>
 
-    [<Fact>]
-    let ``Hashing.isValidChainiumAddress valid specific Chainium address`` () =
+    [<Theory>]
+    [<InlineData ("CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG", true)>]
+    [<InlineData ("XRPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG", false)>]
+    [<InlineData ("CHPvS1Hxs4oLcgKccYmubSBjurjUHmRMG", false)>]
+    [<InlineData ("CHPvS1Hxs4oLcrbgKccYmubSBjurjUHmRMG", false)>]
+    let ``Hashing.isValidChainiumAddress validate various ChainiumAddress`` (chainiumAddress, expectedValid) =
         // ARRANGE
-        let address = ChainiumAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG";
+        let address = ChainiumAddress chainiumAddress;
 
         // ACT
         let isValid = Hashing.isValidChainiumAddress address
 
         // ASSERT
-        test <@ isValid = true @>
+        test <@ isValid = expectedValid @>
 
     [<Fact>]
     let ``Hashing.isValidChainiumAddress valid address created with createChainiumAddress`` () =
@@ -98,39 +102,6 @@ module HashingTests =
 
         // ASSERT
         test <@ isValid = true @>
-
-    [<Fact>]
-    let ``Hashing.isValidChainiumAddress invalid address prefix`` () =
-        // ARRANGE
-        let address = ChainiumAddress "XRPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG";
-
-        // ACT
-        let isValid = Hashing.isValidChainiumAddress address
-
-        // ASSERT
-        test <@ isValid = false @>
-
-    [<Fact>]
-    let ``Hashing.isValidChainiumAddress invalid address hash length`` () =
-        // ARRANGE
-        let address = ChainiumAddress "CHPvS1Hxs4oLcgKccYmubSBjurjUHmRMG";
-
-        // ACT
-        let isValid = Hashing.isValidChainiumAddress address;
-
-        // ASSERT
-        test <@ isValid = false @>
-
-    [<Fact>]
-    let ``Hashing.isValidChainiumAddress invalid checksum`` () =
-        // ARRANGE
-        let address = ChainiumAddress "CHPvS1Hxs4oLcrbgKccYmubSBjurjUHmRMG";
-
-        // ACT
-        let isValid = Hashing.isValidChainiumAddress address;
-
-        // ASSERT
-        test <@ isValid = false @>
 
     [<Fact>]
     let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` ()=
