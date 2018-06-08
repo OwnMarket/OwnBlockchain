@@ -58,9 +58,9 @@ module DbTools =
             let builder = SqliteConnectionStringBuilder dbConnectionString
             new SqliteConnection(builder.ConnectionString) :> DbConnection
         with
-            | ex ->
-                let postgresBuilder = NpgsqlConnectionStringBuilder dbConnectionString
-                new NpgsqlConnection(postgresBuilder.ConnectionString) :> DbConnection
+        | ex ->
+            let postgresBuilder = NpgsqlConnectionStringBuilder dbConnectionString
+            new NpgsqlConnection(postgresBuilder.ConnectionString) :> DbConnection
 
     let private connectionBasedActions dbConnection =
         let connType = dbConnection.GetType()
