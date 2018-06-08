@@ -119,6 +119,8 @@ type Tx = {
     Fee : ChxAmount
     Actions : TxAction list
 }
+with
+    member __.TotalFee = __.Fee * decimal __.Actions.Length
 
 type TxEnvelope = {
     RawTx : byte[]
@@ -145,6 +147,8 @@ type PendingTxInfo = {
     ActionCount : int16
     AppearanceOrder : int64
 }
+with
+    member __.TotalFee = __.Fee * decimal __.ActionCount
 
 type ChxBalanceState = {
     Amount : ChxAmount

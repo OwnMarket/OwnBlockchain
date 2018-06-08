@@ -6,6 +6,7 @@
     <Compile Include="../AssemblyInfo.fs" />
     <Compile Include="DummyHash.fs" />
     <Compile Include="Helpers.fs" />
+    <Compile Include="DomainTypesTests.fs" />
     <Compile Include="ValidationTests.fs" />
     <Compile Include="SerializationTests.fs" />
     <Compile Include="SubmissionTests.fs" />

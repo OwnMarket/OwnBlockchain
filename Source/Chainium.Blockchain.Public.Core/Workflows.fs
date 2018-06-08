@@ -29,9 +29,7 @@ module Workflows =
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
             let! tx = Validation.validateTx isValidAddress senderAddress txHash txDto
 
-            do! tx
-                |> Processing.calculateTotalFee
-                |> Validation.validateTxFee getChxBalanceState getTotalFeeForPendingTxs senderAddress
+            do! Validation.validateTxFee getChxBalanceState getTotalFeeForPendingTxs senderAddress tx.TotalFee
 
             do! saveTx txHash txEnvelopeDto
             do! tx

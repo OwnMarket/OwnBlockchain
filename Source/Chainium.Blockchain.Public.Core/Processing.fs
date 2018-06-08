@@ -187,7 +187,7 @@ module Processing =
         |> List.sortBy (fun tx -> tx.Nonce)
         |> List.scan (fun newSet tx -> newSet @ [tx]) []
         |> List.takeWhile (fun newSet ->
-            let totalTxSetFee = newSet |> List.sumBy (fun tx -> tx.Fee * decimal tx.ActionCount)
+            let totalTxSetFee = newSet |> List.sumBy (fun tx -> tx.TotalFee)
             totalTxSetFee <= senderBalance
         )
         |> List.last
@@ -263,9 +263,6 @@ module Processing =
             return tx
         }
 
-    let calculateTotalFee (tx : Tx) =
-        tx.Fee * (decimal tx.Actions.Length)
-
     let updateChxBalanceNonce senderAddress txNonce (state : ProcessingState) =
         let senderState = state.GetChxBalance senderAddress
 
@@ -280,7 +277,7 @@ module Processing =
     let processValidatorReward (tx : Tx) validator (state : ProcessingState) =
         {
             ChxTransferTxAction.RecipientAddress = validator
-            Amount = calculateTotalFee tx
+            Amount = tx.TotalFee
         }
         |> processChxTransferTxAction state tx.Sender
 
