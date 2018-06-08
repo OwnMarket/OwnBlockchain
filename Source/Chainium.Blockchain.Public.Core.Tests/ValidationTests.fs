@@ -331,7 +331,7 @@ module ValidationTests =
         | Error errors ->
             failwithf "%A" errors
 
-    let private mockIsValidChainiumAddress (address : ChainiumAddress) =
+    let private isValidAddressMock (address : ChainiumAddress) =
         let item = address |> fun (ChainiumAddress a) -> a
         String.IsNullOrWhiteSpace(item) |> not
 
@@ -355,7 +355,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx mockIsValidChainiumAddress chAddress txHash tx with
+        match Validation.validateTx isValidAddressMock chAddress txHash tx with
         | Ok t ->
             let actual = getTx<AccountControllerChangeTxAction> t.Actions.Head
             test <@ AccountHash expected.AccountHash = actual.AccountHash @>
@@ -382,7 +382,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx mockIsValidChainiumAddress chAddress txHash tx with
+        match Validation.validateTx isValidAddressMock chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 2 @>
