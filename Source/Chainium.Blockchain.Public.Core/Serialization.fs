@@ -1,9 +1,7 @@
 ﻿namespace Chainium.Blockchain.Public.Core
 
 open System
-open System.Text
 open Chainium.Common
-open Chainium.Blockchain.Common
 open Chainium.Blockchain.Common.Conversion
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
@@ -69,20 +67,30 @@ module Serialization =
                         } |> box
     }
 
-    let deserializeTx (rawTx : byte[]) : Result<TxDto, AppErrors> =
-        let deserialize str = JsonConvert.DeserializeObject<TxDto>(str, actionsConverter)
+    let serialize<'T> (dto : 'T) =
+        dto
+        |> JsonConvert.SerializeObject
+        |> stringToBytes
+        |> Ok
 
+    let deserialize<'T> (rawData : byte[]) : Result<'T, AppErrors> =
         try
-            rawTx
+            rawData
             |> bytesToString
-            |> deserialize
+            |> fun str -> JsonConvert.DeserializeObject<'T>(str, actionsConverter)
             |> Ok
         with
         | ex ->
             Error [AppError ex.AllMessagesAndStackTraces]
 
     let serializeTx (txDto : TxDto) =
-        txDto
-        |> JsonConvert.SerializeObject
-        |> stringToBytes
-        |> Ok
+        serialize<TxDto> txDto
+
+    let deserializeTx (rawTx : byte[]) : Result<TxDto, AppErrors> =
+        deserialize<TxDto> rawTx
+
+    let serializeTxResult (txResultDto : TxResultDto) =
+        serialize<TxResultDto> txResultDto
+
+    let deserializeTxResult (rawTxResult : byte[]) : Result<TxResultDto, AppErrors> =
+        deserialize<TxResultDto> rawTxResult

@@ -155,11 +155,12 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert update Transaction")]
 
-    let updateTxs conn transaction (txResults : Map<string, byte>) : Result<unit, AppErrors> =
-        let foldFn result (txHash, txStatus) =
+    let updateTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
+        let foldFn result (txHash, txResult: TxResultDto) =
             result
             >>= (fun _ ->
-                updateTx conn transaction txHash txStatus
+                // TODO: Remove conversion when StatusCode type is changed to int16
+                updateTx conn transaction txHash (txResult.Status |> Convert.ToByte)
             )
 
         txResults

@@ -13,7 +13,7 @@ module Processing =
         getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState option,
         getHoldingStateFromStorage : AccountHash * AssetCode -> HoldingState option,
         getAccountControllerFromStorage : AccountHash -> ChainiumAddress option,
-        txResults : ConcurrentDictionary<TxHash, TxProcessedStatus>,
+        txResults : ConcurrentDictionary<TxHash, TxResult>,
         chxBalances : ConcurrentDictionary<ChainiumAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetCode, HoldingState>,
         accountControllers : ConcurrentDictionary<AccountHash, ChainiumAddress option>
@@ -36,7 +36,7 @@ module Processing =
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
                 getAccountControllerFromStorage,
-                ConcurrentDictionary<TxHash, TxProcessedStatus>(),
+                ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<ChainiumAddress, ChxBalanceState>(),
                 ConcurrentDictionary<AccountHash * AssetCode, HoldingState>(),
                 ConcurrentDictionary<AccountHash, ChainiumAddress option>()
@@ -76,8 +76,8 @@ module Processing =
         member __.SetHolding (accountHash : AccountHash, assetCode : AssetCode, state : HoldingState) =
             holdings.AddOrUpdate((accountHash, assetCode), state, fun _ _ -> state) |> ignore
 
-        member __.SetTxStatus (txHash : TxHash, txStatus : TxProcessedStatus) =
-            txResults.AddOrUpdate(txHash, txStatus, fun _ _ -> txStatus) |> ignore
+        member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
+            txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
 
         member __.ToProcessingOutput () : ProcessingOutput =
             {
@@ -302,6 +302,7 @@ module Processing =
         (getHoldingStateFromStorage : AccountHash * AssetCode -> HoldingState option)
         (getAccountControllerFromStorage : AccountHash -> ChainiumAddress option)
         (validator : ChainiumAddress)
+        (blockNumber: BlockNumber)
         (txSet : TxHash list)
         =
 
@@ -322,11 +323,15 @@ module Processing =
 
             match processingResult with
             | Error errors ->
-                oldState.SetTxStatus(txHash, Failure errors)
+                let txResult = {
+                    Status = Failure (TxActionNumber 0s, TxErrorCode 0s)
+                    BlockNumber = blockNumber
+                }
+                oldState.SetTxResult(txHash, txResult)
                 oldState.MergeStateAfterFailedTx(newState)
                 oldState
             | Ok _ ->
-                newState.SetTxStatus(txHash, Success)
+                newState.SetTxResult(txHash, { Status = Success; BlockNumber = blockNumber })
                 newState
 
         let initialState =

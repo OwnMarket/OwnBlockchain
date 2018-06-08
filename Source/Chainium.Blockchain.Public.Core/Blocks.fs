@@ -100,7 +100,11 @@ module Blocks =
 
         let txResultSetRoot =
             txSet
-            |> List.map (fun txHash -> createTxResultHash decodeHash createHash (txHash, output.TxResults.[txHash]))
+            |> List.map (fun txHash ->
+                createTxResultHash
+                    decodeHash
+                    createHash (txHash, output.TxResults.[txHash].Status)
+            )
             |> createMerkleTree
 
         let chxBalanceHashes =

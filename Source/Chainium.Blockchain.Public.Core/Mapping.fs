@@ -80,6 +80,46 @@ module Mapping =
             AppearanceOrder = dto.AppearanceOrder
         }
 
+    let private optionToNullableInt16 convertHandler number =
+        match number with
+        | Some number -> number |> convertHandler |> System.Nullable<int16>
+        | None -> System.Nullable<int16>()
+
+    let private optionFromNullableInt16 convertHandler number =
+        let optionType = number |> Option.ofNullable
+        match optionType with
+        | Some number -> number |> convertHandler |> Some
+        | None -> None
+
+    let txResultToDto (txResult: TxResult) =
+        {
+            Status =
+                match txResult.Status with
+                | Success -> 1s
+                | Failure _ -> 2s
+
+            FailedActionNumber =
+                match txResult.Status with
+                | Success -> System.Nullable()
+                | Failure (TxActionNumber a, _) -> System.Nullable a
+
+            ErrorCode =
+                match txResult.Status with
+                | Success -> System.Nullable()
+                | Failure (_, TxErrorCode e) -> System.Nullable e
+
+            BlockNumber = txResult.BlockNumber |> (fun (BlockNumber b) -> b)
+        }
+
+    let txResultFromDto (dto: TxResultDto) : TxResult =
+        {
+            Status =
+                match dto.Status with
+                | 1s -> Success
+                | _ -> Failure (TxActionNumber dto.FailedActionNumber.Value, TxErrorCode dto.ErrorCode.Value)
+            BlockNumber = BlockNumber dto.BlockNumber
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,7 +197,7 @@ module Mapping =
         let txResults =
             output.TxResults
             |> Map.toList
-            |> List.map (fun (TxHash h, s : TxProcessedStatus) -> h, s |> Processed |> txStatusToCode)
+            |> List.map (fun (TxHash h, s : TxResult) -> h, s |> txResultToDto)
             |> Map.ofList
 
         let chxBalances =

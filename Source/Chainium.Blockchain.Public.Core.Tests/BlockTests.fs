@@ -83,8 +83,23 @@ module BlocksTests =
             ["AAA"; "BBB"; "CCC"]
             |> List.map TxHash
 
+        let txResult1 : TxResult = {
+            Status = Success
+            BlockNumber = BlockNumber 0L
+        }
+
+        let txResult2 : TxResult = {
+            Status = Failure (TxActionNumber 0s, TxErrorCode 2s)
+            BlockNumber = BlockNumber 0L
+        }
+
+        let txResult3 : TxResult = {
+            Status = Success
+            BlockNumber = BlockNumber 1L
+        }
+
         let txResults =
-            [Success; Failure []; Success]
+            [txResult1; txResult2; txResult3]
             |> List.zip txSet
             |> Map.ofList
 
@@ -172,8 +187,23 @@ module BlocksTests =
             ["Tx1"; "Tx2"; "Tx3"]
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> TxHash)
 
+        let txResult1 : TxResult = {
+            Status = Success
+            BlockNumber = BlockNumber 0L
+        }
+
+        let txResult2 : TxResult = {
+            Status = Failure (TxActionNumber 0s, TxErrorCode 2s)
+            BlockNumber = BlockNumber 0L
+        }
+
+        let txResult3 : TxResult = {
+            Status = Success
+            BlockNumber = BlockNumber 1L
+        }
+
         let txResults =
-            [Success; Failure []; Success]
+            [txResult1; txResult2; txResult3]
             |> List.zip txSet
             |> Map.ofList
 
@@ -227,7 +257,7 @@ module BlocksTests =
 
         let txResultSetMerkleProofs =
             txSet
-            |> List.map (fun h -> h, txResults.[h])
+            |> List.map (fun h -> h, txResults.[h].Status)
             |> List.map (Blocks.createTxResultHash Hashing.decode Hashing.hash)
             |> Helpers.verifyMerkleProofs block.Header.TxResultSetRoot
 

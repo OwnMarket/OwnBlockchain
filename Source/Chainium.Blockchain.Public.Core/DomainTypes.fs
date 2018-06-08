@@ -131,9 +131,13 @@ type TxEnvelope = {
 // Processing
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type TxActionNumber = TxActionNumber of int16
+type TxErrorCode = TxErrorCode of int16
+type BlockNumber = BlockNumber of int64
+
 type TxProcessedStatus =
     | Success
-    | Failure of AppErrors
+    | Failure of TxActionNumber * TxErrorCode
 
 type TxStatus =
     | Pending
@@ -150,6 +154,11 @@ type PendingTxInfo = {
 with
     member __.TotalFee = __.Fee * decimal __.ActionCount
 
+type TxResult = {
+    Status : TxProcessedStatus
+    BlockNumber: BlockNumber
+}
+
 type ChxBalanceState = {
     Amount : ChxAmount
     Nonce : Nonce
@@ -160,7 +169,7 @@ type HoldingState = {
 }
 
 type ProcessingOutput = {
-    TxResults : Map<TxHash, TxProcessedStatus>
+    TxResults : Map<TxHash, TxResult>
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetCode, HoldingState>
 }
@@ -170,7 +179,6 @@ type ProcessingOutput = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type Timestamp = Timestamp of int64 // UNIX Timestamp
-type BlockNumber = BlockNumber of int64
 type BlockHash = BlockHash of string
 type MerkleTreeRoot = MerkleTreeRoot of string
 

@@ -16,6 +16,7 @@ module Raw =
 
     type RawDataType =
         | Tx
+        | TxResult
         | Block
 
     let private createFileName (dataType : RawDataType) (key : string) =
@@ -67,6 +68,12 @@ module Raw =
 
     let getTx (dataDir : string) (TxHash txHash) : Result<TxEnvelopeDto, AppErrors> =
         loadData<TxEnvelopeDto> dataDir Tx txHash
+
+    let saveTxResult (dataDir : string) (TxHash txHash) (txResultDto : TxResultDto) : Result<unit, AppErrors> =
+        saveData dataDir Tx txHash txResultDto
+
+    let getTxResult (dataDir : string) (TxHash txHash) : Result<TxResultDto, AppErrors> =
+        loadData<TxResultDto> dataDir Tx txHash
 
     let saveBlock (dataDir : string) (blockDto : BlockDto) : Result<unit, AppErrors> =
         saveData dataDir Block (string blockDto.Header.Number) blockDto

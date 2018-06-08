@@ -157,6 +157,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet.PrivateKey nonce fee
 
         let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
 
         // COMPOSE
         let getTx _ =
@@ -181,6 +182,7 @@ module ProcessingTests =
                 getHoldingState
                 getAccountController
                 validatorWallet.Address
+                blockNumber
                 txSet
 
         // ASSERT
@@ -189,7 +191,7 @@ module ProcessingTests =
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
 
         test <@ output.TxResults.Count = 1 @>
-        test <@ output.TxResults.[txHash] = Success @>
+        test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
@@ -231,6 +233,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet.PrivateKey nonce fee
 
         let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
 
         // COMPOSE
         let getTx _ =
@@ -255,6 +258,7 @@ module ProcessingTests =
                 getHoldingState
                 getAccountController
                 validatorWallet.Address
+                blockNumber
                 txSet
 
         // ASSERT
@@ -263,7 +267,8 @@ module ProcessingTests =
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
 
         test <@ output.TxResults.Count = 1 @>
-        test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient CHX balance."] @>
+        // TODO Add error code for "Insufficient CHX balance."
+        test <@ output.TxResults.[txHash].Status = Failure (TxActionNumber 0s, TxErrorCode 0s) @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
@@ -305,6 +310,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet.PrivateKey nonce fee
 
         let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
 
         // COMPOSE
         let getTx _ =
@@ -329,6 +335,7 @@ module ProcessingTests =
                 getHoldingState
                 getAccountController
                 validatorWallet.Address
+                blockNumber
                 txSet
 
         // ASSERT
@@ -337,7 +344,8 @@ module ProcessingTests =
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
 
         test <@ output.TxResults.Count = 1 @>
-        test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient CHX balance."] @>
+        // TODO Add error code for "Insufficient CHX balance."
+        test <@ output.TxResults.[txHash].Status = Failure (TxActionNumber 0s, TxErrorCode 0s) @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
@@ -393,6 +401,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet.PrivateKey nonce fee
 
         let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
 
         // COMPOSE
         let getTx _ =
@@ -417,6 +426,7 @@ module ProcessingTests =
                 getHoldingState
                 getAccountController
                 validatorWallet.Address
+                blockNumber
                 txSet
 
         // ASSERT
@@ -426,7 +436,7 @@ module ProcessingTests =
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetCode].Amount + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
-        test <@ output.TxResults.[txHash] = Success @>
+        test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
@@ -478,6 +488,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet.PrivateKey nonce fee
 
         let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
 
         // COMPOSE
         let getTx _ =
@@ -502,6 +513,7 @@ module ProcessingTests =
                 getHoldingState
                 getAccountController
                 validatorWallet.Address
+                blockNumber
                 txSet
 
         // ASSERT
@@ -511,7 +523,8 @@ module ProcessingTests =
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetCode].Amount
 
         test <@ output.TxResults.Count = 1 @>
-        test <@ output.TxResults.[txHash] = Failure [AppError "Insufficient asset holding balance."] @>
+        // TODO Add error code for "Insufficient asset holding balance."
+        test <@ output.TxResults.[txHash].Status = Failure (TxActionNumber 0s, TxErrorCode 0s) @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>

@@ -61,6 +61,14 @@ type PendingTxInfoDto = {
     AppearanceOrder : int64
 }
 
+[<CLIMutable>]
+type TxResultDto = {
+    Status : int16
+    FailedActionNumber: Nullable<int16>
+    ErrorCode: Nullable<int16>
+    BlockNumber: int64
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Block
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +114,7 @@ type HoldingStateDto = {
 }
 
 type ProcessingOutputDto = {
-    TxResults : Map<string, byte>
+    TxResults : Map<string, TxResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
 }

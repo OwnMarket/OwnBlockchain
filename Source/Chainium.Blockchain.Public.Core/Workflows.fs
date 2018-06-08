@@ -52,6 +52,7 @@ module Workflows =
         decodeHash
         createHash
         createMerkleTree
+        saveTxResult
         saveBlock
         applyNewState
         maxTxCountPerBlock
@@ -71,6 +72,14 @@ module Workflows =
                     txSet
                     |> Processing.orderTxSet
 
+                let! previousBlockDto =
+                    getLastBlockNumber ()
+                    |? BlockNumber 0L // TODO: Once genesis block init is added, this should throw.
+                    |> getBlock
+                let previousBlock = Mapping.blockFromDto previousBlockDto
+                let blockNumber = previousBlock.Header.Number |> fun (BlockNumber n) -> BlockNumber (n + 1L)
+                let timestamp = Utils.getUnixTimestamp () |> Timestamp
+
                 let output =
                     txSet
                     |> Processing.processTxSet
@@ -81,14 +90,8 @@ module Workflows =
                         getHoldingState
                         getAccountController
                         validatorAddress
+                        blockNumber
 
-                let! previousBlockDto =
-                    getLastBlockNumber ()
-                    |? BlockNumber 0L // TODO: Once genesis block init is added, this should throw.
-                    |> getBlock
-                let previousBlock = Mapping.blockFromDto previousBlockDto
-                let blockNumber = previousBlock.Header.Number |> fun (BlockNumber n) -> BlockNumber (n + 1L)
-                let timestamp = Utils.getUnixTimestamp () |> Timestamp
                 let block =
                     Blocks.assembleBlock
                         decodeHash
@@ -104,6 +107,14 @@ module Workflows =
                 let blockDto = Mapping.blockToDto block
                 let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
                 let outputDto = Mapping.outputToDto output
+
+                let saveTxResultAcc result (txHash, txResult) =
+                    result
+                    >>= fun _ -> saveTxResult (TxHash txHash) txResult
+
+                do! outputDto.TxResults
+                    |> Map.toList
+                    |> List.fold saveTxResultAcc (Ok())
 
                 do! saveBlock blockDto
                 do! applyNewState blockInfoDto outputDto

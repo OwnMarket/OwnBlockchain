@@ -14,6 +14,10 @@ module Composition =
 
     let getTx = Raw.getTx Config.DataDir
 
+    let saveTxResult = Raw.saveTxResult Config.DataDir
+
+    let getTxResult = Raw.getTxResult Config.DataDir
+
     let saveBlock = Raw.saveBlock Config.DataDir
 
     let getBlock = Raw.getBlock Config.DataDir
@@ -66,6 +70,7 @@ module Composition =
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
+            saveTxResult
             saveBlock
             applyNewState
             Config.MaxTxCountPerBlock
