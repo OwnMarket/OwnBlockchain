@@ -76,6 +76,12 @@ module Processing =
         member __.SetHolding (accountHash : AccountHash, assetCode : AssetCode, state : HoldingState) =
             holdings.AddOrUpdate((accountHash, assetCode), state, fun _ _ -> state) |> ignore
 
+        member __.SetAccountController (accountHash : AccountHash, controllerAddress : ChainiumAddress) =
+            let addressOption = controllerAddress |> Some
+            accountControllers.AddOrUpdate (accountHash, addressOption, fun _ _ -> addressOption) |> ignore
+
+        member __.SetTxStatus (txHash : TxHash, txStatus : TxProcessedStatus) =
+            txResults.AddOrUpdate(txHash, txStatus, fun _ _ -> txStatus) |> ignore
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
 
@@ -84,6 +90,10 @@ module Processing =
                 TxResults = txResults |> Map.ofDict
                 ChxBalances = chxBalances |> Map.ofDict
                 Holdings = holdings |> Map.ofDict
+                AccountControllerChanges =
+                    accountControllers
+                    |> Map.ofDict
+                    |> Map.map (fun _ addressOption -> addressOption.Value)
             }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,6 +151,22 @@ module Processing =
                 Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
+
+    let processAccountControllerChangeTxAction
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (action : AccountControllerChangeTxAction)
+        : Result<ProcessingState, AppErrors>
+        =
+        match state.GetAccountController(action.AccountHash) with
+        | Some accountController when accountController = senderAddress ->
+            state.SetAccountController(
+                action.AccountHash,
+                action.ControllerAddress
+            )
+            Ok state
+        | _ ->
+            Error [AppError "Tx signer doesn't control the source account."]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
@@ -286,6 +312,7 @@ module Processing =
         match action with
         | ChxTransfer action -> processChxTransferTxAction state senderAddress action
         | AssetTransfer action -> processAssetTransferTxAction state senderAddress action
+        | AccountControllerChange action ->  processAccountControllerChangeTxAction state senderAddress action
 
     let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
         actions

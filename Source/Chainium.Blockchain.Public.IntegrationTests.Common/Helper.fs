@@ -26,20 +26,24 @@ module internal Helper =
                 File.Delete conn.DataSource
 
         if sqlEngineType = Postgres then
+            let schemaName = (Npgsql.NpgsqlConnectionStringBuilder connString).SearchPath
             let removeAllTables =
-                """
-                DO $$ DECLARE
-                    v_table_name TEXT;
-                BEGIN
-                    FOR v_table_name IN
-                        SELECT tablename
-                        FROM pg_tables
-                        WHERE schemaname = current_schema()
-                    LOOP
-                        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(v_table_name) || ' CASCADE';
-                    END LOOP;
-                END $$;
-                """
+                sprintf
+                    """
+                    DO $$ DECLARE
+                        v_table_name TEXT;
+                    BEGIN
+                        FOR v_table_name IN
+                            SELECT tablename
+                            FROM pg_tables
+                            WHERE schemaname = '%s'
+                        LOOP
+                            EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(v_table_name) || ' CASCADE';
+                        END LOOP;
+                    END $$;
+                    """
+                    schemaName
+
             DbTools.execute connString removeAllTables [] |> ignore
 
     let testServer () =
@@ -73,6 +77,3 @@ module internal Helper =
 
     let BlockCreationWaitingTime =
         config.["BlockCreationWaitingTimeInSeconds"] |> int
-
-    let DbConnectionString =
-        config.["DbConnectionString"]

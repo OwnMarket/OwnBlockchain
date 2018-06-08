@@ -212,4 +212,5 @@ type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetCode, HoldingState>
+    AccountControllerChanges : Map<AccountHash, ChainiumAddress>
 }

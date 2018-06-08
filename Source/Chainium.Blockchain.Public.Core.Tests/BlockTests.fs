@@ -151,11 +151,14 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let accountControllerChanges = [] |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
+                AccountControllerChanges = accountControllerChanges
             }
 
         let txSetRoot = "AAABBBCCC"
@@ -264,12 +267,14 @@ module BlocksTests =
                 (AccountHash "Acc2", AssetCode "Eq2"), {HoldingState.Amount = AssetAmount 200M}
             ]
             |> Map.ofList
+        let accountControllerChanges = [] |> Map.ofList
 
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
+                AccountControllerChanges = accountControllerChanges
             }
 
         // ACT

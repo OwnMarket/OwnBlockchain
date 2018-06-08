@@ -119,10 +119,16 @@ type HoldingStateDto = {
     Amount : decimal
 }
 
+[<CLIMutable>]
+type AccountControllerChangeDto = {
+    ControllerAddress : string
+}
+
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
+    AccountControllerChanges : Map<string, AccountControllerChangeDto>
 }
 
 [<CLIMutable>]

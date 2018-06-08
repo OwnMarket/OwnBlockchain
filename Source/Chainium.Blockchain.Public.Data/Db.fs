@@ -7,6 +7,7 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 
 module Db =
+    open System.Data.Common
 
     let private dbParams (paramsList : (string * obj) list) =
         let paramsString =
@@ -360,6 +361,86 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok())
 
+    let private singleMessageError message= Error [AppError (message)]
+    let addAccount
+        conn
+        transaction
+        (accountController : AccountControllerDto)
+        : Result<unit, AppErrors>
+        =
+        let sql =
+            """
+            INSERT INTO account (account_hash, controller_address)
+            VALUES (@accountHash, @controllerAddress)
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountController.AccountHash |> box
+                "@controllerAddress", accountController.ControllerAddress |> box
+            ]
+
+        let error = singleMessageError "Failed to insert Account"
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> error
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            error
+
+    let updateAccount
+        conn
+        transaction
+        (accountController : AccountControllerDto)
+        : Result<unit, AppErrors>
+        =
+        let sql =
+            """
+            UPDATE account
+            SET controller_address = @accountController
+            WHERE account_hash = @accountHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountController.AccountHash |> box
+                "@accountController", accountController.ControllerAddress |> box
+            ]
+
+        let error = singleMessageError "Failed to update Address."
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addAccount conn transaction accountController
+            | 1 -> Ok ()
+            | _ -> error
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            error
+
+
+    let updateAccounts
+        (conn : DbConnection)
+        (transaction : DbTransaction)
+        (accountControllerChanges : Map<string, AccountControllerChangeDto>)
+        : Result<unit, AppErrors>
+        =
+        let foldFn result (accountHash, (controllerChange : AccountControllerChangeDto)) =
+            result
+            >>= (fun _ ->
+                {
+                    AccountHash = accountHash
+                    ControllerAddress = controllerChange.ControllerAddress
+                }
+                |> updateAccount conn transaction
+            )
+
+        accountControllerChanges
+        |> Map.toList
+        |> List.fold foldFn (Ok())
+
     let applyNewState
         (dbConnectionString : string)
         (blockInfoDto : BlockInfoDto)
@@ -374,9 +455,10 @@ module Db =
 
         let result =
             updateTxs conn transaction state.TxResults
-            >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
-            >>= fun _ -> updateHoldings conn transaction state.Holdings
-            >>= fun _ -> updateBlock conn transaction blockInfoDto
+            >>= (fun _ -> updateChxBalances conn transaction state.ChxBalances)
+            >>= (fun _ -> updateHoldings conn transaction state.Holdings)
+            >>= (fun _ -> updateAccounts conn transaction state.AccountControllerChanges)
+            >>= (fun _ -> updateBlock conn transaction blockInfoDto)
 
         match result with
         | Ok() ->
