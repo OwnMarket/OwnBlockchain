@@ -48,7 +48,8 @@ module ProcessingTests =
 
     [<Theory>]
     [<InlineData (1, "Tx1")>]
-    [<InlineData (3, "Tx1;Tx3;Tx5")>]
+    [<InlineData (3, "Tx1;Tx3")>]
+    [<InlineData (4, "Tx1;Tx3;Tx5")>]
     let ``Processing.excludeUnprocessableTxs excludes txs if CHX balance cannot cover the fees``
         (balance : decimal, txHashes : string)
         =
@@ -72,7 +73,7 @@ module ProcessingTests =
         let txSet =
             [
                 Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 1s 2L
-                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1.5M) 1s 3L
+                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1.5M) 2s 3L
                 Helpers.newPendingTxInfo (TxHash "Tx4") w1.Address (Nonce 14L) (ChxAmount 1M) 1s 4L
                 Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1M) 1s 5L
                 Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1M) 1s 1L

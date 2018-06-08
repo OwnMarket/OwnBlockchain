@@ -187,7 +187,7 @@ module Processing =
         |> List.sortBy (fun tx -> tx.Nonce)
         |> List.scan (fun newSet tx -> newSet @ [tx]) []
         |> List.takeWhile (fun newSet ->
-            let totalTxSetFee = newSet |> List.sumBy (fun tx -> tx.Fee)
+            let totalTxSetFee = newSet |> List.sumBy (fun tx -> tx.Fee * decimal tx.ActionCount)
             totalTxSetFee <= senderBalance
         )
         |> List.last
