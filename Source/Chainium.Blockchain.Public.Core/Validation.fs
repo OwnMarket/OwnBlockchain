@@ -72,7 +72,7 @@ module Validation =
                 yield AppError "There are no actions provided for this transaction."
         ]
 
-    let private validateControllerChange isValidAddress (action : AccountControllerChangeTxActionDto)=
+    let private validateAccountControllerChange isValidAddress (action : AccountControllerChangeTxActionDto)=
         [
             if action.ControllerAddress
                 |> ChainiumAddress
@@ -81,7 +81,7 @@ module Validation =
             then
                 yield AppError "Controller address is not valid."
             if action.AccountHash.IsNullOrWhiteSpace() then
-                yield AppError "AccountHass value is not valid"
+                yield AppError "AccountHash value is not valid"
         ]
 
     let private validateTxActions isValidAddress (actions : TxActionDto list) =
@@ -92,7 +92,7 @@ module Validation =
             | :? AssetTransferTxActionDto as a ->
                 validateAssetTransfer a
             | :? AccountControllerChangeTxActionDto as a ->
-                validateControllerChange isValidAddress a
+                validateAccountControllerChange isValidAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]
