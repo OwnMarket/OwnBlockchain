@@ -195,14 +195,14 @@ module SharedTests =
         let paramName = "@chainium_address"
 
         let insertSql =
-                String.Format
-                    (
-                        """
-                        INSERT INTO account (account_hash, controller_address)
-                        VALUES ({0}, {0});
-                        """,
-                        paramName
-                    )
+            String.Format
+                (
+                    """
+                    INSERT INTO account (account_hash, controller_address)
+                    VALUES ({0}, {0});
+                    """,
+                    paramName
+                )
 
         let address = addressToString wallet.Address
 

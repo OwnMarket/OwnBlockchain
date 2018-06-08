@@ -113,4 +113,3 @@ module Validation =
                 Error [AppError "CHX balance is insufficient to cover the fee for all pending transactions."]
             else
                 Ok ()
-
