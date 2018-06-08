@@ -55,7 +55,7 @@ module DbChanges =
                     CREATE TABLE IF NOT EXISTS account (
                         account_id INTEGER NOT NULL,
                         account_hash TEXT NOT NULL,
-                        controller_address TEXT NOT NULL, -- Controls the account
+                        controller_address TEXT NOT NULL,
 
                         CONSTRAINT account__pk PRIMARY KEY (account_id),
                         CONSTRAINT account__uk__account_hash UNIQUE (account_hash)
@@ -133,7 +133,7 @@ module DbChanges =
                     CREATE TABLE IF NOT EXISTS account (
                         account_id BIGSERIAL NOT NULL,
                         account_hash TEXT NOT NULL,
-                        controller_address TEXT NOT NULL, -- Controls the account
+                        controller_address TEXT NOT NULL,
 
                         CONSTRAINT account__pk PRIMARY KEY (account_id),
                         CONSTRAINT account__uk__account_hash UNIQUE (account_hash)
