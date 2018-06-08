@@ -48,14 +48,14 @@ module ProcessingTests =
 
     [<Theory>]
     [<InlineData (1, "Tx1")>]
-    [<InlineData (3, "Tx1;Tx3")>]
-    [<InlineData (4, "Tx1;Tx3;Tx5")>]
+    [<InlineData (3, "Tx1; Tx3")>]
+    [<InlineData (4, "Tx1; Tx3; Tx5")>]
     let ``Processing.excludeUnprocessableTxs excludes txs if CHX balance cannot cover the fees``
         (balance : decimal, txHashes : string)
         =
 
         let balance = ChxAmount balance
-        let expectedHashes = txHashes.Split(";") |> Array.toList
+        let expectedHashes = txHashes.Split("; ") |> Array.toList
 
         let w1 = Signing.generateWallet ()
         let w2 = Signing.generateWallet ()
