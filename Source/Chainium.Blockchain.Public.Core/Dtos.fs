@@ -132,13 +132,15 @@ type HoldingInfoDto = {
     HoldingState : HoldingStateDto
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Account
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 [<CLIMutable>]
 type AccountControllerDto = {
     AccountHash : string
+    ControllerAddress : string
+}
+
+[<CLIMutable>]
+type AssetControllerDto = {
+    AssetCode : string
     ControllerAddress : string
 }
 

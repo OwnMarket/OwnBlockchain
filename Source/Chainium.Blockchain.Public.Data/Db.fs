@@ -435,3 +435,21 @@ module Db =
         | [] -> None
         | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
         | _ -> failwith "More than one Controller exists"
+
+    let getAssetController (dbConnectionString : string) assetCode : ChainiumAddress option =
+        let sql =
+            """
+            SELECT controller_address
+            FROM asset
+            WHERE asset_code = @assetCode
+            """
+
+        let sqlParams =
+            [
+                "@assetCode", assetCode |> box
+            ]
+
+        match DbTools.query<AssetControllerDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [assetDetails] -> assetDetails.ControllerAddress |> ChainiumAddress |> Some
+        | _ -> failwithf "Multiple controllers found for asset code %A" assetCode

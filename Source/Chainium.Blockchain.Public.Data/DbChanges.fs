@@ -61,6 +61,15 @@ module DbChanges =
                         CONSTRAINT account__uk__account_hash UNIQUE (account_hash)
                     );
 
+                    CREATE TABLE IF NOT EXISTS asset (
+                        asset_id INTEGER NOT NULL,
+                        asset_code TEXT NOT NULL,
+                        controller_address TEXT NOT NULL,
+
+                        CONSTRAINT asset__pk PRIMARY KEY (asset_id),
+                        CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
+                    );
+
                     CREATE TABLE IF NOT EXISTS holding (
                         holding_id INTEGER NOT NULL,
                         account_id BIGINT NOT NULL,
@@ -137,6 +146,15 @@ module DbChanges =
 
                         CONSTRAINT account__pk PRIMARY KEY (account_id),
                         CONSTRAINT account__uk__account_hash UNIQUE (account_hash)
+                    );
+
+                    CREATE TABLE IF NOT EXISTS asset (
+                        asset_id BIGSERIAL NOT NULL,
+                        asset_code TEXT NOT NULL,
+                        controller_address TEXT NOT NULL,
+
+                        CONSTRAINT asset__pk PRIMARY KEY (asset_id),
+                        CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
                     );
 
                     CREATE TABLE IF NOT EXISTS holding (
