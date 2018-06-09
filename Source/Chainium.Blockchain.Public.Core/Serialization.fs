@@ -88,9 +88,3 @@ module Serialization =
 
     let deserializeTx (rawTx : byte[]) : Result<TxDto, AppErrors> =
         deserialize<TxDto> rawTx
-
-    let serializeTxResult (txResultDto : TxResultDto) =
-        serialize<TxResultDto> txResultDto
-
-    let deserializeTxResult (rawTxResult : byte[]) : Result<TxResultDto, AppErrors> =
-        deserialize<TxResultDto> rawTxResult
