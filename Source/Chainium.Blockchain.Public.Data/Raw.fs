@@ -69,10 +69,10 @@ module Raw =
         loadData<TxEnvelopeDto> dataDir Tx txHash
 
     let saveTxResult (dataDir : string) (TxHash txHash) (txResultDto : TxResultDto) : Result<unit, AppErrors> =
-        saveData dataDir Tx txHash txResultDto
+        saveData dataDir TxResult txHash txResultDto
 
     let getTxResult (dataDir : string) (TxHash txHash) : Result<TxResultDto, AppErrors> =
-        loadData<TxResultDto> dataDir Tx txHash
+        loadData<TxResultDto> dataDir TxResult txHash
 
     let saveBlock (dataDir : string) (blockDto : BlockDto) : Result<unit, AppErrors> =
         saveData dataDir Block (string blockDto.Header.Number) blockDto

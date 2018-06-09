@@ -108,13 +108,12 @@ module Workflows =
                 let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
                 let outputDto = Mapping.outputToDto output
 
-                let saveTxResultAcc result (txHash, txResult) =
-                    result
-                    >>= fun _ -> saveTxResult (TxHash txHash) txResult
-
                 do! outputDto.TxResults
                     |> Map.toList
-                    |> List.fold saveTxResultAcc (Ok())
+                    |> List.fold (fun result (txHash, txResult) ->
+                        result
+                        >>= fun _ -> saveTxResult (TxHash txHash) txResult
+                    ) (Ok ())
 
                 do! saveBlock blockDto
                 do! applyNewState blockInfoDto outputDto

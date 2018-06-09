@@ -287,12 +287,11 @@ module Processing =
         | AssetTransfer action -> processAssetTransferTxAction state senderAddress action
 
     let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
-        let processAction result action =
+        actions
+        |> List.fold (fun result action ->
             result
             >>= processTxAction senderAddress action
-
-        actions
-        |> List.fold processAction (Ok state)
+        ) (Ok state)
 
     let processTxSet
         getTx
