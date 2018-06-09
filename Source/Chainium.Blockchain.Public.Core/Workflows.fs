@@ -68,10 +68,6 @@ module Workflows =
         | [] -> None // Nothing to process.
         | txSet ->
             result {
-                let txSet =
-                    txSet
-                    |> Processing.orderTxSet
-
                 let! previousBlockDto =
                     getLastBlockNumber ()
                     |? BlockNumber 0L // TODO: Once genesis block init is added, this should throw.
@@ -79,6 +75,10 @@ module Workflows =
                 let previousBlock = Mapping.blockFromDto previousBlockDto
                 let blockNumber = previousBlock.Header.Number |> fun (BlockNumber n) -> BlockNumber (n + 1L)
                 let timestamp = Utils.getUnixTimestamp () |> Timestamp
+
+                let txSet =
+                    txSet
+                    |> Processing.orderTxSet
 
                 let output =
                     txSet

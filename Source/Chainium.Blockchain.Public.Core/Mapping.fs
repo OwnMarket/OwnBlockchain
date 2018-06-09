@@ -80,22 +80,15 @@ module Mapping =
         }
 
     let txResultToDto (txResult: TxResult) =
+        let status, failedActionNumber, errorCode =
+            match txResult.Status with
+            | Success -> 1s, Nullable (), Nullable ()
+            | Failure (TxActionNumber a, TxErrorCode e) -> 2s, Nullable a, Nullable e
+
         {
-            Status =
-                match txResult.Status with
-                | Success -> 1s
-                | Failure _ -> 2s
-
-            FailedActionNumber =
-                match txResult.Status with
-                | Success -> System.Nullable()
-                | Failure (TxActionNumber a, _) -> System.Nullable a
-
-            ErrorCode =
-                match txResult.Status with
-                | Success -> System.Nullable()
-                | Failure (_, TxErrorCode e) -> System.Nullable e
-
+            Status = status
+            FailedActionNumber = failedActionNumber
+            ErrorCode = errorCode
             BlockNumber = txResult.BlockNumber |> (fun (BlockNumber b) -> b)
         }
 
@@ -104,7 +97,8 @@ module Mapping =
             Status =
                 match dto.Status with
                 | 1s -> Success
-                | _ -> Failure (TxActionNumber dto.FailedActionNumber.Value, TxErrorCode dto.ErrorCode.Value)
+                | 2s -> Failure (TxActionNumber dto.FailedActionNumber.Value, TxErrorCode dto.ErrorCode.Value)
+                | c -> failwithf "Unknown TxStatus code %i" c
             BlockNumber = BlockNumber dto.BlockNumber
         }
 

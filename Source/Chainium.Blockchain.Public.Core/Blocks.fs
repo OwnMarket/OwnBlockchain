@@ -100,7 +100,8 @@ module Blocks =
             |> List.map (fun txHash ->
                 createTxResultHash
                     decodeHash
-                    createHash (txHash, output.TxResults.[txHash].Status)
+                    createHash
+                    (txHash, output.TxResults.[txHash].Status)
             )
             |> createMerkleTree
 

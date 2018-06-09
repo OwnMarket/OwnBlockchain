@@ -128,57 +128,11 @@ type TxEnvelope = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Processing
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type TxActionNumber = TxActionNumber of int16
-type TxErrorCode = TxErrorCode of int16
-type BlockNumber = BlockNumber of int64
-
-type TxProcessedStatus =
-    | Success
-    | Failure of TxActionNumber * TxErrorCode
-
-type TxStatus =
-    | Pending
-    | Processed of TxProcessedStatus
-
-type PendingTxInfo = {
-    TxHash : TxHash
-    Sender : ChainiumAddress
-    Nonce : Nonce
-    Fee : ChxAmount
-    ActionCount : int16
-    AppearanceOrder : int64
-}
-with
-    member __.TotalFee = __.Fee * decimal __.ActionCount
-
-type TxResult = {
-    Status : TxProcessedStatus
-    BlockNumber: BlockNumber
-}
-
-type ChxBalanceState = {
-    Amount : ChxAmount
-    Nonce : Nonce
-}
-
-type HoldingState = {
-    Amount : AssetAmount
-}
-
-type ProcessingOutput = {
-    TxResults : Map<TxHash, TxResult>
-    ChxBalances : Map<ChainiumAddress, ChxBalanceState>
-    Holdings : Map<AccountHash * AssetCode, HoldingState>
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // Block
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type Timestamp = Timestamp of int64 // UNIX Timestamp
+type BlockNumber = BlockNumber of int64
 type BlockHash = BlockHash of string
 type MerkleTreeRoot = MerkleTreeRoot of string
 
@@ -196,4 +150,50 @@ type BlockHeader = {
 type Block = {
     Header : BlockHeader
     TxSet : TxHash list
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Processing
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type TxActionNumber = TxActionNumber of int16
+type TxErrorCode = TxErrorCode of int16
+
+type TxProcessedStatus =
+    | Success
+    | Failure of TxActionNumber * TxErrorCode
+
+type TxStatus =
+    | Pending
+    | Processed of TxProcessedStatus
+
+type TxResult = {
+    Status : TxProcessedStatus
+    BlockNumber: BlockNumber
+}
+
+type PendingTxInfo = {
+    TxHash : TxHash
+    Sender : ChainiumAddress
+    Nonce : Nonce
+    Fee : ChxAmount
+    ActionCount : int16
+    AppearanceOrder : int64
+}
+with
+    member __.TotalFee = __.Fee * decimal __.ActionCount
+
+type ChxBalanceState = {
+    Amount : ChxAmount
+    Nonce : Nonce
+}
+
+type HoldingState = {
+    Amount : AssetAmount
+}
+
+type ProcessingOutput = {
+    TxResults : Map<TxHash, TxResult>
+    ChxBalances : Map<ChainiumAddress, ChxBalanceState>
+    Holdings : Map<AccountHash * AssetCode, HoldingState>
 }
