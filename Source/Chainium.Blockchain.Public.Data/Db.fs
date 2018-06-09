@@ -158,10 +158,9 @@ module Db =
     let updateTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
         let foldFn result (txHash, txResult: TxResultDto) =
             result
-            >>= (fun _ ->
+            >>= fun _ ->
                 // TODO: Remove conversion when StatusCode type is changed to int16
                 updateTx conn transaction txHash (txResult.Status |> Convert.ToByte)
-            )
 
         txResults
         |> Map.toList
@@ -265,7 +264,7 @@ module Db =
     let updateChxBalances conn transaction (chxBalances : Map<string, ChxBalanceStateDto>) : Result<unit, AppErrors> =
         let foldFn result (chainiumAddress, chxBalanceState : ChxBalanceStateDto) =
             result
-            >>= (fun _ ->
+            >>= fun _ ->
                 {
                     ChainiumAddress = chainiumAddress
                     ChxBalanceState =
@@ -275,7 +274,6 @@ module Db =
                         }
                 }
                 |> updateChxBalance conn transaction
-            )
 
         chxBalances
         |> Map.toList
@@ -335,7 +333,7 @@ module Db =
     let updateHoldings conn transaction (holdings : Map<string * string, HoldingStateDto>) : Result<unit, AppErrors> =
         let foldFn result (accountAsset, holdingState : HoldingStateDto) =
             result
-            >>= (fun _ ->
+            >>= fun _ ->
                 {
                     AccountHash = fst(accountAsset)
                     AssetCode = snd(accountAsset)
@@ -345,7 +343,6 @@ module Db =
                         }
                 }
                 |> updateHolding conn transaction
-            )
 
         holdings
         |> Map.toList
@@ -365,9 +362,9 @@ module Db =
 
         let result =
             updateTxs conn transaction state.TxResults
-            >>= (fun _ -> updateChxBalances conn transaction state.ChxBalances)
-            >>= (fun _ -> updateHoldings conn transaction state.Holdings)
-            >>= (fun _ -> updateBlock conn transaction blockInfoDto)
+            >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
+            >>= fun _ -> updateHoldings conn transaction state.Holdings
+            >>= fun _ -> updateBlock conn transaction blockInfoDto
 
         match result with
         | Ok() ->
