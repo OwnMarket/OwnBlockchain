@@ -42,7 +42,7 @@ module Db =
             let result = DbTools.execute dbConnectionString insertSql txParams
 
             if result < 0 then
-                failwith "Unknown error"
+                failwith "Unknown DB error"
             else
                 Ok ()
         with
@@ -149,11 +149,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update Transaction")]
+            | _ -> Error [AppError ("Failed to update transaction")]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert update Transaction")]
+            Error [AppError ("Failed to insert update transaction")]
 
     let updateTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
         let foldFn result (txHash, txResult: TxResultDto) =
@@ -184,11 +184,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to insert Block")]
+            | _ -> Error [AppError ("Failed to insert block")]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert Block")]
+            Error [AppError ("Failed to insert block")]
 
     let updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -208,11 +208,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addBlock conn transaction blockInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update Block number")]
+            | _ -> Error [AppError ("Failed to update block number")]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to update Block number")]
+            Error [AppError ("Failed to update block number")]
 
     let addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -231,11 +231,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to insert Chainium balance")]
+            | _ -> Error [AppError ("Failed to insert CHX balance")]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert Chainium balance")]
+            Error [AppError ("Failed to insert CHX balance")]
 
     let updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -256,11 +256,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addChxBalance conn transaction chxBalanceInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update Chainium balance")]
+            | _ -> Error [AppError ("Failed to update CHX balance")]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to update Chainium balance")]
+            Error [AppError ("Failed to update CHX balance")]
 
     let updateChxBalances conn transaction (chxBalances : Map<string, ChxBalanceStateDto>) : Result<unit, AppErrors> =
         let foldFn result (chainiumAddress, chxBalanceState : ChxBalanceStateDto) =
@@ -300,11 +300,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to insert Holding")]
+            | _ -> Error [AppError ("Failed to insert holding")]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert Holding")]
+            Error [AppError ("Failed to insert holding")]
 
     let updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -326,11 +326,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addHolding conn transaction holdingInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update Holding")]
+            | _ -> Error [AppError ("Failed to update holding")]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to update Holding")]
+            Error [AppError ("Failed to update holding")]
 
     let updateHoldings conn transaction (holdings : Map<string * string, HoldingStateDto>) : Result<unit, AppErrors> =
         let foldFn result (accountAsset, holdingState : HoldingStateDto) =
@@ -395,7 +395,7 @@ module Db =
         match DbTools.query<ChxBalanceStateDto> dbConnectionString sql sqlParams with
         | [] -> None
         | [chxAddressDetails] -> Some chxAddressDetails
-        | _ -> failwith "More than one Chx Address exists"
+        | _ -> failwithf "Multiple CHX balance entries found for address %A" address
 
     let getHoldingState (dbConnectionString : string) (accountHash, assetCode) =
         let sql =
@@ -416,7 +416,7 @@ module Db =
         match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
         | [] -> None
         | [holdingDetails] -> Some holdingDetails
-        | _ -> failwith "More than one Holding exists"
+        | _ -> failwithf "Multiple holdings of asset code %A found for account hash %A" assetCode accountHash
 
     let getAccountController (dbConnectionString : string) accountHash : ChainiumAddress option =
         let sql =
@@ -434,7 +434,7 @@ module Db =
         match DbTools.query<AccountControllerDto> dbConnectionString sql sqlParams with
         | [] -> None
         | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
-        | _ -> failwith "More than one Controller exists"
+        | _ -> failwithf "Multiple controllers found for account hash %A" accountHash
 
     let getAssetController (dbConnectionString : string) assetCode : ChainiumAddress option =
         let sql =
