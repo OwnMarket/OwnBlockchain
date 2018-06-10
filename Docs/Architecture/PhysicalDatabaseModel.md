@@ -12,6 +12,7 @@ This document will present the physical database model and describe all the tabl
 
 The physical database model below shows the tables and relationships between them. In a nutshell, the relational database keeps information about transactions, CHX balances and equity holding. The tables and their relationships are shown in the picture below.
 
+![PhysicalDatabaseModel](PhysicalDatabaseModel.png)
 
 ## Tables
 
