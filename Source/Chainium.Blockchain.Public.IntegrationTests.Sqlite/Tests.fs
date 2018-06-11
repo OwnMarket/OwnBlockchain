@@ -22,3 +22,7 @@ module Tests =
     [<Fact>]
     let ``AccountManagement - get account controller for SQLite`` () =
         SharedTests.getAccountControllerTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
+    let ``TransactionProcessing - change account controller`` () =
+        SharedTests.changeAccountControllerTest Config.DbEngineType Config.DbConnectionString

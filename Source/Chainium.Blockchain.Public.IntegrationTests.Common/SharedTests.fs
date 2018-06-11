@@ -12,44 +12,33 @@ open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
 
 module SharedTests =
 
     let addressToString (ChainiumAddress a) = a
 
-    let transactionDto receiver fee =
+    let newTxDto fee nonce actions=
         {
-            Nonce = 1L
+            Nonce = nonce
             Fee = fee
-            Actions =
-                [
-                    {
-                        ActionType = "ChxTransfer"
-                        ActionData =
-                            {
-                                RecipientAddress = (addressToString receiver)
-                                ChxTransferTxActionDto.Amount = 10M
-                            }
-                    }
-                ]
+            Actions = actions
         }
 
-    let private transactionBytes transactionDto =
-        transactionDto
-        |> JsonConvert.SerializeObject
-        |> Encoding.UTF8.GetBytes
+    let private transactionEnvelope sender txDto =
+        let txBytes =
+            txDto
+            |> JsonConvert.SerializeObject
+            |> Encoding.UTF8.GetBytes
 
-    let private prepareTransaction sender transactionAsString =
-        let signature = Signing.signMessage sender.PrivateKey transactionAsString
+        let signature = Signing.signMessage sender.PrivateKey txBytes
         {
-            Tx = System.Convert.ToBase64String(transactionAsString)
+            Tx = System.Convert.ToBase64String(txBytes)
             V = signature.V
             S = signature.S
             R = signature.R
         }
 
-    let private submitTransaction txToSubmit (client : HttpClient) =
+    let private submitTransaction (client : HttpClient) txToSubmit=
         let tx = JsonConvert.SerializeObject(txToSubmit)
         let content = new StringContent(tx, System.Text.Encoding.UTF8, "application/json")
 
@@ -72,35 +61,14 @@ module SharedTests =
         let testServer = Helper.testServer()
         testServer.CreateClient()
 
-    let private prepareAndSubmitTransaction client senderWallet receiverWallet isValid =
-        let fee =
-            match isValid with
-            | true -> 10M
-            | false -> -10M
-
-        let dto = transactionDto receiverWallet.Address fee
-
-        let expectedTx =
-            dto
-            |> transactionBytes
-            |> prepareTransaction senderWallet
-
-        let responseDto = submitTransaction expectedTx client
-
-        (senderWallet, receiverWallet, dto, expectedTx, responseDto)
-
     let submissionChecks
         connectionString
         shouldExist
-        (
-            senderWallet,
-            receiverWallet,
-            (dto : TxDto),
-            expectedTx,
-            (txHash : SubmitTxResponseDto)
-        )
+        senderWallet
+        (dto : TxDto)
+        expectedTx
+        (txHash : SubmitTxResponseDto)
         =
-
         let fileName = sprintf "Tx_%s" txHash.TxHash
         let txFile = Path.Combine(Config.DataDir, fileName)
 
@@ -145,8 +113,33 @@ module SharedTests =
         let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
         let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
 
-        prepareAndSubmitTransaction client senderWallet receiverWallet isValidTransaction
-        |> submissionChecks connString isValidTransaction
+        let action =
+            {
+                ActionType = "ChxTransfer"
+                ActionData =
+                    {
+                        RecipientAddress = receiverWallet.Address |> addressToString
+                        ChxTransferTxActionDto.Amount = 10M
+                    }
+            }
+
+        let txDto = newTxDto 1M 1L [action]
+        let expectedTx = transactionEnvelope senderWallet txDto
+
+        submitTransaction client expectedTx
+        |> submissionChecks connString isValidTransaction senderWallet txDto expectedTx
+
+    let processTransactions expectedBlockPath =
+        PaceMaker.start()
+
+        let mutable iter = 0
+        let sleepTime = 2
+
+        while File.Exists(expectedBlockPath) |> not && iter < Helper.BlockCreationWaitingTime do
+            Thread.Sleep(sleepTime * 1000)
+            iter <- iter + sleepTime
+
+        test <@ File.Exists(expectedBlockPath) @>
 
     let transactionProcessingTest engineType connString =
         let client = testInit engineType connString
@@ -161,31 +154,33 @@ module SharedTests =
                     Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0M
 
                     let isValid = i % 2 = 0
-                    let submissionOutput = prepareAndSubmitTransaction client senderWallet receiverWallet isValid
-                    submissionChecks connString isValid submissionOutput
+                    let amt = if isValid then 10M else -10M
+                    //prepare transaction
+                    let action =
+                        {
+                            ActionType = "ChxTransfer"
+                            ActionData =
+                                {
+                                    RecipientAddress = receiverWallet.Address |> addressToString
+                                    ChxTransferTxActionDto.Amount = amt
+                                }
+                        }
 
-                    if isValid then
-                        let (_, _, _, _, responseDto) = submissionOutput
-                        yield responseDto.TxHash
+                    let fee = 1M
+                    let nonce = 1L
+                    let txDto = newTxDto fee nonce [ action ]
+
+                    let expectedTx = transactionEnvelope senderWallet txDto
+
+                    let submitedTransactionDto = submitTransaction client expectedTx
+                    submissionChecks connString isValid senderWallet txDto expectedTx submitedTransactionDto
+
+                    yield submitedTransactionDto.TxHash
             ]
 
         test <@ submittedTxHashes.Length = 2 @>
 
-        let expectedBlockPath = Path.Combine(Config.DataDir, "Block_1")
-        PaceMaker.start()
-
-        let mutable iter = 0
-        let sleepTime = 2
-
-        while File.Exists(expectedBlockPath) |> not && iter < Helper.BlockCreationWaitingTime do
-            Thread.Sleep(sleepTime * 1000)
-            iter <- iter + sleepTime
-
-        test <@ File.Exists(expectedBlockPath) @>
-        for txHash in submittedTxHashes do
-            let txResultFileName = sprintf "TxResult_%s" txHash
-            let expectedTxResultPath = Path.Combine(Config.DataDir, txResultFileName)
-            test <@ File.Exists expectedTxResultPath @>
+        processTransactions Helper.ExpectedPathForFirstBlock
 
     let private numOfUpdatesExecuted connectionString =
         let sql =
@@ -228,3 +223,63 @@ module SharedTests =
         match Db.getAccountController connectionString (AccountHash address) with // TODO: Use separate account hash.
             | None -> failwith "Unable to get controller."
             | Some resultingAddress -> test <@ resultingAddress = wallet.Address @>
+
+    let changeAccountControllerTest engineType connectionString =
+        //initial data cleanup
+        let client = testInit engineType connectionString
+
+        //prepare local data
+        let account = Signing.generateWallet()
+        let newController = Signing.generateWallet()
+
+        //database initialization
+        let initialSenderAmt = 10M
+        let initialValidatorAmt = 0M
+        Helper.addBalanceAndAccount connectionString (account.Address |> addressToString) initialSenderAmt
+        Helper.addBalanceAndAccount connectionString (Config.ValidatorAddress) initialValidatorAmt
+
+        //transaction preparation
+        let tx =
+            {
+                ActionType = "AccountControllerChange"
+                ActionData =
+                    {
+                         AccountControllerChangeTxActionDto.AccountHash = account.Address |> addressToString
+                         ControllerAddress = newController.Address |> addressToString
+                    }
+            }
+
+        let fee = 1M
+        let nonce = 1L
+        let txDto = newTxDto fee nonce [ tx ]
+
+        let expectedTx = transactionEnvelope account txDto
+
+        //transaction submission and submission checks
+        submitTransaction client expectedTx
+        |> submissionChecks connectionString true account txDto expectedTx
+
+        //transaction processing and processing checks
+        processTransactions Helper.ExpectedPathForFirstBlock
+
+        //check expected results
+        let accountController = Db.getAccountController connectionString (account.Address |> addressToString |> AccountHash)
+        test <@ accountController.Value = newController.Address @>
+
+
+        let senderBalance = Db.getChxBalanceState connectionString account.Address
+        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+
+        let balanceValidation
+            (balance : ChxBalanceStateDto option)
+            (expectedAmt : decimal)
+            (expectedNonce : int64)
+            =
+            match balance with
+            | None -> failwith "Balance data should be in database"
+            | Some b ->
+                test <@ b.Amount = expectedAmt @>
+                test <@ b.Nonce = expectedNonce @>
+
+        balanceValidation senderBalance (initialSenderAmt - fee) nonce
+        balanceValidation validatorBalance (initialValidatorAmt + fee) 0L

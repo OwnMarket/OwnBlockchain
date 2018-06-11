@@ -22,3 +22,7 @@ module Tests =
     [<Fact>]
     let ``AccountManagement - get account controller for Postgres`` () =
         SharedTests.getAccountControllerTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
+    let ``TransactionProcessing - change account controller`` () =
+        SharedTests.changeAccountControllerTest Config.DbEngineType Config.DbConnectionString

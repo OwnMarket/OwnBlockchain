@@ -77,3 +77,5 @@ module internal Helper =
 
     let BlockCreationWaitingTime =
         config.["BlockCreationWaitingTimeInSeconds"] |> int
+
+    let ExpectedPathForFirstBlock = Path.Combine(Config.DataDir,"Block_1")
