@@ -8,15 +8,15 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Blocks =
 
-    let createTxResultHash decodeHash createHash (TxHash txHash, txStatus) =
-        let txStatusCode =
-            txStatus
-            |> Processed
-            |> Mapping.txStatusToCode
+    let createTxResultHash decodeHash createHash (TxHash txHash, txResult : TxResult) =
+        let txResult = Mapping.txResultToDto txResult
 
         [
             decodeHash txHash
-            [| txStatusCode |]
+            txResult.Status |> int16ToBytes
+            txResult.ErrorCode |?? 0s |> int16ToBytes
+            txResult.FailedActionNumber |?? 0s |> int16ToBytes
+            txResult.BlockNumber |> int64ToBytes
         ]
         |> Array.concat
         |> createHash
@@ -101,7 +101,7 @@ module Blocks =
                 createTxResultHash
                     decodeHash
                     createHash
-                    (txHash, output.TxResults.[txHash].Status)
+                    (txHash, output.TxResults.[txHash])
             )
             |> createMerkleTree
 

@@ -11,3 +11,9 @@ module Operators =
         match opt with
         | Some x -> x
         | None -> f ()
+
+    let (|??) (nullable : Nullable<_>) defaultValue =
+        if nullable.HasValue then
+            nullable.Value
+        else
+            defaultValue

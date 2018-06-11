@@ -13,15 +13,49 @@ open Chainium.Blockchain.Public.Crypto
 module BlocksTests =
 
     [<Fact>]
-    let ``Blocks.createTxResultHash`` () =
+    let ``Blocks.createTxResultHash for Success`` () =
         let txHash = TxHash "ABC"
-        let txStatus = Success // Code 1 = A
+        let txStatus =
+            {
+                TxResult.Status = Success // Code 1 = A
+                BlockNumber = BlockNumber 4L
+            }
 
         // ACT
         let txResultHash = Blocks.createTxResultHash DummyHash.decode DummyHash.create (txHash, txStatus)
 
         // ASSERT
-        test <@ txResultHash = "ABCA" @>
+        test <@ txResultHash = "ABC.A...........D" @>
+
+    [<Fact>]
+    let ``Blocks.createTxResultHash for TxError`` () =
+        let txHash = TxHash "ABC"
+        let txStatus =
+            {
+                TxResult.Status = TxErrorCode.NonceTooLow |> TxError |> Failure
+                BlockNumber = BlockNumber 4L
+            }
+
+        // ACT
+        let txResultHash = Blocks.createTxResultHash DummyHash.decode DummyHash.create (txHash, txStatus)
+
+        // ASSERT
+        test <@ txResultHash = "ABC.B...........D" @>
+
+    [<Fact>]
+    let ``Blocks.createTxResultHash for TxActionError`` () =
+        let txHash = TxHash "ABC"
+        let txStatus =
+            {
+                TxResult.Status = (TxActionNumber 3s, TxErrorCode.NonceTooLow) |> TxActionError |> Failure
+                BlockNumber = BlockNumber 4L
+            }
+
+        // ACT
+        let txResultHash = Blocks.createTxResultHash DummyHash.decode DummyHash.create (txHash, txStatus)
+
+        // ASSERT
+        test <@ txResultHash = "ABC.B...C.......D" @>
 
     [<Fact>]
     let ``Blocks.createChxBalanceStateHash`` () =
@@ -85,17 +119,17 @@ module BlocksTests =
 
         let txResult1 : TxResult = {
             Status = Success
-            BlockNumber = BlockNumber 0L
+            BlockNumber = BlockNumber 5L
         }
 
         let txResult2 : TxResult = {
-            Status = (TxActionNumber 0s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
-            BlockNumber = BlockNumber 0L
+            Status = (TxActionNumber 7s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
+            BlockNumber = BlockNumber 5L
         }
 
         let txResult3 : TxResult = {
             Status = Success
-            BlockNumber = BlockNumber 1L
+            BlockNumber = BlockNumber 5L
         }
 
         let txResults =
@@ -124,6 +158,16 @@ module BlocksTests =
                 Holdings = holdings
             }
 
+        let txSetRoot = "AAABBBCCC"
+
+        let txResultSetRoot =
+            [
+                "AAA.A...........E" // Tx 1
+                "BBB.B...G.......E" // Tx 2
+                "CCC.A...........E" // Tx 3
+            ]
+            |> String.Concat
+
         let stateRoot =
             [
                 "HH...E...................G" // CHX balance 1
@@ -139,8 +183,8 @@ module BlocksTests =
                 "B" // previousBlockHash
                 ".......C" // timestamp
                 "D" // validator
-                "AAABBBCCC" // txSetRoot
-                "AAAABBBBCCCA" // txResultSetRoot
+                txSetRoot
+                txResultSetRoot
                 stateRoot
             ]
             |> String.Concat
@@ -163,8 +207,8 @@ module BlocksTests =
         test <@ block.Header.PreviousHash = previousBlockHash @>
         test <@ block.Header.Timestamp = timestamp @>
         test <@ block.Header.Validator = validator @>
-        test <@ block.Header.TxSetRoot = MerkleTreeRoot "AAABBBCCC" @>
-        test <@ block.Header.TxResultSetRoot = MerkleTreeRoot "AAAABBBBCCCA" @>
+        test <@ block.Header.TxSetRoot = MerkleTreeRoot txSetRoot @>
+        test <@ block.Header.TxResultSetRoot = MerkleTreeRoot txResultSetRoot @>
         test <@ block.Header.StateRoot = MerkleTreeRoot stateRoot @>
         test <@ block.Header.Hash = BlockHash blockHash @>
         test <@ block.TxSet = [TxHash "AAA"; TxHash "BBB"; TxHash "CCC"] @>
@@ -189,17 +233,17 @@ module BlocksTests =
 
         let txResult1 : TxResult = {
             Status = Success
-            BlockNumber = BlockNumber 0L
+            BlockNumber = BlockNumber 5L
         }
 
         let txResult2 : TxResult = {
             Status = (TxActionNumber 0s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
-            BlockNumber = BlockNumber 0L
+            BlockNumber = BlockNumber 5L
         }
 
         let txResult3 : TxResult = {
             Status = Success
-            BlockNumber = BlockNumber 1L
+            BlockNumber = BlockNumber 5L
         }
 
         let txResults =
@@ -257,7 +301,7 @@ module BlocksTests =
 
         let txResultSetMerkleProofs =
             txSet
-            |> List.map (fun h -> h, txResults.[h].Status)
+            |> List.map (fun h -> h, txResults.[h])
             |> List.map (Blocks.createTxResultHash Hashing.decode Hashing.hash)
             |> Helpers.verifyMerkleProofs block.Header.TxResultSetRoot
 

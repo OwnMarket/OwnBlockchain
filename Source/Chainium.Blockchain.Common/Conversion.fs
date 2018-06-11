@@ -5,6 +5,13 @@ open System.Text
 
 module Conversion =
 
+    let int16ToBytes (x : int16) =
+        let bytes = BitConverter.GetBytes x
+        if BitConverter.IsLittleEndian then
+            bytes |> Array.rev
+        else
+            bytes
+
     let int32ToBytes (x : int32) =
         let bytes = BitConverter.GetBytes x
         if BitConverter.IsLittleEndian then
