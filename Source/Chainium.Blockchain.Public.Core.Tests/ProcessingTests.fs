@@ -538,7 +538,23 @@ module ProcessingTests =
     // AccountControllerChange
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     let addressToString = fun (ChainiumAddress a) -> a
-    let accountControllerChangeTestData ()=
+
+    type AcctCntlrChangeTestExecution =
+        {
+            PrivateKey : PrivateKey
+            Account : AccountHash
+            CurrentController : ChainiumAddress
+            NewController : ChainiumAddress
+            Validator : ChainiumAddress
+            Nonce : Nonce
+            Fee : ChxAmount
+            getAccountController : (AccountHash -> ChainiumAddress option)
+            getChxBalanceState : (ChainiumAddress -> ChxBalanceState option)
+            InitialChxState : Map<ChainiumAddress, ChxBalanceState>
+            ExpectedErrorCode : TxErrorCode option
+        }
+
+    let acctCntlrTestCases ()=
         let account = Signing.generateWallet()
         let newController = Signing.generateWallet()
         let validator = Signing.generateWallet()
@@ -559,55 +575,44 @@ module ProcessingTests =
         [
             //account controller change success
             yield
-               [|
-                   account.PrivateKey |> box
-                   account.Address |> addressToHash |> box
-                   account.Address |> box
-                   newController.Address |> box
-                   validator.Address |> box
-                   Nonce 2L |> box
-                   ChxAmount 1M |> box
-                   (fun (a : AccountHash) -> account.Address |> Some) |> box
-                   (fun (a : ChainiumAddress) -> initialChxState.[account.Address] |> Some) |> box
-                   initialChxState |> box
-                   false |> box //expecting execution error
-                   "" |> box
+                [|
+                    {
+                        PrivateKey = account.PrivateKey
+                        Account = (account.Address |> addressToHash)
+                        CurrentController = account.Address
+                        NewController = newController.Address
+                        Validator = validator.Address
+                        Nonce = (Nonce 2L)
+                        Fee = (ChxAmount 1M)
+                        getAccountController = (fun _ -> account.Address |> Some)
+                        getChxBalanceState = (fun _ -> initialChxState.[account.Address] |> Some)
+                        InitialChxState = initialChxState;
+                        ExpectedErrorCode = None
+                    }
                 |]
             //current signer is not controller
             yield
                 [|
-                   newController.PrivateKey |> box
-                   account.Address |> addressToHash |> box
-                   newController.Address |> box
-                   newController.Address |> box
-                   validator.Address |> box
-                   Nonce 2L |> box
-                   ChxAmount 1M |> box
-                   (fun (a : AccountHash) -> account.Address |> Some) |> box
-                   (fun (a : ChainiumAddress) -> initialChxState.[account.Address] |> Some) |> box
-                   initialChxState |> box
-                   true |> box //expecting execution error
-                   "Tx signer doesn't control the source account." |> box //expected error message
+                    {
+                        PrivateKey = newController.PrivateKey
+                        Account = account.Address |> addressToHash
+                        NewController = newController.Address
+                        CurrentController = newController.Address
+                        Validator = validator.Address
+                        Nonce = Nonce 2L
+                        Fee = ChxAmount 1M
+                        getAccountController = (fun _ -> account.Address |> Some)
+                        getChxBalanceState = (fun _ -> initialChxState.[account.Address] |> Some)
+                        InitialChxState = initialChxState
+                        ExpectedErrorCode = TxErrorCode.SenderIsNotSourceAccountController |> Some
+                    }
                 |]
         ]
 
     [<Theory>]
-    [<MemberData("accountControllerChangeTestData")>]
+    [<MemberData("acctCntlrTestCases")>]
     let ``Processing.processTxSet AccountControllerChange``
-        (
-            (privateKey : PrivateKey),
-            (account : AccountHash),
-            (currentController : ChainiumAddress),
-            (newController : ChainiumAddress),
-            (validator : ChainiumAddress),
-            (nonce : Nonce),
-            (fee : ChxAmount),
-            getAccountController,
-            getChxBalanceState,
-            (initialChxState : Map<ChainiumAddress, ChxBalanceState>),
-            isError,
-            expectedErrorMessage
-        )
+        (testData : AcctCntlrChangeTestExecution)
         =
         let getHoldingState key =
             failwith "getHoldingState - should not be called"
@@ -618,12 +623,12 @@ module ProcessingTests =
                     ActionType = "AccountControllerChange"
                     ActionData =
                         {
-                            AccountControllerChangeTxActionDto.AccountHash = account |> fun (AccountHash a) -> a
-                            ControllerAddress = addressToString newController
+                            AccountControllerChangeTxActionDto.AccountHash = testData.Account |> fun (AccountHash a) -> a
+                            ControllerAddress = addressToString testData.NewController
                         }
                 } :> obj
             ]
-            |> Helpers.newTx privateKey nonce fee
+            |> Helpers.newTx testData.PrivateKey testData.Nonce testData.Fee
 
         let txSet = [txHash]
 
@@ -635,34 +640,43 @@ module ProcessingTests =
             |> System.String.IsNullOrWhiteSpace
             |> not
 
+        let blockNumber = BlockNumber 0L;
+
         let output =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
                 isValidAddress
-                getChxBalanceState
+                testData.getChxBalanceState
                 getHoldingState
-                getAccountController
-                validator
+                testData.getAccountController
+                testData.Validator
+                blockNumber
                 txSet
 
         test <@ output.TxResults.Count = 1 @>
-        if isError then
-            test <@ output.TxResults.[txHash] = Failure [AppError expectedErrorMessage] @>
-            test <@ output.ChxBalances.[currentController].Nonce = nonce @>
-            test <@ output.ChxBalances.[currentController].Amount = initialChxState.[currentController].Amount @>
-            test <@ output.ChxBalances.[validator].Amount = initialChxState.[validator].Amount @>
-            test <@ output.AccountControllerChanges.TryFind account = None @>
-        else
-            let senderChxBalance = initialChxState.[currentController].Amount - fee
-            let validatorChxBalance = initialChxState.[validator].Amount + fee
+        match testData.ExpectedErrorCode with
+        | Some errorCode ->
+            let expectedStatus =
+                (TxActionNumber 1s, errorCode)
+                |> TxActionError
+                |> Failure
 
-            test <@ output.TxResults.[txHash] = Success @>
-            test <@ output.ChxBalances.[currentController].Nonce = nonce @>
-            test <@ output.AccountControllerChanges.[account] = newController @>
-            test <@ output.ChxBalances.[currentController].Nonce = nonce @>
-            test <@ output.ChxBalances.[validator].Nonce = initialChxState.[validator].Nonce @>
-            test <@ output.ChxBalances.[currentController].Amount = senderChxBalance @>
-            test <@ output.ChxBalances.[validator].Amount = validatorChxBalance @>
+            test <@ output.TxResults.[txHash].Status = expectedStatus @>
+            test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
+            test <@ output.ChxBalances.[testData.CurrentController].Amount = testData.InitialChxState.[testData.CurrentController].Amount @>
+            test <@ output.ChxBalances.[testData.Validator].Amount = testData.InitialChxState.[testData.Validator].Amount @>
+            test <@ output.AccountControllerChanges.TryFind testData.Account = None @>
+        | None ->
+            let senderChxBalance = testData.InitialChxState.[testData.CurrentController].Amount - testData.Fee
+            let validatorChxBalance = testData.InitialChxState.[testData.Validator].Amount + testData.Fee
+
+            test <@ output.TxResults.[txHash].Status = Success @>
+            test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
+            test <@ output.AccountControllerChanges.[testData.Account] = testData.NewController @>
+            test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
+            test <@ output.ChxBalances.[testData.Validator].Nonce = testData.InitialChxState.[testData.Validator].Nonce @>
+            test <@ output.ChxBalances.[testData.CurrentController].Amount = senderChxBalance @>
+            test <@ output.ChxBalances.[testData.Validator].Amount = validatorChxBalance @>
 
 

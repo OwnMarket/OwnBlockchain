@@ -80,8 +80,6 @@ module Processing =
             let addressOption = controllerAddress |> Some
             accountControllers.AddOrUpdate (accountHash, addressOption, fun _ _ -> addressOption) |> ignore
 
-        member __.SetTxStatus (txHash : TxHash, txStatus : TxProcessedStatus) =
-            txResults.AddOrUpdate(txHash, txStatus, fun _ _ -> txStatus) |> ignore
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
 
@@ -156,7 +154,7 @@ module Processing =
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
         (action : AccountControllerChangeTxAction)
-        : Result<ProcessingState, AppErrors>
+        : Result<ProcessingState, TxErrorCode>
         =
         match state.GetAccountController(action.AccountHash) with
         | Some accountController when accountController = senderAddress ->
@@ -166,7 +164,7 @@ module Processing =
             )
             Ok state
         | _ ->
-            Error [AppError "Tx signer doesn't control the source account."]
+            Error TxErrorCode.SenderIsNotSourceAccountController
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
