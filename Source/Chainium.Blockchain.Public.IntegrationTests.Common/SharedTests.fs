@@ -179,7 +179,6 @@ module SharedTests =
                     if isValid then
                         yield submitedTransactionDto.TxHash
             ]
-
         test <@ submittedTxHashes.Length = 2 @>
 
         processTransactions Helper.ExpectedPathForFirstBlock
