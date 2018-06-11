@@ -425,11 +425,11 @@ module Db =
     let updateAccounts
         (conn : DbConnection)
         (transaction : DbTransaction)
-        (accountControllerChanges : Map<string, AccountControllerChangeDto>)
+        (accountControllers : Map<string, AccountControllerStateDto>)
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (accountHash, (controllerChange : AccountControllerChangeDto)) =
+        let foldFn result (accountHash, (controllerChange : AccountControllerStateDto)) =
             result
             >>= (fun _ ->
                 {
@@ -439,7 +439,7 @@ module Db =
                 |> updateAccount conn transaction
             )
 
-        accountControllerChanges
+        accountControllers
         |> Map.toList
         |> List.fold foldFn (Ok())
 
@@ -457,10 +457,10 @@ module Db =
 
         let result =
             updateTxs conn transaction state.TxResults
-            >>= (fun _ -> updateChxBalances conn transaction state.ChxBalances)
-            >>= (fun _ -> updateHoldings conn transaction state.Holdings)
-            >>= (fun _ -> updateAccounts conn transaction state.AccountControllerChanges)
-            >>= (fun _ -> updateBlock conn transaction blockInfoDto)
+            >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
+            >>= fun _ -> updateHoldings conn transaction state.Holdings
+            >>= fun _ -> updateAccounts conn transaction state.AccountControllers
+            >>= fun _ -> updateBlock conn transaction blockInfoDto
 
         match result with
         | Ok() ->

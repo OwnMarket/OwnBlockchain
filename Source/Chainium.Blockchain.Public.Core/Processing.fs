@@ -88,10 +88,7 @@ module Processing =
                 TxResults = txResults |> Map.ofDict
                 ChxBalances = chxBalances |> Map.ofDict
                 Holdings = holdings |> Map.ofDict
-                AccountControllerChanges =
-                    accountControllers
-                    |> Map.ofDict
-                    |> Map.map (fun _ addressOption -> addressOption.Value)
+                AccountControllers = accountControllers |> Map.ofDict
             }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

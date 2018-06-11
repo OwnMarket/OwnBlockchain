@@ -666,14 +666,14 @@ module ProcessingTests =
                 <@ output.ChxBalances.[testData.CurrentController].Amount =
                 testData.InitialChxState.[testData.CurrentController].Amount @>
             test <@ output.ChxBalances.[testData.Validator].Amount = testData.InitialChxState.[testData.Validator].Amount @>
-            test <@ output.AccountControllerChanges.TryFind testData.Account = None @>
+            test <@ output.AccountControllers.TryFind testData.Account = None @>
         | None ->
             let senderChxBalance = testData.InitialChxState.[testData.CurrentController].Amount - testData.Fee
             let validatorChxBalance = testData.InitialChxState.[testData.Validator].Amount + testData.Fee
 
             test <@ output.TxResults.[txHash].Status = Success @>
             test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
-            test <@ output.AccountControllerChanges.[testData.Account] = testData.NewController @>
+            test <@ output.AccountControllers.[testData.Account] = Some testData.NewController @>
             test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
             test <@ output.ChxBalances.[testData.Validator].Nonce = testData.InitialChxState.[testData.Validator].Nonce @>
             test <@ output.ChxBalances.[testData.CurrentController].Amount = senderChxBalance @>

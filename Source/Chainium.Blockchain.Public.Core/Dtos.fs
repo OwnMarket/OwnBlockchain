@@ -120,7 +120,7 @@ type HoldingStateDto = {
 }
 
 [<CLIMutable>]
-type AccountControllerChangeDto = {
+type AccountControllerStateDto = {
     ControllerAddress : string
 }
 
@@ -128,7 +128,7 @@ type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
-    AccountControllerChanges : Map<string, AccountControllerChangeDto>
+    AccountControllers : Map<string, AccountControllerStateDto>
 }
 
 [<CLIMutable>]

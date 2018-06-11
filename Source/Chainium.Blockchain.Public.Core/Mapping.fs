@@ -217,17 +217,23 @@ module Mapping =
             |> List.map (fun ((AccountHash ah, AssetCode ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
             |> Map.ofList
 
-        let accountControllerChanges =
-            output.AccountControllerChanges
+        let accountControllers =
+            output.AccountControllers
             |> Map.toList
-            |> List.map(fun (AccountHash account, ChainiumAddress controller) -> account, { ControllerAddress = controller })
+            |> List.map (fun (AccountHash account, controller) ->
+                let rawControllerAddress =
+                    controller
+                    |> Option.map (fun (ChainiumAddress a) -> a)
+                    |> Option.toObj
+                account, { ControllerAddress = rawControllerAddress }
+            )
             |> Map.ofList
 
         {
             ProcessingOutputDto.TxResults = txResults
             ChxBalances = chxBalances
             Holdings = holdings
-            AccountControllerChanges = accountControllerChanges
+            AccountControllers = accountControllers
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
