@@ -31,19 +31,19 @@ module Validation =
     // TxAction validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private validateChxTransfer isValidAddress action =
+    let private validateChxTransfer isValidAddress (action : ChxTransferTxActionDto) =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
                 yield AppError "Recipient address is not present."
 
-            if not (isValidAddress (ChainiumAddress action.RecipientAddress)) then
+            if action.RecipientAddress |> ChainiumAddress |> isValidAddress |> not then
                 yield AppError "Recipient address is not valid."
 
             if action.Amount <= 0M then
                 yield AppError "Chx transfer amount must be larger than zero."
         ]
 
-    let private validateAssetTransfer action =
+    let private validateAssetTransfer (action : AssetTransferTxActionDto) =
         [
             if action.FromAccount.IsNullOrWhiteSpace() then
                 yield AppError "FromAccount value is not valid."
@@ -58,6 +58,15 @@ module Validation =
                 yield AppError "Asset amount must be larger than zero"
         ]
 
+    let private validateAccountControllerChange isValidAddress (action : AccountControllerChangeTxActionDto)=
+        [
+            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+                yield AppError "Controller address is not valid."
+
+            if action.AccountHash.IsNullOrWhiteSpace() then
+                yield AppError "AccountHash value is not valid"
+        ]
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,18 +79,6 @@ module Validation =
                 yield AppError "Fee must be positive."
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
-        ]
-
-    let private validateAccountControllerChange isValidAddress (action : AccountControllerChangeTxActionDto)=
-        [
-            if action.ControllerAddress
-            |> ChainiumAddress
-            |> isValidAddress
-            |> not
-            then
-                yield AppError "Controller address is not valid."
-            if action.AccountHash.IsNullOrWhiteSpace() then
-                yield AppError "AccountHash value is not valid"
         ]
 
     let private validateTxActions isValidAddress (actions : TxActionDto list) =
