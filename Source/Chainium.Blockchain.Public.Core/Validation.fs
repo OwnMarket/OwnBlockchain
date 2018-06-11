@@ -75,9 +75,9 @@ module Validation =
     let private validateAccountControllerChange isValidAddress (action : AccountControllerChangeTxActionDto)=
         [
             if action.ControllerAddress
-                |> ChainiumAddress
-                |> isValidAddress
-                |> not
+            |> ChainiumAddress
+            |> isValidAddress
+            |> not
             then
                 yield AppError "Controller address is not valid."
             if action.AccountHash.IsNullOrWhiteSpace() then

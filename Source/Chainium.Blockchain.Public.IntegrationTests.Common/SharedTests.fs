@@ -17,7 +17,7 @@ module SharedTests =
 
     let addressToString (ChainiumAddress a) = a
 
-    let newTxDto fee nonce actions=
+    let newTxDto fee nonce actions =
         {
             Nonce = nonce
             Fee = fee
@@ -38,7 +38,7 @@ module SharedTests =
             R = signature.R
         }
 
-    let private submitTransaction (client : HttpClient) txToSubmit=
+    let private submitTransaction (client : HttpClient) txToSubmit =
         let tx = JsonConvert.SerializeObject(txToSubmit)
         let content = new StringContent(tx, System.Text.Encoding.UTF8, "application/json")
 
@@ -69,6 +69,7 @@ module SharedTests =
         expectedTx
         (txHash : SubmitTxResponseDto)
         =
+
         let fileName = sprintf "Tx_%s" txHash.TxHash
         let txFile = Path.Combine(Config.DataDir, fileName)
 
@@ -155,7 +156,7 @@ module SharedTests =
 
                     let isValid = i % 2 = 0
                     let amt = if isValid then 10M else -10M
-                    //prepare transaction
+                    // prepare transaction
                     let action =
                         {
                             ActionType = "ChxTransfer"
@@ -226,27 +227,27 @@ module SharedTests =
             | Some resultingAddress -> test <@ resultingAddress = wallet.Address @>
 
     let changeAccountControllerTest engineType connectionString =
-        //initial data cleanup
+        // initial data cleanup
         let client = testInit engineType connectionString
 
-        //prepare local data
+        // prepare local data
         let account = Signing.generateWallet()
         let newController = Signing.generateWallet()
 
-        //database initialization
+        // database initialization
         let initialSenderAmt = 10M
         let initialValidatorAmt = 0M
         Helper.addBalanceAndAccount connectionString (account.Address |> addressToString) initialSenderAmt
         Helper.addBalanceAndAccount connectionString (Config.ValidatorAddress) initialValidatorAmt
 
-        //transaction preparation
+        // transaction preparation
         let tx =
             {
                 ActionType = "AccountControllerChange"
                 ActionData =
                     {
-                         AccountControllerChangeTxActionDto.AccountHash = account.Address |> addressToString
-                         ControllerAddress = newController.Address |> addressToString
+                        AccountControllerChangeTxActionDto.AccountHash = account.Address |> addressToString
+                        ControllerAddress = newController.Address |> addressToString
                     }
             }
 
@@ -256,17 +257,16 @@ module SharedTests =
 
         let expectedTx = transactionEnvelope account txDto
 
-        //transaction submission and submission checks
+        // transaction submission and submission checks
         submitTransaction client expectedTx
         |> submissionChecks connectionString true account txDto expectedTx
 
-        //transaction processing and processing checks
+        // transaction processing and processing checks
         processTransactions Helper.ExpectedPathForFirstBlock
 
-        //check expected results
+        // check expected results
         let accountController = Db.getAccountController connectionString (account.Address |> addressToString |> AccountHash)
         test <@ accountController.Value = newController.Address @>
-
 
         let senderBalance = Db.getChxBalanceState connectionString account.Address
         let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
@@ -276,6 +276,7 @@ module SharedTests =
             (expectedAmt : decimal)
             (expectedNonce : int64)
             =
+
             match balance with
             | None -> failwith "Balance data should be in database"
             | Some b ->

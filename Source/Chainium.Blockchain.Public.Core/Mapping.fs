@@ -220,7 +220,7 @@ module Mapping =
         let accountControllerChanges =
             output.AccountControllerChanges
             |> Map.toList
-            |> List.map(fun (AccountHash account, ChainiumAddress controller) ->  account, { ControllerAddress = controller })
+            |> List.map(fun (AccountHash account, ChainiumAddress controller) -> account, { ControllerAddress = controller })
             |> Map.ofList
 
         {

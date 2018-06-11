@@ -23,7 +23,7 @@ module Serialization =
             |> box
 
     let private actionsBasedOnTransactionType =
-        let chxTransferAction trType token= tokenToAction<ChxTransferTxActionDto> trType token
+        let chxTransferAction trType token = tokenToAction<ChxTransferTxActionDto> trType token
         let assetTransferAction trType token = tokenToAction<AssetTransferTxActionDto> trType token
         let controllerChangeAction trType token = tokenToAction<AccountControllerChangeTxActionDto> trType token
 
@@ -55,7 +55,7 @@ module Serialization =
             | None -> jObject |> box
             | Some actionType ->
                 let txType = actionType.Value<string>()
-                match  txType |> actionsBasedOnTransactionType.TryFind with
+                match txType |> actionsBasedOnTransactionType.TryFind with
                 | Some create ->
                     actionData jObject
                     |> create txType

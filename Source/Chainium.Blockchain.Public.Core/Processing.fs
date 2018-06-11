@@ -156,6 +156,7 @@ module Processing =
         (action : AccountControllerChangeTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
+
         match state.GetAccountController(action.AccountHash) with
         | Some accountController when accountController = senderAddress ->
             state.SetAccountController(
@@ -310,7 +311,7 @@ module Processing =
         match action with
         | ChxTransfer action -> processChxTransferTxAction state senderAddress action
         | AssetTransfer action -> processAssetTransferTxAction state senderAddress action
-        | AccountControllerChange action ->  processAccountControllerChangeTxAction state senderAddress action
+        | AccountControllerChange action -> processAccountControllerChangeTxAction state senderAddress action
 
     let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
         actions

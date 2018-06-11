@@ -573,7 +573,7 @@ module ProcessingTests =
             |> AccountHash
 
         [
-            //account controller change success
+            // account controller change success
             yield
                 [|
                     {
@@ -590,7 +590,7 @@ module ProcessingTests =
                         ExpectedErrorCode = None
                     }
                 |]
-            //current signer is not controller
+            // current signer is not controller
             yield
                 [|
                     {
@@ -611,9 +611,7 @@ module ProcessingTests =
 
     [<Theory>]
     [<MemberData("acctCntlrTestCases")>]
-    let ``Processing.processTxSet AccountControllerChange``
-        (testData : AcctCntlrChangeTestExecution)
-        =
+    let ``Processing.processTxSet AccountControllerChange`` (testData : AcctCntlrChangeTestExecution) =
         let getHoldingState key =
             failwith "getHoldingState - should not be called"
 
@@ -664,7 +662,9 @@ module ProcessingTests =
 
             test <@ output.TxResults.[txHash].Status = expectedStatus @>
             test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
-            test <@ output.ChxBalances.[testData.CurrentController].Amount = testData.InitialChxState.[testData.CurrentController].Amount @>
+            test
+                <@ output.ChxBalances.[testData.CurrentController].Amount =
+                testData.InitialChxState.[testData.CurrentController].Amount @>
             test <@ output.ChxBalances.[testData.Validator].Amount = testData.InitialChxState.[testData.Validator].Amount @>
             test <@ output.AccountControllerChanges.TryFind testData.Account = None @>
         | None ->
@@ -678,5 +678,3 @@ module ProcessingTests =
             test <@ output.ChxBalances.[testData.Validator].Nonce = testData.InitialChxState.[testData.Validator].Nonce @>
             test <@ output.ChxBalances.[testData.CurrentController].Amount = senderChxBalance @>
             test <@ output.ChxBalances.[testData.Validator].Amount = validatorChxBalance @>
-
-

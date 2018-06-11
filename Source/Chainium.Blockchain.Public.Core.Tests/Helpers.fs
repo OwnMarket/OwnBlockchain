@@ -17,7 +17,8 @@ module Helpers =
         (fee : decimal)
         (actions : obj list)
         =
-         let json =
+
+        let json =
             sprintf
                 """
                 {
@@ -30,7 +31,7 @@ module Helpers =
                 (fee.ToString())
                 (JsonConvert.SerializeObject(actions))
 
-         Encoding.UTF8.GetBytes json
+        Encoding.UTF8.GetBytes json
 
     let newPendingTxInfo
         (txHash : TxHash)

@@ -1,13 +1,13 @@
 namespace Chainium.Blockchain.Public.Data
 
 open System
+open System.Data.Common
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 
 module Db =
-    open System.Data.Common
 
     let private dbParams (paramsList : (string * obj) list) =
         let paramsString =
@@ -361,13 +361,14 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok())
 
-    let private singleMessageError message= Error [AppError (message)]
+    let private singleMessageError message = Error [AppError (message)]
     let addAccount
         conn
         transaction
         (accountController : AccountControllerDto)
         : Result<unit, AppErrors>
         =
+
         let sql =
             """
             INSERT INTO account (account_hash, controller_address)
@@ -396,6 +397,7 @@ module Db =
         (accountController : AccountControllerDto)
         : Result<unit, AppErrors>
         =
+
         let sql =
             """
             UPDATE account
@@ -420,13 +422,13 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             error
 
-
     let updateAccounts
         (conn : DbConnection)
         (transaction : DbTransaction)
         (accountControllerChanges : Map<string, AccountControllerChangeDto>)
         : Result<unit, AppErrors>
         =
+
         let foldFn result (accountHash, (controllerChange : AccountControllerChangeDto)) =
             result
             >>= (fun _ ->

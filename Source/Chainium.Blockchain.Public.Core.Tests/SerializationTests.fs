@@ -222,4 +222,4 @@ module SerializationTests =
             let actual = r.Actions.Head
             test <@ actual = expectedTransaction @>
         | Error appErrors ->
-             failwithf "%A" appErrors
+            failwithf "%A" appErrors
