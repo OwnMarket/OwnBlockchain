@@ -156,7 +156,7 @@ module Db =
             Error [AppError ("Failed to insert update transaction")]
 
     let updateTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
-        let foldFn result (txHash, txResult: TxResultDto) =
+        let foldFn result (txHash, txResult : TxResultDto) =
             result
             >>= fun _ ->
                 // TODO: Remove conversion when StatusCode type is changed to int16

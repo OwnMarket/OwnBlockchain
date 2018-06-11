@@ -94,14 +94,14 @@ module Processing =
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
         (action : ChxTransferTxAction)
-        : Result<ProcessingState, AppErrors>
+        : Result<ProcessingState, TxErrorCode>
         =
 
         let fromState = state.GetChxBalance(senderAddress)
         let toState = state.GetChxBalance(action.RecipientAddress)
 
         if fromState.Amount < action.Amount then
-            Error [AppError "Insufficient CHX balance."]
+            Error TxErrorCode.InsufficientChxBalance
         else
             state.SetChxBalance(
                 senderAddress,
@@ -117,7 +117,7 @@ module Processing =
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
         (action : AssetTransferTxAction)
-        : Result<ProcessingState, AppErrors>
+        : Result<ProcessingState, TxErrorCode>
         =
 
         match state.GetAccountController(action.FromAccountHash) with
@@ -126,7 +126,7 @@ module Processing =
             let toState = state.GetHolding(action.ToAccountHash, action.AssetCode)
 
             if fromState.Amount < action.Amount then
-                Error [AppError "Insufficient asset holding balance."]
+                Error TxErrorCode.InsufficientAssetHoldingBalance
             else
                 state.SetHolding(
                     action.FromAccountHash,
@@ -140,7 +140,7 @@ module Processing =
                 )
                 Ok state
         | _ ->
-            Error [AppError "Tx signer doesn't control the source account."]
+            Error TxErrorCode.SenderIsNotSourceAccountController
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
@@ -267,12 +267,12 @@ module Processing =
         let senderState = state.GetChxBalance senderAddress
 
         if txNonce <= senderState.Nonce then
-            Error [AppError "Nonce too low."]
+            Error (TxError TxErrorCode.NonceTooLow)
         elif txNonce = (senderState.Nonce + 1L) then
             state.SetChxBalance (senderAddress, {senderState with Nonce = txNonce})
             Ok state
         else
-            failwith "Nonce too high." // This shouldn't really happen, due to the logic in excludeUnprocessableTxs.
+            failwith "Nonce too high." // This shouldn't really happen, due to the logic in excludeTxsWithNonceGap.
 
     let processValidatorReward (tx : Tx) validator (state : ProcessingState) =
         {
@@ -280,6 +280,7 @@ module Processing =
             Amount = tx.TotalFee
         }
         |> processChxTransferTxAction state tx.Sender
+        |> Result.mapError TxError
 
     let processTxAction (senderAddress : ChainiumAddress) (action : TxAction) (state : ProcessingState) =
         match action with
@@ -288,9 +289,15 @@ module Processing =
 
     let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
         actions
-        |> List.fold (fun result action ->
+        |> List.indexed
+        |> List.fold (fun result (index, action) ->
             result
-            >>= processTxAction senderAddress action
+            >>= fun state ->
+                processTxAction senderAddress action state
+                |> Result.mapError (fun e ->
+                    let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
+                    TxActionError (actionNumber, e)
+                )
         ) (Ok state)
 
     let processTxSet
@@ -301,7 +308,7 @@ module Processing =
         (getHoldingStateFromStorage : AccountHash * AssetCode -> HoldingState option)
         (getAccountControllerFromStorage : AccountHash -> ChainiumAddress option)
         (validator : ChainiumAddress)
-        (blockNumber: BlockNumber)
+        (blockNumber : BlockNumber)
         (txSet : TxHash list)
         =
 
@@ -309,9 +316,15 @@ module Processing =
             let newState = oldState.Clone()
 
             let processingResult =
-                result {
-                    let! tx = getTxBody getTx verifySignature isValidAddress txHash
+                let tx =
+                    match getTxBody getTx verifySignature isValidAddress txHash with
+                    | Ok tx -> tx
+                    | Error err ->
+                        txHash
+                        |> fun (TxHash h) -> h
+                        |> failwithf "Cannot load tx %s" // TODO: Remove invalid tx from the pool.
 
+                result {
                     let! state =
                         updateChxBalanceNonce tx.Sender tx.Nonce newState
                         >>= processValidatorReward tx validator
@@ -321,9 +334,9 @@ module Processing =
                 }
 
             match processingResult with
-            | Error errors ->
+            | Error e ->
                 let txResult = {
-                    Status = Failure (TxActionNumber 0s, TxErrorCode 0s)
+                    Status = Failure e
                     BlockNumber = blockNumber
                 }
                 oldState.SetTxResult(txHash, txResult)

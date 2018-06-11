@@ -64,9 +64,9 @@ type PendingTxInfoDto = {
 [<CLIMutable>]
 type TxResultDto = {
     Status : int16
-    FailedActionNumber: Nullable<int16>
-    ErrorCode: Nullable<int16>
-    BlockNumber: int64
+    ErrorCode : Nullable<int16>
+    FailedActionNumber : Nullable<int16>
+    BlockNumber : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

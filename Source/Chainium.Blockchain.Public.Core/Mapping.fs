@@ -79,25 +79,42 @@ module Mapping =
             AppearanceOrder = dto.AppearanceOrder
         }
 
-    let txResultToDto (txResult: TxResult) =
-        let status, failedActionNumber, errorCode =
+    let txResultToDto (txResult : TxResult) =
+        let status, errorCode, failedActionNumber =
             match txResult.Status with
             | Success -> 1s, Nullable (), Nullable ()
-            | Failure (TxActionNumber a, TxErrorCode e) -> 2s, Nullable a, Nullable e
+            | Failure txError ->
+                let statusNumber = 2s
+                match txError with
+                | TxError errorCode ->
+                    let errorNumber = errorCode |> LanguagePrimitives.EnumToValue
+                    statusNumber, Nullable errorNumber, Nullable ()
+                | TxActionError (TxActionNumber actionNumber, errorCode) ->
+                    let errorNumber = errorCode |> LanguagePrimitives.EnumToValue
+                    statusNumber, Nullable errorNumber, Nullable actionNumber
 
         {
             Status = status
-            FailedActionNumber = failedActionNumber
             ErrorCode = errorCode
+            FailedActionNumber = failedActionNumber
             BlockNumber = txResult.BlockNumber |> (fun (BlockNumber b) -> b)
         }
 
-    let txResultFromDto (dto: TxResultDto) : TxResult =
+    let txResultFromDto (dto : TxResultDto) : TxResult =
         {
             Status =
                 match dto.Status with
                 | 1s -> Success
-                | 2s -> Failure (TxActionNumber dto.FailedActionNumber.Value, TxErrorCode dto.ErrorCode.Value)
+                | 2s ->
+                    match dto.ErrorCode.HasValue, dto.FailedActionNumber.HasValue with
+                    | true, false ->
+                        let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
+                        TxError errorCode
+                    | true, true ->
+                        let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
+                        TxActionError (TxActionNumber dto.FailedActionNumber.Value, errorCode)
+                    | _, _ -> failwith "Invalid error code and action number state in TxResult."
+                    |> Failure
                 | c -> failwithf "Unknown TxStatus code %i" c
             BlockNumber = BlockNumber dto.BlockNumber
         }

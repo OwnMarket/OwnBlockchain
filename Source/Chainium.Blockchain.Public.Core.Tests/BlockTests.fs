@@ -89,7 +89,7 @@ module BlocksTests =
         }
 
         let txResult2 : TxResult = {
-            Status = Failure (TxActionNumber 0s, TxErrorCode 2s)
+            Status = (TxActionNumber 0s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
             BlockNumber = BlockNumber 0L
         }
 
@@ -193,7 +193,7 @@ module BlocksTests =
         }
 
         let txResult2 : TxResult = {
-            Status = Failure (TxActionNumber 0s, TxErrorCode 2s)
+            Status = (TxActionNumber 0s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
             BlockNumber = BlockNumber 0L
         }
 

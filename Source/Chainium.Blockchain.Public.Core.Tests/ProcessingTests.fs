@@ -265,10 +265,10 @@ module ProcessingTests =
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
-        // TODO Add error code for "Insufficient CHX balance."
-        test <@ output.TxResults.[txHash].Status = Failure (TxActionNumber 0s, TxErrorCode 0s) @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
@@ -342,10 +342,10 @@ module ProcessingTests =
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
-        // TODO Add error code for "Insufficient CHX balance."
-        test <@ output.TxResults.[txHash].Status = Failure (TxActionNumber 0s, TxErrorCode 0s) @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
@@ -521,10 +521,13 @@ module ProcessingTests =
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetCode].Amount
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetCode].Amount
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.InsufficientAssetHoldingBalance)
+            |> TxActionError
+            |> Failure
 
         test <@ output.TxResults.Count = 1 @>
-        // TODO Add error code for "Insufficient asset holding balance."
-        test <@ output.TxResults.[txHash].Status = Failure (TxActionNumber 0s, TxErrorCode 0s) @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>

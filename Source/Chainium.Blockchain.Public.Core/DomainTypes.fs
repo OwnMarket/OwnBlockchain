@@ -157,11 +157,21 @@ type Block = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type TxActionNumber = TxActionNumber of int16
-type TxErrorCode = TxErrorCode of int16
+type TxErrorCode =
+    // DO NOT CHANGE THESE NUMBERS - IT WILL BREAK THE BLOCKS!!!
+    | NonceTooLow = 10s
+    | InsufficientChxBalance = 20s
+    | InsufficientAssetHoldingBalance = 30s
+    | SenderIsNotSourceAccountController = 110s
+    | SenderIsNotAssetController = 120s
+
+type TxError =
+    | TxError of TxErrorCode
+    | TxActionError of TxActionNumber * TxErrorCode
 
 type TxProcessedStatus =
     | Success
-    | Failure of TxActionNumber * TxErrorCode
+    | Failure of TxError
 
 type TxStatus =
     | Pending
@@ -169,7 +179,7 @@ type TxStatus =
 
 type TxResult = {
     Status : TxProcessedStatus
-    BlockNumber: BlockNumber
+    BlockNumber : BlockNumber
 }
 
 type PendingTxInfo = {
