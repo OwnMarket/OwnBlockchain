@@ -12,7 +12,25 @@ open Chainium.Blockchain.Public.Crypto
 
 module Helpers =
 
-    let newTxDto
+    let newPendingTxInfo
+        (txHash : TxHash)
+        (senderAddress : ChainiumAddress)
+        (nonce : Nonce)
+        (fee : ChxAmount)
+        (actionCount : int16)
+        (appearanceOrder : int64)
+        =
+
+        {
+            PendingTxInfo.TxHash = txHash
+            Sender = senderAddress
+            Nonce = nonce
+            Fee = fee
+            ActionCount = actionCount
+            AppearanceOrder = appearanceOrder
+        }
+
+    let newRawTxDto
         (nonce : int64)
         (fee : decimal)
         (actions : obj list)
@@ -33,24 +51,6 @@ module Helpers =
 
         Encoding.UTF8.GetBytes json
 
-    let newPendingTxInfo
-        (txHash : TxHash)
-        (senderAddress : ChainiumAddress)
-        (nonce : Nonce)
-        (fee : ChxAmount)
-        (actionCount : int16)
-        (appearanceOrder : int64)
-        =
-
-        {
-            PendingTxInfo.TxHash = txHash
-            Sender = senderAddress
-            Nonce = nonce
-            Fee = fee
-            ActionCount = actionCount
-            AppearanceOrder = appearanceOrder
-        }
-
     let newTx
         (privateKey : PrivateKey)
         (Nonce nonce)
@@ -58,22 +58,7 @@ module Helpers =
         (actions : obj list)
         =
 
-        let json =
-            sprintf
-                """
-                {
-                    Nonce: %i,
-                    Fee: %s,
-                    Actions: %s
-                }
-                """
-                nonce
-                (fee.ToString())
-                (JsonConvert.SerializeObject(actions))
-
-        let rawTx =
-            json
-            |> Encoding.UTF8.GetBytes
+        let rawTx = newRawTxDto nonce fee actions
 
         let txHash =
             rawTx |> Hashing.hash |> TxHash

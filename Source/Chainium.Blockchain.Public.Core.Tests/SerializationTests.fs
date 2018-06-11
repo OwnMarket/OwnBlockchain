@@ -215,7 +215,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTransaction |> box ]
-            |> Helpers.newTxDto 10L 20M
+            |> Helpers.newRawTxDto 10L 20M
 
         match Serialization.deserializeTx serializedTx with
         | Ok r ->
