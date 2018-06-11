@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyInfo.fs" />
     <Compile Include="DummyHash.fs" />
     <Compile Include="Helpers.fs" />
     <Compile Include="DomainTypeTests.fs" />
