@@ -12,6 +12,8 @@ open Chainium.Blockchain.Public.Crypto
 
 module Helpers =
 
+    let addressToString (ChainiumAddress a) = a
+
     let newPendingTxInfo
         (txHash : TxHash)
         (senderAddress : ChainiumAddress)

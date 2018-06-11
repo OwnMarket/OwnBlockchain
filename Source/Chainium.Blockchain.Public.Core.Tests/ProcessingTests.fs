@@ -537,7 +537,6 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // AccountControllerChange
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    let addressToString = fun (ChainiumAddress a) -> a
 
     type AcctCntlrChangeTestExecution =
         {
@@ -569,7 +568,7 @@ module ProcessingTests =
 
         let addressToHash accountAddress =
             accountAddress
-            |> addressToString
+            |> Helpers.addressToString
             |> AccountHash
 
         [
@@ -622,7 +621,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AccountControllerChangeTxActionDto.AccountHash = testData.Account |> fun (AccountHash a) -> a
-                            ControllerAddress = addressToString testData.NewController
+                            ControllerAddress = Helpers.addressToString testData.NewController
                         }
                 } :> obj
             ]
