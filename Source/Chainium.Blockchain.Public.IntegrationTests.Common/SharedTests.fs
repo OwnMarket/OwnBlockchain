@@ -211,6 +211,6 @@ module SharedTests =
         |> DbTools.execute connectionString insertSql
         |> ignore
 
-        match Db.getAccountController connectionString address with
+        match Db.getAccountController connectionString (AccountHash address) with // TODO: Use separate account hash.
             | None -> failwith "Unable to get controller."
             | Some resultingAddress -> test <@ resultingAddress = wallet.Address @>

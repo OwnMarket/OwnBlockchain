@@ -132,7 +132,7 @@ module Db =
         |> List.tryHead
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
 
-    let updateTx conn transaction (txHash : string) (txStatus : byte) : Result<unit, AppErrors> =
+    let private updateTx conn transaction (txHash : string) (txStatus : byte) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE tx
@@ -155,7 +155,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert update transaction")]
 
-    let updateTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
+    let private updateTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
         let foldFn result (txHash, txResult : TxResultDto) =
             result
             >>= fun _ ->
@@ -166,7 +166,7 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok())
 
-    let addBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
+    let private addBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO block (block_number, block_hash, block_timestamp)
@@ -189,7 +189,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert block")]
 
-    let updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
+    let private updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE block
@@ -213,7 +213,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to update block number")]
 
-    let addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
+    let private addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO chx_balance (chainium_address, amount, nonce)
@@ -236,7 +236,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert CHX balance")]
 
-    let updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
+    let private updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE chx_balance
@@ -261,7 +261,13 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to update CHX balance")]
 
-    let updateChxBalances conn transaction (chxBalances : Map<string, ChxBalanceStateDto>) : Result<unit, AppErrors> =
+    let private updateChxBalances
+        conn
+        transaction
+        (chxBalances : Map<string, ChxBalanceStateDto>)
+        : Result<unit, AppErrors>
+        =
+
         let foldFn result (chainiumAddress, chxBalanceState : ChxBalanceStateDto) =
             result
             >>= fun _ ->
@@ -279,7 +285,7 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok())
 
-    let addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
+    let private addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO holding (account_id, asset_code, amount)
@@ -304,7 +310,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to insert holding")]
 
-    let updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
+    let private updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE holding
@@ -330,7 +336,13 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Error [AppError ("Failed to update holding")]
 
-    let updateHoldings conn transaction (holdings : Map<string * string, HoldingStateDto>) : Result<unit, AppErrors> =
+    let private updateHoldings
+        conn
+        transaction
+        (holdings : Map<string * string, HoldingStateDto>)
+        : Result<unit, AppErrors>
+        =
+
         let foldFn result (accountAsset, holdingState : HoldingStateDto) =
             result
             >>= fun _ ->
@@ -394,7 +406,7 @@ module Db =
         | [chxAddressDetails] -> Some chxAddressDetails
         | _ -> failwithf "Multiple CHX balance entries found for address %A" address
 
-    let getHoldingState (dbConnectionString : string) (accountHash, assetCode) =
+    let getHoldingState (dbConnectionString : string) (AccountHash accountHash, AssetCode assetCode) =
         let sql =
             """
             SELECT h.amount, h.nonce
@@ -415,7 +427,7 @@ module Db =
         | [holdingDetails] -> Some holdingDetails
         | _ -> failwithf "Multiple holdings of asset code %A found for account hash %A" assetCode accountHash
 
-    let getAccountController (dbConnectionString : string) accountHash : ChainiumAddress option =
+    let getAccountController (dbConnectionString : string) (AccountHash accountHash) : ChainiumAddress option =
         let sql =
             """
             SELECT controller_address
@@ -433,7 +445,7 @@ module Db =
         | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
         | _ -> failwithf "Multiple controllers found for account hash %A" accountHash
 
-    let getAssetController (dbConnectionString : string) assetCode : ChainiumAddress option =
+    let getAssetController (dbConnectionString : string) (AssetCode assetCode) : ChainiumAddress option =
         let sql =
             """
             SELECT controller_address
