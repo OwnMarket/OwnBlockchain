@@ -215,7 +215,7 @@ let rules =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         createRule <| function
-            | _, Some line when line.Trim().Length > 120 ->
+            | _, Some line when line.Length > 120 ->
                 Some "Line should not be longer than 120 characters."
             | _ -> None
 

@@ -270,7 +270,9 @@ module SharedTests =
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // check expected results
-        let accountController = Db.getAccountController connectionString (account.Address |> addressToString |> AccountHash)
+        let accountController =
+            Db.getAccountController connectionString (account.Address |> addressToString |> AccountHash)
+
         test <@ accountController.Value = newController.Address @>
 
         let senderBalance = Db.getChxBalanceState connectionString account.Address

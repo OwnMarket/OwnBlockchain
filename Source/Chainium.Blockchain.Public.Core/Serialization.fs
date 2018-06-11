@@ -46,7 +46,10 @@ module Serialization =
         override this.Create objectType =
             failwith "NotImplemented"
 
-        override this.ReadJson (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer) =
+        override this.ReadJson
+            (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
+            =
+
             let jObject = JObject.Load(reader)
 
             let actionData = tokenValue "ActionData"

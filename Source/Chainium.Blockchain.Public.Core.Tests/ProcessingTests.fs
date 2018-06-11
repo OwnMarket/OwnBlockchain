@@ -620,7 +620,8 @@ module ProcessingTests =
                     ActionType = "AccountControllerChange"
                     ActionData =
                         {
-                            AccountControllerChangeTxActionDto.AccountHash = testData.Account |> fun (AccountHash a) -> a
+                            AccountControllerChangeTxActionDto.AccountHash =
+                                testData.Account |> fun (AccountHash a) -> a
                             ControllerAddress = Helpers.addressToString testData.NewController
                         }
                 } :> obj
@@ -662,9 +663,11 @@ module ProcessingTests =
             test <@ output.TxResults.[txHash].Status = expectedStatus @>
             test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
             test
-                <@ output.ChxBalances.[testData.CurrentController].Amount =
-                testData.InitialChxState.[testData.CurrentController].Amount @>
-            test <@ output.ChxBalances.[testData.Validator].Amount = testData.InitialChxState.[testData.Validator].Amount @>
+                <@ output.ChxBalances.[testData.CurrentController].Amount
+                    = testData.InitialChxState.[testData.CurrentController].Amount @>
+            test
+                <@ output.ChxBalances.[testData.Validator].Amount
+                    = testData.InitialChxState.[testData.Validator].Amount @>
             test <@ output.AccountControllers.TryFind testData.Account = None @>
         | None ->
             let senderChxBalance = testData.InitialChxState.[testData.CurrentController].Amount - testData.Fee
@@ -674,6 +677,8 @@ module ProcessingTests =
             test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
             test <@ output.AccountControllers.[testData.Account] = Some testData.NewController @>
             test <@ output.ChxBalances.[testData.CurrentController].Nonce = testData.Nonce @>
-            test <@ output.ChxBalances.[testData.Validator].Nonce = testData.InitialChxState.[testData.Validator].Nonce @>
+            test
+                <@ output.ChxBalances.[testData.Validator].Nonce
+                    = testData.InitialChxState.[testData.Validator].Nonce @>
             test <@ output.ChxBalances.[testData.CurrentController].Amount = senderChxBalance @>
             test <@ output.ChxBalances.[testData.Validator].Amount = validatorChxBalance @>
