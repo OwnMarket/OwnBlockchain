@@ -179,9 +179,15 @@ module SharedTests =
                     if isValid then
                         yield submitedTransactionDto.TxHash
             ]
+
         test <@ submittedTxHashes.Length = 2 @>
 
         processTransactions Helper.ExpectedPathForFirstBlock
+
+        for txHash in submittedTxHashes do
+            let txResultFileName = sprintf "TxResult_%s" txHash
+            let expectedTxResultPath = Path.Combine(Config.DataDir, txResultFileName)
+            test <@ File.Exists expectedTxResultPath @>
 
     let private numOfUpdatesExecuted connectionString =
         let sql =
