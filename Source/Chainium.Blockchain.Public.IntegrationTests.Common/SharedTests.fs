@@ -175,7 +175,8 @@ module SharedTests =
                     let submitedTransactionDto = submitTransaction client expectedTx
                     submissionChecks connString isValid senderWallet txDto expectedTx submitedTransactionDto
 
-                    yield submitedTransactionDto.TxHash
+                    if isValid then
+                        yield submitedTransactionDto.TxHash
             ]
 
         test <@ submittedTxHashes.Length = 2 @>
