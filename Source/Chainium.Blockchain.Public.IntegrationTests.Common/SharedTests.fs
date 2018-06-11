@@ -12,6 +12,7 @@ open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core.DomainTypes
+open Chainium.Blockchain.Public.Core.Dtos
 
 module SharedTests =
 
@@ -84,9 +85,9 @@ module SharedTests =
             |> transactionBytes
             |> prepareTransaction senderWallet
 
-        let txHash = submitTransaction expectedTx client
+        let responseDto = submitTransaction expectedTx client
 
-        (senderWallet, receiverWallet, dto, expectedTx, txHash)
+        (senderWallet, receiverWallet, dto, expectedTx, responseDto)
 
     let submissionChecks
         connectionString
@@ -150,18 +151,27 @@ module SharedTests =
     let transactionProcessingTest engineType connString =
         let client = testInit engineType connString
 
-        for i in [1 .. 4] do
-            let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
-            let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+        let submittedTxHashes =
+            [
+                for i in [1 .. 4] do
+                    let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+                    let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
 
-            Helper.addBalanceAndAccount connString (addressToString senderWallet.Address) 100M
-            Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0M
+                    Helper.addBalanceAndAccount connString (addressToString senderWallet.Address) 100M
+                    Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0M
 
-            let isValid = i % 2 = 0
-            prepareAndSubmitTransaction client senderWallet receiverWallet isValid
-            |> submissionChecks connString isValid
+                    let isValid = i % 2 = 0
+                    let submissionOutput = prepareAndSubmitTransaction client senderWallet receiverWallet isValid
+                    submissionChecks connString isValid submissionOutput
 
-        let expectedBlockPath = sprintf "%s/Block_1" Config.DataDir
+                    if isValid then
+                        let (_, _, _, _, responseDto) = submissionOutput
+                        yield responseDto.TxHash
+            ]
+
+        test <@ submittedTxHashes.Length = 2 @>
+
+        let expectedBlockPath = Path.Combine(Config.DataDir, "Block_1")
         PaceMaker.start()
 
         let mutable iter = 0
@@ -172,6 +182,10 @@ module SharedTests =
             iter <- iter + sleepTime
 
         test <@ File.Exists(expectedBlockPath) @>
+        for txHash in submittedTxHashes do
+            let txResultFileName = sprintf "TxResult_%s" txHash
+            let expectedTxResultPath = Path.Combine(Config.DataDir, txResultFileName)
+            test <@ File.Exists expectedTxResultPath @>
 
     let private numOfUpdatesExecuted connectionString =
         let sql =
