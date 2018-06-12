@@ -297,7 +297,8 @@ module Processing =
             state.SetChxBalance (senderAddress, {senderState with Nonce = txNonce})
             Ok state
         else
-            failwith "Nonce too high." // This shouldn't really happen, due to the logic in excludeTxsWithNonceGap.
+            // Logic in excludeTxsWithNonceGap is supposed to prevent this.
+            failwith "Nonce too high."
 
     let processValidatorReward (tx : Tx) validator (state : ProcessingState) =
         {
@@ -338,39 +339,36 @@ module Processing =
         (txSet : TxHash list)
         =
 
-        let processTx (oldState : ProcessingState) (txHash : TxHash) =
-            let newState = oldState.Clone()
+        let processTx (state : ProcessingState) (txHash : TxHash) =
+            let rawTxHash = txHash |> fun (TxHash h) -> h
 
-            let processingResult =
-                let tx =
-                    match getTxBody getTx verifySignature isValidAddress txHash with
-                    | Ok tx -> tx
-                    | Error err ->
-                        txHash
-                        |> fun (TxHash h) -> h
-                        |> failwithf "Cannot load tx %s" // TODO: Remove invalid tx from the pool.
+            let tx =
+                match getTxBody getTx verifySignature isValidAddress txHash with
+                | Ok tx -> tx
+                | Error err ->
+                    txHash
+                    |> fun (TxHash h) -> h
+                    |> failwithf "Cannot load tx %s" rawTxHash // TODO: Remove invalid tx from the pool?
 
-                result {
-                    let! state =
-                        updateChxBalanceNonce tx.Sender tx.Nonce newState
-                        >>= processValidatorReward tx validator
-                        >>= processTxActions tx.Sender tx.Actions
-
-                    return state
-                }
-
-            match processingResult with
+            match processValidatorReward tx validator state with
             | Error e ->
-                let txResult = {
-                    Status = Failure e
-                    BlockNumber = blockNumber
-                }
-                oldState.SetTxResult(txHash, txResult)
-                oldState.MergeStateAfterFailedTx(newState)
-                oldState
-            | Ok _ ->
-                newState.SetTxResult(txHash, { Status = Success; BlockNumber = blockNumber })
-                newState
+                // Logic in excludeTxsIfBalanceCannotCoverFees is supposed to prevent this.
+                failwithf "Cannot process validator reward for tx %s (Error: %A)" rawTxHash e
+            | Ok state ->
+                match updateChxBalanceNonce tx.Sender tx.Nonce state with
+                | Error e ->
+                    state.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
+                    state
+                | Ok oldState ->
+                    let newState = oldState.Clone()
+                    match processTxActions tx.Sender tx.Actions newState with
+                    | Error e ->
+                        oldState.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
+                        oldState.MergeStateAfterFailedTx(newState)
+                        oldState
+                    | Ok state ->
+                        state.SetTxResult(txHash, { Status = Success; BlockNumber = blockNumber })
+                        state
 
         let initialState =
             ProcessingState (

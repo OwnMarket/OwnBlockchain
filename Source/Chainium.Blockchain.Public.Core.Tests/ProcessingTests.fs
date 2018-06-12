@@ -262,9 +262,9 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -339,9 +339,9 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -352,6 +352,72 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+    [<Fact>]
+    let ``Processing.processTxSet ChxTransfer with insufficient balance to cover fee - simulated invalid state`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 0.5M; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let amountToTransfer = ChxAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "ChxTransfer"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        let processTxSet () =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        raisesWith<exn>
+            <@ processTxSet () @>
+            (fun ex -> <@ ex.Message.StartsWith "Cannot process validator reward" @>)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // AssetTransfer
@@ -517,8 +583,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetCode].Amount
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetCode].Amount
         let expectedStatus =
@@ -680,8 +746,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotSourceAccountController)
             |> TxActionError
