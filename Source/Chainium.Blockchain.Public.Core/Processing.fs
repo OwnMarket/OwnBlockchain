@@ -53,13 +53,16 @@ module Processing =
                 ConcurrentDictionary(accountControllers)
             )
 
+        /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
         member __.MergeStateAfterFailedTx (otherState : ProcessingState) =
             let otherOutput = otherState.ToProcessingOutput ()
             for other in otherOutput.ChxBalances do
                 let current = __.GetChxBalance (other.Key)
                 __.SetChxBalance (other.Key, { current with Nonce = other.Value.Nonce })
             for other in otherOutput.Holdings do
-                __.GetHolding (other.Key) |> ignore // Just making sure we have all involved accounts loaded.
+                __.GetHolding (other.Key) |> ignore
+            for other in otherOutput.AccountControllers do
+                __.GetAccountController (other.Key) |> ignore
 
         member __.GetChxBalance (address : ChainiumAddress) : ChxBalanceState =
             chxBalances.GetOrAdd(address, getChxBalanceState)
@@ -77,8 +80,8 @@ module Processing =
             holdings.AddOrUpdate((accountHash, assetCode), state, fun _ _ -> state) |> ignore
 
         member __.SetAccountController (accountHash : AccountHash, controllerAddress : ChainiumAddress) =
-            let addressOption = controllerAddress |> Some
-            accountControllers.AddOrUpdate (accountHash, addressOption, fun _ _ -> addressOption) |> ignore
+            let controllerAddress = controllerAddress |> Some
+            accountControllers.AddOrUpdate (accountHash, controllerAddress, fun _ _ -> controllerAddress) |> ignore
 
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
@@ -155,11 +158,11 @@ module Processing =
         =
 
         match state.GetAccountController(action.AccountHash) with
+        | None -> // New controller entry.
+            state.SetAccountController(action.AccountHash, action.ControllerAddress)
+            Ok state
         | Some accountController when accountController = senderAddress ->
-            state.SetAccountController(
-                action.AccountHash,
-                action.ControllerAddress
-            )
+            state.SetAccountController(action.AccountHash, action.ControllerAddress)
             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
