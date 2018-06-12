@@ -53,8 +53,8 @@ module MerkleTreeTests =
         let expected =
             [
                 RightHash [| byte(2) |]
-                RightHash [| byte(3) |]
-                RightHash [| byte(4); byte(5) |]
+                RightHash [| byte(3); byte(4) |]
+                RightHash [| byte(5); byte(5); byte(5); byte(5) |]
             ]
 
         let actual = MerkleTree.calculateProof hashFunc leafs record

@@ -61,48 +61,40 @@ module MerkleTree =
 
         nodeResult
 
-    let rec private buildTree
+    let private buildTree
         hashFunction
-        (treeNodes : MerkleNode option list)
+        (leafNodes : MerkleNode option list)
         =
 
-        let treeBuilder nodes =
-            buildTree hashFunction nodes
+        let rec nodeLevel currLevel (nodes : MerkleNode option list)=
+            let (pair, rest) =
+                match nodes with
+                | [_] -> ([nodes.Head; nodes.Head], List.Empty)
+                | [] -> (List.Empty, currLevel)
+                | _  -> nodes |> List.splitAt 2
 
-        let nodeBuilder left right =
-            buildNode
-                hashFunction
-                left
-                right
+            if pair.Length < 2 then
+                rest
+            else
+                let lvlUpdate =
+                    [buildNode hashFunction pair.Head (pair.Item 1)]
+                    |> List.append currLevel
 
-        let buildSubTree subTree =
-            match subTree with
+                nodeLevel lvlUpdate rest
+
+        let rec buildLevels nodes =
+            match nodes with
             | [] -> None
+            | [_] -> nodes.Head
+            | _ ->
+                nodes
+                |> nodeLevel []
+                |> buildLevels
 
-            | [ _ ] ->
-                nodeBuilder
-                    subTree.Head
-                    None
+        buildLevels leafNodes
 
-            | [ _; _ ] ->
-                nodeBuilder
-                    subTree.[0]
-                    subTree.[1]
 
-            | _ -> treeBuilder subTree
-
-        match treeNodes.Length with
-        | 0 | 1 | 2 -> buildSubTree treeNodes
-        | _ ->
-            let subTrees =
-                treeNodes
-                |> List.splitInto 2
-
-            subTrees
-            |> List.map(fun s -> buildSubTree s)
-            |> treeBuilder
-
-    let private buildNodes leafHashes =
+    let private leafNodes leafHashes =
         leafHashes
         |> List.map
             (
@@ -118,7 +110,7 @@ module MerkleTree =
 
     let build hashFunc leafHashes =
         leafHashes
-        |> buildNodes
+        |> leafNodes
         |> buildTree hashFunc
         |> nodehash
 
@@ -184,7 +176,7 @@ module MerkleTree =
 
         let root =
             leafHashes
-            |> buildNodes
+            |> leafNodes
             |> buildTree hashFunc
 
         let leaf = findLeaf root leafHash
