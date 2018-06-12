@@ -151,7 +151,12 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let accountControllers = Map.empty
+        let accountControllers =
+            [
+                AccountHash "AAAA", ChainiumAddress "BBBB" |> Some
+                AccountHash "CCCC", ChainiumAddress "DDDD" |> Some
+            ]
+            |> Map.ofList
 
         let processingOutput =
             {
@@ -177,6 +182,8 @@ module BlocksTests =
                 "II...F...................H" // CHX balance 2
                 "DDDIII...A............" // Holding balance 1
                 "FFFAAA...B............" // Holding balance 2
+                "AAAABBBB" // Account controller 1
+                "CCCCDDDD" // Account controller 2
             ]
             |> String.Concat
 
@@ -268,7 +275,12 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let accountControllers = Map.empty
+        let accountControllers =
+            [
+                AccountHash "AAAA", ChainiumAddress "BBBB" |> Some
+                AccountHash "CCCC", ChainiumAddress "DDDD" |> Some
+            ]
+            |> Map.ofList
 
         let processingOutput =
             {
@@ -303,7 +315,7 @@ module BlocksTests =
             |> List.map (fun (TxHash h) -> h)
             |> Helpers.verifyMerkleProofs block.Header.TxSetRoot
 
-        test <@ txSetMerkleProofs = [true; true; true] @>
+        test <@ txSetMerkleProofs = List.replicate 3 true @>
 
         let txResultSetMerkleProofs =
             txSet
@@ -311,7 +323,7 @@ module BlocksTests =
             |> List.map (Blocks.createTxResultHash Hashing.decode Hashing.hash)
             |> Helpers.verifyMerkleProofs block.Header.TxResultSetRoot
 
-        test <@ txResultSetMerkleProofs = [true; true; true] @>
+        test <@ txResultSetMerkleProofs = List.replicate 3 true @>
 
         let stateMerkleProofs =
             [
@@ -324,8 +336,12 @@ module BlocksTests =
                 |> List.map (fun ((accountHash, assetCode), state) ->
                     Blocks.createHoldingStateHash Hashing.decode Hashing.hash (accountHash, assetCode, state)
                 )
+
+                accountControllers
+                |> Map.toList
+                |> List.map (Blocks.createAccountControllerStateHash Hashing.decode Hashing.hash)
             ]
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = [true; true; true; true] @>
+        test <@ stateMerkleProofs = List.replicate 6 true @>
