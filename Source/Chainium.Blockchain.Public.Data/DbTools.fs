@@ -30,7 +30,7 @@ module DbTools =
     let postgresCommand sql (conn : DbConnection) =
         new NpgsqlCommand(sql, conn :?> NpgsqlConnection)
         :> DbCommand
-    let postgresParam (name : string, value : obj)=
+    let postgresParam (name : string, value : obj) =
         NpgsqlParameter(name, value)
         :> DbParameter
     let postgresTransactionCmd (sql : string) (conn : DbConnection) (transaction : DbTransaction) =

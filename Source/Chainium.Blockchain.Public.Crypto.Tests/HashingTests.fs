@@ -103,7 +103,7 @@ module HashingTests =
         test <@ isValid = true @>
 
     [<Fact>]
-    let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` ()=
+    let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` () =
         let transactionMocks =
             [
                 for i in 1 .. 100 ->

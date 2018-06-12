@@ -47,7 +47,7 @@ module SerializationTests =
             let actualTxRes = Serialization.deserializeTx rawTx
             match actualTxRes with
             | Ok actualTx -> test <@ expectedTx = actualTx @>
-            | Error e-> failwithf "%A" e
+            | Error e -> failwithf "%A" e
         | Error errors ->
             failwithf "%A" errors
 
@@ -202,7 +202,7 @@ module SerializationTests =
             test <@ appErrors.Length > 0 @>
 
     [<Fact>]
-    let ``Serialization.deserializeTx.accountControllerChange`` ()=
+    let ``Serialization.deserializeTx.accountControllerChange`` () =
         let expectedTransaction =
             {
                 ActionType = "AccountControllerChange"

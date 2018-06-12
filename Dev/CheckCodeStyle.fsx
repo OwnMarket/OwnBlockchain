@@ -147,23 +147,53 @@ let rules =
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\,\w") ->
+            | _, Some line when Regex.IsMatch(line, "\,\w") || Regex.IsMatch(line, "\,\(") ->
                 Some "There should be a space after comma."
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\;\w") ->
+            | _, Some line when Regex.IsMatch(line, "\;\w") || Regex.IsMatch(line, "\;\(") ->
                 Some "There should be a space after semicolon."
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\w\=") || Regex.IsMatch(line, "\=\w") ->
-                Some "There should be a space before and after the equal sign."
+            | _, Some line when Regex.IsMatch(line, "\w\=") || Regex.IsMatch(line, "\)\=") ->
+                Some "There should be a space before equal sign."
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\w\:\:") || Regex.IsMatch(line, "\:\:\w") ->
-                Some "There should be a space before and after the cons '::' operator."
+            | _, Some line when Regex.IsMatch(line, "\=\w") || Regex.IsMatch(line, "\=\(") ->
+                Some "There should be a space after equal sign."
+            | _ -> None
+
+        createRule <| function
+            | _, Some line when Regex.IsMatch(line, "\w\-\>") || Regex.IsMatch(line, "\)\-\>") ->
+                Some "There should be a space before function arrow."
+            | _ -> None
+
+        createRule <| function
+            | _, Some line when Regex.IsMatch(line, "\-\>\w") || Regex.IsMatch(line, "\-\>\(") ->
+                Some "There should be a space after function arrow."
+            | _ -> None
+
+        createRule <| function
+            | _, Some line when Regex.IsMatch(line, "\w\<\-") || Regex.IsMatch(line, "\)\<\-") ->
+                Some "There should be a space before '<-'."
+            | _ -> None
+
+        createRule <| function
+            | _, Some line when Regex.IsMatch(line, "\<\-\w") || Regex.IsMatch(line, "\<\-\(") ->
+                Some "There should be a space after '<-'."
+            | _ -> None
+
+        createRule <| function
+            | _, Some line when Regex.IsMatch(line, "\w\:\:") || Regex.IsMatch(line, "\)\:\:") ->
+                Some "There should be a space before the cons '::' operator."
+            | _ -> None
+
+        createRule <| function
+            | _, Some line when Regex.IsMatch(line, "\:\:\w") || Regex.IsMatch(line, "\:\:\(") ->
+                Some "There should be a space after the cons '::' operator."
             | _ -> None
 
         (*
