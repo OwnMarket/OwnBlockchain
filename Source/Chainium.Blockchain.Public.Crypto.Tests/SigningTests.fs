@@ -5,6 +5,7 @@ open System.Text
 open Xunit
 open Swensen.Unquote
 open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Core.DomainTypes
 
@@ -30,7 +31,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.signMessage same message for multiple users`` () =
         let numOfReps = 100
-        let messageToSign = Encoding.UTF8.GetBytes "Chainium"
+        let messageToSign = Conversion.stringToBytes "Chainium"
 
         let generateSignature () =
             let wallet = Signing.generateWallet ()
@@ -45,7 +46,7 @@ module SigningTests =
 
     [<Fact>]
     let ``Signing.verifyMessage sign, verify message and check if resulting adress is same`` () =
-        let messageToSign = Encoding.UTF8.GetBytes "Chainium"
+        let messageToSign = Conversion.stringToBytes "Chainium"
         let wallet = Signing.generateWallet ()
 
         let signature = Signing.signMessage wallet.PrivateKey messageToSign
@@ -60,7 +61,7 @@ module SigningTests =
         let wallet = Signing.generateWallet ()
 
         for i in [1 .. 100] do
-            let message = sprintf "%s %i" messagePrefix i |> Encoding.UTF8.GetBytes
+            let message = sprintf "%s %i" messagePrefix i |> Conversion.stringToBytes
             let signature = Signing.signMessage wallet.PrivateKey message
             let address = Signing.verifySignature signature message
 

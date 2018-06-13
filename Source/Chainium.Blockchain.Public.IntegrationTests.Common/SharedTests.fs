@@ -7,6 +7,7 @@ open System.Threading
 open System.Net.Http
 open Newtonsoft.Json
 open Swensen.Unquote
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Node
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
@@ -28,7 +29,7 @@ module SharedTests =
         let txBytes =
             txDto
             |> JsonConvert.SerializeObject
-            |> Encoding.UTF8.GetBytes
+            |> Conversion.stringToBytes
 
         let signature = Signing.signMessage sender.PrivateKey txBytes
         {

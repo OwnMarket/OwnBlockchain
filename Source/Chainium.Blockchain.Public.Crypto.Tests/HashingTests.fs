@@ -4,16 +4,15 @@ open System
 open System.Text
 open Xunit
 open Swensen.Unquote
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
 
 module HashingTests =
 
-    let getBytes (str : String) = System.Text.Encoding.UTF8.GetBytes(str)
-
     [<Fact>]
     let ``Hashing.hash calculates same hash when executed multiple times for same input`` () =
-        let message = getBytes "Chainium"
+        let message = Conversion.stringToBytes "Chainium"
 
         let hashes =
             [1 .. 1000]
@@ -29,7 +28,7 @@ module HashingTests =
 
         let allHashes =
             [1 .. hashCount]
-            |> List.map (fun i -> (sprintf "%s %i" message i) |> getBytes |> Hashing.hash)
+            |> List.map (fun i -> (sprintf "%s %i" message i) |> Conversion.stringToBytes |> Hashing.hash)
 
         let distinctHashes =
             allHashes
@@ -40,7 +39,7 @@ module HashingTests =
 
     [<Fact>]
     let ``Hashing.createChainiumAddress calculates same hash not longer than 26 bytes for same input`` () =
-        let message = getBytes "Chainium"
+        let message = Conversion.stringToBytes "Chainium"
         let hashCount = 1000
         let hashes =
             [1 .. hashCount]
@@ -63,7 +62,7 @@ module HashingTests =
             [1 .. hashCount]
             |> List.map (fun i ->
                 sprintf "Chainium %i" i
-                |> getBytes
+                |> Conversion.stringToBytes
                 |> Hashing.chainiumAddress
                 |> fun (ChainiumAddress a) -> Hashing.decode a
             )
@@ -108,7 +107,7 @@ module HashingTests =
             [
                 for i in 1 .. 100 ->
                     sprintf "%i" i
-                    |> Encoding.UTF8.GetBytes
+                    |> Conversion.stringToBytes
                     |> Hashing.encode
             ]
 

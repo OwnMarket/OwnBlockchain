@@ -51,7 +51,7 @@ module Helpers =
                 (fee.ToString())
                 (JsonConvert.SerializeObject(actions))
 
-        Encoding.UTF8.GetBytes json
+        Conversion.stringToBytes json
 
     let newTx
         (privateKey : PrivateKey)

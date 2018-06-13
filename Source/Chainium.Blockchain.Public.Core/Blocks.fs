@@ -43,7 +43,7 @@ module Blocks =
 
         [
             decodeHash accountHash
-            Encoding.UTF8.GetBytes assetCode
+            stringToBytes assetCode
             decimalToBytes amount
         ]
         |> Array.concat
