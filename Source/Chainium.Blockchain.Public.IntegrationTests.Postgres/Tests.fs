@@ -12,6 +12,10 @@ module Tests =
         SharedTests.initDatabaseTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
+    let ``Genesis block created - Postgres`` () =
+        SharedTests.initBlockchainStateTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
     let ``Api - submit transaction for Postgres`` () =
         SharedTests.transactionSubmitTest Config.DbEngineType Config.DbConnectionString
 

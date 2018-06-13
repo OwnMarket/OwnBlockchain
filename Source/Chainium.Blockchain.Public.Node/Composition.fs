@@ -76,6 +76,19 @@ module Composition =
             Config.MaxTxCountPerBlock
             (ChainiumAddress Config.ValidatorAddress)
 
+    let initBlockchainState () =
+        Workflows.initBlockchainState
+            getLastBlockNumber
+            saveBlock
+            applyNewState
+            Hashing.decode
+            Hashing.hash
+            Hashing.merkleTree
+            Hashing.zeroHash
+            Hashing.zeroAddress
+            (ChxAmount Config.GenesisChxSupply)
+            (ChainiumAddress Config.GenesisAddress)
+
     let propagateTx = Workflows.propagateTx Peers.sendMessage
 
     let propagateBlock = Workflows.propagateBlock Peers.sendMessage

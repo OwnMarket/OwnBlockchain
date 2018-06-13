@@ -11,6 +11,28 @@ open Chainium.Blockchain.Public.Crypto
 module HashingTests =
 
     [<Fact>]
+    let ``Hashing.zeroHash`` () =
+        let randomHash = Signing.generateRandomBytes 64 |> Hashing.hash
+        let randomHashBytes = randomHash |> Hashing.decode
+
+        let zeroHash = Hashing.zeroHash
+        let zeroHashBytes = zeroHash |> Hashing.decode
+
+        test <@ zeroHashBytes.Length = randomHashBytes.Length @>
+        test <@ zeroHash = String.replicate zeroHash.Length "1" @> // 0 => 1 in Base58
+
+    [<Fact>]
+    let ``Hashing.zeroAddress`` () =
+        let randomAddress = Signing.generateWallet().Address |> fun (ChainiumAddress a) -> a
+        let randomAddressBytes = randomAddress |> Hashing.decode
+
+        let zeroAddress = Hashing.zeroAddress |> (fun (ChainiumAddress a) -> a)
+        let zeroAddressBytes = zeroAddress |> Hashing.decode
+
+        test <@ zeroAddressBytes.Length = randomAddressBytes.Length @>
+        test <@ zeroAddress = String.replicate zeroAddress.Length "1" @> // 0 => 1 in Base58
+
+    [<Fact>]
     let ``Hashing.hash calculates same hash when executed multiple times for same input`` () =
         let message = Conversion.stringToBytes "Chainium"
 

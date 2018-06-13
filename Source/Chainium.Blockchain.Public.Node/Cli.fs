@@ -18,6 +18,7 @@ module Cli =
 
     let handleStartNodeCommand () =
         Composition.initDb ()
+        Composition.initBlockchainState ()
         PaceMaker.start ()
         Api.start ()
 

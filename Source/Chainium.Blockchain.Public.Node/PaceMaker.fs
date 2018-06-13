@@ -14,8 +14,9 @@ module PaceMaker =
 
             try
                 let (Timestamp lastBlockTimestamp) =
-                    Composition.getLastBlockTimestamp ()
-                    |? Timestamp 0L // TODO: Once genesis block init is added, this should throw.
+                    match Composition.getLastBlockTimestamp () with
+                    | Some timestamp -> timestamp
+                    | None -> failwith "Blockchain state is not initialized."
                 let timeSinceLastBlock = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - lastBlockTimestamp
                 if timeSinceLastBlock >= blockCreationInterval then
                     Composition.createNewBlock ()

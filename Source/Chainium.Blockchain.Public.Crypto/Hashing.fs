@@ -28,6 +28,12 @@ module Hashing =
     let decode hash =
         Multibase.Base58.Decode hash
 
+    let zeroHash =
+        Array.zeroCreate<byte> 32 |> encode
+
+    let zeroAddress =
+        Array.zeroCreate<byte> 26 |> encode |> ChainiumAddress
+
     let hash (data : byte[]) =
         data
         |> hashBytes

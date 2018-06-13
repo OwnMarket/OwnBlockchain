@@ -58,6 +58,7 @@ module SharedTests =
     let private testInit engineType connectionString =
         Helper.testCleanup engineType connectionString
         DbInit.init engineType connectionString
+        Composition.initBlockchainState ()
 
         let testServer = Helper.testServer()
         testServer.CreateClient()
@@ -203,6 +204,31 @@ module SharedTests =
         DbInit.init engineType connString
         let changes = numOfUpdatesExecuted connString
         test <@ changes.Length > 0 @>
+
+    let initBlockchainStateTest engineType connString =
+        // ARRANGE
+        Helper.testCleanup engineType connString
+        DbInit.init engineType connString
+        let expectedChxBalanceState =
+            {
+                ChxBalanceStateDto.Amount = Config.GenesisChxSupply
+                Nonce = 0L
+            }
+
+        // ACT
+        Composition.initBlockchainState ()
+
+        // ASSERT
+        let genesisAddressChxBalanceState =
+            Config.GenesisAddress
+            |> ChainiumAddress
+            |> Db.getChxBalanceState connString
+
+        let lastAppliedBlockNumber =
+            Db.getLastBlockNumber connString
+
+        test <@ genesisAddressChxBalanceState = Some expectedChxBalanceState @>
+        test <@ lastAppliedBlockNumber = Some (BlockNumber 0L) @>
 
     let getAccountControllerTest engineType connectionString =
         Helper.testCleanup engineType connectionString

@@ -11,6 +11,13 @@ module Tests =
     let ``DbInit - Init SQLite database`` () =
         SharedTests.initDatabaseTest Config.DbEngineType Config.DbConnectionString
 
+(*
+    TODO: Enable this test once the issue with decimal number rounding in SQLite is resolved.
+    [<Fact>]
+    let ``Genesis block created - SQLite`` () =
+        SharedTests.initBlockchainStateTest Config.DbEngineType Config.DbConnectionString
+*)
+
     [<Fact>]
     let ``Api - submit transaction for SQLite`` () =
         SharedTests.transactionSubmitTest Config.DbEngineType Config.DbConnectionString

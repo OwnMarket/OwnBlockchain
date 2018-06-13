@@ -175,3 +175,49 @@ module Blocks =
             Header = blockHeader
             TxSet = txSet
         }
+
+    let createGenesisState genesisChxSupply genesisAddress : ProcessingOutput =
+        let genesisChxBalanceState =
+            {
+                Amount = genesisChxSupply
+                Nonce = Nonce 0L
+            }
+
+        let chxBalances =
+            [
+                genesisAddress, genesisChxBalanceState
+            ]
+            |> Map.ofList
+
+        {
+            TxResults = Map.empty
+            ChxBalances = chxBalances
+            Holdings = Map.empty
+            AccountControllers = Map.empty
+        }
+
+    let createGenesisBlock
+        (decodeHash : string -> byte[])
+        (createHash : byte[] -> string)
+        (createMerkleTree : string list -> MerkleTreeRoot)
+        zeroHash
+        zeroAddress
+        (output : ProcessingOutput)
+        : Block
+        =
+
+        let blockNumber = BlockNumber 0L
+        let timestamp = Timestamp 0L
+        let previousBlockHash = zeroHash |> BlockHash
+        let txSet = []
+
+        assembleBlock
+            decodeHash
+            createHash
+            createMerkleTree
+            zeroAddress
+            blockNumber
+            timestamp
+            previousBlockHash
+            txSet
+            output

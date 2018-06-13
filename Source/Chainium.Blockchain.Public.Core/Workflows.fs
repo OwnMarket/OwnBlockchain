@@ -47,7 +47,7 @@ module Workflows =
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
         getAccountControllerFromStorage
-        getLastBlockNumber
+        (getLastAppliedBlockNumber : unit -> BlockNumber option)
         getBlock
         decodeHash
         createHash
@@ -69,9 +69,9 @@ module Workflows =
         | txSet ->
             result {
                 let! previousBlockDto =
-                    getLastBlockNumber ()
-                    |? BlockNumber 0L // TODO: Once genesis block init is added, this should throw.
-                    |> getBlock
+                    match getLastAppliedBlockNumber () with
+                    | Some blockNumber -> getBlock blockNumber
+                    | None -> failwith "Blockchain state is not initialized."
                 let previousBlock = Mapping.blockFromDto previousBlockDto
                 let blockNumber = previousBlock.Header.Number |> fun (BlockNumber n) -> BlockNumber (n + 1L)
                 let timestamp = Utils.getUnixTimestamp () |> Timestamp
@@ -121,6 +121,43 @@ module Workflows =
                 return { BlockNumber = block.Header.Number }
             }
             |> Some
+
+    let initBlockchainState
+        (getLastAppliedBlockNumber : unit -> BlockNumber option)
+        saveBlock
+        applyNewState
+        decodeHash
+        createHash
+        createMerkleTree
+        zeroHash
+        zeroAddress
+        genesisChxSupply
+        genesisAddress
+        =
+
+        if getLastAppliedBlockNumber () = None then
+            let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress
+            let genesisBlock =
+                Blocks.createGenesisBlock
+                    decodeHash createHash createMerkleTree zeroHash zeroAddress genesisState
+            let genesisBlockDto = Mapping.blockToDto genesisBlock
+            let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto genesisBlockDto.Header
+
+            let result =
+                result {
+                    do! saveBlock genesisBlockDto
+                    do! genesisState
+                        |> Mapping.outputToDto
+                        |> applyNewState blockInfoDto
+                }
+
+            match result with
+            | Ok _ ->
+                Log.info "Genesis block created."
+            | Error errors ->
+                for AppError e in errors do
+                    Log.error e
+                failwith "Cannot initialize blockchain state."
 
     let propagateTx sendMessageToPeers (txHash : TxHash) =
         sprintf "%A" txHash
