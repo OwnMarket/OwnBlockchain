@@ -7,6 +7,8 @@ open Chainium.Blockchain.Public.Node
 
 [<EntryPoint>]
 let main argv =
+    printfn "Chainium Public Blockchain Node"
+
     try
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
         Thread.CurrentThread.CurrentUICulture <- CultureInfo.InvariantCulture

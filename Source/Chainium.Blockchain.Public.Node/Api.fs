@@ -72,6 +72,7 @@ module Api =
 
     let start () =
         WebHostBuilder()
+            .SuppressStatusMessages(true)
             .UseKestrel()
             .Configure(Action<IApplicationBuilder> configureApp)
             .ConfigureServices(configureServices)
