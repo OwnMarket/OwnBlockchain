@@ -176,6 +176,36 @@ module Blocks =
             TxSet = txSet
         }
 
+    let isValidBlock
+        decodeHash
+        createHash
+        createMerkleTree
+        previousBlockHash
+        txResultSetRoot
+        stateRoot
+        (block : Block)
+        : bool
+        =
+
+        let txSetRoot =
+            block.TxSet
+            |> List.map (fun (TxHash hash) -> hash)
+            |> createMerkleTree
+
+        let blockHash =
+            createBlockHash
+                decodeHash
+                createHash
+                block.Header.Number
+                previousBlockHash
+                block.Header.Timestamp
+                block.Header.Validator
+                txSetRoot
+                txResultSetRoot
+                stateRoot
+
+        block.Header.Hash = blockHash
+
     let createGenesisState genesisChxSupply genesisAddress : ProcessingOutput =
         let genesisChxBalanceState =
             {

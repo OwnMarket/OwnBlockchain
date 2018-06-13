@@ -232,8 +232,7 @@ module BlocksTests =
         let timestamp = Utils.getUnixTimestamp () |> Timestamp
 
         let previousBlockHash =
-            "GENESIS_BLOCK"
-            |> Conversion.stringToBytes
+            Signing.generateRandomBytes 64
             |> Hashing.hash
             |> BlockHash
 
@@ -345,3 +344,110 @@ module BlocksTests =
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
         test <@ stateMerkleProofs = List.replicate 6 true @>
+
+    [<Theory>]
+    [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
+    [<InlineData ("WRONG_PREVIOUS_BLOCK_HASH", false)>]
+    let ``Blocks.isValidBlock`` (previousBlockHashInTestedBlock, expectedSuccess) =
+        let wallet1 = Signing.generateWallet ()
+        let wallet2 = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let blockNumber = BlockNumber 1L
+        let timestamp = Utils.getUnixTimestamp () |> Timestamp
+
+        let previousBlockHash =
+            "RIGHT_PREVIOUS_BLOCK_HASH"
+            |> Conversion.stringToBytes
+            |> Hashing.hash
+            |> BlockHash
+
+        let txSet =
+            ["Tx1"; "Tx2"; "Tx3"]
+            |> List.map (Conversion.stringToBytes >> Hashing.hash >> TxHash)
+
+        let txResult1 : TxResult = {
+            Status = Success
+            BlockNumber = BlockNumber 5L
+        }
+
+        let txResult2 : TxResult = {
+            Status = (TxActionNumber 0s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
+            BlockNumber = BlockNumber 5L
+        }
+
+        let txResult3 : TxResult = {
+            Status = Success
+            BlockNumber = BlockNumber 5L
+        }
+
+        let txResults =
+            [txResult1; txResult2; txResult3]
+            |> List.zip txSet
+            |> Map.ofList
+
+        let chxBalances =
+            [
+                wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10M; Nonce = Nonce 1L}
+                wallet2.Address, {ChxBalanceState.Amount = ChxAmount 20M; Nonce = Nonce 2L}
+            ]
+            |> Map.ofList
+
+        let holdings =
+            [
+                (AccountHash "Acc1", AssetCode "Eq1"), {HoldingState.Amount = AssetAmount 100M}
+                (AccountHash "Acc2", AssetCode "Eq2"), {HoldingState.Amount = AssetAmount 200M}
+            ]
+            |> Map.ofList
+
+        let accountControllers =
+            [
+                AccountHash "AAAA", ChainiumAddress "BBBB" |> Some
+                AccountHash "CCCC", ChainiumAddress "DDDD" |> Some
+            ]
+            |> Map.ofList
+
+        let processingOutput =
+            {
+                ProcessingOutput.TxResults = txResults
+                ChxBalances = chxBalances
+                Holdings = holdings
+                AccountControllers = accountControllers
+            }
+
+        let assembledBlock =
+            Blocks.assembleBlock
+                Hashing.decode
+                Hashing.hash
+                Hashing.merkleTree
+                validatorWallet.Address
+                blockNumber
+                timestamp
+                previousBlockHash
+                txSet
+                processingOutput
+
+        let testedBlock =
+            Blocks.assembleBlock
+                Hashing.decode
+                Hashing.hash
+                Hashing.merkleTree
+                validatorWallet.Address
+                blockNumber
+                timestamp
+                (previousBlockHashInTestedBlock |> Conversion.stringToBytes |> Hashing.hash |> BlockHash)
+                txSet
+                processingOutput
+
+        // ACT
+        let isValid =
+            Blocks.isValidBlock
+                Hashing.decode
+                Hashing.hash
+                Hashing.merkleTree
+                previousBlockHash
+                assembledBlock.Header.TxResultSetRoot
+                assembledBlock.Header.StateRoot
+                testedBlock
+
+        // ASSERT
+        test <@ isValid = expectedSuccess @>
