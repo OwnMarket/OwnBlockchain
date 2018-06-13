@@ -66,12 +66,12 @@ module MerkleTree =
         (leafNodes : MerkleNode option list)
         =
 
-        let rec nodeLevel currLevel (nodes : MerkleNode option list)=
+        let rec nodeLevel currLevel (nodes : MerkleNode option list) =
             let (pair, rest) =
                 match nodes with
                 | [_] -> ([nodes.Head; nodes.Head], List.Empty)
                 | [] -> (List.Empty, currLevel)
-                | _  -> nodes |> List.splitAt 2
+                | _ -> nodes |> List.splitAt 2
 
             if pair.Length < 2 then
                 rest
@@ -92,7 +92,6 @@ module MerkleTree =
                 |> buildLevels
 
         buildLevels leafNodes
-
 
     let private leafNodes leafHashes =
         leafHashes
