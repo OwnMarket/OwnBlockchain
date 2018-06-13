@@ -19,6 +19,10 @@ module Tests =
 *)
 
     [<Fact>]
+    let ``Genesis block load from storage`` () =
+        SharedTests.loadBlockTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
     let ``Api - submit transaction for SQLite`` () =
         SharedTests.transactionSubmitTest Config.DbEngineType Config.DbConnectionString
 

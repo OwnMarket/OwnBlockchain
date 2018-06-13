@@ -12,6 +12,7 @@ open Chainium.Blockchain.Public.Node
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Data
+open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module SharedTests =
@@ -229,6 +230,26 @@ module SharedTests =
 
         test <@ genesisAddressChxBalanceState = Some expectedChxBalanceState @>
         test <@ lastAppliedBlockNumber = Some (BlockNumber 0L) @>
+
+    let loadBlockTest engineType connString =
+        // ARRANGE
+        Helper.testCleanup engineType connString
+        DbInit.init engineType connString
+        Composition.initBlockchainState ()
+
+        let expectedBlockDto =
+            Blocks.createGenesisState
+                (ChxAmount Config.GenesisChxSupply)
+                (ChainiumAddress Config.GenesisAddress)
+            |> Blocks.createGenesisBlock
+                Hashing.decode Hashing.hash Hashing.merkleTree Hashing.zeroHash Hashing.zeroAddress
+            |> Mapping.blockToDto
+
+        // ACT
+        let loadedBlockDto = Raw.getBlock Config.DataDir (BlockNumber 0L)
+
+        // ASSERT
+        test <@ loadedBlockDto = Ok expectedBlockDto @>
 
     let getAccountControllerTest engineType connectionString =
         Helper.testCleanup engineType connectionString
