@@ -445,8 +445,6 @@ module BlocksTests =
                 Hashing.hash
                 Hashing.merkleTree
                 previousBlockHash
-                assembledBlock.Header.TxResultSetRoot
-                assembledBlock.Header.StateRoot
                 testedBlock
 
         // ASSERT

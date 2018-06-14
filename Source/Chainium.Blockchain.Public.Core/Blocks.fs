@@ -176,13 +176,12 @@ module Blocks =
             TxSet = txSet
         }
 
+    /// Checks if the block is a valid potential successor of a previous block identified by previousBlockHash argument.
     let isValidBlock
         decodeHash
         createHash
         createMerkleTree
         previousBlockHash
-        txResultSetRoot
-        stateRoot
         (block : Block)
         : bool
         =
@@ -201,8 +200,8 @@ module Blocks =
                 block.Header.Timestamp
                 block.Header.Validator
                 txSetRoot
-                txResultSetRoot
-                stateRoot
+                block.Header.TxResultSetRoot
+                block.Header.StateRoot
 
         block.Header.Hash = blockHash
 
