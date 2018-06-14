@@ -22,11 +22,11 @@ module Raw =
         sprintf "%s_%s" (unionCaseName dataType) key
 
     let private saveData (dataDir : string) (dataType : RawDataType) (key : string) data : Result<unit, AppErrors> =
+        let dataTypeName = unionCaseName dataType
         try
             if not (Directory.Exists(dataDir)) then
                 Directory.CreateDirectory(dataDir) |> ignore
 
-            let dataTypeName = unionCaseName dataType
             let fileName = createFileName dataType key
             let path = Path.Combine(dataDir, fileName)
 
@@ -39,11 +39,11 @@ module Raw =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Save failed"]
+            Error [AppError (sprintf "Saving %s %s failed" dataTypeName key)]
 
     let private loadData<'T> (dataDir : string) (dataType : RawDataType) (key : string) : Result<'T, AppErrors> =
+        let dataTypeName = unionCaseName dataType
         try
-            let dataTypeName = unionCaseName dataType
             let fileName = createFileName dataType key
             let path = Path.Combine(dataDir, fileName)
 
@@ -56,7 +56,7 @@ module Raw =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Load failed"]
+            Error [AppError (sprintf "Loading %s %s failed" dataTypeName key)]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Specific
