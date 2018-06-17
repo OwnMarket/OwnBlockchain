@@ -243,3 +243,71 @@ module Mapping =
     let txSubmittedEventToSubmitTxResponseDto (event : TxSubmittedEvent) =
         let (TxHash hash) = event.TxHash
         { SubmitTxResponseDto.TxHash = hash }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // API
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let chxBalanceStateDtoToGetAddressApiResponseDto (chainiumAddress: string) (chxBalanceState : ChxBalanceStateDto) =
+        {
+            GetAddressApiResponseDto.ChainiumAddress = chainiumAddress
+            GetAddressApiResponseDto.Balance = chxBalanceState.Amount
+            GetAddressApiResponseDto.Nonce = chxBalanceState.Nonce
+        }
+
+    let accountHoldingsDtoToGetAccoungHoldingsResponseDto
+        (accountHash : string)
+        (accountController : string)
+        (holdings : AccountHoldingsDto list)
+        =
+
+        let mapFn (holding : AccountHoldingsDto) : GetAccountApiHoldingDto =
+            {
+                AssetCode = holding.AssetCode
+                Balance = holding.Amount
+            }
+
+        {
+            GetAccountApiResponseDto.AccountHash = accountHash
+            GetAccountApiResponseDto.ControllerAddress = accountController
+            GetAccountApiResponseDto.Holdings = List.map mapFn holdings
+        }
+
+    let blockTxsToGetBlockApiResponseDto
+        (blockInfo : BlockDto)
+        =
+
+        {
+            GetBlockApiResponseDto.Number = blockInfo.Header.Number
+            GetBlockApiResponseDto.Hash = blockInfo.Header.Hash
+            GetBlockApiResponseDto.PreviousHash = blockInfo.Header.PreviousHash
+            GetBlockApiResponseDto.Timestamp = blockInfo.Header.Timestamp
+            GetBlockApiResponseDto.Validator = blockInfo.Header.Validator
+            GetBlockApiResponseDto.TxSetRoot = blockInfo.Header.TxSetRoot
+            GetBlockApiResponseDto.TxResultSetRoot = blockInfo.Header.TxResultSetRoot
+            GetBlockApiResponseDto.StateRoot = blockInfo.Header.StateRoot
+            GetBlockApiResponseDto.TxSet = blockInfo.TxSet
+        }
+
+    let txToGetTxApiResponseDto
+        (tx : TxInfoDto)
+        (actions : TxActionDto list)
+        (result : TxResultDto)
+        =
+
+        let blockNumber =
+            match result.BlockNumber with
+            | 0L -> Nullable()
+            | _ -> Nullable<int64> result.BlockNumber
+
+        {
+            GetTxApiResponseDto.TxHash = tx.TxHash
+            GetTxApiResponseDto.SenderAddress = tx.SenderAddress
+            GetTxApiResponseDto.Nonce = tx.Nonce
+            GetTxApiResponseDto.Fee = tx.Fee
+            GetTxApiResponseDto.Actions = actions
+            GetTxApiResponseDto.Status = byte result.Status
+            GetTxApiResponseDto.ErrorCode = result.ErrorCode
+            GetTxApiResponseDto.FailedActionNumber = result.FailedActionNumber
+            GetTxApiResponseDto.BlockNumber = blockNumber
+        }

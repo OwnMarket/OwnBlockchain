@@ -28,6 +28,8 @@ module Composition =
 
     let saveTxToDb = Db.saveTx Config.DbConnectionString
 
+    let getTxInfo = Db.getTx Config.DbConnectionString
+
     let getPendingTxs = Db.getPendingTxs Config.DbConnectionString
 
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbConnectionString
@@ -37,6 +39,8 @@ module Composition =
     let getLastBlockNumber () = Db.getLastBlockNumber Config.DbConnectionString
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
+
+    let getAccountHoldings = Db.getAccountHoldings Config.DbConnectionString
 
     let getHoldingState = Db.getHoldingState Config.DbConnectionString
 
@@ -92,3 +96,11 @@ module Composition =
     let propagateTx = Workflows.propagateTx Peers.sendMessage
 
     let propagateBlock = Workflows.propagateBlock Peers.sendMessage
+
+    let getAddressApi = Workflows.getAddressApi getChxBalanceState
+
+    let getAccountApi = Workflows.getAccountApi getAccountController getAccountHoldings
+
+    let getBlockApi = Workflows.getBlockApi getBlock
+
+    let getTxApi = Workflows.getTxApi getTxInfo getTx getTxResult

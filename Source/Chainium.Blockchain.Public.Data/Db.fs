@@ -89,6 +89,24 @@ module Db =
 
         DbTools.query dbConnectionString sql sqlParams
 
+    let getTx (dbConnectionString : string) (TxHash txHash) : TxInfoDto option =
+        let sql =
+            """
+            SELECT tx_hash, sender_address, nonce, fee, action_count, status
+            FROM tx
+            WHERE tx_hash = @txHash
+            """
+
+        let sqlParams =
+            [
+                "@txHash", txHash |> box
+            ]
+
+        match DbTools.query<TxInfoDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [tx] -> Some tx
+        | _ -> failwithf "Multiple Txs found for hash %A" txHash
+
     let getTotalFeeForPendingTxs (dbConnectionString : string) (ChainiumAddress senderAddress) : ChxAmount =
         let sql =
             """
@@ -472,7 +490,7 @@ module Db =
             conn.Close()
             Error [AppError ("Failed to apply new state")]
 
-    let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) =
+    let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) : ChxBalanceStateDto option =
         let sql =
             """
             SELECT amount, nonce
@@ -490,7 +508,49 @@ module Db =
         | [chxAddressDetails] -> Some chxAddressDetails
         | _ -> failwithf "Multiple CHX balance entries found for address %A" address
 
-    let getHoldingState (dbConnectionString : string) (AccountHash accountHash, AssetCode assetCode) =
+    let getAccountHoldings
+        (dbConnectionString : string)
+        (AccountHash accountHash)
+        (assetCode : string option)
+        : AccountHoldingsDto list option
+        =
+
+        let filter =
+            if assetCode.IsNone then
+                ""
+            else
+                "AND h.asset_code = @assetCode"
+
+        let sql =
+            sprintf
+                """
+                SELECT h.asset_code, h.amount
+                FROM account AS a
+                JOIN holding AS h USING (account_id)
+                WHERE a.account_hash = @accountHash
+                %s
+                """
+                    filter
+
+        let sqlParams =
+            if assetCode.IsNone then
+                [
+                    "@accountHash", accountHash |> box
+                ]
+            else
+                [
+                    "@accountHash", accountHash |> box
+                    "@assetCode", assetCode.Value |> box
+                ]
+
+        match DbTools.query<AccountHoldingsDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | holdingDetails -> Some holdingDetails
+
+    let getHoldingState
+        (dbConnectionString : string)
+        (AccountHash accountHash, AssetCode assetCode)
+        : HoldingStateDto option =
         let sql =
             """
             SELECT h.amount, h.nonce

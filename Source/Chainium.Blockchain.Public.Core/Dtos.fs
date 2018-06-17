@@ -156,6 +156,12 @@ type AssetControllerDto = {
     ControllerAddress : string
 }
 
+[<CLIMutable>]
+type AccountHoldingsDto = {
+    AssetCode: string
+    Amount: decimal
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // API
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,4 +172,53 @@ type SubmitTxResponseDto = {
 
 type ErrorResponseDto = {
     Errors : string list
+}
+
+type GetAddressApiRequestDto = {
+    ChainiumAddress : string
+}
+
+type GetAddressApiResponseDto = {
+    ChainiumAddress : string
+    Balance : decimal
+    Nonce : int64
+}
+
+type GetAccountApiRequestDto = {
+    AccountHash : string option
+}
+
+type GetAccountApiHoldingDto = {
+    AssetCode: string
+    Balance: decimal
+}
+
+type GetAccountApiResponseDto = {
+    AccountHash: string
+    ControllerAddress: string
+    Holdings: GetAccountApiHoldingDto list
+}
+
+type GetBlockApiResponseDto = {
+    Number : int64
+    Hash : string
+    PreviousHash : string
+    Timestamp : int64
+    Validator : string
+    TxSetRoot : string
+    TxResultSetRoot : string
+    StateRoot : string
+    TxSet : string list
+}
+
+type GetTxApiResponseDto = {
+    TxHash : string
+    SenderAddress : string
+    Nonce : int64
+    Fee : decimal
+    Actions : TxActionDto list
+    Status : byte
+    ErrorCode : Nullable<int16>
+    FailedActionNumber : Nullable<int16>
+    BlockNumber : Nullable<int64>
 }

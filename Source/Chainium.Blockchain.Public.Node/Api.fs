@@ -41,6 +41,45 @@ module Api =
             return! response next ctx
         }
 
+    let getAddressHandler chxAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAddressApi (ChainiumAddress chxAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getAccountHandler (accountHash : string): HttpHandler = fun next ctx ->
+        task {
+
+            let response =
+                match ctx.TryGetQueryStringValue "asset" with
+                | None -> Composition.getAccountApi (AccountHash accountHash) None
+                | Some asset -> Composition.getAccountApi (AccountHash accountHash) (Some asset)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getTxHandler txHash : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTxApi (TxHash txHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getBlockHandler blockNumber : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getBlockApi (BlockNumber blockNumber)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +88,10 @@ module Api =
         choose [
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
+                routef "/address/%s" (fun chainiumAddress -> getAddressHandler chainiumAddress)
+                routef "/account/%s" (fun accountHash -> getAccountHandler accountHash)
+                routef "/tx/%s" (fun txHash -> getTxHandler txHash)
+                routef "/block/%d" (fun blockNumber -> getBlockHandler blockNumber)
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler

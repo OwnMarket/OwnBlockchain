@@ -1,5 +1,6 @@
 ﻿namespace Chainium.Blockchain.Public.Core
 
+open System
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
@@ -166,3 +167,75 @@ module Workflows =
     let propagateBlock sendMessageToPeers (blockNumber : BlockNumber) =
         sprintf "%A" blockNumber
         |> sendMessageToPeers
+
+    let getAddressApi getChxBalanceState (chainiumAddress : ChainiumAddress)
+        : Result<GetAddressApiResponseDto, AppErrors> =
+        match getChxBalanceState chainiumAddress with
+        | Some addressState ->
+            Ok (Mapping.chxBalanceStateDtoToGetAddressApiResponseDto
+                    (chainiumAddress |> (fun (ChainiumAddress a) -> a))
+                    addressState
+            )
+        | None -> Error [AppError "Chainium Address does not exist"]
+
+    let getAccountApi
+        getAccountController
+        getAccountHoldings
+        (accountHash : AccountHash)
+        (assetCode : string option)
+        : Result<GetAccountApiResponseDto, AppErrors>
+        =
+
+        match getAccountController accountHash with
+        | None -> Error [AppError (sprintf "Account %A does not exists" accountHash)]
+        | Some (ChainiumAddress accountController) ->
+            match getAccountHoldings accountHash assetCode with
+                | None -> []
+                | Some holdings -> holdings
+            |> (fun v ->
+                Ok (Mapping.accountHoldingsDtoToGetAccoungHoldingsResponseDto
+                        (accountHash |> (fun (AccountHash h) -> h))
+                        accountController
+                        v)
+                )
+
+    let getBlockApi
+        getBlock
+        (blockNumber : BlockNumber)
+        : Result<GetBlockApiResponseDto, AppErrors>
+        =
+
+        match getBlock blockNumber with
+            | Ok block -> Ok (Mapping.blockTxsToGetBlockApiResponseDto block)
+            | _ -> Error [AppError (sprintf "Block %A does not exists" (blockNumber |> fun (BlockNumber b) -> b))]
+
+    let getTxApi
+        getTxInfo
+        getTx
+        getTxResult
+        (txHash : TxHash)
+        : Result<GetTxApiResponseDto, AppErrors>
+        =
+
+        match getTxInfo txHash with
+        | None -> Error [AppError (sprintf "Tx %A does not exists" (txHash |> fun (TxHash t) -> t))]
+        | Some txInfo ->
+            result {
+                let! txDto =
+                    getTx txHash
+                    |> Result.map Mapping.txEnvelopeFromDto
+                    >>= fun txEnvelope -> Serialization.deserializeTx txEnvelope.RawTx
+
+                let txResult =
+                    match getTxResult txHash with
+                    | Ok result -> result
+                    | _ ->
+                        {
+                        Status = int16 0
+                        ErrorCode = Nullable()
+                        FailedActionNumber = Nullable()
+                        BlockNumber = int64 0
+                        }
+
+                return (Mapping.txToGetTxApiResponseDto txInfo txDto.Actions txResult)
+            }
