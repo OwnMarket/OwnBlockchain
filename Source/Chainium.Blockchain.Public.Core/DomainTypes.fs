@@ -38,7 +38,141 @@ type Nonce = Nonce of int64
 type ChxAmount = ChxAmount of decimal
 type AssetAmount = AssetAmount of decimal
 
-// Arithmetic
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Tx
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type TxHash = TxHash of string
+
+type ChxTransferTxAction = {
+    RecipientAddress : ChainiumAddress
+    Amount : ChxAmount
+}
+
+type AssetTransferTxAction = {
+    FromAccountHash : AccountHash
+    ToAccountHash : AccountHash
+    AssetCode : AssetCode
+    Amount : AssetAmount
+}
+
+type AccountControllerChangeTxAction = {
+    AccountHash : AccountHash
+    ControllerAddress : ChainiumAddress
+}
+
+type TxAction =
+    | ChxTransfer of ChxTransferTxAction
+    | AssetTransfer of AssetTransferTxAction
+    | AccountControllerChange of AccountControllerChangeTxAction
+
+type Tx = {
+    TxHash : TxHash
+    Sender : ChainiumAddress
+    Nonce : Nonce
+    Fee : ChxAmount
+    Actions : TxAction list
+}
+
+type TxEnvelope = {
+    RawTx : byte[]
+    Signature : Signature
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Block
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type Timestamp = Timestamp of int64 // UNIX Timestamp
+type BlockNumber = BlockNumber of int64
+type BlockHash = BlockHash of string
+type MerkleTreeRoot = MerkleTreeRoot of string
+
+type BlockHeader = {
+    Number : BlockNumber
+    Hash : BlockHash
+    PreviousHash : BlockHash
+    Timestamp : Timestamp
+    Validator : ChainiumAddress // Fee beneficiary
+    TxSetRoot : MerkleTreeRoot
+    TxResultSetRoot : MerkleTreeRoot
+    StateRoot : MerkleTreeRoot
+}
+
+type Block = {
+    Header : BlockHeader
+    TxSet : TxHash list
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Processing
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type TxActionNumber = TxActionNumber of int16
+
+type TxErrorCode =
+    // DO NOT CHANGE THESE NUMBERS - IT WILL BREAK THE BLOCKS!!!
+    | NonceTooLow = 10s
+    | InsufficientChxBalance = 20s
+    | InsufficientAssetHoldingBalance = 30s
+    | SenderIsNotSourceAccountController = 110s
+    | SenderIsNotAssetController = 120s
+
+type TxError =
+    | TxError of TxErrorCode
+    | TxActionError of TxActionNumber * TxErrorCode
+
+type TxProcessedStatus =
+    | Success
+    | Failure of TxError
+
+type TxStatus =
+    | Pending
+    | Processed of TxProcessedStatus
+
+type TxResult = {
+    Status : TxProcessedStatus
+    BlockNumber : BlockNumber
+}
+
+type PendingTxInfo = {
+    TxHash : TxHash
+    Sender : ChainiumAddress
+    Nonce : Nonce
+    Fee : ChxAmount
+    ActionCount : int16
+    AppearanceOrder : int64
+}
+
+type ChxBalanceState = {
+    Amount : ChxAmount
+    Nonce : Nonce
+}
+
+type HoldingState = {
+    Amount : AssetAmount
+}
+
+type ProcessingOutput = {
+    TxResults : Map<TxHash, TxResult>
+    ChxBalances : Map<ChainiumAddress, ChxBalanceState>
+    Holdings : Map<AccountHash * AssetCode, HoldingState>
+    AccountControllers : Map<AccountHash, ChainiumAddress option>
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Domain Type Logic
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type BlockNumber with
+    static member (+) (BlockNumber n1, BlockNumber n2) =
+        BlockNumber (n1 + n2)
+    static member (+) (BlockNumber n1, n2) =
+        BlockNumber (n1 + n2)
+    static member (-) (BlockNumber n1, BlockNumber n2) =
+        BlockNumber (n1 - n2)
+    static member (-) (BlockNumber n1, n2) =
+        BlockNumber (n1 - n2)
 
 type Nonce with
     static member (+) (Nonce n1, Nonce n2) =
@@ -90,127 +224,8 @@ type AssetAmount with
     static member (/) (AssetAmount a1, a2) =
         AssetAmount (Decimal.Round(a1 / a2, 18))
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Tx
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type TxHash = TxHash of string
-
-type ChxTransferTxAction = {
-    RecipientAddress : ChainiumAddress
-    Amount : ChxAmount
-}
-
-type AssetTransferTxAction = {
-    FromAccountHash : AccountHash
-    ToAccountHash : AccountHash
-    AssetCode : AssetCode
-    Amount : AssetAmount
-}
-
-type AccountControllerChangeTxAction = {
-    AccountHash : AccountHash
-    ControllerAddress : ChainiumAddress
-}
-
-type TxAction =
-    | ChxTransfer of ChxTransferTxAction
-    | AssetTransfer of AssetTransferTxAction
-    | AccountControllerChange of AccountControllerChangeTxAction
-
-type Tx = {
-    TxHash : TxHash
-    Sender : ChainiumAddress
-    Nonce : Nonce
-    Fee : ChxAmount
-    Actions : TxAction list
-}
-with
+type Tx with
     member __.TotalFee = __.Fee * decimal __.Actions.Length
 
-type TxEnvelope = {
-    RawTx : byte[]
-    Signature : Signature
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Block
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type Timestamp = Timestamp of int64 // UNIX Timestamp
-type BlockNumber = BlockNumber of int64
-type BlockHash = BlockHash of string
-type MerkleTreeRoot = MerkleTreeRoot of string
-
-type BlockHeader = {
-    Number : BlockNumber
-    Hash : BlockHash
-    PreviousHash : BlockHash
-    Timestamp : Timestamp
-    Validator : ChainiumAddress // Fee beneficiary
-    TxSetRoot : MerkleTreeRoot
-    TxResultSetRoot : MerkleTreeRoot
-    StateRoot : MerkleTreeRoot
-}
-
-type Block = {
-    Header : BlockHeader
-    TxSet : TxHash list
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Processing
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type TxActionNumber = TxActionNumber of int16
-type TxErrorCode =
-    // DO NOT CHANGE THESE NUMBERS - IT WILL BREAK THE BLOCKS!!!
-    | NonceTooLow = 10s
-    | InsufficientChxBalance = 20s
-    | InsufficientAssetHoldingBalance = 30s
-    | SenderIsNotSourceAccountController = 110s
-    | SenderIsNotAssetController = 120s
-
-type TxError =
-    | TxError of TxErrorCode
-    | TxActionError of TxActionNumber * TxErrorCode
-
-type TxProcessedStatus =
-    | Success
-    | Failure of TxError
-
-type TxStatus =
-    | Pending
-    | Processed of TxProcessedStatus
-
-type TxResult = {
-    Status : TxProcessedStatus
-    BlockNumber : BlockNumber
-}
-
-type PendingTxInfo = {
-    TxHash : TxHash
-    Sender : ChainiumAddress
-    Nonce : Nonce
-    Fee : ChxAmount
-    ActionCount : int16
-    AppearanceOrder : int64
-}
-with
+type PendingTxInfo with
     member __.TotalFee = __.Fee * decimal __.ActionCount
-
-type ChxBalanceState = {
-    Amount : ChxAmount
-    Nonce : Nonce
-}
-
-type HoldingState = {
-    Amount : AssetAmount
-}
-
-type ProcessingOutput = {
-    TxResults : Map<TxHash, TxResult>
-    ChxBalances : Map<ChainiumAddress, ChxBalanceState>
-    Holdings : Map<AccountHash * AssetCode, HoldingState>
-    AccountControllers : Map<AccountHash, ChainiumAddress option>
-}
