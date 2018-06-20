@@ -79,3 +79,10 @@ module Raw =
 
     let getBlock (dataDir : string) (BlockNumber blockNumber) : Result<BlockDto, AppErrors> =
         loadData<BlockDto> dataDir Block (string blockNumber)
+
+    let blockExists (dataDir : string) (BlockNumber blockNumber) =
+        blockNumber
+        |> string
+        |> createFileName Block
+        |> fun fileName -> Path.Combine (dataDir, fileName)
+        |> File.Exists

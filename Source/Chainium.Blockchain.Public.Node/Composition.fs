@@ -22,6 +22,8 @@ module Composition =
 
     let getBlock = Raw.getBlock Config.DataDir
 
+    let blockExists = Raw.blockExists Config.DataDir
+
     // DB
 
     let initDb () = DbInit.init Config.DbEngineType Config.DbConnectionString
@@ -83,6 +85,7 @@ module Composition =
     let initBlockchainState () =
         Workflows.initBlockchainState
             getLastBlockNumber
+            getBlock
             saveBlock
             applyNewState
             Hashing.decode
@@ -92,6 +95,24 @@ module Composition =
             Hashing.zeroAddress
             (ChxAmount Config.GenesisChxSupply)
             (ChainiumAddress Config.GenesisAddress)
+
+    let advanceToLastKnownBlock () =
+        Workflows.advanceToLastKnownBlock
+            getTx
+            Signing.verifySignature
+            Hashing.isValidChainiumAddress
+            getChxBalanceState
+            getHoldingState
+            getAccountController
+            Hashing.decode
+            Hashing.hash
+            Hashing.merkleTree
+            saveTxResult
+            saveBlock
+            applyNewState
+            getLastBlockNumber
+            blockExists
+            getBlock
 
     let propagateTx = Workflows.propagateTx Peers.sendMessage
 

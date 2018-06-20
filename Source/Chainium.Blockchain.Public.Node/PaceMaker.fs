@@ -13,10 +13,18 @@ module PaceMaker =
             do! Async.Sleep(1000)
 
             try
+                match Composition.advanceToLastKnownBlock () with
+                | Ok lastAppliedBlockNumber ->
+                    () // TODO: Handle output properly - i.e. publish events
+                | Error errors ->
+                    for (AppError err) in errors do
+                        Log.error err
+
                 let (Timestamp lastBlockTimestamp) =
                     match Composition.getLastBlockTimestamp () with
                     | Some timestamp -> timestamp
                     | None -> failwith "Blockchain state is not initialized."
+
                 let timeSinceLastBlock = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - lastBlockTimestamp
                 if timeSinceLastBlock >= blockCreationInterval then
                     Composition.createNewBlock ()

@@ -105,9 +105,9 @@ module Workflows =
                         txSet
                         output
 
+                let outputDto = Mapping.outputToDto output
                 let blockDto = Mapping.blockToDto block
                 let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
-                let outputDto = Mapping.outputToDto output
 
                 do! outputDto.TxResults
                     |> Map.toList
@@ -117,14 +117,145 @@ module Workflows =
                     ) (Ok ())
 
                 do! saveBlock blockDto
+
                 do! applyNewState blockInfoDto outputDto
 
-                return { BlockNumber = block.Header.Number }
+                return { BlockCreatedEvent.BlockNumber = block.Header.Number }
             }
             |> Some
 
+    let processBlock
+        getTx
+        verifySignature
+        isValidAddress
+        getChxBalanceStateFromStorage
+        getHoldingStateFromStorage
+        getAccountControllerFromStorage
+        decodeHash
+        createHash
+        createMerkleTree
+        saveTxResult
+        saveBlock
+        applyNewState
+        (block : Block)
+        : Result<BlockProcessedEvent, AppErrors>
+        =
+
+        let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
+        let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
+        let getAccountController = memoize getAccountControllerFromStorage
+
+        let output =
+            block.TxSet
+            |> Processing.processTxSet
+                getTx
+                verifySignature
+                isValidAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                block.Header.Validator
+                block.Header.Number
+
+        let resultingBlock =
+            Blocks.assembleBlock
+                decodeHash
+                createHash
+                createMerkleTree
+                block.Header.Validator
+                block.Header.Number
+                block.Header.Timestamp
+                block.Header.PreviousHash
+                block.TxSet
+                output
+
+        if resultingBlock = block then
+            let outputDto = Mapping.outputToDto output
+            let blockDto = Mapping.blockToDto block
+            let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
+
+            result {
+                do! applyNewState blockInfoDto outputDto
+                return { BlockProcessedEvent.BlockNumber = block.Header.Number }
+            }
+        else
+            let message =
+                block.Header.Number
+                |> fun (BlockNumber n) -> n
+                |> sprintf "Processing of block %i didn't result in expected blockchain state."
+
+            Log.error message
+            Error [AppError message]
+
+    let advanceToLastKnownBlock
+        getTx
+        verifySignature
+        isValidAddress
+        getChxBalanceStateFromStorage
+        getHoldingStateFromStorage
+        getAccountControllerFromStorage
+        decodeHash
+        createHash
+        createMerkleTree
+        saveTxResult
+        saveBlock
+        applyNewState
+        (getLastAppliedBlockNumber : unit -> BlockNumber option)
+        (blockExists : BlockNumber -> bool)
+        (getBlock : BlockNumber -> Result<BlockDto, AppErrors>)
+        =
+
+        let rec processNextBlock (previousBlockNumber : BlockNumber, previousBlockHash : BlockHash) =
+            let nextBlockNumber = previousBlockNumber + 1L
+            if blockExists nextBlockNumber then
+                result {
+                    let! blockDto = getBlock nextBlockNumber
+                    let block = Mapping.blockFromDto blockDto
+                    if Blocks.isValidBlock decodeHash createHash createMerkleTree previousBlockHash block then
+                        let! event =
+                            processBlock
+                                getTx
+                                verifySignature
+                                isValidAddress
+                                getChxBalanceStateFromStorage
+                                getHoldingStateFromStorage
+                                getAccountControllerFromStorage
+                                decodeHash
+                                createHash
+                                createMerkleTree
+                                saveTxResult
+                                saveBlock
+                                applyNewState
+                                block
+
+                        event
+                        |> fun ({BlockNumber = (BlockNumber n)}) -> n
+                        |> Log.infof "Block %i applied"
+
+                        return! processNextBlock (block.Header.Number, block.Header.Hash)
+                    else
+                        let message =
+                            nextBlockNumber
+                            |> fun (BlockNumber n) -> n
+                            |> sprintf "Block %i is not valid."
+
+                        Log.error message
+                        return! Error [AppError message]
+                }
+            else
+                Ok previousBlockNumber
+
+        match getLastAppliedBlockNumber () with
+        | None -> failwith "Blockchain state is not initialized."
+        | Some blockNumber ->
+            getBlock blockNumber
+            >>= (fun lastBlock ->
+                processNextBlock (BlockNumber lastBlock.Header.Number, BlockHash lastBlock.Header.Hash)
+            )
+
     let initBlockchainState
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
+        (getBlock : BlockNumber -> Result<BlockDto, AppErrors>)
         saveBlock
         applyNewState
         decodeHash
@@ -138,15 +269,27 @@ module Workflows =
 
         if getLastAppliedBlockNumber () = None then
             let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress
-            let genesisBlock =
+
+            let genesisBlockDto =
                 Blocks.createGenesisBlock
                     decodeHash createHash createMerkleTree zeroHash zeroAddress genesisState
-            let genesisBlockDto = Mapping.blockToDto genesisBlock
+                |> Mapping.blockToDto
+
+            let genesisBlockExists =
+                match getBlock (BlockNumber 0L) with
+                | Ok genesisBlockDtoFromDisk ->
+                    if genesisBlockDtoFromDisk <> genesisBlockDto then
+                        failwith "Stored genesis block is invalid."
+                    true
+                | _ ->
+                    false
+
             let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto genesisBlockDto.Header
 
             let result =
                 result {
-                    do! saveBlock genesisBlockDto
+                    if not genesisBlockExists then
+                        do! saveBlock genesisBlockDto
                     do! genesisState
                         |> Mapping.outputToDto
                         |> applyNewState blockInfoDto
@@ -154,7 +297,7 @@ module Workflows =
 
             match result with
             | Ok _ ->
-                Log.info "Genesis block created."
+                Log.info "Blockchain state initialized."
             | Error errors ->
                 for AppError e in errors do
                     Log.error e
