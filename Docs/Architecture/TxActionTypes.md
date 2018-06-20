@@ -19,7 +19,7 @@ Transfer CHX action type transfers CHX from one Chainium wallet address to anoth
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| Recipient Address | Chainium Address# | Chainium wallet address on which the CHX token will be transferred |
+| Recipient Address | Chainium Address Hash | Chainium wallet address on which the CHX token will be transferred |
 | Amount | CHX Amount | Number of CHX tokens being transferred |
 
 There is no sender Chainium address in the parameter list since the sender is implicitly known. It is the address submitting the transaction.
@@ -70,9 +70,9 @@ These high-level steps are conducted when executing this transaction type:
 
 | Parameter | Type | Description |
 | --- | --- | --- |
-| From Account | Account# | An account hah selling/sending shares. If it is a technical PO account then the PO rules apply |
-| To Account | Account# | An account hash buying/receiving shares |
-| Asset | Asset # | The hash value of the asset |
+| From Account | AccountHash | An account hah selling/sending shares. If it is a technical PO account then the PO rules apply |
+| To Account | AccountHash | An account hash buying/receiving shares |
+| Asset | AssetHash | The hash value of the asset |
 | Amount | Amount | Number of equities being transferred |
 
 ## Set Account Controller
