@@ -195,11 +195,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to insert block")]
+            | _ -> Error [AppError "Failed to insert block"]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert block")]
+            Error [AppError "Failed to insert block"]
 
     let private updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -219,11 +219,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addBlock conn transaction blockInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update block number")]
+            | _ -> Error [AppError "Failed to update block number"]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to update block number")]
+            Error [AppError "Failed to update block number"]
 
     let private addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -242,11 +242,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to insert CHX balance")]
+            | _ -> Error [AppError "Failed to insert CHX balance"]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert CHX balance")]
+            Error [AppError "Failed to insert CHX balance"]
 
     let private updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -267,11 +267,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addChxBalance conn transaction chxBalanceInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update CHX balance")]
+            | _ -> Error [AppError "Failed to update CHX balance"]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to update CHX balance")]
+            Error [AppError "Failed to update CHX balance"]
 
     let private updateChxBalances
         conn
@@ -316,11 +316,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to insert holding")]
+            | _ -> Error [AppError "Failed to insert holding"]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert holding")]
+            Error [AppError "Failed to insert holding"]
 
     let private updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -342,11 +342,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addHolding conn transaction holdingInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update holding")]
+            | _ -> Error [AppError "Failed to update holding"]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to update holding")]
+            Error [AppError "Failed to update holding"]
 
     let private updateHoldings
         conn
@@ -372,7 +372,8 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok())
 
-    let private singleMessageError message = Error [AppError (message)]
+    let private singleMessageError message = Error [AppError message]
+
     let addAccount
         conn
         transaction
@@ -392,7 +393,7 @@ module Db =
                 "@controllerAddress", accountController.ControllerAddress |> box
             ]
 
-        let error = singleMessageError "Failed to insert Account"
+        let error = singleMessageError "Failed to insert account"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
@@ -422,7 +423,7 @@ module Db =
                 "@accountController", accountController.ControllerAddress |> box
             ]
 
-        let error = singleMessageError "Failed to update Address."
+        let error = singleMessageError "Failed to update account controller address"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addAccount conn transaction accountController
@@ -481,9 +482,9 @@ module Db =
         | Error errors ->
             transaction.Rollback()
             conn.Close()
-            Error [AppError ("Failed to apply new state")]
             for e in errors do
                 Log.error e
+            Error [AppError "Failed to apply new state"]
 
     let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) : ChxBalanceStateDto option =
         let sql =
