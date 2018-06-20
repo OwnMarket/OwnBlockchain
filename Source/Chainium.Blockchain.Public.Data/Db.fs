@@ -478,10 +478,12 @@ module Db =
             transaction.Commit()
             conn.Close()
             Ok ()
-        | _ ->
+        | Error errors ->
             transaction.Rollback()
             conn.Close()
             Error [AppError ("Failed to apply new state")]
+            for e in errors do
+                Log.error e
 
     let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) : ChxBalanceStateDto option =
         let sql =
