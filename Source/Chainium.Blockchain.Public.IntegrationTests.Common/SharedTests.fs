@@ -70,10 +70,10 @@ module SharedTests =
         senderWallet
         (dto : TxDto)
         expectedTx
-        (txHash : SubmitTxResponseDto)
+        (responseDto : SubmitTxResponseDto)
         =
 
-        let fileName = sprintf "Tx_%s" txHash.TxHash
+        let fileName = sprintf "Tx_%s" responseDto.TxHash
         let txFile = Path.Combine(Config.DataDir, fileName)
 
         test <@ txFile |> File.Exists = shouldExist @>
@@ -86,16 +86,7 @@ module SharedTests =
 
             test <@ expectedTx = savedData @>
 
-        let selectStatement =
-            sprintf
-                """
-                SELECT *
-                FROM tx
-                WHERE tx_hash = '%s'
-                """
-                txHash.TxHash
-
-        let transactions = DbTools.query<TxInfoDto> connectionString selectStatement []
+        let transactions = Helper.getTxs connectionString (TxHash responseDto.TxHash)
 
         let actual =
             transactions
@@ -106,10 +97,9 @@ module SharedTests =
             if shouldExist then
                 failwith "Transaction is not stored into database"
         | Some txInfo ->
-            test <@ txHash.TxHash = txInfo.TxHash @>
+            test <@ responseDto.TxHash = txInfo.TxHash @>
             test <@ dto.Fee = txInfo.Fee @>
             test <@ dto.Nonce = txInfo.Nonce @>
-            test <@ txInfo.Status = byte(0) @>
             test <@ txInfo.SenderAddress = (addressToString senderWallet.Address) @>
 
     let transactionSubmitTest engineType connString isValidTransaction =
@@ -191,6 +181,8 @@ module SharedTests =
             let txResultFileName = sprintf "TxResult_%s" txHash
             let expectedTxResultPath = Path.Combine(Config.DataDir, txResultFileName)
             test <@ File.Exists expectedTxResultPath @>
+
+            test <@ Helper.getTxs connString (TxHash txHash) = [] @>
 
     let private numOfUpdatesExecuted connectionString =
         let sql =

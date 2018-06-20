@@ -54,7 +54,6 @@ type TxInfoDto = {
     Nonce : int64
     Fee : decimal
     ActionCount : int16
-    Status : byte
 }
 
 [<CLIMutable>]

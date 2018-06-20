@@ -26,7 +26,6 @@ module Db =
                     "@nonce", txInfoDto.Nonce |> box
                     "@fee", txInfoDto.Fee |> box
                     "@action_count", txInfoDto.ActionCount |> box
-                    "@status", txInfoDto.Status |> box
                 ]
 
             let paramData = dbParams txParams
@@ -64,9 +63,9 @@ module Db =
                 |> List.fold (fun acc (TxHash t) -> acc + sprintf "'%s'," t) ""
             )
 
-        let pattern =
+        let skipConditionPattern =
             if txsToSkipParamValue <> "" then
-                sprintf "AND tx_hash NOT IN (%s)" (txsToSkipParamValue.TrimEnd(','))
+                sprintf "WHERE tx_hash NOT IN (%s)" (txsToSkipParamValue.TrimEnd(','))
             else
                 ""
 
@@ -75,12 +74,11 @@ module Db =
                 """
                 SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
                 FROM tx
-                WHERE status = 0
                 %s
                 ORDER BY fee DESC, tx_id
                 LIMIT @txCountToFetch
                 """
-                pattern
+                skipConditionPattern
 
         let sqlParams =
             [
@@ -112,8 +110,7 @@ module Db =
             """
             SELECT SUM(fee * action_count)
             FROM tx
-            WHERE status = 0
-            AND sender_address = @senderAddress
+            WHERE sender_address = @senderAddress
             """
 
         [
@@ -151,39 +148,35 @@ module Db =
         |> List.tryHead
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
 
-    let private updateTx conn transaction (txHash : string) (txStatus : byte) : Result<unit, AppErrors> =
+    let private removeProcessedTx conn transaction (txHash : string) : Result<unit, AppErrors> =
         let sql =
             """
-            UPDATE tx
-            SET status = @txStatus
+            DELETE FROM tx
             WHERE tx_hash = @txHash
             """
 
         let sqlParams =
             [
                 "@txHash", txHash |> box
-                "@txStatus", txStatus |> box
             ]
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError ("Failed to update transaction")]
+            | _ -> Error [AppError "Failed to remove processed transaction from the pool."]
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError ("Failed to insert update transaction")]
+            Error [AppError "Failed to remove processed transaction from the pool."]
 
-    let private updateTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
+    let private removeProcessedTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
         let foldFn result (txHash, txResult : TxResultDto) =
             result
-            >>= fun _ ->
-                // TODO: Remove conversion when StatusCode type is changed to int16
-                updateTx conn transaction txHash (txResult.Status |> Convert.ToByte)
+            >>= fun _ -> removeProcessedTx conn transaction txHash
 
         txResults
         |> Map.toList
-        |> List.fold foldFn (Ok())
+        |> List.fold foldFn (Ok ())
 
     let private addBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -474,7 +467,7 @@ module Db =
         let transaction = conn.BeginTransaction(Data.IsolationLevel.ReadCommitted)
 
         let result =
-            updateTxs conn transaction state.TxResults
+            removeProcessedTxs conn transaction state.TxResults
             >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
             >>= fun _ -> updateHoldings conn transaction state.Holdings
             >>= fun _ -> updateAccounts conn transaction state.AccountControllers

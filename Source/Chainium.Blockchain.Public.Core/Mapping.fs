@@ -14,11 +14,8 @@ module Mapping =
 
     let txStatusToCode txStatus : byte =
         match txStatus with
-        | Pending -> 0uy
-        | Processed processedStatus ->
-            match processedStatus with
-            | Success -> 1uy
-            | Failure _ -> 2uy
+        | Success -> 1uy
+        | Failure _ -> 2uy
 
     let txEnvelopeFromDto (dto : TxEnvelopeDto) : TxEnvelope =
         {
@@ -65,14 +62,13 @@ module Mapping =
             Actions = dto.Actions |> List.map txActionFromDto
         }
 
-    let txToTxInfoDto status (tx : Tx) : TxInfoDto =
+    let txToTxInfoDto (tx : Tx) : TxInfoDto =
         {
             TxHash = tx.TxHash |> (fun (TxHash h) -> h)
             SenderAddress = tx.Sender |> (fun (ChainiumAddress a) -> a)
             Nonce = tx.Nonce |> (fun (Nonce n) -> n)
             Fee = tx.Fee |> (fun (ChxAmount a) -> a)
             ActionCount = Convert.ToInt16 tx.Actions.Length
-            Status = txStatusToCode status
         }
 
     let pendingTxInfoFromDto (dto : PendingTxInfoDto) : PendingTxInfo =

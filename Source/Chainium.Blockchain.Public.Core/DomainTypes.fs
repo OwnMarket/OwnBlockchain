@@ -122,16 +122,12 @@ type TxError =
     | TxError of TxErrorCode
     | TxActionError of TxActionNumber * TxErrorCode
 
-type TxProcessedStatus =
+type TxStatus =
     | Success
     | Failure of TxError
 
-type TxStatus =
-    | Pending
-    | Processed of TxProcessedStatus
-
 type TxResult = {
-    Status : TxProcessedStatus
+    Status : TxStatus
     BlockNumber : BlockNumber
 }
 

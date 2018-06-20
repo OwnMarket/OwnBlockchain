@@ -34,7 +34,7 @@ module Workflows =
 
             do! saveTx txHash txEnvelopeDto
             do! tx
-                |> Mapping.txToTxInfoDto Pending
+                |> Mapping.txToTxInfoDto
                 |> saveTxToDb
 
             return { TxHash = txHash }

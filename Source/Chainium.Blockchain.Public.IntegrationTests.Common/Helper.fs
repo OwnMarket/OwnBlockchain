@@ -8,6 +8,8 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.Configuration
 open Microsoft.Data.Sqlite
+open Chainium.Blockchain.Public.Core.DomainTypes
+open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Node
 
@@ -79,3 +81,16 @@ module internal Helper =
         config.["BlockCreationWaitingTimeInSeconds"] |> int
 
     let ExpectedPathForFirstBlock = Path.Combine(Config.DataDir,"Block_1")
+
+    let getTxs connectionString (TxHash txHash) =
+        let sql =
+            """
+            SELECT *
+            FROM tx
+            WHERE tx_hash = @txHash
+            """
+        [
+            "@txHash", txHash |> box
+        ]
+        |> DbTools.query<TxInfoDto> connectionString sql
+
