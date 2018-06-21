@@ -47,7 +47,7 @@ module ValidationTests =
         }
 
         let expMessage = AppError "Nonce must be positive."
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -85,12 +85,12 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
         | Error errors ->
-            test <@ errors.Length = 2 @>
+            test <@ errors.Length = 3 @>
 
     [<Fact>]
     let ``Validation.validateTx.basicValidation unknown action type`` () =
@@ -106,7 +106,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -133,7 +133,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -158,7 +158,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -185,7 +185,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -212,7 +212,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -239,7 +239,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -266,7 +266,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -308,7 +308,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t ->
@@ -355,7 +355,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock chAddress txHash tx with
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
         | Ok t ->
             let actual = getTx<SetAccountControllerTxAction> t.Actions.Head
             test <@ AccountHash expected.AccountHash = actual.AccountHash @>
@@ -382,7 +382,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock chAddress txHash tx with
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 2 @>

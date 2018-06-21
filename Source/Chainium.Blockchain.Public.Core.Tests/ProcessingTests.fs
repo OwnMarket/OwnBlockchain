@@ -181,6 +181,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -257,6 +258,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -334,6 +336,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -410,6 +413,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -491,6 +495,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -578,6 +583,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -666,6 +672,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -741,6 +748,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet

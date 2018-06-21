@@ -61,6 +61,7 @@ module Composition =
             getTotalFeeForPendingTxs
             saveTx
             saveTxToDb
+            (ChxAmount Config.MinTxActionFee)
 
     let createNewBlock () =
         Workflows.createNewBlock
@@ -79,6 +80,7 @@ module Composition =
             saveTxResult
             saveBlock
             applyNewState
+            (ChxAmount Config.MinTxActionFee)
             Config.MaxTxCountPerBlock
             (ChainiumAddress Config.ValidatorAddress)
 
@@ -113,6 +115,7 @@ module Composition =
             getLastBlockNumber
             blockExists
             getBlock
+            (ChxAmount Config.GenesisChxSupply)
 
     let propagateTx = Workflows.propagateTx Peers.sendMessage
 

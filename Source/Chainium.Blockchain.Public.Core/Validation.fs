@@ -71,12 +71,14 @@ module Validation =
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private validateTxFields (t : TxDto) =
+    let private validateTxFields (ChxAmount minTxActionFee) (t : TxDto) =
         [
             if t.Nonce <= 0L then
                 yield AppError "Nonce must be positive."
             if t.Fee <= 0M then
                 yield AppError "Fee must be positive."
+            if t.Fee < minTxActionFee then
+                yield AppError "Fee is too low."
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
         ]
@@ -97,11 +99,11 @@ module Validation =
         actions
         |> List.collect validateTxAction
 
-    let validateTx isValidAddress sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        validateTxFields txDto @ validateTxActions isValidAddress txDto.Actions
+    let validateTx isValidAddress minTxActionFee sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
+        validateTxFields minTxActionFee txDto @ validateTxActions isValidAddress txDto.Actions
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
 
-    let validateTxFee
+    let checkIfBalanceCanCoverFees
         getChxBalanceState
         getTotalFeeForPendingTxs
         senderAddress

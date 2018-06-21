@@ -80,6 +80,7 @@ module SubmissionTests =
                 getTotalFeeForPendingTxs
                 saveTx
                 saveTxToDb
+                Helpers.minTxActionFee
                 txEnvelopeDto
 
         // ASSERT

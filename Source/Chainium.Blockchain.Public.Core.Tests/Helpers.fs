@@ -12,6 +12,8 @@ open Chainium.Blockchain.Public.Crypto
 
 module Helpers =
 
+    let minTxActionFee = ChxAmount 0.001M
+
     let addressToString (ChainiumAddress a) = a
 
     let newPendingTxInfo

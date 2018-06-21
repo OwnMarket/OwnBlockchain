@@ -18,6 +18,7 @@ module Workflows =
         getTotalFeeForPendingTxs
         saveTx
         saveTxToDb
+        minTxActionFee
         txEnvelopeDto
         : Result<TxSubmittedEvent, AppErrors>
         =
@@ -28,9 +29,14 @@ module Workflows =
             let txHash = txEnvelope.RawTx |> createHash |> TxHash
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-            let! tx = Validation.validateTx isValidAddress senderAddress txHash txDto
+            let! tx = Validation.validateTx isValidAddress minTxActionFee senderAddress txHash txDto
 
-            do! Validation.validateTxFee getChxBalanceState getTotalFeeForPendingTxs senderAddress tx.TotalFee
+            do!
+                Validation.checkIfBalanceCanCoverFees
+                    getChxBalanceState
+                    getTotalFeeForPendingTxs
+                    senderAddress
+                    tx.TotalFee
 
             do! saveTx txHash txEnvelopeDto
             do! tx
@@ -56,6 +62,7 @@ module Workflows =
         saveTxResult
         saveBlock
         applyNewState
+        minTxActionFee
         maxTxCountPerBlock
         validatorAddress
         : Result<BlockCreatedEvent, AppErrors> option
@@ -90,6 +97,7 @@ module Workflows =
                         getChxBalanceState
                         getHoldingState
                         getAccountController
+                        minTxActionFee
                         validatorAddress
                         blockNumber
 
@@ -137,6 +145,7 @@ module Workflows =
         saveTxResult
         saveBlock
         applyNewState
+        minTxActionFee
         (block : Block)
         : Result<BlockProcessedEvent, AppErrors>
         =
@@ -154,6 +163,7 @@ module Workflows =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                minTxActionFee
                 block.Header.Validator
                 block.Header.Number
 
@@ -203,6 +213,7 @@ module Workflows =
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         (blockExists : BlockNumber -> bool)
         (getBlock : BlockNumber -> Result<BlockDto, AppErrors>)
+        minTxActionFee
         =
 
         let rec processNextBlock (previousBlockNumber : BlockNumber, previousBlockHash : BlockHash) =
@@ -226,6 +237,7 @@ module Workflows =
                                 saveTxResult
                                 saveBlock
                                 applyNewState
+                                minTxActionFee
                                 block
 
                         event
