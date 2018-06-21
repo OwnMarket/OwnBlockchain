@@ -12,9 +12,9 @@ module ValidationTests =
 
     let chAddress = ChainiumAddress "CHMHABow7Liry6TqswwzxHnMfcYNbrJBAtp"
     let txHash = TxHash "SampleHash"
-    let chxTransfer = "ChxTransfer"
-    let assetTransfer = "AssetTransfer"
-    let controllerChange = "AccountControllerChange"
+    let transferChx = "TransferChx"
+    let transferAsset = "TransferAsset"
+    let controllerChange = "SetAccountController"
 
     [<Fact>]
     let ``Validation.validateTx.basicValidation single validation error`` () =
@@ -25,16 +25,16 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = chxTransfer
+                        ActionType = transferChx
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress =
+                                TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 20M
                             }
                     }
                     {
-                        ActionType = assetTransfer
+                        ActionType = transferAsset
                         ActionData =
                             {
                                 FromAccount = "A"
@@ -64,16 +64,16 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = chxTransfer
+                        ActionType = transferChx
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress =
+                                TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 20M
                             }
                     }
                     {
-                        ActionType = assetTransfer
+                        ActionType = transferAsset
                         ActionData =
                             {
                                 FromAccount = "A"
@@ -114,7 +114,7 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
-    let ``Validation.validateTx.chxTransfer invalid Amount`` () =
+    let ``Validation.validateTx.transferChx invalid Amount`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
             Nonce = 10L
@@ -122,10 +122,10 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = chxTransfer
+                        ActionType = transferChx
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress =
+                                TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 0M
                             }
@@ -141,17 +141,17 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
-    let ``Validation.validateTx.chxTransfer invalid RecipientAddress`` () =
+    let ``Validation.validateTx.transferChx invalid RecipientAddress`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
             Actions =
                 [
                     {
-                        ActionType = chxTransfer
+                        ActionType = transferChx
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress = ""
+                                TransferChxTxActionDto.RecipientAddress = ""
                                 Amount = 10M
                             }
                     }
@@ -166,14 +166,14 @@ module ValidationTests =
             test <@ errors.Length > 0 @>
 
     [<Fact>]
-    let ``Validation.validateTx.assetTransfer invalid FromAccount`` () =
+    let ``Validation.validateTx.transferAsset invalid FromAccount`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
             Actions =
                 [
                     {
-                        ActionType = assetTransfer
+                        ActionType = transferAsset
                         ActionData =
                             {
                                 FromAccount = ""
@@ -193,14 +193,14 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
-    let ``Validation.validateTx.assetTransfer invalid ToAccount`` () =
+    let ``Validation.validateTx.transferAsset invalid ToAccount`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
             Actions =
                 [
                     {
-                        ActionType = assetTransfer
+                        ActionType = transferAsset
                         ActionData =
                             {
                                 FromAccount = "A"
@@ -220,14 +220,14 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
-    let ``Validation.validateTx.assetTransfer invalid Asset`` () =
+    let ``Validation.validateTx.transferAsset invalid Asset`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
             Actions =
                 [
                     {
-                        ActionType = assetTransfer
+                        ActionType = transferAsset
                         ActionData =
                             {
                                 FromAccount = "A"
@@ -247,14 +247,14 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
-    let ``Validation.validateTx.assetTransfer invalid Amount`` () =
+    let ``Validation.validateTx.transferAsset invalid Amount`` () =
         let testTx = {
             Nonce = 10L
             Fee = 1M
             Actions =
                 [
                     {
-                        ActionType = assetTransfer
+                        ActionType = transferAsset
                         ActionData =
                             {
                                 FromAccount = "A"
@@ -274,9 +274,9 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     let getTx<'T> = function
-        | ChxTransfer action -> box action :?> 'T
-        | AssetTransfer action -> box action :?> 'T
-        | AccountControllerChange action -> box action :?> 'T
+        | TransferChx action -> box action :?> 'T
+        | TransferAsset action -> box action :?> 'T
+        | SetAccountController action -> box action :?> 'T
 
     [<Fact>]
     let ``Validation.validateTx validate action`` () =
@@ -287,16 +287,16 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = chxTransfer
+                        ActionType = transferChx
                         ActionData =
                             {
-                                ChxTransferTxActionDto.RecipientAddress =
+                                TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
                                 Amount = 10M
                             }
                     }
                     {
-                        ActionType = assetTransfer
+                        ActionType = transferAsset
                         ActionData =
                             {
                                 FromAccount = "A"
@@ -312,11 +312,11 @@ module ValidationTests =
 
         match result with
         | Ok t ->
-            let expectedChx = (testTx.Actions.[0].ActionData :?> ChxTransferTxActionDto)
-            let actualChx = t.Actions.[0] |> getTx<ChxTransferTxAction>
+            let expectedChx = (testTx.Actions.[0].ActionData :?> TransferChxTxActionDto)
+            let actualChx = t.Actions.[0] |> getTx<TransferChxTxAction>
 
-            let expAsset = (testTx.Actions.[1].ActionData :?> AssetTransferTxActionDto)
-            let actualAsset = t.Actions.[1] |> getTx<AssetTransferTxAction>
+            let expAsset = (testTx.Actions.[1].ActionData :?> TransferAssetTxActionDto)
+            let actualAsset = t.Actions.[1] |> getTx<TransferAssetTxAction>
 
             test <@ t.Fee = ChxAmount testTx.Fee @>
             test <@ t.Nonce = Nonce testTx.Nonce @>
@@ -336,10 +336,10 @@ module ValidationTests =
         String.IsNullOrWhiteSpace(item) |> not
 
     [<Fact>]
-    let ``Validation.validateTx.accountControllerChange validate action`` () =
+    let ``Validation.validateTx.setAccountController validate action`` () =
         let expected =
             {
-                AccountControllerChangeTxActionDto.AccountHash = "A"
+                SetAccountControllerTxActionDto.AccountHash = "A"
                 ControllerAddress = chAddress |> fun (ChainiumAddress a) -> a
             }
 
@@ -357,16 +357,16 @@ module ValidationTests =
 
         match Validation.validateTx isValidAddressMock chAddress txHash tx with
         | Ok t ->
-            let actual = getTx<AccountControllerChangeTxAction> t.Actions.Head
+            let actual = getTx<SetAccountControllerTxAction> t.Actions.Head
             test <@ AccountHash expected.AccountHash = actual.AccountHash @>
             test <@ ChainiumAddress expected.ControllerAddress = actual.ControllerAddress @>
         | Error e -> failwithf "%A" e
 
     [<Fact>]
-    let ``Validation.validateTx.accountControllerChange invalid action`` () =
+    let ``Validation.validateTx.setAccountController invalid action`` () =
         let expected =
             {
-                AccountControllerChangeTxActionDto.AccountHash = ""
+                SetAccountControllerTxActionDto.AccountHash = ""
                 ControllerAddress = ""
             }
 

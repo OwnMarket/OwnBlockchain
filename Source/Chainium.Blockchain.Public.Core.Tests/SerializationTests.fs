@@ -17,7 +17,7 @@ module SerializationTests =
                 Actions =
                     [
                         {
-                            ActionType = "ChxTransfer"
+                            ActionType = "TransferChx"
                             ActionData =
                                 {
                                     RecipientAddress = "Recipient"
@@ -25,7 +25,7 @@ module SerializationTests =
                                 }
                         }
                         {
-                            ActionType = "AssetTransfer"
+                            ActionType = "TransferAsset"
                             ActionData =
                                 {
                                     FromAccount = "A"
@@ -60,14 +60,14 @@ module SerializationTests =
                 "Fee": 20,
                 "Actions": [
                     {
-                        "ActionType": "ChxTransfer",
+                        "ActionType": "TransferChx",
                         "ActionData": {
                             "RecipientAddress": "Recipient",
                             "Amount": 20.0
                         }
                     },
                     {
-                        "ActionType": "AssetTransfer",
+                        "ActionType": "TransferAsset",
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
@@ -97,10 +97,10 @@ module SerializationTests =
                 |> List.filter(fun a -> a.ActionData.GetType() = transType)
                 |> List.length
 
-            let chxActions = numOfActionsByType typeof<ChxTransferTxActionDto>
+            let chxActions = numOfActionsByType typeof<TransferChxTxActionDto>
             test <@ chxActions = 1 @>
 
-            let assetActions = numOfActionsByType typeof<AssetTransferTxActionDto>
+            let assetActions = numOfActionsByType typeof<TransferAssetTxActionDto>
             test <@ assetActions = 1 @>
 
             let invalidActions = numOfActionsByType typeof<string>
@@ -117,14 +117,14 @@ module SerializationTests =
                 "Fee": 20,
                 "Actions": [
                     {
-                        "ActionType": "ChxTransfer",
+                        "ActionType": "TransferChx",
                         "ActionData": {
                             "Recipient_Address": "Recipient",
                             "_Amount": 20.0
                         }
                     },
                     {
-                        "ActionType": "AssetTransfer",
+                        "ActionType": "TransferAsset",
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
@@ -154,10 +154,10 @@ module SerializationTests =
                 |> List.filter(fun a -> a.ActionData.GetType() = transType)
                 |> List.length
 
-            let chxActions = numOfActionsByType typeof<ChxTransferTxActionDto>
+            let chxActions = numOfActionsByType typeof<TransferChxTxActionDto>
             test <@ chxActions = 1 @>
 
-            let assetActions = numOfActionsByType typeof<AssetTransferTxActionDto>
+            let assetActions = numOfActionsByType typeof<TransferAssetTxActionDto>
             test <@ assetActions = 1 @>
 
             let invalidActions = numOfActionsByType typeof<string>
@@ -174,7 +174,7 @@ module SerializationTests =
                 "Fee": 20,
                 "Actions":
                     {
-                        "ActionType": "AssetTransfer",
+                        "ActionType": "TransferAsset",
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
@@ -202,13 +202,13 @@ module SerializationTests =
             test <@ appErrors.Length > 0 @>
 
     [<Fact>]
-    let ``Serialization.deserializeTx.accountControllerChange`` () =
+    let ``Serialization.deserializeTx.setAccountController`` () =
         let expectedTransaction =
             {
-                ActionType = "AccountControllerChange"
+                ActionType = "SetAccountController"
                 ActionData =
                     {
-                        AccountControllerChangeTxActionDto.AccountHash = "FooAccount"
+                        SetAccountControllerTxActionDto.AccountHash = "FooAccount"
                         ControllerAddress = "FooController"
                     }
             }

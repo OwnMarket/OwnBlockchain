@@ -31,7 +31,7 @@ module Validation =
     // TxAction validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private validateChxTransfer isValidAddress (action : ChxTransferTxActionDto) =
+    let private validateTransferChx isValidAddress (action : TransferChxTxActionDto) =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
                 yield AppError "Recipient address is not present."
@@ -43,7 +43,7 @@ module Validation =
                 yield AppError "Chx transfer amount must be larger than zero."
         ]
 
-    let private validateAssetTransfer (action : AssetTransferTxActionDto) =
+    let private validateTransferAsset (action : TransferAssetTxActionDto) =
         [
             if action.FromAccount.IsNullOrWhiteSpace() then
                 yield AppError "FromAccount value is not valid."
@@ -58,7 +58,7 @@ module Validation =
                 yield AppError "Asset amount must be larger than zero"
         ]
 
-    let private validateAccountControllerChange isValidAddress (action : AccountControllerChangeTxActionDto) =
+    let private validateSetAccountController isValidAddress (action : SetAccountControllerTxActionDto) =
         [
             if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
                 yield AppError "Controller address is not valid."
@@ -84,12 +84,12 @@ module Validation =
     let private validateTxActions isValidAddress (actions : TxActionDto list) =
         let validateTxAction (action : TxActionDto) =
             match action.ActionData with
-            | :? ChxTransferTxActionDto as a ->
-                validateChxTransfer isValidAddress a
-            | :? AssetTransferTxActionDto as a ->
-                validateAssetTransfer a
-            | :? AccountControllerChangeTxActionDto as a ->
-                validateAccountControllerChange isValidAddress a
+            | :? TransferChxTxActionDto as a ->
+                validateTransferChx isValidAddress a
+            | :? TransferAssetTxActionDto as a ->
+                validateTransferAsset a
+            | :? SetAccountControllerTxActionDto as a ->
+                validateSetAccountController isValidAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

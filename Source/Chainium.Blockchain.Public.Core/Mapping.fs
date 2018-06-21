@@ -30,26 +30,26 @@ module Mapping =
 
     let txActionFromDto (action : TxActionDto) =
         match action.ActionData with
-        | :? ChxTransferTxActionDto as a ->
+        | :? TransferChxTxActionDto as a ->
             {
-                ChxTransferTxAction.RecipientAddress = ChainiumAddress a.RecipientAddress
+                TransferChxTxAction.RecipientAddress = ChainiumAddress a.RecipientAddress
                 Amount = ChxAmount a.Amount
             }
-            |> ChxTransfer
-        | :? AssetTransferTxActionDto as a ->
+            |> TransferChx
+        | :? TransferAssetTxActionDto as a ->
             {
                 FromAccountHash = AccountHash a.FromAccount
                 ToAccountHash = AccountHash a.ToAccount
                 AssetCode = AssetCode a.AssetCode
                 Amount = AssetAmount a.Amount
             }
-            |> AssetTransfer
-        | :? AccountControllerChangeTxActionDto as a ->
+            |> TransferAsset
+        | :? SetAccountControllerTxActionDto as a ->
             {
-                AccountControllerChangeTxAction.AccountHash = AccountHash a.AccountHash
+                SetAccountControllerTxAction.AccountHash = AccountHash a.AccountHash
                 ControllerAddress = ChainiumAddress a.ControllerAddress
             }
-            |> AccountControllerChange
+            |> SetAccountController
         | _ ->
             failwith "Invalid action type to map."
 

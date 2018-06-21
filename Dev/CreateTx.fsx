@@ -9,7 +9,7 @@ open System.Text
     Fee: 1,
     Actions: [
         {
-            ActionType: "ChxTransfer",
+            ActionType: "TransferChx",
             ActionData: {
                 RecipientAddress: "CHKj2rtVz5z6Pyy1bpH8GaEyhTX7eabQzdw",
                 Amount: 10

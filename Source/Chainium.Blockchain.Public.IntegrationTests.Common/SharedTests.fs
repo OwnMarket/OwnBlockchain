@@ -109,11 +109,11 @@ module SharedTests =
 
         let action =
             {
-                ActionType = "ChxTransfer"
+                ActionType = "TransferChx"
                 ActionData =
                     {
                         RecipientAddress = receiverWallet.Address |> addressToString
-                        ChxTransferTxActionDto.Amount = 10M
+                        TransferChxTxActionDto.Amount = 10M
                     }
             }
 
@@ -152,11 +152,11 @@ module SharedTests =
                     // prepare transaction
                     let action =
                         {
-                            ActionType = "ChxTransfer"
+                            ActionType = "TransferChx"
                             ActionData =
                                 {
                                     RecipientAddress = receiverWallet.Address |> addressToString
-                                    ChxTransferTxActionDto.Amount = amt
+                                    TransferChxTxActionDto.Amount = amt
                                 }
                         }
 
@@ -288,10 +288,10 @@ module SharedTests =
         // transaction preparation
         let tx =
             {
-                ActionType = "AccountControllerChange"
+                ActionType = "SetAccountController"
                 ActionData =
                     {
-                        AccountControllerChangeTxActionDto.AccountHash = account.Address |> addressToString
+                        SetAccountControllerTxActionDto.AccountHash = account.Address |> addressToString
                         ControllerAddress = newController.Address |> addressToString
                     }
             }

@@ -7,13 +7,13 @@ open System
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 [<CLIMutable>]
-type ChxTransferTxActionDto = {
+type TransferChxTxActionDto = {
     RecipientAddress : string
     Amount : decimal
 }
 
 [<CLIMutable>]
-type AssetTransferTxActionDto = {
+type TransferAssetTxActionDto = {
     FromAccount : string
     ToAccount : string
     AssetCode : string
@@ -21,7 +21,7 @@ type AssetTransferTxActionDto = {
 }
 
 [<CLIMutable>]
-type AccountControllerChangeTxActionDto = {
+type SetAccountControllerTxActionDto = {
     AccountHash : string
     ControllerAddress : string
 }

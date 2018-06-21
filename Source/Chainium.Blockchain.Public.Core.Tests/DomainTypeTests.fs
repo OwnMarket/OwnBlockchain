@@ -21,12 +21,12 @@ module DomainTypesTests =
                 Fee = ChxAmount 2M
                 Actions =
                     [
-                        ChxTransfer {
-                            ChxTransferTxAction.RecipientAddress = ChainiumAddress ""
+                        TransferChx {
+                            TransferChxTxAction.RecipientAddress = ChainiumAddress ""
                             Amount = ChxAmount 0M
                         }
-                        ChxTransfer {
-                            ChxTransferTxAction.RecipientAddress = ChainiumAddress ""
+                        TransferChx {
+                            TransferChxTxAction.RecipientAddress = ChainiumAddress ""
                             Amount = ChxAmount 0M
                         }
                     ]

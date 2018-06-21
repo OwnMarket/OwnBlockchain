@@ -120,11 +120,11 @@ module ProcessingTests =
         test <@ txHashes = ["Tx6"; "Tx1"; "Tx3"; "Tx5"; "Tx2"] @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // ChxTransfer
+    // TransferChx
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet ChxTransfer`` () =
+    let ``Processing.processTxSet TransferChx`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -146,7 +146,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "ChxTransfer"
+                    ActionType = "TransferChx"
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
@@ -200,7 +200,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChxTransfer with insufficient balance`` () =
+    let ``Processing.processTxSet TransferChx with insufficient balance`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -222,7 +222,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "ChxTransfer"
+                    ActionType = "TransferChx"
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
@@ -277,7 +277,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChxTransfer with insufficient balance to cover fee`` () =
+    let ``Processing.processTxSet TransferChx with insufficient balance to cover fee`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -299,7 +299,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "ChxTransfer"
+                    ActionType = "TransferChx"
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
@@ -354,7 +354,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChxTransfer with insufficient balance to cover fee - simulated invalid state`` () =
+    let ``Processing.processTxSet TransferChx with insufficient balance to cover fee - simulated invalid state`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -376,7 +376,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "ChxTransfer"
+                    ActionType = "TransferChx"
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
@@ -420,11 +420,11 @@ module ProcessingTests =
             (fun ex -> <@ ex.Message.StartsWith "Cannot process validator reward" @>)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // AssetTransfer
+    // TransferAsset
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet AssetTransfer`` () =
+    let ``Processing.processTxSet TransferAsset`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -454,7 +454,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "AssetTransfer"
+                    ActionType = "TransferAsset"
                     ActionData =
                         {
                             FromAccount = senderAccountHash |> fun (AccountHash h) -> h
@@ -511,7 +511,7 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetCode].Amount = recipientAssetBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet AssetTransfer with insufficient balance`` () =
+    let ``Processing.processTxSet TransferAsset with insufficient balance`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -541,7 +541,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "AssetTransfer"
+                    ActionType = "TransferAsset"
                     ActionData =
                         {
                             FromAccount = senderAccountHash |> fun (AccountHash h) -> h
@@ -601,13 +601,13 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetCode].Amount = recipientAssetBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // AccountControllerChange
+    // SetAccountController
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Theory>]
     [<InlineData ("None")>]
     [<InlineData ("Sender")>]
-    let ``Processing.processTxSet AccountControllerChange`` (currentControllerCase) =
+    let ``Processing.processTxSet SetAccountController`` (currentControllerCase) =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -628,7 +628,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "AccountControllerChange"
+                    ActionType = "SetAccountController"
                     ActionData =
                         {
                             AccountHash = accountHash |> fun (AccountHash h) -> h
@@ -684,7 +684,7 @@ module ProcessingTests =
         test <@ output.AccountControllers.[accountHash] = Some newControllerWallet.Address @>
 
     [<Fact>]
-    let ``Processing.processTxSet AccountControllerChange fails if sender not current controller`` () =
+    let ``Processing.processTxSet SetAccountController fails if sender not current controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -706,7 +706,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "AccountControllerChange"
+                    ActionType = "SetAccountController"
                     ActionData =
                         {
                             AccountHash = accountHash |> fun (AccountHash h) -> h

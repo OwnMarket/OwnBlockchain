@@ -28,7 +28,7 @@ module SubmissionTests =
         let txHash, txEnvelopeDto =
             [
                 {
-                    ActionType = "ChxTransfer"
+                    ActionType = "TransferChx"
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
@@ -36,7 +36,7 @@ module SubmissionTests =
                         }
                 } :> obj
                 {
-                    ActionType = "ChxTransfer"
+                    ActionType = "TransferChx"
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a

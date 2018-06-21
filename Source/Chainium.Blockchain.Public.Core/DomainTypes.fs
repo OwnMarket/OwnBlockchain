@@ -44,27 +44,27 @@ type AssetAmount = AssetAmount of decimal
 
 type TxHash = TxHash of string
 
-type ChxTransferTxAction = {
+type TransferChxTxAction = {
     RecipientAddress : ChainiumAddress
     Amount : ChxAmount
 }
 
-type AssetTransferTxAction = {
+type TransferAssetTxAction = {
     FromAccountHash : AccountHash
     ToAccountHash : AccountHash
     AssetCode : AssetCode
     Amount : AssetAmount
 }
 
-type AccountControllerChangeTxAction = {
+type SetAccountControllerTxAction = {
     AccountHash : AccountHash
     ControllerAddress : ChainiumAddress
 }
 
 type TxAction =
-    | ChxTransfer of ChxTransferTxAction
-    | AssetTransfer of AssetTransferTxAction
-    | AccountControllerChange of AccountControllerChangeTxAction
+    | TransferChx of TransferChxTxAction
+    | TransferAsset of TransferAssetTxAction
+    | SetAccountController of SetAccountControllerTxAction
 
 type Tx = {
     TxHash : TxHash

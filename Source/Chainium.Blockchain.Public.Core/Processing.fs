@@ -98,10 +98,10 @@ module Processing =
     // Action Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let processChxTransferTxAction
+    let processTransferChxTxAction
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
-        (action : ChxTransferTxAction)
+        (action : TransferChxTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
@@ -121,10 +121,10 @@ module Processing =
             )
             Ok state
 
-    let processAssetTransferTxAction
+    let processTransferAssetTxAction
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
-        (action : AssetTransferTxAction)
+        (action : TransferAssetTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
@@ -150,10 +150,10 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
 
-    let processAccountControllerChangeTxAction
+    let processSetAccountControllerTxAction
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
-        (action : AccountControllerChangeTxAction)
+        (action : SetAccountControllerTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
@@ -302,17 +302,17 @@ module Processing =
 
     let processValidatorReward (tx : Tx) validator (state : ProcessingState) =
         {
-            ChxTransferTxAction.RecipientAddress = validator
+            TransferChxTxAction.RecipientAddress = validator
             Amount = tx.TotalFee
         }
-        |> processChxTransferTxAction state tx.Sender
+        |> processTransferChxTxAction state tx.Sender
         |> Result.mapError TxError
 
     let processTxAction (senderAddress : ChainiumAddress) (action : TxAction) (state : ProcessingState) =
         match action with
-        | ChxTransfer action -> processChxTransferTxAction state senderAddress action
-        | AssetTransfer action -> processAssetTransferTxAction state senderAddress action
-        | AccountControllerChange action -> processAccountControllerChangeTxAction state senderAddress action
+        | TransferChx action -> processTransferChxTxAction state senderAddress action
+        | TransferAsset action -> processTransferAssetTxAction state senderAddress action
+        | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
 
     let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
         actions
