@@ -9,13 +9,15 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module Db =
 
-    let private dbParams (paramsList : (string * obj) list) =
-        let paramsString =
-            paramsList
-            |> List.fold (fun acc (nm, x) -> sprintf "%s, %s" nm acc) ""
+    let private createInsertParams (parameters : (string * obj) list) =
+        let parameterNames =
+            parameters
+            |> List.map fst
+            |> fun names -> String.Join (", ", names)
 
-        let paramNames = paramsString.Trim([| ','; ' ' |])
-        (paramNames, paramNames.Replace("@", ""))
+        let columnNames = parameterNames.Replace("@", "")
+
+        (parameterNames, columnNames)
 
     let saveTx (dbConnectionString : string) (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
         try
@@ -28,7 +30,7 @@ module Db =
                     "@action_count", txInfoDto.ActionCount |> box
                 ]
 
-            let paramData = dbParams txParams
+            let paramData = createInsertParams txParams
 
             let insertSql =
                 sprintf
