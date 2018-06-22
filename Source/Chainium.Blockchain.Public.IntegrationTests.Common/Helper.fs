@@ -81,16 +81,3 @@ module internal Helper =
         config.["BlockCreationWaitingTimeInSeconds"] |> int
 
     let ExpectedPathForFirstBlock = Path.Combine(Config.DataDir,"Block_1")
-
-    let getTxs connectionString (TxHash txHash) =
-        let sql =
-            """
-            SELECT *
-            FROM tx
-            WHERE tx_hash = @txHash
-            """
-        [
-            "@txHash", txHash |> box
-        ]
-        |> DbTools.query<TxInfoDto> connectionString sql
-

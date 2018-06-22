@@ -90,7 +90,7 @@ module Db =
     let getTx (dbConnectionString : string) (TxHash txHash) : TxInfoDto option =
         let sql =
             """
-            SELECT tx_hash, sender_address, nonce, fee, action_count, status
+            SELECT tx_hash, sender_address, nonce, fee, action_count
             FROM tx
             WHERE tx_hash = @txHash
             """

@@ -86,11 +86,7 @@ module SharedTests =
 
             test <@ expectedTx = savedData @>
 
-        let transactions = Helper.getTxs connectionString (TxHash responseDto.TxHash)
-
-        let actual =
-            transactions
-            |> List.tryHead
+        let actual = Db.getTx connectionString (TxHash responseDto.TxHash)
 
         match actual with
         | None ->
@@ -182,7 +178,7 @@ module SharedTests =
             let expectedTxResultPath = Path.Combine(Config.DataDir, txResultFileName)
             test <@ File.Exists expectedTxResultPath @>
 
-            test <@ Helper.getTxs connString (TxHash txHash) = [] @>
+            test <@ Db.getTx connString (TxHash txHash) = None @>
 
     let private numOfUpdatesExecuted connectionString =
         let sql =
