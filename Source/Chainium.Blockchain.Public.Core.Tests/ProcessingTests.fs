@@ -172,6 +172,9 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -181,6 +184,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -249,6 +253,9 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -258,6 +265,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -327,6 +335,9 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -336,6 +347,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -405,6 +417,9 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
+
         let processTxSet () =
             Processing.processTxSet
                 getTx
@@ -413,6 +428,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -486,6 +502,9 @@ module ProcessingTests =
         let getAccountController _ =
             Some senderWallet.Address
 
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -495,6 +514,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -574,6 +594,9 @@ module ProcessingTests =
         let getAccountController _ =
             Some senderWallet.Address
 
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -583,6 +606,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -661,7 +685,10 @@ module ProcessingTests =
             match currentControllerCase with
             | "None" -> None
             | "Sender" -> Some senderWallet.Address
-            | c -> failwithf "Unhandled controller code: %s" c
+            | c -> failwithf "Unhandled account controller case: %s" c
+
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
 
         // ACT
         let output =
@@ -672,6 +699,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -739,6 +767,9 @@ module ProcessingTests =
         let getAccountController _ =
             Some currentControllerWallet.Address
 
+        let getAssetController _ =
+            failwith "getAssetController should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -748,6 +779,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
+                getAssetController
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -768,3 +800,174 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.AccountControllers.[accountHash] = Some currentControllerWallet.Address @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SetAssetController
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Theory>]
+    [<InlineData ("None")>]
+    [<InlineData ("Sender")>]
+    let ``Processing.processTxSet SetAssetController`` (currentControllerCase) =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let newControllerWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "Acc1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetAssetController"
+                    ActionData =
+                        {
+                            AssetHash = assetHash |> fun (AssetHash h) -> h
+                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        let getAssetController _ =
+            match currentControllerCase with
+            | "None" -> None
+            | "Sender" -> Some senderWallet.Address
+            | c -> failwithf "Unhandled asset controller case: %s" c
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                getAssetController
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let assetController = newControllerWallet.Address
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.AssetControllers.[assetHash] = Some newControllerWallet.Address @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetAssetController fails if sender not current controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let currentControllerWallet = Signing.generateWallet ()
+        let newControllerWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "Acc1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetAssetController"
+                    ActionData =
+                        {
+                            AssetHash = assetHash |> fun (AssetHash h) -> h
+                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        let getAssetController _ =
+            Some currentControllerWallet.Address
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                getAssetController
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedTxStatus =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.AssetControllers.[assetHash] = Some currentControllerWallet.Address @>

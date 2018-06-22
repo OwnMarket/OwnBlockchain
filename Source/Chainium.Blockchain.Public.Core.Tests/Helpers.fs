@@ -16,6 +16,12 @@ module Helpers =
 
     let addressToString (ChainiumAddress a) = a
 
+    let extractActionData<'T> = function
+        | TransferChx action -> box action :?> 'T
+        | TransferAsset action -> box action :?> 'T
+        | SetAccountController action -> box action :?> 'T
+        | SetAssetController action -> box action :?> 'T
+
     let newPendingTxInfo
         (txHash : TxHash)
         (senderAddress : ChainiumAddress)

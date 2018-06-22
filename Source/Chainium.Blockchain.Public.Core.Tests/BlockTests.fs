@@ -158,12 +158,20 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let assetControllers =
+            [
+                AssetHash "EEEE", ChainiumAddress "FFFF" |> Some
+                AssetHash "GGGG", ChainiumAddress "HHHH" |> Some
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
                 AccountControllers = accountControllers
+                AssetControllers = assetControllers
             }
 
         let txSetRoot = "AAABBBCCC"
@@ -184,6 +192,8 @@ module BlocksTests =
                 "FFFGGG...B............" // Holding balance 2
                 "AAAABBBB" // Account controller 1
                 "CCCCDDDD" // Account controller 2
+                "EEEEFFFF" // Asset controller 1
+                "GGGGHHHH" // Asset controller 2
             ]
             |> String.Concat
 
@@ -281,12 +291,20 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let assetControllers =
+            [
+                AssetHash "EEEE", ChainiumAddress "FFFF" |> Some
+                AssetHash "GGGG", ChainiumAddress "HHHH" |> Some
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
                 AccountControllers = accountControllers
+                AssetControllers = assetControllers
             }
 
         // ACT
@@ -339,11 +357,15 @@ module BlocksTests =
                 accountControllers
                 |> Map.toList
                 |> List.map (Blocks.createAccountControllerStateHash Hashing.decode Hashing.hash)
+
+                assetControllers
+                |> Map.toList
+                |> List.map (Blocks.createAssetControllerStateHash Hashing.decode Hashing.hash)
             ]
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 6 true @>
+        test <@ stateMerkleProofs = List.replicate 8 true @>
 
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -406,12 +428,20 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let assetControllers =
+            [
+                AssetHash "EEEE", ChainiumAddress "FFFF" |> Some
+                AssetHash "GGGG", ChainiumAddress "HHHH" |> Some
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
                 AccountControllers = accountControllers
+                AssetControllers = assetControllers
             }
 
         let assembledBlock =

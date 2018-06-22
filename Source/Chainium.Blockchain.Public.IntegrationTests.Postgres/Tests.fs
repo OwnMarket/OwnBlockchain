@@ -32,5 +32,9 @@ module Tests =
         SharedTests.getAccountControllerTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
-    let ``TransactionProcessing - change account controller`` () =
-        SharedTests.changeAccountControllerTest Config.DbEngineType Config.DbConnectionString
+    let ``TransactionProcessing - set account controller`` () =
+        SharedTests.setAccountControllerTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
+    let ``TransactionProcessing - set asset controller`` () =
+        SharedTests.setAssetControllerTest Config.DbEngineType Config.DbConnectionString

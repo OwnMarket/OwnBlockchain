@@ -419,7 +419,7 @@ module Db =
 
         chxBalances
         |> Map.toList
-        |> List.fold foldFn (Ok())
+        |> List.fold foldFn (Ok ())
 
     let private addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -494,7 +494,7 @@ module Db =
 
         holdings
         |> Map.toList
-        |> List.fold foldFn (Ok())
+        |> List.fold foldFn (Ok ())
 
     let private addAccount
         conn
@@ -563,19 +563,100 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (accountHash, (controllerChange : AccountControllerStateDto)) =
+        let foldFn result (accountHash, (state : AccountControllerStateDto)) =
             result
             >>= (fun _ ->
                 {
                     AccountHash = accountHash
-                    ControllerAddress = controllerChange.ControllerAddress
+                    ControllerAddress = state.ControllerAddress
                 }
                 |> updateAccount conn transaction
             )
 
         accountControllers
         |> Map.toList
-        |> List.fold foldFn (Ok())
+        |> List.fold foldFn (Ok ())
+
+    let private addAsset
+        conn
+        transaction
+        (assetController : AssetControllerDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            INSERT INTO asset (asset_hash, controller_address)
+            VALUES (@assetHash, @controllerAddress)
+            """
+
+        let sqlParams =
+            [
+                "@assetHash", assetController.AssetHash |> box
+                "@controllerAddress", assetController.ControllerAddress |> box
+            ]
+
+        let error = Result.appError "Failed to insert asset"
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> error
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            error
+
+    let private updateAsset
+        conn
+        transaction
+        (assetController : AssetControllerDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            UPDATE asset
+            SET controller_address = @assetController
+            WHERE asset_hash = @assetHash
+            """
+
+        let sqlParams =
+            [
+                "@assetHash", assetController.AssetHash |> box
+                "@assetController", assetController.ControllerAddress |> box
+            ]
+
+        let error = Result.appError "Failed to update asset controller address"
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addAsset conn transaction assetController
+            | 1 -> Ok ()
+            | _ -> error
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            error
+
+    let private updateAssets
+        (conn : DbConnection)
+        (transaction : DbTransaction)
+        (assetControllers : Map<string, AssetControllerStateDto>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result (assetHash, (state : AssetControllerStateDto)) =
+            result
+            >>= (fun _ ->
+                {
+                    AssetHash = assetHash
+                    ControllerAddress = state.ControllerAddress
+                }
+                |> updateAsset conn transaction
+            )
+
+        assetControllers
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
 
     let applyNewState
         (dbConnectionString : string)
@@ -594,10 +675,11 @@ module Db =
             >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
             >>= fun _ -> updateHoldings conn transaction state.Holdings
             >>= fun _ -> updateAccounts conn transaction state.AccountControllers
+            >>= fun _ -> updateAssets conn transaction state.AssetControllers
             >>= fun _ -> updateBlock conn transaction blockInfoDto
 
         match result with
-        | Ok() ->
+        | Ok () ->
             transaction.Commit()
             conn.Close()
             Ok ()

@@ -27,6 +27,12 @@ type SetAccountControllerTxActionDto = {
 }
 
 [<CLIMutable>]
+type SetAssetControllerTxActionDto = {
+    AssetHash : string
+    ControllerAddress : string
+}
+
+[<CLIMutable>]
 type TxActionDto = {
     ActionType : string
     ActionData : obj
@@ -123,11 +129,17 @@ type AccountControllerStateDto = {
     ControllerAddress : string
 }
 
+[<CLIMutable>]
+type AssetControllerStateDto = {
+    ControllerAddress : string
+}
+
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
     AccountControllers : Map<string, AccountControllerStateDto>
+    AssetControllers : Map<string, AssetControllerStateDto>
 }
 
 [<CLIMutable>]

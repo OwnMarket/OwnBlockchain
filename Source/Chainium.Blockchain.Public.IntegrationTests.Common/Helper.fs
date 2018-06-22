@@ -10,6 +10,7 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Data.Sqlite
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
+open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Node
 
@@ -55,6 +56,23 @@ module internal Helper =
                 .ConfigureServices(Api.configureServices)
 
         new TestServer(hostBuilder)
+
+    let generateRandomHash () =
+        Signing.generateRandomBytes 64
+        |> Hashing.hash
+
+    let addChxBalance connectionString (address : string) (amount : decimal) =
+        let insertStatement =
+            """
+            INSERT INTO chx_balance (chainium_address, amount, nonce)
+            VALUES (@chainium_address, @amount, 0);
+            """
+        [
+            "@amount", amount |> box
+            "@chainium_address", address |> box
+        ]
+        |> DbTools.execute connectionString insertStatement
+        |> ignore
 
     let addBalanceAndAccount connectionString (address : string) (amount : decimal) =
         let insertStatement =

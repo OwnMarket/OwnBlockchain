@@ -54,10 +54,16 @@ type SetAccountControllerTxAction = {
     ControllerAddress : ChainiumAddress
 }
 
+type SetAssetControllerTxAction = {
+    AssetHash : AssetHash
+    ControllerAddress : ChainiumAddress
+}
+
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
     | SetAccountController of SetAccountControllerTxAction
+    | SetAssetController of SetAssetControllerTxAction
 
 type Tx = {
     TxHash : TxHash
@@ -147,6 +153,7 @@ type ProcessingOutput = {
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     AccountControllers : Map<AccountHash, ChainiumAddress option>
+    AssetControllers : Map<AssetHash, ChainiumAddress option>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

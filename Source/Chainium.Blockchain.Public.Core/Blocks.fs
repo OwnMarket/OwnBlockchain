@@ -67,6 +67,24 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createAssetControllerStateHash
+        decodeHash
+        createHash
+        (AssetHash assetHash, controllerAddress : ChainiumAddress option)
+        =
+
+        let addressBytes =
+            match controllerAddress with
+            | Some (ChainiumAddress a) -> decodeHash a
+            | None -> [| 0uy |]
+
+        [
+            decodeHash assetHash
+            addressBytes
+        ]
+        |> Array.concat
+        |> createHash
+
     let createBlockHash
         decodeHash
         createHash
@@ -143,8 +161,14 @@ module Blocks =
             |> List.sort // We need a predictable order
             |> List.map (createAccountControllerStateHash decodeHash createHash)
 
+        let assetControllerHashes =
+            output.AssetControllers
+            |> Map.toList
+            |> List.sort // We need a predictable order
+            |> List.map (createAssetControllerStateHash decodeHash createHash)
+
         let stateRoot =
-            chxBalanceHashes @ holdingHashes @ accountControllerHashes
+            chxBalanceHashes @ holdingHashes @ accountControllerHashes @ assetControllerHashes
             |> createMerkleTree
 
         let blockHash =
@@ -223,6 +247,7 @@ module Blocks =
             ChxBalances = chxBalances
             Holdings = Map.empty
             AccountControllers = Map.empty
+            AssetControllers = Map.empty
         }
 
     let createGenesisBlock

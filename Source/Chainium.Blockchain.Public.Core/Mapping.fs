@@ -50,6 +50,12 @@ module Mapping =
                 ControllerAddress = ChainiumAddress a.ControllerAddress
             }
             |> SetAccountController
+        | :? SetAssetControllerTxActionDto as a ->
+            {
+                SetAssetControllerTxAction.AssetHash = AssetHash a.AssetHash
+                ControllerAddress = ChainiumAddress a.ControllerAddress
+            }
+            |> SetAssetController
         | _ ->
             failwith "Invalid action type to map."
 
@@ -221,7 +227,19 @@ module Mapping =
                     controller
                     |> Option.map (fun (ChainiumAddress a) -> a)
                     |> Option.toObj
-                account, { ControllerAddress = rawControllerAddress }
+                account, { AccountControllerStateDto.ControllerAddress = rawControllerAddress }
+            )
+            |> Map.ofList
+
+        let assetControllers =
+            output.AssetControllers
+            |> Map.toList
+            |> List.map (fun (AssetHash asset, controller) ->
+                let rawControllerAddress =
+                    controller
+                    |> Option.map (fun (ChainiumAddress a) -> a)
+                    |> Option.toObj
+                asset, { AssetControllerStateDto.ControllerAddress = rawControllerAddress }
             )
             |> Map.ofList
 
@@ -230,6 +248,7 @@ module Mapping =
             ChxBalances = chxBalances
             Holdings = holdings
             AccountControllers = accountControllers
+            AssetControllers = assetControllers
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

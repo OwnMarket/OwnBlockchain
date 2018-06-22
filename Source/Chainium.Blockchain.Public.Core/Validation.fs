@@ -55,7 +55,7 @@ module Validation =
                 yield AppError "Asset hash is not valid."
 
             if action.Amount <= 0M then
-                yield AppError "Asset amount must be larger than zero"
+                yield AppError "Asset amount must be larger than zero."
         ]
 
     let private validateSetAccountController isValidAddress (action : SetAccountControllerTxActionDto) =
@@ -64,7 +64,16 @@ module Validation =
                 yield AppError "Controller address is not valid."
 
             if action.AccountHash.IsNullOrWhiteSpace() then
-                yield AppError "AccountHash value is not valid"
+                yield AppError "Account hash is not valid."
+        ]
+
+    let private validateSetAssetController isValidAddress (action : SetAssetControllerTxActionDto) =
+        [
+            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+                yield AppError "Controller address is not valid."
+
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "Asset hash is not valid."
         ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +101,8 @@ module Validation =
                 validateTransferAsset a
             | :? SetAccountControllerTxActionDto as a ->
                 validateSetAccountController isValidAddress a
+            | :? SetAssetControllerTxActionDto as a ->
+                validateSetAssetController isValidAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

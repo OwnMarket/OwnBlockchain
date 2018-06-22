@@ -202,8 +202,8 @@ module SerializationTests =
             test <@ appErrors.Length > 0 @>
 
     [<Fact>]
-    let ``Serialization.deserializeTx.setAccountController`` () =
-        let expectedTransaction =
+    let ``Serialization.deserializeTx SetAccountController`` () =
+        let expectedTxAction =
             {
                 ActionType = "SetAccountController"
                 ActionData =
@@ -214,12 +214,33 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTransaction |> box ]
+            [ expectedTxAction |> box ]
             |> Helpers.newRawTxDto 10L 20M
 
         match Serialization.deserializeTx serializedTx with
-        | Ok r ->
-            let actual = r.Actions.Head
-            test <@ actual = expectedTransaction @>
+        | Ok txDto ->
+            test <@ txDto.Actions.Head = expectedTxAction @>
+        | Error appErrors ->
+            failwithf "%A" appErrors
+
+    [<Fact>]
+    let ``Serialization.deserializeTx SetAssetController`` () =
+        let expectedTxAction =
+            {
+                ActionType = "SetAssetController"
+                ActionData =
+                    {
+                        SetAssetControllerTxActionDto.AssetHash = "FooAsset"
+                        ControllerAddress = "FooController"
+                    }
+            }
+
+        let serializedTx =
+            [ expectedTxAction |> box ]
+            |> Helpers.newRawTxDto 10L 20M
+
+        match Serialization.deserializeTx serializedTx with
+        | Ok txDto ->
+            test <@ txDto.Actions.Head = expectedTxAction @>
         | Error appErrors ->
             failwithf "%A" appErrors

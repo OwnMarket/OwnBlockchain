@@ -267,27 +267,25 @@ module SharedTests =
             | None -> failwith "Unable to get controller."
             | Some resultingAddress -> test <@ resultingAddress = wallet.Address @>
 
-    let changeAccountControllerTest engineType connectionString =
-        // initial data cleanup
+    let setAccountControllerTest engineType connectionString =
+        // ARRANGE
         let client = testInit engineType connectionString
 
-        // prepare local data
-        let account = Signing.generateWallet()
+        let accountHash = Helper.generateRandomHash ()
+        let sender = Signing.generateWallet()
         let newController = Signing.generateWallet()
+        let initialSenderChxBalance = 10M
+        let initialValidatorChxBalance = 0M
 
-        // database initialization
-        let initialSenderAmt = 10M
-        let initialValidatorAmt = 0M
-        Helper.addBalanceAndAccount connectionString (account.Address |> addressToString) initialSenderAmt
-        Helper.addBalanceAndAccount connectionString (Config.ValidatorAddress) initialValidatorAmt
+        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
 
-        // transaction preparation
         let tx =
             {
                 ActionType = "SetAccountController"
                 ActionData =
                     {
-                        SetAccountControllerTxActionDto.AccountHash = account.Address |> addressToString
+                        SetAccountControllerTxActionDto.AccountHash = accountHash
                         ControllerAddress = newController.Address |> addressToString
                     }
             }
@@ -296,35 +294,63 @@ module SharedTests =
         let nonce = 1L
         let txDto = newTxDto fee nonce [ tx ]
 
-        let expectedTx = transactionEnvelope account txDto
+        let txEnvelope = transactionEnvelope sender txDto
 
-        // transaction submission and submission checks
-        submitTransaction client expectedTx
-        |> submissionChecks connectionString true account txDto expectedTx
+        // ACT
+        submitTransaction client txEnvelope
+        |> submissionChecks connectionString true sender txDto txEnvelope
 
-        // transaction processing and processing checks
         processTransactions Helper.ExpectedPathForFirstBlock
 
-        // check expected results
-        let accountController =
-            Db.getAccountController connectionString (account.Address |> addressToString |> AccountHash)
-
-        test <@ accountController.Value = newController.Address @>
-
-        let senderBalance = Db.getChxBalanceState connectionString account.Address
+        // ASSERT
+        let accountController = Db.getAccountController connectionString (AccountHash accountHash)
+        let senderBalance = Db.getChxBalanceState connectionString sender.Address
         let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
 
-        let balanceValidation
-            (balance : ChxBalanceStateDto option)
-            (expectedAmt : decimal)
-            (expectedNonce : int64)
-            =
+        test <@ accountController = Some newController.Address @>
+        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - fee); Nonce = nonce } @>
+        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + fee); Nonce = 0L } @>
 
-            match balance with
-            | None -> failwith "Balance data should be in database"
-            | Some b ->
-                test <@ b.Amount = expectedAmt @>
-                test <@ b.Nonce = expectedNonce @>
+    let setAssetControllerTest engineType connectionString =
+        // ARRANGE
+        let client = testInit engineType connectionString
 
-        balanceValidation senderBalance (initialSenderAmt - fee) nonce
-        balanceValidation validatorBalance (initialValidatorAmt + fee) 0L
+        let assetHash = Helper.generateRandomHash ()
+        let sender = Signing.generateWallet()
+        let newController = Signing.generateWallet()
+        let initialSenderChxBalance = 10M
+        let initialValidatorChxBalance = 0M
+
+        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+
+        let tx =
+            {
+                ActionType = "SetAssetController"
+                ActionData =
+                    {
+                        SetAssetControllerTxActionDto.AssetHash = assetHash
+                        ControllerAddress = newController.Address |> addressToString
+                    }
+            }
+
+        let fee = 1M
+        let nonce = 1L
+        let txDto = newTxDto fee nonce [ tx ]
+
+        let txEnvelope = transactionEnvelope sender txDto
+
+        // ACT
+        submitTransaction client txEnvelope
+        |> submissionChecks connectionString true sender txDto txEnvelope
+
+        processTransactions Helper.ExpectedPathForFirstBlock
+
+        // ASSERT
+        let assetController = Db.getAssetController connectionString (AssetHash assetHash)
+        let senderBalance = Db.getChxBalanceState connectionString sender.Address
+        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+
+        test <@ assetController = Some newController.Address @>
+        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - fee); Nonce = nonce } @>
+        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + fee); Nonce = 0L } @>
