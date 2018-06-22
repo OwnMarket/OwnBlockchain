@@ -71,11 +71,11 @@ module BlocksTests =
     [<Fact>]
     let ``Blocks.createHoldingStateHash`` () =
         let account = AccountHash "HHH"
-        let assetCode = AssetCode "EE" // E => 69 % 10 => 9 => I
+        let assetHash = AssetHash "II"
         let state = {HoldingState.Amount = AssetAmount 7M}
 
         // ACT
-        let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (account, assetCode, state)
+        let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (account, assetHash, state)
 
         // ASSERT
         test <@ stateHash = "HHHII...G............" @>
@@ -146,8 +146,8 @@ module BlocksTests =
 
         let holdings =
             [
-                (AccountHash "DDD", AssetCode "EEE"), {HoldingState.Amount = AssetAmount 1M}
-                (AccountHash "FFF", AssetCode "GGG"), {HoldingState.Amount = AssetAmount 2M}
+                (AccountHash "DDD", AssetHash "EEE"), {HoldingState.Amount = AssetAmount 1M}
+                (AccountHash "FFF", AssetHash "GGG"), {HoldingState.Amount = AssetAmount 2M}
             ]
             |> Map.ofList
 
@@ -180,8 +180,8 @@ module BlocksTests =
             [
                 "HH...E...................G" // CHX balance 1
                 "II...F...................H" // CHX balance 2
-                "DDDIII...A............" // Holding balance 1
-                "FFFAAA...B............" // Holding balance 2
+                "DDDEEE...A............" // Holding balance 1
+                "FFFGGG...B............" // Holding balance 2
                 "AAAABBBB" // Account controller 1
                 "CCCCDDDD" // Account controller 2
             ]
@@ -269,8 +269,8 @@ module BlocksTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetCode "Eq1"), {HoldingState.Amount = AssetAmount 100M}
-                (AccountHash "Acc2", AssetCode "Eq2"), {HoldingState.Amount = AssetAmount 200M}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100M}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200M}
             ]
             |> Map.ofList
 
@@ -332,8 +332,8 @@ module BlocksTests =
 
                 holdings
                 |> Map.toList
-                |> List.map (fun ((accountHash, assetCode), state) ->
-                    Blocks.createHoldingStateHash Hashing.decode Hashing.hash (accountHash, assetCode, state)
+                |> List.map (fun ((accountHash, assetHash), state) ->
+                    Blocks.createHoldingStateHash Hashing.decode Hashing.hash (accountHash, assetHash, state)
                 )
 
                 accountControllers
@@ -394,8 +394,8 @@ module BlocksTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetCode "Eq1"), {HoldingState.Amount = AssetAmount 100M}
-                (AccountHash "Acc2", AssetCode "Eq2"), {HoldingState.Amount = AssetAmount 200M}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100M}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200M}
             ]
             |> Map.ofList
 

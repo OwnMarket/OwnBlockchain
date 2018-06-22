@@ -169,20 +169,20 @@ module Db =
     let getAccountHoldings
         (dbConnectionString : string)
         (AccountHash accountHash)
-        (assetCode : string option)
+        (assetHash : string option)
         : AccountHoldingsDto list option
         =
 
         let filter =
-            if assetCode.IsNone then
+            if assetHash.IsNone then
                 ""
             else
-                "AND h.asset_code = @assetCode"
+                "AND h.asset_hash = @assetHash"
 
         let sql =
             sprintf
                 """
-                SELECT h.asset_code, h.amount
+                SELECT h.asset_hash, h.amount
                 FROM account AS a
                 JOIN holding AS h USING (account_id)
                 WHERE a.account_hash = @accountHash
@@ -191,14 +191,15 @@ module Db =
                     filter
 
         let sqlParams =
-            if assetCode.IsNone then
+            match assetHash with
+            | None ->
                 [
                     "@accountHash", accountHash |> box
                 ]
-            else
+            | Some hash ->
                 [
                     "@accountHash", accountHash |> box
-                    "@assetCode", assetCode.Value |> box
+                    "@assetHash", hash |> box
                 ]
 
         match DbTools.query<AccountHoldingsDto> dbConnectionString sql sqlParams with
@@ -207,7 +208,7 @@ module Db =
 
     let getHoldingState
         (dbConnectionString : string)
-        (AccountHash accountHash, AssetCode assetCode)
+        (AccountHash accountHash, AssetHash assetHash)
         : HoldingStateDto option =
         let sql =
             """
@@ -215,19 +216,19 @@ module Db =
             FROM holding AS h
             JOIN account AS a USING (account_id)
             WHERE a.account_hash = @accountHash
-            AND h.asset_code = @assetCode
+            AND h.asset_hash = @assetHash
             """
 
         let sqlParams =
             [
                 "@accountHash", accountHash |> box
-                "@assetCode", assetCode |> box
+                "@assetHash", assetHash |> box
             ]
 
         match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
         | [] -> None
         | [holdingDetails] -> Some holdingDetails
-        | _ -> failwithf "Multiple holdings of asset code %A found for account hash %A" assetCode accountHash
+        | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
 
     let getAccountController (dbConnectionString : string) (AccountHash accountHash) : ChainiumAddress option =
         let sql =
@@ -247,23 +248,23 @@ module Db =
         | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
         | _ -> failwithf "Multiple controllers found for account hash %A" accountHash
 
-    let getAssetController (dbConnectionString : string) (AssetCode assetCode) : ChainiumAddress option =
+    let getAssetController (dbConnectionString : string) (AssetHash assetHash) : ChainiumAddress option =
         let sql =
             """
             SELECT controller_address
             FROM asset
-            WHERE asset_code = @assetCode
+            WHERE asset_hash = @assetHash
             """
 
         let sqlParams =
             [
-                "@assetCode", assetCode |> box
+                "@assetHash", assetHash |> box
             ]
 
         match DbTools.query<AssetControllerDto> dbConnectionString sql sqlParams with
         | [] -> None
         | [assetDetails] -> assetDetails.ControllerAddress |> ChainiumAddress |> Some
-        | _ -> failwithf "Multiple controllers found for asset code %A" assetCode
+        | _ -> failwithf "Multiple controllers found for asset hash %A" assetHash
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Apply New State
@@ -421,8 +422,8 @@ module Db =
     let private addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO holding (account_id, asset_code, amount)
-            SELECT account_id, @assetCode, @amount
+            INSERT INTO holding (account_id, asset_hash, amount)
+            SELECT account_id, @assetHash, @amount
             FROM account
             WHERE account_hash = @accountHash
             """
@@ -430,7 +431,7 @@ module Db =
         let sqlParams =
             [
                 "@accountHash", holdingInfo.AccountHash |> box
-                "@assetCode", holdingInfo.AssetCode |> box
+                "@assetHash", holdingInfo.AssetHash |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
             ]
 
@@ -449,13 +450,13 @@ module Db =
             UPDATE holding
             SET amount = @amount
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
-            AND asset_code = @assetCode
+            AND asset_hash = @assetHash
             """
 
         let sqlParams =
             [
                 "@accountHash", holdingInfo.AccountHash |> box
-                "@assetCode", holdingInfo.AssetCode |> box
+                "@assetHash", holdingInfo.AssetHash |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
             ]
 
@@ -480,8 +481,8 @@ module Db =
             result
             >>= fun _ ->
                 {
-                    AccountHash = fst(accountAsset)
-                    AssetCode = snd(accountAsset)
+                    AccountHash = fst accountAsset
+                    AssetHash = snd accountAsset
                     HoldingState =
                         {
                             Amount = holdingState.Amount

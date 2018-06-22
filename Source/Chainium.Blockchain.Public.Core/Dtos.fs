@@ -16,7 +16,7 @@ type TransferChxTxActionDto = {
 type TransferAssetTxActionDto = {
     FromAccount : string
     ToAccount : string
-    AssetCode : string
+    AssetHash : string
     Amount : decimal
 }
 
@@ -139,7 +139,7 @@ type ChxBalanceInfoDto = {
 [<CLIMutable>]
 type HoldingInfoDto = {
     AccountHash : string
-    AssetCode : string
+    AssetHash : string
     HoldingState : HoldingStateDto
 }
 
@@ -151,13 +151,13 @@ type AccountControllerDto = {
 
 [<CLIMutable>]
 type AssetControllerDto = {
-    AssetCode : string
+    AssetHash : string
     ControllerAddress : string
 }
 
 [<CLIMutable>]
 type AccountHoldingsDto = {
-    AssetCode: string
+    AssetHash: string
     Amount: decimal
 }
 
@@ -188,7 +188,7 @@ type GetAccountApiRequestDto = {
 }
 
 type GetAccountApiHoldingDto = {
-    AssetCode: string
+    AssetHash: string
     Balance: decimal
 }
 

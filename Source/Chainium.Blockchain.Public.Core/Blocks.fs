@@ -36,14 +36,14 @@ module Blocks =
     let createHoldingStateHash
         decodeHash
         createHash
-        (AccountHash accountHash, AssetCode assetCode, state : HoldingState)
+        (AccountHash accountHash, AssetHash assetHash, state : HoldingState)
         =
 
         let (AssetAmount amount) = state.Amount
 
         [
             decodeHash accountHash
-            stringToBytes assetCode
+            decodeHash assetHash
             decimalToBytes amount
         ]
         |> Array.concat
@@ -133,8 +133,8 @@ module Blocks =
             output.Holdings
             |> Map.toList
             |> List.sort // We need a predictable order
-            |> List.map (fun ((accountHash, assetCode), state) ->
-                createHoldingStateHash decodeHash createHash (accountHash, assetCode, state)
+            |> List.map (fun ((accountHash, assetHash), state) ->
+                createHoldingStateHash decodeHash createHash (accountHash, assetHash, state)
             )
 
         let accountControllerHashes =

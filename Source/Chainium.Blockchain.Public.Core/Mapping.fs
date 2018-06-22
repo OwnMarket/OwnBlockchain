@@ -40,7 +40,7 @@ module Mapping =
             {
                 FromAccountHash = AccountHash a.FromAccount
                 ToAccountHash = AccountHash a.ToAccount
-                AssetCode = AssetCode a.AssetCode
+                AssetHash = AssetHash a.AssetHash
                 Amount = AssetAmount a.Amount
             }
             |> TransferAsset
@@ -210,7 +210,7 @@ module Mapping =
         let holdings =
             output.Holdings
             |> Map.toList
-            |> List.map (fun ((AccountHash ah, AssetCode ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
+            |> List.map (fun ((AccountHash ah, AssetHash ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
             |> Map.ofList
 
         let accountControllers =
@@ -259,7 +259,7 @@ module Mapping =
 
         let mapFn (holding : AccountHoldingsDto) : GetAccountApiHoldingDto =
             {
-                AssetCode = holding.AssetCode
+                AssetHash = holding.AssetHash
                 Balance = holding.Amount
             }
 

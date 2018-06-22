@@ -51,8 +51,8 @@ module Validation =
             if action.ToAccount.IsNullOrWhiteSpace() then
                 yield AppError "ToAccount value is not valid."
 
-            if action.AssetCode.IsNullOrWhiteSpace() then
-                yield AppError "Asset code is not valid."
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "Asset hash is not valid."
 
             if action.Amount <= 0M then
                 yield AppError "Asset amount must be larger than zero"

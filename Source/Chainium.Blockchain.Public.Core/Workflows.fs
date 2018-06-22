@@ -336,14 +336,14 @@ module Workflows =
         getAccountController
         getAccountHoldings
         (accountHash : AccountHash)
-        (assetCode : string option)
+        (assetHash : string option)
         : Result<GetAccountApiResponseDto, AppErrors>
         =
 
         match getAccountController accountHash with
         | None -> Result.appError (sprintf "Account %A does not exists" accountHash)
         | Some (ChainiumAddress accountController) ->
-            match getAccountHoldings accountHash assetCode with
+            match getAccountHoldings accountHash assetHash with
                 | None -> []
                 | Some holdings -> holdings
             |> (fun v ->

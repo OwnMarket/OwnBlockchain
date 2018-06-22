@@ -40,7 +40,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                AssetCode = "asset"
+                                AssetHash = "asset"
                                 Amount = 12M
                             }
                     }
@@ -79,7 +79,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                AssetCode = "asset"
+                                AssetHash = "asset"
                                 Amount = 12M
                             }
                     }
@@ -179,7 +179,7 @@ module ValidationTests =
                             {
                                 FromAccount = ""
                                 ToAccount = "B"
-                                AssetCode = "asset"
+                                AssetHash = "asset"
                                 Amount = 12M
                             }
                     }
@@ -206,7 +206,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = ""
-                                AssetCode = "asset"
+                                AssetHash = "asset"
                                 Amount = 12M
                             }
                     }
@@ -233,7 +233,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                AssetCode = ""
+                                AssetHash = ""
                                 Amount = 12M
                             }
                     }
@@ -260,7 +260,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                AssetCode = "asset"
+                                AssetHash = "asset"
                                 Amount = 0M
                             }
                     }
@@ -302,7 +302,7 @@ module ValidationTests =
                             {
                                 FromAccount = "A"
                                 ToAccount = "B"
-                                AssetCode = "asset"
+                                AssetHash = "asset"
                                 Amount = 1M
                             }
                     }
@@ -327,7 +327,7 @@ module ValidationTests =
             test <@ actualChx.RecipientAddress = ChainiumAddress expectedChx.RecipientAddress @>
             test <@ actualAsset.FromAccountHash = AccountHash expAsset.FromAccount @>
             test <@ actualAsset.ToAccountHash = AccountHash expAsset.ToAccount @>
-            test <@ actualAsset.AssetCode = AssetCode expAsset.AssetCode @>
+            test <@ actualAsset.AssetHash = AssetHash expAsset.AssetHash @>
             test <@ actualAsset.Amount = AssetAmount expAsset.Amount @>
         | Error errors ->
             failwithf "%A" errors

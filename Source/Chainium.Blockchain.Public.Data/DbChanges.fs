@@ -61,21 +61,21 @@ module DbChanges =
 
                     CREATE TABLE IF NOT EXISTS asset (
                         asset_id INTEGER NOT NULL,
-                        asset_code TEXT NOT NULL,
+                        asset_hash TEXT NOT NULL,
                         controller_address TEXT NOT NULL,
 
                         CONSTRAINT asset__pk PRIMARY KEY (asset_id),
-                        CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
+                        CONSTRAINT asset__uk__asset_hash UNIQUE (asset_hash)
                     );
 
                     CREATE TABLE IF NOT EXISTS holding (
                         holding_id INTEGER NOT NULL,
                         account_id BIGINT NOT NULL,
-                        asset_code TEXT NOT NULL,
+                        asset_hash TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
 
                         CONSTRAINT holding__pk PRIMARY KEY (holding_id),
-                        CONSTRAINT holding__uk__account_id__asset_code UNIQUE (account_id, asset_code),
+                        CONSTRAINT holding__uk__account_id__asset_hash UNIQUE (account_id, asset_hash),
                         CONSTRAINT holding__fk__account FOREIGN KEY (account_id)
                             REFERENCES account (account_id)
                     );
@@ -146,21 +146,21 @@ module DbChanges =
 
                     CREATE TABLE IF NOT EXISTS asset (
                         asset_id BIGSERIAL NOT NULL,
-                        asset_code TEXT NOT NULL,
+                        asset_hash TEXT NOT NULL,
                         controller_address TEXT NOT NULL,
 
                         CONSTRAINT asset__pk PRIMARY KEY (asset_id),
-                        CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
+                        CONSTRAINT asset__uk__asset_hash UNIQUE (asset_hash)
                     );
 
                     CREATE TABLE IF NOT EXISTS holding (
                         holding_id BIGSERIAL NOT NULL,
                         account_id BIGINT NOT NULL,
-                        asset_code TEXT NOT NULL,
+                        asset_hash TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
 
                         CONSTRAINT holding__pk PRIMARY KEY (holding_id),
-                        CONSTRAINT holding__uk__account_id__asset_code UNIQUE (account_id, asset_code),
+                        CONSTRAINT holding__uk__account_id__asset_hash UNIQUE (account_id, asset_hash),
                         CONSTRAINT holding__fk__account FOREIGN KEY (account_id)
                             REFERENCES account (account_id)
                     );

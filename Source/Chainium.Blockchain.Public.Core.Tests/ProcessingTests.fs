@@ -434,7 +434,7 @@ module ProcessingTests =
         let validatorWallet = Signing.generateWallet ()
         let senderAccountHash = AccountHash "Acc1"
         let recipientAccountHash = AccountHash "Acc2"
-        let assetCode = AssetCode "EQ1"
+        let assetHash = AssetHash "EQ1"
 
         let initialChxState =
             [
@@ -445,8 +445,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetCode), {HoldingState.Amount = AssetAmount 50M}
-                (recipientAccountHash, assetCode), {HoldingState.Amount = AssetAmount 0M}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50M}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
             ]
             |> Map.ofList
 
@@ -463,7 +463,7 @@ module ProcessingTests =
                         {
                             FromAccount = senderAccountHash |> fun (AccountHash h) -> h
                             ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
-                            AssetCode = assetCode |> fun (AssetCode c) -> c
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
                             Amount = amountToTransfer |> fun (AssetAmount a) -> a
                         }
                 } :> obj
@@ -503,8 +503,8 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
-        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetCode].Amount - amountToTransfer
-        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetCode].Amount + amountToTransfer
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -512,8 +512,8 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.Holdings.[senderAccountHash, assetCode].Amount = senderAssetBalance @>
-        test <@ output.Holdings.[recipientAccountHash, assetCode].Amount = recipientAssetBalance @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
     [<Fact>]
     let ``Processing.processTxSet TransferAsset with insufficient balance`` () =
@@ -522,7 +522,7 @@ module ProcessingTests =
         let validatorWallet = Signing.generateWallet ()
         let senderAccountHash = AccountHash "Acc1"
         let recipientAccountHash = AccountHash "Acc2"
-        let assetCode = AssetCode "EQ1"
+        let assetHash = AssetHash "EQ1"
 
         let initialChxState =
             [
@@ -533,8 +533,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetCode), {HoldingState.Amount = AssetAmount 9M}
-                (recipientAccountHash, assetCode), {HoldingState.Amount = AssetAmount 0M}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9M}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
             ]
             |> Map.ofList
 
@@ -551,7 +551,7 @@ module ProcessingTests =
                         {
                             FromAccount = senderAccountHash |> fun (AccountHash h) -> h
                             ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
-                            AssetCode = assetCode |> fun (AssetCode c) -> c
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
                             Amount = amountToTransfer |> fun (AssetAmount a) -> a
                         }
                 } :> obj
@@ -591,8 +591,8 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
-        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetCode].Amount
-        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetCode].Amount
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientAssetHoldingBalance)
             |> TxActionError
@@ -603,8 +603,8 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.Holdings.[senderAccountHash, assetCode].Amount = senderAssetBalance @>
-        test <@ output.Holdings.[recipientAccountHash, assetCode].Amount = recipientAssetBalance @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountController

@@ -57,10 +57,10 @@ Chainium address is used to "control" the investor account which holds the equit
 |------|-----------|----------|-----|-------------|
 | `holding_id` | INTEGER | NOT NULL | PK | A surrogate primary key of the holding.
 | `account_id` | INTEGER | NOT NULL | AK | Foreign key to investor account ID.
-| `asset_code` | TEXT | NOT NULL | AK | Standard code of the business asset.
+| `asset_hash` | TEXT | NOT NULL | AK | Business asset identifier.
 | `amount` | DECIMAL (30,18) | NOT NULL | | Balance of tokenized equities for the account.
 
-A combination of an `account_id` and an `asset_code` is unique and represents an alternate key. `account_id` in the `holding` table is a foreign key and it is linked through the `holding__fk__account` constraint to the `account` table.
+A combination of an `account_id` and an `asset_hash` is unique and represents an alternate key. `account_id` in the `holding` table is a foreign key and it is linked through the `holding__fk__account` constraint to the `account` table.
 
 
 ### `block` table

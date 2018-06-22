@@ -30,7 +30,7 @@ module SerializationTests =
                                 {
                                     FromAccount = "A"
                                     ToAccount = "B"
-                                    AssetCode = "asset"
+                                    AssetHash = "asset"
                                     Amount = 12M
                                 }
                         }
@@ -71,7 +71,7 @@ module SerializationTests =
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
-                            "AssetCode": "asset",
+                            "AssetHash": "asset",
                             "Amount": 12.0
                         }
                     },
@@ -128,7 +128,7 @@ module SerializationTests =
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
-                            "AssetCode": "asset",
+                            "AssetHash": "asset",
                             "Amount": 12.0
                         }
                     },
@@ -178,7 +178,7 @@ module SerializationTests =
                         "ActionData": {
                             "FromAccount": "A",
                             "ToAccount": "B",
-                            "AssetCode": "asset",
+                            "AssetHash": "asset",
                             "Amount": 12.0
                         }
                     },
