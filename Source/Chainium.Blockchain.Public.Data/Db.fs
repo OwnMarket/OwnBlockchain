@@ -148,6 +148,127 @@ module Db =
         |> List.tryHead
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
 
+    let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) : ChxBalanceStateDto option =
+        let sql =
+            """
+            SELECT amount, nonce
+            FROM chx_balance
+            WHERE chainium_address = @address
+            """
+
+        let sqlParams =
+            [
+                "@address", address |> box
+            ]
+
+        match DbTools.query<ChxBalanceStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [chxAddressDetails] -> Some chxAddressDetails
+        | _ -> failwithf "Multiple CHX balance entries found for address %A" address
+
+    let getAccountHoldings
+        (dbConnectionString : string)
+        (AccountHash accountHash)
+        (assetCode : string option)
+        : AccountHoldingsDto list option
+        =
+
+        let filter =
+            if assetCode.IsNone then
+                ""
+            else
+                "AND h.asset_code = @assetCode"
+
+        let sql =
+            sprintf
+                """
+                SELECT h.asset_code, h.amount
+                FROM account AS a
+                JOIN holding AS h USING (account_id)
+                WHERE a.account_hash = @accountHash
+                %s
+                """
+                    filter
+
+        let sqlParams =
+            if assetCode.IsNone then
+                [
+                    "@accountHash", accountHash |> box
+                ]
+            else
+                [
+                    "@accountHash", accountHash |> box
+                    "@assetCode", assetCode.Value |> box
+                ]
+
+        match DbTools.query<AccountHoldingsDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | holdingDetails -> Some holdingDetails
+
+    let getHoldingState
+        (dbConnectionString : string)
+        (AccountHash accountHash, AssetCode assetCode)
+        : HoldingStateDto option =
+        let sql =
+            """
+            SELECT h.amount, h.nonce
+            FROM holding AS h
+            JOIN account AS a USING (account_id)
+            WHERE a.account_hash = @accountHash
+            AND h.asset_code = @assetCode
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+                "@assetCode", assetCode |> box
+            ]
+
+        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [holdingDetails] -> Some holdingDetails
+        | _ -> failwithf "Multiple holdings of asset code %A found for account hash %A" assetCode accountHash
+
+    let getAccountController (dbConnectionString : string) (AccountHash accountHash) : ChainiumAddress option =
+        let sql =
+            """
+            SELECT controller_address
+            FROM account
+            WHERE account_hash = @accountHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+            ]
+
+        match DbTools.query<AccountControllerDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
+        | _ -> failwithf "Multiple controllers found for account hash %A" accountHash
+
+    let getAssetController (dbConnectionString : string) (AssetCode assetCode) : ChainiumAddress option =
+        let sql =
+            """
+            SELECT controller_address
+            FROM asset
+            WHERE asset_code = @assetCode
+            """
+
+        let sqlParams =
+            [
+                "@assetCode", assetCode |> box
+            ]
+
+        match DbTools.query<AssetControllerDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [assetDetails] -> assetDetails.ControllerAddress |> ChainiumAddress |> Some
+        | _ -> failwithf "Multiple controllers found for asset code %A" assetCode
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Apply New State
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let private removeProcessedTx conn transaction (txHash : string) : Result<unit, AppErrors> =
         let sql =
             """
@@ -374,7 +495,7 @@ module Db =
 
     let private singleMessageError message = Error [AppError message]
 
-    let addAccount
+    let private addAccount
         conn
         transaction
         (accountController : AccountControllerDto)
@@ -403,7 +524,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             error
 
-    let updateAccount
+    let private updateAccount
         conn
         transaction
         (accountController : AccountControllerDto)
@@ -434,7 +555,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             error
 
-    let updateAccounts
+    let private updateAccounts
         (conn : DbConnection)
         (transaction : DbTransaction)
         (accountControllers : Map<string, AccountControllerStateDto>)
@@ -485,120 +606,3 @@ module Db =
             for e in errors do
                 Log.error e
             Error [AppError "Failed to apply new state"]
-
-    let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) : ChxBalanceStateDto option =
-        let sql =
-            """
-            SELECT amount, nonce
-            FROM chx_balance
-            WHERE chainium_address = @address
-            """
-
-        let sqlParams =
-            [
-                "@address", address |> box
-            ]
-
-        match DbTools.query<ChxBalanceStateDto> dbConnectionString sql sqlParams with
-        | [] -> None
-        | [chxAddressDetails] -> Some chxAddressDetails
-        | _ -> failwithf "Multiple CHX balance entries found for address %A" address
-
-    let getAccountHoldings
-        (dbConnectionString : string)
-        (AccountHash accountHash)
-        (assetCode : string option)
-        : AccountHoldingsDto list option
-        =
-
-        let filter =
-            if assetCode.IsNone then
-                ""
-            else
-                "AND h.asset_code = @assetCode"
-
-        let sql =
-            sprintf
-                """
-                SELECT h.asset_code, h.amount
-                FROM account AS a
-                JOIN holding AS h USING (account_id)
-                WHERE a.account_hash = @accountHash
-                %s
-                """
-                    filter
-
-        let sqlParams =
-            if assetCode.IsNone then
-                [
-                    "@accountHash", accountHash |> box
-                ]
-            else
-                [
-                    "@accountHash", accountHash |> box
-                    "@assetCode", assetCode.Value |> box
-                ]
-
-        match DbTools.query<AccountHoldingsDto> dbConnectionString sql sqlParams with
-        | [] -> None
-        | holdingDetails -> Some holdingDetails
-
-    let getHoldingState
-        (dbConnectionString : string)
-        (AccountHash accountHash, AssetCode assetCode)
-        : HoldingStateDto option =
-        let sql =
-            """
-            SELECT h.amount, h.nonce
-            FROM holding AS h
-            JOIN account AS a USING (account_id)
-            WHERE a.account_hash = @accountHash
-            AND h.asset_code = @assetCode
-            """
-
-        let sqlParams =
-            [
-                "@accountHash", accountHash |> box
-                "@assetCode", assetCode |> box
-            ]
-
-        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
-        | [] -> None
-        | [holdingDetails] -> Some holdingDetails
-        | _ -> failwithf "Multiple holdings of asset code %A found for account hash %A" assetCode accountHash
-
-    let getAccountController (dbConnectionString : string) (AccountHash accountHash) : ChainiumAddress option =
-        let sql =
-            """
-            SELECT controller_address
-            FROM account
-            WHERE account_hash = @accountHash
-            """
-
-        let sqlParams =
-            [
-                "@accountHash", accountHash |> box
-            ]
-
-        match DbTools.query<AccountControllerDto> dbConnectionString sql sqlParams with
-        | [] -> None
-        | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
-        | _ -> failwithf "Multiple controllers found for account hash %A" accountHash
-
-    let getAssetController (dbConnectionString : string) (AssetCode assetCode) : ChainiumAddress option =
-        let sql =
-            """
-            SELECT controller_address
-            FROM asset
-            WHERE asset_code = @assetCode
-            """
-
-        let sqlParams =
-            [
-                "@assetCode", assetCode |> box
-            ]
-
-        match DbTools.query<AssetControllerDto> dbConnectionString sql sqlParams with
-        | [] -> None
-        | [assetDetails] -> assetDetails.ControllerAddress |> ChainiumAddress |> Some
-        | _ -> failwithf "Multiple controllers found for asset code %A" assetCode
