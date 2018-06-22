@@ -195,7 +195,7 @@ module Workflows =
                 |> sprintf "Processing of block %i didn't result in expected blockchain state."
 
             Log.error message
-            Error [AppError message]
+            Result.appError message
 
     let advanceToLastKnownBlock
         getTx
@@ -252,7 +252,7 @@ module Workflows =
                             |> sprintf "Block %i is not valid."
 
                         Log.error message
-                        return! Error [AppError message]
+                        return! Result.appError message
                 }
             else
                 Ok previousBlockNumber
@@ -311,8 +311,7 @@ module Workflows =
             | Ok _ ->
                 Log.info "Blockchain state initialized."
             | Error errors ->
-                for AppError e in errors do
-                    Log.error e
+                Log.appErrors errors
                 failwith "Cannot initialize blockchain state."
 
     let propagateTx sendMessageToPeers (txHash : TxHash) =
@@ -331,7 +330,7 @@ module Workflows =
                     (chainiumAddress |> (fun (ChainiumAddress a) -> a))
                     addressState
             )
-        | None -> Error [AppError "Chainium Address does not exist"]
+        | None -> Result.appError "Chainium Address does not exist"
 
     let getAccountApi
         getAccountController
@@ -342,7 +341,7 @@ module Workflows =
         =
 
         match getAccountController accountHash with
-        | None -> Error [AppError (sprintf "Account %A does not exists" accountHash)]
+        | None -> Result.appError (sprintf "Account %A does not exists" accountHash)
         | Some (ChainiumAddress accountController) ->
             match getAccountHoldings accountHash assetCode with
                 | None -> []
@@ -362,7 +361,7 @@ module Workflows =
 
         match getBlock blockNumber with
             | Ok block -> Ok (Mapping.blockTxsToGetBlockApiResponseDto block)
-            | _ -> Error [AppError (sprintf "Block %A does not exists" (blockNumber |> fun (BlockNumber b) -> b))]
+            | _ -> Result.appError (sprintf "Block %A does not exists" (blockNumber |> fun (BlockNumber b) -> b))
 
     let getTxApi
         getTxInfo
@@ -373,7 +372,7 @@ module Workflows =
         =
 
         match getTxInfo txHash with
-        | None -> Error [AppError (sprintf "Tx %A does not exists" (txHash |> fun (TxHash t) -> t))]
+        | None -> Result.appError (sprintf "Tx %A does not exists" (txHash |> fun (TxHash t) -> t))
         | Some txInfo ->
             result {
                 let! txDto =

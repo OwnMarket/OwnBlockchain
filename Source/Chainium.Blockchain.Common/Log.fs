@@ -16,3 +16,8 @@ module Log =
     let infof format = Printf.ksprintf info format
     let warningf format = Printf.ksprintf warning format
     let errorf format = Printf.ksprintf error format
+
+    let appError (AppError message) = error message
+    let appErrors errors =
+        for e in errors do
+            appError e

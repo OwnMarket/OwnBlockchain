@@ -31,7 +31,7 @@ module Raw =
             let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
-                Error [AppError (sprintf "%s %s already exists." dataTypeName key)]
+                Result.appError (sprintf "%s %s already exists." dataTypeName key)
             else
                 let json = data |> JsonConvert.SerializeObject
                 File.WriteAllText(path, json)
@@ -39,7 +39,7 @@ module Raw =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError (sprintf "Saving %s %s failed" dataTypeName key)]
+            Result.appError (sprintf "Saving %s %s failed" dataTypeName key)
 
     let private loadData<'T> (dataDir : string) (dataType : RawDataType) (key : string) : Result<'T, AppErrors> =
         let dataTypeName = unionCaseName dataType
@@ -52,11 +52,11 @@ module Raw =
                 |> JsonConvert.DeserializeObject<'T>
                 |> Ok
             else
-                Error [AppError (sprintf "%s %s not found." dataTypeName key)]
+                Result.appError (sprintf "%s %s not found." dataTypeName key)
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError (sprintf "Loading %s %s failed" dataTypeName key)]
+            Result.appError (sprintf "Loading %s %s failed" dataTypeName key)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Specific

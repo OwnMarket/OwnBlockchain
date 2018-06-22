@@ -25,7 +25,7 @@ module Validation =
         | Some chainiumAddress ->
             Ok chainiumAddress
         | None ->
-            Error [AppError "Cannot verify signature"]
+            Result.appError "Cannot verify signature"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TxAction validation
@@ -118,11 +118,11 @@ module Validation =
             |? ChxAmount 0M
 
         if txFee > chxBalance then
-            Error [AppError "CHX balance is insufficient to cover the fee."]
+            Result.appError "CHX balance is insufficient to cover the fee."
         else
             let totalFeeForPendingTxs = getTotalFeeForPendingTxs senderAddress
 
             if (totalFeeForPendingTxs + txFee) > chxBalance then
-                Error [AppError "CHX balance is insufficient to cover the fee for all pending transactions."]
+                Result.appError "CHX balance is insufficient to cover the fee for all pending transactions."
             else
                 Ok ()

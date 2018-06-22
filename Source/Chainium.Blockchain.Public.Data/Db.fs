@@ -48,7 +48,7 @@ module Db =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "DB operation error"]
+            Result.appError "DB operation error"
 
     let getPendingTxs
         (dbConnectionString : string)
@@ -284,11 +284,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError "Failed to remove processed transaction from the pool."]
+            | _ -> Result.appError "Failed to remove processed transaction from the pool."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Failed to remove processed transaction from the pool."]
+            Result.appError "Failed to remove processed transaction from the pool."
 
     let private removeProcessedTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
         let foldFn result (txHash, txResult : TxResultDto) =
@@ -316,11 +316,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError "Failed to insert block"]
+            | _ -> Result.appError "Failed to insert block"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Failed to insert block"]
+            Result.appError "Failed to insert block"
 
     let private updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -340,11 +340,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addBlock conn transaction blockInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError "Failed to update block number"]
+            | _ -> Result.appError "Failed to update block number"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Failed to update block number"]
+            Result.appError "Failed to update block number"
 
     let private addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -363,11 +363,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError "Failed to insert CHX balance"]
+            | _ -> Result.appError "Failed to insert CHX balance"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Failed to insert CHX balance"]
+            Result.appError "Failed to insert CHX balance"
 
     let private updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -388,11 +388,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addChxBalance conn transaction chxBalanceInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError "Failed to update CHX balance"]
+            | _ -> Result.appError "Failed to update CHX balance"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Failed to update CHX balance"]
+            Result.appError "Failed to update CHX balance"
 
     let private updateChxBalances
         conn
@@ -437,11 +437,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Error [AppError "Failed to insert holding"]
+            | _ -> Result.appError "Failed to insert holding"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Failed to insert holding"]
+            Result.appError "Failed to insert holding"
 
     let private updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -463,11 +463,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addHolding conn transaction holdingInfo
             | 1 -> Ok ()
-            | _ -> Error [AppError "Failed to update holding"]
+            | _ -> Result.appError "Failed to update holding"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Error [AppError "Failed to update holding"]
+            Result.appError "Failed to update holding"
 
     let private updateHoldings
         conn
@@ -493,8 +493,6 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok())
 
-    let private singleMessageError message = Error [AppError message]
-
     let private addAccount
         conn
         transaction
@@ -514,7 +512,7 @@ module Db =
                 "@controllerAddress", accountController.ControllerAddress |> box
             ]
 
-        let error = singleMessageError "Failed to insert account"
+        let error = Result.appError "Failed to insert account"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
@@ -544,7 +542,7 @@ module Db =
                 "@accountController", accountController.ControllerAddress |> box
             ]
 
-        let error = singleMessageError "Failed to update account controller address"
+        let error = Result.appError "Failed to update account controller address"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addAccount conn transaction accountController
@@ -605,4 +603,4 @@ module Db =
             conn.Close()
             for e in errors do
                 Log.error e
-            Error [AppError "Failed to apply new state"]
+            Result.appError "Failed to apply new state"

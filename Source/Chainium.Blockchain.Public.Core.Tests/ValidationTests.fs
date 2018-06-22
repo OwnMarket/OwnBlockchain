@@ -3,6 +3,7 @@
 open System
 open Xunit
 open Swensen.Unquote
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Core.DomainTypes

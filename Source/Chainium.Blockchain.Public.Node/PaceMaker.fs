@@ -17,8 +17,7 @@ module PaceMaker =
                 | Ok lastAppliedBlockNumber ->
                     () // TODO: Handle output properly - i.e. publish events
                 | Error errors ->
-                    for (AppError err) in errors do
-                        Log.error err
+                    Log.appErrors errors
 
                 let (Timestamp lastBlockTimestamp) =
                     match Composition.getLastBlockTimestamp () with
@@ -33,8 +32,7 @@ module PaceMaker =
                         | Ok event ->
                             event |> BlockCreated |> Agents.publishEvent
                         | Error errors ->
-                            for (AppError err) in errors do
-                                Log.error err
+                            Log.appErrors errors
                     )
             with
             | ex -> Log.error ex.AllMessagesAndStackTraces

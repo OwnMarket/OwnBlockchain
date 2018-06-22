@@ -2,6 +2,7 @@
 
 open System
 open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Common.Conversion
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
@@ -86,7 +87,7 @@ module Serialization =
             |> Ok
         with
         | ex ->
-            Error [AppError ex.AllMessagesAndStackTraces]
+            Result.appError ex.AllMessagesAndStackTraces
 
     let serializeTx (txDto : TxDto) =
         serialize<TxDto> txDto
