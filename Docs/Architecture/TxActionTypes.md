@@ -5,11 +5,11 @@ In the Chainium blockchain network, a transaction is a command that consists out
 An action is a single command that changes the state. The action types supported on the public blockchain are:
 
 - [Transfer CHX](https://github.com/Chainium/Chainium/blob/master/Docs/Architecture/TxActionTypes.md#transfer-chx)
-- Create Asset Emission
-- Transfer Asset
-- Set Asset Controller
-- Set Account Controller
-- Set Asset Code Controller
+- [Create Asset Emission](https://github.com/Chainium/Chainium/blob/master/Docs/Architecture/TxActionTypes.md#create-asset-emission)
+- [Transfer Asset](https://github.com/Chainium/Chainium/blob/master/Docs/Architecture/TxActionTypes.md#transfer-asset)
+- [Set Asset Controller](https://github.com/Chainium/Chainium/blob/master/Docs/Architecture/TxActionTypes.md#set-account-controller)
+- [Set Account Controller](https://github.com/Chainium/Chainium/blob/master/Docs/Architecture/TxActionTypes.md#set-asset-controller)
+- [Set Asset Code Controller](https://github.com/Chainium/Chainium/blob/master/Docs/Architecture/TxActionTypes.md#set-asset-code-controller)
 
 ## Transfer CHX
 
