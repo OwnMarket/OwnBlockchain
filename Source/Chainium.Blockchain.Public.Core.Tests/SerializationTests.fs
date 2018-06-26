@@ -202,6 +202,29 @@ module SerializationTests =
             test <@ appErrors.Length > 0 @>
 
     [<Fact>]
+    let ``Serialization.deserializeTx CreateAssetEmission`` () =
+        let expectedTxAction =
+            {
+                ActionType = "CreateAssetEmission"
+                ActionData =
+                    {
+                        CreateAssetEmissionTxActionDto.EmissionAccountHash = "FooAccount"
+                        AssetHash = "FooAsset"
+                        Amount = 100M
+                    }
+            }
+
+        let serializedTx =
+            [ expectedTxAction |> box ]
+            |> Helpers.newRawTxDto 10L 20M
+
+        match Serialization.deserializeTx serializedTx with
+        | Ok txDto ->
+            test <@ txDto.Actions.Head = expectedTxAction @>
+        | Error appErrors ->
+            failwithf "%A" appErrors
+
+    [<Fact>]
     let ``Serialization.deserializeTx SetAccountController`` () =
         let expectedTxAction =
             {

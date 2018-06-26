@@ -58,6 +58,18 @@ module Validation =
                 yield AppError "Asset amount must be larger than zero."
         ]
 
+    let private validateCreateAssetEmission (action : CreateAssetEmissionTxActionDto) =
+        [
+            if action.EmissionAccountHash.IsNullOrWhiteSpace() then
+                yield AppError "Emission account hash value is not valid."
+
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "Asset hash is not valid."
+
+            if action.Amount <= 0M then
+                yield AppError "Asset amount must be larger than zero."
+        ]
+
     let private validateSetAccountController isValidAddress (action : SetAccountControllerTxActionDto) =
         [
             if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
@@ -99,6 +111,8 @@ module Validation =
                 validateTransferChx isValidAddress a
             | :? TransferAssetTxActionDto as a ->
                 validateTransferAsset a
+            | :? CreateAssetEmissionTxActionDto as a ->
+                validateCreateAssetEmission a
             | :? SetAccountControllerTxActionDto as a ->
                 validateSetAccountController isValidAddress a
             | :? SetAssetControllerTxActionDto as a ->

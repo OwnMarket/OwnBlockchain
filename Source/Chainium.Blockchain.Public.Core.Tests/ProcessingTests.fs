@@ -631,6 +631,261 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CreateAssetEmission
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processTxSet CreateAssetEmission`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let emissionAccountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let emissionAmount = AssetAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAssetEmission"
+                    ActionData =
+                        {
+                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
+                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            None
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        let getAssetController _ =
+            Some senderWallet.Address
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                getAssetController
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emissionAmount @>
+
+    [<Fact>]
+    let ``Processing.processTxSet CreateAssetEmission additional emission`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let emissionAccountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (emissionAccountHash, assetHash), {HoldingState.Amount = AssetAmount 30M}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let emissionAmount = AssetAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAssetEmission"
+                    ActionData =
+                        {
+                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
+                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        let getAssetController _ =
+            Some senderWallet.Address
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                getAssetController
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let emittedAssetBalance = initialHoldingState.[emissionAccountHash, assetHash].Amount + emissionAmount
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emittedAssetBalance @>
+
+    [<Fact>]
+    let ``Processing.processTxSet CreateAssetEmission fails if sender not current controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let currentControllerWallet = Signing.generateWallet ()
+        let emissionAccountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let emissionAmount = AssetAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAssetEmission"
+                    ActionData =
+                        {
+                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
+                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            None
+
+        let getAccountController _ =
+            failwith "getAccountController should not be called"
+
+        let getAssetController _ =
+            Some currentControllerWallet.Address
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                getChxBalanceState
+                getHoldingState
+                getAccountController
+                getAssetController
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings = Map.empty @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountController
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 

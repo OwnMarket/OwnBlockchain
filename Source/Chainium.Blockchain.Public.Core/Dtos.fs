@@ -21,6 +21,13 @@ type TransferAssetTxActionDto = {
 }
 
 [<CLIMutable>]
+type CreateAssetEmissionTxActionDto = {
+    EmissionAccountHash : string
+    AssetHash : string
+    Amount : decimal
+}
+
+[<CLIMutable>]
 type SetAccountControllerTxActionDto = {
     AccountHash : string
     ControllerAddress : string

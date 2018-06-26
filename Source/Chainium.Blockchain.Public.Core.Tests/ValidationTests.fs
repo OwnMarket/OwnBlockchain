@@ -15,6 +15,7 @@ module ValidationTests =
     let txHash = TxHash "SampleHash"
     let transferChxActionType = "TransferChx"
     let transferAssetActionType = "TransferAsset"
+    let createAssetEmissionActionType = "CreateAssetEmission"
     let setAccountControllerActionType = "SetAccountController"
     let setAssetControllerActionType = "SetAssetController"
 
@@ -333,7 +334,62 @@ module ValidationTests =
         String.IsNullOrWhiteSpace(item) |> not
 
     [<Fact>]
-    let ``Validation.validateTx SetAccountController validate action`` () =
+    let ``Validation.validateTx CreateAssetEmission valid action`` () =
+        let expected =
+            {
+                CreateAssetEmissionTxActionDto.EmissionAccountHash = "AAA"
+                AssetHash = "BBB"
+                Amount = 100M
+            }
+
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = createAssetEmissionActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t ->
+            let actual = Helpers.extractActionData<CreateAssetEmissionTxAction> t.Actions.Head
+            test <@ AccountHash expected.EmissionAccountHash = actual.EmissionAccountHash @>
+            test <@ AssetHash expected.AssetHash = actual.AssetHash @>
+            test <@ AssetAmount expected.Amount = actual.Amount @>
+        | Error e -> failwithf "%A" e
+
+    [<Fact>]
+    let ``Validation.validateTx CreateAssetEmission invalid action`` () =
+        let expected =
+            {
+                CreateAssetEmissionTxActionDto.EmissionAccountHash = ""
+                AssetHash = ""
+                Amount = 0M
+            }
+
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = setAccountControllerActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t -> failwith "This test should fail."
+        | Error e ->
+            test <@ e.Length = 3 @>
+
+    [<Fact>]
+    let ``Validation.validateTx SetAccountController valid action`` () =
         let expected =
             {
                 SetAccountControllerTxActionDto.AccountHash = "A"
@@ -385,7 +441,7 @@ module ValidationTests =
             test <@ e.Length = 2 @>
 
     [<Fact>]
-    let ``Validation.validateTx SetAssetController validate action`` () =
+    let ``Validation.validateTx SetAssetController valid action`` () =
         let expected =
             {
                 SetAssetControllerTxActionDto.AssetHash = "A"

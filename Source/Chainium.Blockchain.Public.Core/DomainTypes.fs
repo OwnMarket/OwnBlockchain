@@ -49,6 +49,12 @@ type TransferAssetTxAction = {
     Amount : AssetAmount
 }
 
+type CreateAssetEmissionTxAction = {
+    EmissionAccountHash : AccountHash
+    AssetHash : AssetHash
+    Amount : AssetAmount
+}
+
 type SetAccountControllerTxAction = {
     AccountHash : AccountHash
     ControllerAddress : ChainiumAddress
@@ -62,6 +68,7 @@ type SetAssetControllerTxAction = {
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
+    | CreateAssetEmission of CreateAssetEmissionTxAction
     | SetAccountController of SetAccountControllerTxAction
     | SetAssetController of SetAssetControllerTxAction
 

@@ -19,6 +19,7 @@ module Helpers =
     let extractActionData<'T> = function
         | TransferChx action -> box action :?> 'T
         | TransferAsset action -> box action :?> 'T
+        | CreateAssetEmission action -> box action :?> 'T
         | SetAccountController action -> box action :?> 'T
         | SetAssetController action -> box action :?> 'T
 

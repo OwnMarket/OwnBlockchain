@@ -24,16 +24,12 @@ module Serialization =
             |> box
 
     let private actionsBasedOnTransactionType =
-        let transferChxAction trType token = tokenToAction<TransferChxTxActionDto> trType token
-        let transferAssetAction trType token = tokenToAction<TransferAssetTxActionDto> trType token
-        let setAccountControllerAction trType token = tokenToAction<SetAccountControllerTxActionDto> trType token
-        let setAssetControllerAction trType token = tokenToAction<SetAssetControllerTxActionDto> trType token
-
         [
-            "TransferChx", transferChxAction
-            "TransferAsset", transferAssetAction
-            "SetAccountController", setAccountControllerAction
-            "SetAssetController", setAssetControllerAction
+            "TransferChx", tokenToAction<TransferChxTxActionDto>
+            "TransferAsset", tokenToAction<TransferAssetTxActionDto>
+            "CreateAssetEmission", tokenToAction<CreateAssetEmissionTxActionDto>
+            "SetAccountController", tokenToAction<SetAccountControllerTxActionDto>
+            "SetAssetController", tokenToAction<SetAssetControllerTxActionDto>
         ] |> Map.ofList
 
     let private tokenValue tokenName (jObject : JObject) =

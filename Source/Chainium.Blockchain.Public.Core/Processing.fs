@@ -167,6 +167,25 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
 
+    let processCreateAssetEmissionTxAction
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (action : CreateAssetEmissionTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAssetController(action.AssetHash) with
+        | Some assetController when assetController = senderAddress ->
+            let accountState = state.GetHolding(action.EmissionAccountHash, action.AssetHash)
+            state.SetHolding(
+                action.EmissionAccountHash,
+                action.AssetHash,
+                { accountState with Amount = accountState.Amount + action.Amount }
+            )
+            Ok state
+        | _ ->
+            Error TxErrorCode.SenderIsNotAssetController
+
     let processSetAccountControllerTxAction
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
@@ -346,6 +365,7 @@ module Processing =
         match action with
         | TransferChx action -> processTransferChxTxAction state senderAddress action
         | TransferAsset action -> processTransferAssetTxAction state senderAddress action
+        | CreateAssetEmission action -> processCreateAssetEmissionTxAction state senderAddress action
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
 
