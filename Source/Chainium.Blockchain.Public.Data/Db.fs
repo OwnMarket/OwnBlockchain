@@ -124,19 +124,6 @@ module Db =
         |? 0M
         |> ChxAmount
 
-    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option =
-        let sql =
-            """
-            SELECT block_timestamp
-            FROM block
-            ORDER BY block_id DESC
-            LIMIT 1
-            """
-
-        DbTools.query<BlockInfoDto> dbConnectionString sql []
-        |> List.tryHead
-        |> Option.map (fun item -> Timestamp item.BlockTimestamp)
-
     let getLastBlockNumber (dbConnectionString : string) : BlockNumber option =
         let sql =
             """
@@ -149,6 +136,19 @@ module Db =
         DbTools.query<BlockInfoDto> dbConnectionString sql []
         |> List.tryHead
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
+
+    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option =
+        let sql =
+            """
+            SELECT block_timestamp
+            FROM block
+            ORDER BY block_id DESC
+            LIMIT 1
+            """
+
+        DbTools.query<BlockInfoDto> dbConnectionString sql []
+        |> List.tryHead
+        |> Option.map (fun item -> Timestamp item.BlockTimestamp)
 
     let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) : ChxBalanceStateDto option =
         let sql =
@@ -167,6 +167,30 @@ module Db =
         | [] -> None
         | [chxAddressDetails] -> Some chxAddressDetails
         | _ -> failwithf "Multiple CHX balance entries found for address %A" address
+
+    let getHoldingState
+        (dbConnectionString : string)
+        (AccountHash accountHash, AssetHash assetHash)
+        : HoldingStateDto option =
+        let sql =
+            """
+            SELECT h.amount, h.nonce
+            FROM holding AS h
+            JOIN account AS a USING (account_id)
+            WHERE a.account_hash = @accountHash
+            AND h.asset_hash = @assetHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+                "@assetHash", assetHash |> box
+            ]
+
+        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [holdingDetails] -> Some holdingDetails
+        | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
 
     let getAccountHoldings
         (dbConnectionString : string)
@@ -207,30 +231,6 @@ module Db =
         match DbTools.query<AccountHoldingsDto> dbConnectionString sql sqlParams with
         | [] -> None
         | holdingDetails -> Some holdingDetails
-
-    let getHoldingState
-        (dbConnectionString : string)
-        (AccountHash accountHash, AssetHash assetHash)
-        : HoldingStateDto option =
-        let sql =
-            """
-            SELECT h.amount, h.nonce
-            FROM holding AS h
-            JOIN account AS a USING (account_id)
-            WHERE a.account_hash = @accountHash
-            AND h.asset_hash = @assetHash
-            """
-
-        let sqlParams =
-            [
-                "@accountHash", accountHash |> box
-                "@assetHash", assetHash |> box
-            ]
-
-        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
-        | [] -> None
-        | [holdingDetails] -> Some holdingDetails
-        | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
 
     let getAccountController (dbConnectionString : string) (AccountHash accountHash) : ChainiumAddress option =
         let sql =
