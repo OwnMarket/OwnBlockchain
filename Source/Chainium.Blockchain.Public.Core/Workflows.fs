@@ -334,10 +334,10 @@ module Workflows =
         : Result<GetAddressApiResponseDto, AppErrors> =
         match getChxBalanceState chainiumAddress with
         | Some addressState ->
-            Ok (Mapping.chxBalanceStateDtoToGetAddressApiResponseDto
-                    (chainiumAddress |> (fun (ChainiumAddress a) -> a))
-                    addressState
-            )
+            Mapping.chxBalanceStateDtoToGetAddressApiResponseDto
+                (chainiumAddress |> (fun (ChainiumAddress a) -> a))
+                addressState
+            |> Ok
         | None -> Result.appError "Chainium Address does not exist"
 
     let getAccountApi
@@ -352,14 +352,15 @@ module Workflows =
         | None -> Result.appError (sprintf "Account %A does not exists" accountHash)
         | Some (ChainiumAddress accountController) ->
             match getAccountHoldings accountHash assetHash with
-                | None -> []
-                | Some holdings -> holdings
+            | None -> []
+            | Some holdings -> holdings
             |> (fun v ->
-                Ok (Mapping.accountHoldingsDtoToGetAccoungHoldingsResponseDto
-                        (accountHash |> (fun (AccountHash h) -> h))
-                        accountController
-                        v)
-                )
+                Mapping.accountHoldingsDtoToGetAccoungHoldingsResponseDto
+                    (accountHash |> (fun (AccountHash h) -> h))
+                    accountController
+                    v
+                |> Ok
+            )
 
     let getBlockApi
         getBlock
