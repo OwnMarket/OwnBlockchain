@@ -158,10 +158,10 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let assetControllers =
+        let assets =
             [
-                AssetHash "EEEE", ChainiumAddress "FFFF" |> Some
-                AssetHash "GGGG", ChainiumAddress "HHHH" |> Some
+                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "FFFF"}
+                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "HHHH"}
             ]
             |> Map.ofList
 
@@ -171,7 +171,7 @@ module BlocksTests =
                 ChxBalances = chxBalances
                 Holdings = holdings
                 AccountControllers = accountControllers
-                AssetControllers = assetControllers
+                Assets = assets
             }
 
         let txSetRoot = "AAABBBCCC"
@@ -291,10 +291,10 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let assetControllers =
+        let assets =
             [
-                AssetHash "EEEE", ChainiumAddress "FFFF" |> Some
-                AssetHash "GGGG", ChainiumAddress "HHHH" |> Some
+                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "FFFF"}
+                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "HHHH"}
             ]
             |> Map.ofList
 
@@ -304,7 +304,7 @@ module BlocksTests =
                 ChxBalances = chxBalances
                 Holdings = holdings
                 AccountControllers = accountControllers
-                AssetControllers = assetControllers
+                Assets = assets
             }
 
         // ACT
@@ -358,9 +358,9 @@ module BlocksTests =
                 |> Map.toList
                 |> List.map (Blocks.createAccountControllerStateHash Hashing.decode Hashing.hash)
 
-                assetControllers
+                assets
                 |> Map.toList
-                |> List.map (Blocks.createAssetControllerStateHash Hashing.decode Hashing.hash)
+                |> List.map (Blocks.createAssetStateHash Hashing.decode Hashing.hash)
             ]
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
@@ -428,10 +428,10 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let assetControllers =
+        let assets =
             [
-                AssetHash "EEEE", ChainiumAddress "FFFF" |> Some
-                AssetHash "GGGG", ChainiumAddress "HHHH" |> Some
+                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "FFFF"}
+                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "HHHH"}
             ]
             |> Map.ofList
 
@@ -441,7 +441,7 @@ module BlocksTests =
                 ChxBalances = chxBalances
                 Holdings = holdings
                 AccountControllers = accountControllers
-                AssetControllers = assetControllers
+                Assets = assets
             }
 
         let assembledBlock =

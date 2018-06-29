@@ -207,6 +207,22 @@ module Mapping =
             Amount = state.Amount |> (fun (AssetAmount a) -> a)
         }
 
+    let assetStateFromDto (dto : AssetStateDto) : AssetState =
+        {
+            AssetCode =
+                if dto.AssetCode.IsNullOrWhiteSpace() then
+                    None
+                else
+                    dto.AssetCode |> AssetCode |> Some
+            ControllerAddress = ChainiumAddress dto.ControllerAddress
+        }
+
+    let assetStateToDto (state : AssetState) : AssetStateDto =
+        {
+            AssetCode = state.AssetCode |> Option.map (fun (AssetCode c) -> c) |> Option.toObj
+            ControllerAddress = state.ControllerAddress |> fun (ChainiumAddress a) -> a
+        }
+
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults
@@ -238,16 +254,10 @@ module Mapping =
             )
             |> Map.ofList
 
-        let assetControllers =
-            output.AssetControllers
+        let assets =
+            output.Assets
             |> Map.toList
-            |> List.map (fun (AssetHash asset, controller) ->
-                let rawControllerAddress =
-                    controller
-                    |> Option.map (fun (ChainiumAddress a) -> a)
-                    |> Option.toObj
-                asset, { AssetControllerStateDto.ControllerAddress = rawControllerAddress }
-            )
+            |> List.map (fun (AssetHash ah, s : AssetState) -> ah, assetStateToDto s)
             |> Map.ofList
 
         {
@@ -255,7 +265,7 @@ module Mapping =
             ChxBalances = chxBalances
             Holdings = holdings
             AccountControllers = accountControllers
-            AssetControllers = assetControllers
+            Assets = assets
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -62,10 +62,12 @@ module DbChanges =
                     CREATE TABLE IF NOT EXISTS asset (
                         asset_id INTEGER NOT NULL,
                         asset_hash TEXT NOT NULL,
+                        asset_code TEXT,
                         controller_address TEXT NOT NULL,
 
                         CONSTRAINT asset__pk PRIMARY KEY (asset_id),
-                        CONSTRAINT asset__uk__asset_hash UNIQUE (asset_hash)
+                        CONSTRAINT asset__uk__asset_hash UNIQUE (asset_hash),
+                        CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
                     );
 
                     CREATE TABLE IF NOT EXISTS holding (
@@ -147,10 +149,12 @@ module DbChanges =
                     CREATE TABLE IF NOT EXISTS asset (
                         asset_id BIGSERIAL NOT NULL,
                         asset_hash TEXT NOT NULL,
+                        asset_code TEXT,
                         controller_address TEXT NOT NULL,
 
                         CONSTRAINT asset__pk PRIMARY KEY (asset_id),
-                        CONSTRAINT asset__uk__asset_hash UNIQUE (asset_hash)
+                        CONSTRAINT asset__uk__asset_hash UNIQUE (asset_hash),
+                        CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
                     );
 
                     CREATE TABLE IF NOT EXISTS holding (

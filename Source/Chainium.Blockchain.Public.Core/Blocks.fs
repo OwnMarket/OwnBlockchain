@@ -58,7 +58,7 @@ module Blocks =
         let addressBytes =
             match controllerAddress with
             | Some (ChainiumAddress a) -> decodeHash a
-            | None -> [| 0uy |]
+            | None -> Array.empty
 
         [
             decodeHash accountHash
@@ -67,19 +67,21 @@ module Blocks =
         |> Array.concat
         |> createHash
 
-    let createAssetControllerStateHash
+    let createAssetStateHash
         decodeHash
         createHash
-        (AssetHash assetHash, controllerAddress : ChainiumAddress option)
+        (AssetHash assetHash, state : AssetState)
         =
 
-        let addressBytes =
-            match controllerAddress with
-            | Some (ChainiumAddress a) -> decodeHash a
-            | None -> [| 0uy |]
+        let addressBytes = state.ControllerAddress |> fun (ChainiumAddress a) -> decodeHash a
+        let assetCodeBytes =
+            match state.AssetCode with
+            | Some (AssetCode code) -> code |> stringToBytes |> createHash |> decodeHash
+            | None -> Array.empty
 
         [
             decodeHash assetHash
+            assetCodeBytes
             addressBytes
         ]
         |> Array.concat
@@ -162,10 +164,10 @@ module Blocks =
             |> List.map (createAccountControllerStateHash decodeHash createHash)
 
         let assetControllerHashes =
-            output.AssetControllers
+            output.Assets
             |> Map.toList
             |> List.sort // We need a predictable order
-            |> List.map (createAssetControllerStateHash decodeHash createHash)
+            |> List.map (createAssetStateHash decodeHash createHash)
 
         let stateRoot =
             chxBalanceHashes @ holdingHashes @ accountControllerHashes @ assetControllerHashes
@@ -247,7 +249,7 @@ module Blocks =
             ChxBalances = chxBalances
             Holdings = Map.empty
             AccountControllers = Map.empty
-            AssetControllers = Map.empty
+            Assets = Map.empty
         }
 
     let createGenesisBlock

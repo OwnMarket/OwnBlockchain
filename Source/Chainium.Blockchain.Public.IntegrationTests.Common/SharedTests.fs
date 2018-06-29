@@ -347,10 +347,12 @@ module SharedTests =
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // ASSERT
-        let assetController = Db.getAssetController connectionString (AssetHash assetHash)
+        let assetState =
+            Db.getAssetState connectionString (AssetHash assetHash)
+            |> Option.map Mapping.assetStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
         let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
 
-        test <@ assetController = Some newController.Address @>
+        test <@ assetState = Some { AssetCode = None; ControllerAddress = newController.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - fee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + fee); Nonce = 0L } @>

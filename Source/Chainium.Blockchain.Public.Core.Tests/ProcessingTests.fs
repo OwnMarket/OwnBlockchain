@@ -172,8 +172,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         // ACT
         let output =
@@ -184,7 +184,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -253,8 +253,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         // ACT
         let output =
@@ -265,7 +265,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -335,8 +335,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         // ACT
         let output =
@@ -347,7 +347,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -417,8 +417,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         let processTxSet () =
             Processing.processTxSet
@@ -428,7 +428,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -502,8 +502,8 @@ module ProcessingTests =
         let getAccountController _ =
             Some senderWallet.Address
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         // ACT
         let output =
@@ -514,7 +514,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -594,8 +594,8 @@ module ProcessingTests =
         let getAccountController _ =
             Some senderWallet.Address
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         // ACT
         let output =
@@ -606,7 +606,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -684,8 +684,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            Some senderWallet.Address
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
 
         // ACT
         let output =
@@ -696,7 +696,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -770,8 +770,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            Some senderWallet.Address
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
 
         // ACT
         let output =
@@ -782,7 +782,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -852,8 +852,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            Some currentControllerWallet.Address
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
 
         // ACT
         let output =
@@ -864,7 +864,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -942,8 +942,8 @@ module ProcessingTests =
             | "Sender" -> Some senderWallet.Address
             | c -> failwithf "Unhandled account controller case: %s" c
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         // ACT
         let output =
@@ -954,7 +954,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1022,8 +1022,8 @@ module ProcessingTests =
         let getAccountController _ =
             Some currentControllerWallet.Address
 
-        let getAssetController _ =
-            failwith "getAssetController should not be called"
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
 
         // ACT
         let output =
@@ -1034,7 +1034,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1110,10 +1110,10 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
+        let getAssetState _ =
             match currentControllerCase with
             | "None" -> None
-            | "Sender" -> Some senderWallet.Address
+            | "Sender" -> Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
             | c -> failwithf "Unhandled asset controller case: %s" c
 
         // ACT
@@ -1125,7 +1125,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1134,7 +1134,6 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
-        let assetController = newControllerWallet.Address
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -1142,7 +1141,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.AssetControllers.[assetHash] = Some newControllerWallet.Address @>
+        test <@ output.Assets.[assetHash].ControllerAddress = newControllerWallet.Address @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAssetController fails if sender not current controller`` () =
@@ -1193,8 +1192,8 @@ module ProcessingTests =
         let getAccountController _ =
             failwith "getAccountController should not be called"
 
-        let getAssetController _ =
-            Some currentControllerWallet.Address
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
 
         // ACT
         let output =
@@ -1205,7 +1204,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1225,4 +1224,4 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.AssetControllers.[assetHash] = Some currentControllerWallet.Address @>
+        test <@ output.Assets.[assetHash].ControllerAddress = currentControllerWallet.Address @>

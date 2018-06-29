@@ -26,6 +26,7 @@ type Signature = {
 
 type AccountHash = AccountHash of string
 type AssetHash = AssetHash of string
+type AssetCode = AssetCode of string
 
 type Nonce = Nonce of int64
 type ChxAmount = ChxAmount of decimal
@@ -155,12 +156,17 @@ type HoldingState = {
     Amount : AssetAmount
 }
 
+type AssetState = {
+    AssetCode : AssetCode option
+    ControllerAddress : ChainiumAddress
+}
+
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     AccountControllers : Map<AccountHash, ChainiumAddress option>
-    AssetControllers : Map<AssetHash, ChainiumAddress option>
+    Assets : Map<AssetHash, AssetState>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

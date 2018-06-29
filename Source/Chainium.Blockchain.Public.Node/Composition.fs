@@ -48,7 +48,7 @@ module Composition =
 
     let getAccountController = Db.getAccountController Config.DbConnectionString
 
-    let getAssetController = Db.getAssetController Config.DbConnectionString
+    let getAssetState = Db.getAssetState Config.DbConnectionString
 
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
@@ -74,7 +74,7 @@ module Composition =
             getChxBalanceState
             getHoldingState
             getAccountController
-            getAssetController
+            getAssetState
             getLastBlockNumber
             getBlock
             Hashing.decode
@@ -109,7 +109,7 @@ module Composition =
             getChxBalanceState
             getHoldingState
             getAccountController
-            getAssetController
+            getAssetState
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree

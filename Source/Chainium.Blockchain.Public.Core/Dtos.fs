@@ -137,7 +137,8 @@ type AccountControllerStateDto = {
 }
 
 [<CLIMutable>]
-type AssetControllerStateDto = {
+type AssetStateDto = {
+    AssetCode : string
     ControllerAddress : string
 }
 
@@ -146,7 +147,7 @@ type ProcessingOutputDto = {
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
     AccountControllers : Map<string, AccountControllerStateDto>
-    AssetControllers : Map<string, AssetControllerStateDto>
+    Assets : Map<string, AssetStateDto>
 }
 
 [<CLIMutable>]
@@ -169,8 +170,9 @@ type AccountControllerDto = {
 }
 
 [<CLIMutable>]
-type AssetControllerDto = {
+type AssetInfoDto = {
     AssetHash : string
+    AssetCode : string
     ControllerAddress : string
 }
 

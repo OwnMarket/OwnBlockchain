@@ -230,7 +230,7 @@ module Db =
 
         match DbTools.query<AccountHoldingsDto> dbConnectionString sql sqlParams with
         | [] -> None
-        | holdingDetails -> Some holdingDetails
+        | holdings -> Some holdings
 
     let getAccountController (dbConnectionString : string) (AccountHash accountHash) : ChainiumAddress option =
         let sql =
@@ -250,10 +250,10 @@ module Db =
         | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
         | _ -> failwithf "Multiple controllers found for account hash %A" accountHash
 
-    let getAssetController (dbConnectionString : string) (AssetHash assetHash) : ChainiumAddress option =
+    let getAssetState (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
             """
-            SELECT controller_address
+            SELECT asset_code, controller_address
             FROM asset
             WHERE asset_hash = @assetHash
             """
@@ -263,10 +263,28 @@ module Db =
                 "@assetHash", assetHash |> box
             ]
 
-        match DbTools.query<AssetControllerDto> dbConnectionString sql sqlParams with
+        match DbTools.query<AssetStateDto> dbConnectionString sql sqlParams with
         | [] -> None
-        | [assetDetails] -> assetDetails.ControllerAddress |> ChainiumAddress |> Some
-        | _ -> failwithf "Multiple controllers found for asset hash %A" assetHash
+        | [assetState] -> Some assetState
+        | _ -> failwithf "Multiple assets found for asset hash %A" assetHash
+
+    let getAssetHashByCode (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
+        let sql =
+            """
+            SELECT asset_hash
+            FROM asset
+            WHERE asset_code = @assetCode
+            """
+
+        let sqlParams =
+            [
+                "@assetCode", assetCode |> box
+            ]
+
+        match DbTools.query<string> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [assetHash] -> assetHash |> AssetHash |> Some
+        | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Apply New State
@@ -580,20 +598,27 @@ module Db =
     let private addAsset
         conn
         transaction
-        (assetController : AssetControllerDto)
+        (assetInfo : AssetInfoDto)
         : Result<unit, AppErrors>
         =
 
         let sql =
             """
-            INSERT INTO asset (asset_hash, controller_address)
-            VALUES (@assetHash, @controllerAddress)
+            INSERT INTO asset (asset_hash, asset_code, controller_address)
+            VALUES (@assetHash, @assetCode, @controllerAddress)
             """
+
+        let assetCodeParamValue =
+            if assetInfo.AssetCode.IsNullOrWhiteSpace() then
+                DBNull.Value |> box
+            else
+                assetInfo.AssetCode |> box
 
         let sqlParams =
             [
-                "@assetHash", assetController.AssetHash |> box
-                "@controllerAddress", assetController.ControllerAddress |> box
+                "@assetHash", assetInfo.AssetHash |> box
+                "@assetCode", assetCodeParamValue
+                "@controllerAddress", assetInfo.ControllerAddress |> box
             ]
 
         let error = Result.appError "Failed to insert asset"
@@ -609,27 +634,35 @@ module Db =
     let private updateAsset
         conn
         transaction
-        (assetController : AssetControllerDto)
+        (assetInfo : AssetInfoDto)
         : Result<unit, AppErrors>
         =
 
         let sql =
             """
             UPDATE asset
-            SET controller_address = @assetController
+            SET asset_code = @assetCode,
+                controller_address = @controllerAddress
             WHERE asset_hash = @assetHash
             """
 
+        let assetCodeParamValue =
+            if assetInfo.AssetCode.IsNullOrWhiteSpace() then
+                DBNull.Value |> box
+            else
+                assetInfo.AssetCode |> box
+
         let sqlParams =
             [
-                "@assetHash", assetController.AssetHash |> box
-                "@assetController", assetController.ControllerAddress |> box
+                "@assetHash", assetInfo.AssetHash |> box
+                "@assetCode", assetCodeParamValue
+                "@controllerAddress", assetInfo.ControllerAddress |> box
             ]
 
         let error = Result.appError "Failed to update asset controller address"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 -> addAsset conn transaction assetController
+            | 0 -> addAsset conn transaction assetInfo
             | 1 -> Ok ()
             | _ -> error
         with
@@ -640,21 +673,22 @@ module Db =
     let private updateAssets
         (conn : DbConnection)
         (transaction : DbTransaction)
-        (assetControllers : Map<string, AssetControllerStateDto>)
+        (assets : Map<string, AssetStateDto>)
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (assetHash, (state : AssetControllerStateDto)) =
+        let foldFn result (assetHash, (state : AssetStateDto)) =
             result
             >>= (fun _ ->
                 {
                     AssetHash = assetHash
+                    AssetCode = state.AssetCode
                     ControllerAddress = state.ControllerAddress
                 }
                 |> updateAsset conn transaction
             )
 
-        assetControllers
+        assets
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
@@ -675,7 +709,7 @@ module Db =
             >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
             >>= fun _ -> updateHoldings conn transaction state.Holdings
             >>= fun _ -> updateAccounts conn transaction state.AccountControllers
-            >>= fun _ -> updateAssets conn transaction state.AssetControllers
+            >>= fun _ -> updateAssets conn transaction state.Assets
             >>= fun _ -> updateBlock conn transaction blockInfoDto
 
         match result with

@@ -54,7 +54,7 @@ module Workflows =
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
         getAccountControllerFromStorage
-        getAssetControllerFromStorage
+        getAssetStateFromStorage
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         getBlock
         decodeHash
@@ -72,7 +72,7 @@ module Workflows =
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getAccountController = memoize getAccountControllerFromStorage
-        let getAssetController = memoize getAssetControllerFromStorage
+        let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
 
         match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with
         | [] -> None // Nothing to process.
@@ -99,7 +99,7 @@ module Workflows =
                         getChxBalanceState
                         getHoldingState
                         getAccountController
-                        getAssetController
+                        getAssetState
                         minTxActionFee
                         validatorAddress
                         blockNumber
@@ -142,7 +142,7 @@ module Workflows =
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
         getAccountControllerFromStorage
-        getAssetControllerFromStorage
+        getAssetStateFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -157,7 +157,7 @@ module Workflows =
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getAccountController = memoize getAccountControllerFromStorage
-        let getAssetController = memoize getAssetControllerFromStorage
+        let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
 
         let output =
             block.TxSet
@@ -168,7 +168,7 @@ module Workflows =
                 getChxBalanceState
                 getHoldingState
                 getAccountController
-                getAssetController
+                getAssetState
                 minTxActionFee
                 block.Header.Validator
                 block.Header.Number
@@ -210,7 +210,7 @@ module Workflows =
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
         getAccountControllerFromStorage
-        getAssetControllerFromStorage
+        getAssetStateFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -238,7 +238,7 @@ module Workflows =
                                 getChxBalanceStateFromStorage
                                 getHoldingStateFromStorage
                                 getAccountControllerFromStorage
-                                getAssetControllerFromStorage
+                                getAssetStateFromStorage
                                 decodeHash
                                 createHash
                                 createMerkleTree
