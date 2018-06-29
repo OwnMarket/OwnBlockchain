@@ -54,9 +54,9 @@ module Api =
         task {
 
             let response =
-                match ctx.TryGetQueryStringValue "asset" with
-                | None -> Composition.getAccountApi (AccountHash accountHash) None
-                | Some asset -> Composition.getAccountApi (AccountHash accountHash) (Some asset)
+                ctx.TryGetQueryStringValue "asset"
+                |> Option.map AssetHash
+                |> Composition.getAccountApi (AccountHash accountHash)
                 |> toApiResponse
 
             return! response next ctx

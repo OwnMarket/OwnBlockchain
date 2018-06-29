@@ -53,7 +53,7 @@ module Workflows =
         isValidAddress
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
-        getAccountControllerFromStorage
+        getAccountStateFromStorage
         getAssetStateFromStorage
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         getBlock
@@ -71,7 +71,7 @@ module Workflows =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
-        let getAccountController = memoize getAccountControllerFromStorage
+        let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
 
         match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with
@@ -98,7 +98,7 @@ module Workflows =
                         isValidAddress
                         getChxBalanceState
                         getHoldingState
-                        getAccountController
+                        getAccountState
                         getAssetState
                         minTxActionFee
                         validatorAddress
@@ -141,7 +141,7 @@ module Workflows =
         isValidAddress
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
-        getAccountControllerFromStorage
+        getAccountStateFromStorage
         getAssetStateFromStorage
         decodeHash
         createHash
@@ -156,7 +156,7 @@ module Workflows =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
-        let getAccountController = memoize getAccountControllerFromStorage
+        let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
 
         let output =
@@ -167,7 +167,7 @@ module Workflows =
                 isValidAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 minTxActionFee
                 block.Header.Validator
@@ -209,7 +209,7 @@ module Workflows =
         isValidAddress
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
-        getAccountControllerFromStorage
+        getAccountStateFromStorage
         getAssetStateFromStorage
         decodeHash
         createHash
@@ -237,7 +237,7 @@ module Workflows =
                                 isValidAddress
                                 getChxBalanceStateFromStorage
                                 getHoldingStateFromStorage
-                                getAccountControllerFromStorage
+                                getAccountStateFromStorage
                                 getAssetStateFromStorage
                                 decodeHash
                                 createHash
@@ -334,33 +334,31 @@ module Workflows =
         : Result<GetAddressApiResponseDto, AppErrors> =
         match getChxBalanceState chainiumAddress with
         | Some addressState ->
-            Mapping.chxBalanceStateDtoToGetAddressApiResponseDto
-                (chainiumAddress |> (fun (ChainiumAddress a) -> a))
-                addressState
+            Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress addressState
             |> Ok
-        | None -> Result.appError "Chainium Address does not exist"
+        | None ->
+            chainiumAddress
+            |> fun (ChainiumAddress a) -> sprintf "Chainium address %s does not exist." a
+            |> Result.appError
 
     let getAccountApi
-        getAccountController
+        (getAccountState : AccountHash -> AccountStateDto option)
         getAccountHoldings
         (accountHash : AccountHash)
-        (assetHash : string option)
+        (assetHash : AssetHash option)
         : Result<GetAccountApiResponseDto, AppErrors>
         =
 
-        match getAccountController accountHash with
-        | None -> Result.appError (sprintf "Account %A does not exists" accountHash)
-        | Some (ChainiumAddress accountController) ->
-            match getAccountHoldings accountHash assetHash with
-            | None -> []
-            | Some holdings -> holdings
-            |> (fun v ->
-                Mapping.accountHoldingsDtoToGetAccoungHoldingsResponseDto
-                    (accountHash |> (fun (AccountHash h) -> h))
-                    accountController
-                    v
-                |> Ok
-            )
+        match getAccountState accountHash with
+        | None ->
+            accountHash
+            |> fun (AccountHash h) -> sprintf "Account %s does not exist." h
+            |> Result.appError
+        | Some accountState ->
+            getAccountHoldings accountHash assetHash
+            |? []
+            |> Mapping.accountHoldingDtosToGetAccoungHoldingsResponseDto accountHash accountState
+            |> Ok
 
     let getBlockApi
         getBlock
@@ -369,8 +367,8 @@ module Workflows =
         =
 
         match getBlock blockNumber with
-            | Ok block -> Ok (Mapping.blockTxsToGetBlockApiResponseDto block)
-            | _ -> Result.appError (sprintf "Block %A does not exists" (blockNumber |> fun (BlockNumber b) -> b))
+        | Ok block -> Ok (Mapping.blockTxsToGetBlockApiResponseDto block)
+        | _ -> Result.appError (sprintf "Block %i does not exist" (blockNumber |> fun (BlockNumber b) -> b))
 
     let getTxApi
         getTxInfo

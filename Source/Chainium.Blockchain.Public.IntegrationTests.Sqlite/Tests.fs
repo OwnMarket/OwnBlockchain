@@ -31,8 +31,8 @@ module Tests =
         SharedTests.transactionProcessingTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
-    let ``AccountManagement - get account controller for SQLite`` () =
-        SharedTests.getAccountControllerTest Config.DbEngineType Config.DbConnectionString
+    let ``AccountManagement - get account state for SQLite`` () =
+        SharedTests.getAccountStateTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
     let ``TransactionProcessing - set account controller`` () =

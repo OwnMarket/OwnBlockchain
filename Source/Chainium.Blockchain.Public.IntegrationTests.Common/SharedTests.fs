@@ -239,7 +239,7 @@ module SharedTests =
         // ASSERT
         test <@ loadedBlockDto = Ok expectedBlockDto @>
 
-    let getAccountControllerTest engineType connectionString =
+    let getAccountStateTest engineType connectionString =
         Helper.testCleanup engineType connectionString
         DbInit.init engineType connectionString
         let wallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
@@ -263,9 +263,9 @@ module SharedTests =
         |> DbTools.execute connectionString insertSql
         |> ignore
 
-        match Db.getAccountController connectionString (AccountHash address) with // TODO: Use separate account hash.
-            | None -> failwith "Unable to get controller."
-            | Some resultingAddress -> test <@ resultingAddress = wallet.Address @>
+        match Db.getAccountState connectionString (AccountHash address) with // TODO: Use separate account hash.
+        | None -> failwith "Unable to get account state."
+        | Some accountState -> test <@ ChainiumAddress accountState.ControllerAddress = wallet.Address @>
 
     let setAccountControllerTest engineType connectionString =
         // ARRANGE
@@ -303,11 +303,13 @@ module SharedTests =
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // ASSERT
-        let accountController = Db.getAccountController connectionString (AccountHash accountHash)
+        let accountState =
+            Db.getAccountState connectionString (AccountHash accountHash)
+            |> Option.map Mapping.accountStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
         let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
 
-        test <@ accountController = Some newController.Address @>
+        test <@ accountState = Some { ControllerAddress = newController.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - fee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + fee); Nonce = 0L } @>
 

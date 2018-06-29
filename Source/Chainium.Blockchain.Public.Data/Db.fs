@@ -195,8 +195,8 @@ module Db =
     let getAccountHoldings
         (dbConnectionString : string)
         (AccountHash accountHash)
-        (assetHash : string option)
-        : AccountHoldingsDto list option
+        (assetHash : AssetHash option)
+        : AccountHoldingDto list option
         =
 
         let filter =
@@ -222,17 +222,17 @@ module Db =
                 [
                     "@accountHash", accountHash |> box
                 ]
-            | Some hash ->
+            | Some (AssetHash hash) ->
                 [
                     "@accountHash", accountHash |> box
                     "@assetHash", hash |> box
                 ]
 
-        match DbTools.query<AccountHoldingsDto> dbConnectionString sql sqlParams with
+        match DbTools.query<AccountHoldingDto> dbConnectionString sql sqlParams with
         | [] -> None
         | holdings -> Some holdings
 
-    let getAccountController (dbConnectionString : string) (AccountHash accountHash) : ChainiumAddress option =
+    let getAccountState (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
         let sql =
             """
             SELECT controller_address
@@ -245,10 +245,10 @@ module Db =
                 "@accountHash", accountHash |> box
             ]
 
-        match DbTools.query<AccountControllerDto> dbConnectionString sql sqlParams with
+        match DbTools.query<AccountStateDto> dbConnectionString sql sqlParams with
         | [] -> None
-        | [accountDetails] -> accountDetails.ControllerAddress |> ChainiumAddress |> Some
-        | _ -> failwithf "Multiple controllers found for account hash %A" accountHash
+        | [accountState] -> Some accountState
+        | _ -> failwithf "Multiple accounts found for account hash %A" accountHash
 
     let getAssetState (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
@@ -517,7 +517,7 @@ module Db =
     let private addAccount
         conn
         transaction
-        (accountController : AccountControllerDto)
+        (accountInfo : AccountInfoDto)
         : Result<unit, AppErrors>
         =
 
@@ -529,8 +529,8 @@ module Db =
 
         let sqlParams =
             [
-                "@accountHash", accountController.AccountHash |> box
-                "@controllerAddress", accountController.ControllerAddress |> box
+                "@accountHash", accountInfo.AccountHash |> box
+                "@controllerAddress", accountInfo.ControllerAddress |> box
             ]
 
         let error = Result.appError "Failed to insert account"
@@ -546,7 +546,7 @@ module Db =
     let private updateAccount
         conn
         transaction
-        (accountController : AccountControllerDto)
+        (accountInfo : AccountInfoDto)
         : Result<unit, AppErrors>
         =
 
@@ -559,14 +559,14 @@ module Db =
 
         let sqlParams =
             [
-                "@accountHash", accountController.AccountHash |> box
-                "@accountController", accountController.ControllerAddress |> box
+                "@accountHash", accountInfo.AccountHash |> box
+                "@accountController", accountInfo.ControllerAddress |> box
             ]
 
         let error = Result.appError "Failed to update account controller address"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 -> addAccount conn transaction accountController
+            | 0 -> addAccount conn transaction accountInfo
             | 1 -> Ok ()
             | _ -> error
         with
@@ -577,11 +577,11 @@ module Db =
     let private updateAccounts
         (conn : DbConnection)
         (transaction : DbTransaction)
-        (accountControllers : Map<string, AccountControllerStateDto>)
+        (accounts : Map<string, AccountStateDto>)
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (accountHash, (state : AccountControllerStateDto)) =
+        let foldFn result (accountHash, (state : AccountStateDto)) =
             result
             >>= (fun _ ->
                 {
@@ -591,7 +591,7 @@ module Db =
                 |> updateAccount conn transaction
             )
 
-        accountControllers
+        accounts
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
@@ -708,7 +708,7 @@ module Db =
             removeProcessedTxs conn transaction state.TxResults
             >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
             >>= fun _ -> updateHoldings conn transaction state.Holdings
-            >>= fun _ -> updateAccounts conn transaction state.AccountControllers
+            >>= fun _ -> updateAccounts conn transaction state.Accounts
             >>= fun _ -> updateAssets conn transaction state.Assets
             >>= fun _ -> updateBlock conn transaction blockInfoDto
 

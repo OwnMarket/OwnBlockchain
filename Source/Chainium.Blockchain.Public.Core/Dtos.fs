@@ -138,7 +138,7 @@ type HoldingStateDto = {
 }
 
 [<CLIMutable>]
-type AccountControllerStateDto = {
+type AccountStateDto = {
     ControllerAddress : string
 }
 
@@ -152,7 +152,7 @@ type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
-    AccountControllers : Map<string, AccountControllerStateDto>
+    Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
 }
 
@@ -170,7 +170,7 @@ type HoldingInfoDto = {
 }
 
 [<CLIMutable>]
-type AccountControllerDto = {
+type AccountInfoDto = {
     AccountHash : string
     ControllerAddress : string
 }
@@ -183,9 +183,9 @@ type AssetInfoDto = {
 }
 
 [<CLIMutable>]
-type AccountHoldingsDto = {
-    AssetHash: string
-    Amount: decimal
+type AccountHoldingDto = {
+    AssetHash : string
+    Amount : decimal
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -215,14 +215,14 @@ type GetAccountApiRequestDto = {
 }
 
 type GetAccountApiHoldingDto = {
-    AssetHash: string
-    Balance: decimal
+    AssetHash : string
+    Balance : decimal
 }
 
 type GetAccountApiResponseDto = {
-    AccountHash: string
-    ControllerAddress: string
-    Holdings: GetAccountApiHoldingDto list
+    AccountHash : string
+    ControllerAddress : string
+    Holdings : GetAccountApiHoldingDto list
 }
 
 type GetBlockApiResponseDto = {

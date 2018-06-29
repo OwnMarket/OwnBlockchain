@@ -28,8 +28,8 @@ module Tests =
         SharedTests.transactionProcessingTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
-    let ``AccountManagement - get account controller for Postgres`` () =
-        SharedTests.getAccountControllerTest Config.DbEngineType Config.DbConnectionString
+    let ``AccountManagement - get account state for Postgres`` () =
+        SharedTests.getAccountStateTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
     let ``TransactionProcessing - set account controller`` () =

@@ -199,8 +199,8 @@ module Mapping =
 
     let chxBalanceStateToDto (state : ChxBalanceState) : ChxBalanceStateDto =
         {
-            Amount = state.Amount |> (fun (ChxAmount a) -> a)
-            Nonce = state.Nonce |> (fun (Nonce n) -> n)
+            Amount = state.Amount |> fun (ChxAmount a) -> a
+            Nonce = state.Nonce |> fun (Nonce n) -> n
         }
 
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
@@ -210,7 +210,17 @@ module Mapping =
 
     let holdingStateToDto (state : HoldingState) : HoldingStateDto =
         {
-            Amount = state.Amount |> (fun (AssetAmount a) -> a)
+            Amount = state.Amount |> fun (AssetAmount a) -> a
+        }
+
+    let accountStateFromDto (dto : AccountStateDto) : AccountState =
+        {
+            ControllerAddress = ChainiumAddress dto.ControllerAddress
+        }
+
+    let accountStateToDto (dto : AccountState) : AccountStateDto =
+        {
+            ControllerAddress = dto.ControllerAddress |> fun (ChainiumAddress a) -> a
         }
 
     let assetStateFromDto (dto : AssetStateDto) : AssetState =
@@ -248,16 +258,10 @@ module Mapping =
             |> List.map (fun ((AccountHash ah, AssetHash ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
             |> Map.ofList
 
-        let accountControllers =
-            output.AccountControllers
+        let accounts =
+            output.Accounts
             |> Map.toList
-            |> List.map (fun (AccountHash account, controller) ->
-                let rawControllerAddress =
-                    controller
-                    |> Option.map (fun (ChainiumAddress a) -> a)
-                    |> Option.toObj
-                account, { AccountControllerStateDto.ControllerAddress = rawControllerAddress }
-            )
+            |> List.map (fun (AccountHash ah, s : AccountState) -> ah, accountStateToDto s)
             |> Map.ofList
 
         let assets =
@@ -270,7 +274,7 @@ module Mapping =
             ProcessingOutputDto.TxResults = txResults
             ChxBalances = chxBalances
             Holdings = holdings
-            AccountControllers = accountControllers
+            Accounts = accounts
             Assets = assets
         }
 
@@ -286,20 +290,24 @@ module Mapping =
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let chxBalanceStateDtoToGetAddressApiResponseDto (chainiumAddress: string) (chxBalanceState : ChxBalanceStateDto) =
+    let chxBalanceStateDtoToGetAddressApiResponseDto
+        (ChainiumAddress chainiumAddress)
+        (chxBalanceState : ChxBalanceStateDto)
+        =
+
         {
             GetAddressApiResponseDto.ChainiumAddress = chainiumAddress
             GetAddressApiResponseDto.Balance = chxBalanceState.Amount
             GetAddressApiResponseDto.Nonce = chxBalanceState.Nonce
         }
 
-    let accountHoldingsDtoToGetAccoungHoldingsResponseDto
-        (accountHash : string)
-        (accountController : string)
-        (holdings : AccountHoldingsDto list)
+    let accountHoldingDtosToGetAccoungHoldingsResponseDto
+        (AccountHash accountHash)
+        (accountState : AccountStateDto)
+        (holdings : AccountHoldingDto list)
         =
 
-        let mapFn (holding : AccountHoldingsDto) : GetAccountApiHoldingDto =
+        let mapFn (holding : AccountHoldingDto) : GetAccountApiHoldingDto =
             {
                 AssetHash = holding.AssetHash
                 Balance = holding.Amount
@@ -307,7 +315,7 @@ module Mapping =
 
         {
             GetAccountApiResponseDto.AccountHash = accountHash
-            GetAccountApiResponseDto.ControllerAddress = accountController
+            GetAccountApiResponseDto.ControllerAddress = accountState.ControllerAddress
             GetAccountApiResponseDto.Holdings = List.map mapFn holdings
         }
 

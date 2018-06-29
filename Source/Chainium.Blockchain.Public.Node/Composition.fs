@@ -46,7 +46,7 @@ module Composition =
 
     let getHoldingState = Db.getHoldingState Config.DbConnectionString
 
-    let getAccountController = Db.getAccountController Config.DbConnectionString
+    let getAccountState = Db.getAccountState Config.DbConnectionString
 
     let getAssetState = Db.getAssetState Config.DbConnectionString
 
@@ -73,7 +73,7 @@ module Composition =
             Hashing.isValidChainiumAddress
             getChxBalanceState
             getHoldingState
-            getAccountController
+            getAccountState
             getAssetState
             getLastBlockNumber
             getBlock
@@ -108,7 +108,7 @@ module Composition =
             Hashing.isValidChainiumAddress
             getChxBalanceState
             getHoldingState
-            getAccountController
+            getAccountState
             getAssetState
             Hashing.decode
             Hashing.hash
@@ -127,7 +127,7 @@ module Composition =
 
     let getAddressApi = Workflows.getAddressApi getChxBalanceState
 
-    let getAccountApi = Workflows.getAccountApi getAccountController getAccountHoldings
+    let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
 
     let getBlockApi = Workflows.getBlockApi getBlock
 

@@ -151,10 +151,10 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let accountControllers =
+        let accounts =
             [
-                AccountHash "AAAA", ChainiumAddress "BBBB" |> Some
-                AccountHash "CCCC", ChainiumAddress "DDDD" |> Some
+                AccountHash "AAAA", {AccountState.ControllerAddress = ChainiumAddress "BBBB"}
+                AccountHash "CCCC", {AccountState.ControllerAddress = ChainiumAddress "DDDD"}
             ]
             |> Map.ofList
 
@@ -170,7 +170,7 @@ module BlocksTests =
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
-                AccountControllers = accountControllers
+                Accounts = accounts
                 Assets = assets
             }
 
@@ -284,10 +284,10 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let accountControllers =
+        let accounts =
             [
-                AccountHash "AAAA", ChainiumAddress "BBBB" |> Some
-                AccountHash "CCCC", ChainiumAddress "DDDD" |> Some
+                AccountHash "AAAA", {AccountState.ControllerAddress = ChainiumAddress "BBBB"}
+                AccountHash "CCCC", {AccountState.ControllerAddress = ChainiumAddress "DDDD"}
             ]
             |> Map.ofList
 
@@ -303,7 +303,7 @@ module BlocksTests =
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
-                AccountControllers = accountControllers
+                Accounts = accounts
                 Assets = assets
             }
 
@@ -354,9 +354,9 @@ module BlocksTests =
                     Blocks.createHoldingStateHash Hashing.decode Hashing.hash (accountHash, assetHash, state)
                 )
 
-                accountControllers
+                accounts
                 |> Map.toList
-                |> List.map (Blocks.createAccountControllerStateHash Hashing.decode Hashing.hash)
+                |> List.map (Blocks.createAccountStateHash Hashing.decode Hashing.hash)
 
                 assets
                 |> Map.toList
@@ -421,10 +421,10 @@ module BlocksTests =
             ]
             |> Map.ofList
 
-        let accountControllers =
+        let accounts =
             [
-                AccountHash "AAAA", ChainiumAddress "BBBB" |> Some
-                AccountHash "CCCC", ChainiumAddress "DDDD" |> Some
+                AccountHash "AAAA", {AccountState.ControllerAddress = ChainiumAddress "BBBB"}
+                AccountHash "CCCC", {AccountState.ControllerAddress = ChainiumAddress "DDDD"}
             ]
             |> Map.ofList
 
@@ -440,7 +440,7 @@ module BlocksTests =
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
-                AccountControllers = accountControllers
+                Accounts = accounts
                 Assets = assets
             }
 

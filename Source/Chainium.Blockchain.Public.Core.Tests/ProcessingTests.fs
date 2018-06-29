@@ -169,8 +169,8 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -183,7 +183,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -250,8 +250,8 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -264,7 +264,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -332,8 +332,8 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -346,7 +346,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -414,8 +414,8 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -427,7 +427,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -499,8 +499,8 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
-        let getAccountController _ =
-            Some senderWallet.Address
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -513,7 +513,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -591,8 +591,8 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
-        let getAccountController _ =
-            Some senderWallet.Address
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -605,7 +605,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -681,8 +681,8 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
@@ -695,7 +695,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -767,8 +767,8 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
@@ -781,7 +781,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -849,8 +849,8 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
@@ -863,7 +863,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -936,10 +936,10 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
+        let getAccountState _ =
             match currentControllerCase with
             | "None" -> None
-            | "Sender" -> Some senderWallet.Address
+            | "Sender" -> Some {AccountState.ControllerAddress = senderWallet.Address}
             | c -> failwithf "Unhandled account controller case: %s" c
 
         let getAssetState _ =
@@ -953,7 +953,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -963,7 +963,6 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
-        let accountController = newControllerWallet.Address
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -971,7 +970,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.AccountControllers.[accountHash] = Some newControllerWallet.Address @>
+        test <@ output.Accounts.[accountHash] = {AccountState.ControllerAddress = newControllerWallet.Address} @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAccountController fails if sender not current controller`` () =
@@ -1019,8 +1018,8 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
-            Some currentControllerWallet.Address
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = currentControllerWallet.Address}
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -1033,7 +1032,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -1054,8 +1053,8 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.AccountControllers.[accountHash] <> Some newControllerWallet.Address @>
-        test <@ output.AccountControllers.[accountHash] = Some currentControllerWallet.Address @>
+        test <@ output.Accounts.[accountHash] <> {AccountState.ControllerAddress = newControllerWallet.Address} @>
+        test <@ output.Accounts.[accountHash] = {AccountState.ControllerAddress = currentControllerWallet.Address} @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAssetController
@@ -1108,8 +1107,8 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             match currentControllerCase with
@@ -1125,7 +1124,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address
@@ -1190,8 +1189,8 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
-        let getAccountController _ =
-            failwith "getAccountController should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
@@ -1204,7 +1203,7 @@ module ProcessingTests =
                 Hashing.isValidChainiumAddress
                 getChxBalanceState
                 getHoldingState
-                getAccountController
+                getAccountState
                 getAssetState
                 Helpers.minTxActionFee
                 validatorWallet.Address

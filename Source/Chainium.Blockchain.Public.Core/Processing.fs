@@ -12,12 +12,12 @@ module Processing =
         (
         getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState option,
         getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
-        getAccountControllerFromStorage : AccountHash -> ChainiumAddress option,
+        getAccountStateFromStorage : AccountHash -> AccountState option,
         getAssetStateFromStorage : AssetHash -> AssetState option,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         chxBalances : ConcurrentDictionary<ChainiumAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
-        accountControllers : ConcurrentDictionary<AccountHash, ChainiumAddress option>,
+        accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>
         ) =
 
@@ -32,18 +32,18 @@ module Processing =
             (
             getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState option,
             getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
-            getAccountControllerFromStorage : AccountHash -> ChainiumAddress option,
+            getAccountStateFromStorage : AccountHash -> AccountState option,
             getAssetStateFromStorage : AssetHash -> AssetState option
             ) =
             ProcessingState(
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
-                getAccountControllerFromStorage,
+                getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<ChainiumAddress, ChxBalanceState>(),
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
-                ConcurrentDictionary<AccountHash, ChainiumAddress option>(),
+                ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>()
             )
 
@@ -51,12 +51,12 @@ module Processing =
             ProcessingState(
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
-                getAccountControllerFromStorage,
+                getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(chxBalances),
                 ConcurrentDictionary(holdings),
-                ConcurrentDictionary(accountControllers),
+                ConcurrentDictionary(accounts),
                 ConcurrentDictionary(assets)
             )
 
@@ -68,8 +68,8 @@ module Processing =
                 __.SetChxBalance (other.Key, { current with Nonce = other.Value.Nonce })
             for other in otherOutput.Holdings do
                 __.GetHolding (other.Key) |> ignore
-            for other in otherOutput.AccountControllers do
-                __.GetAccountController (other.Key) |> ignore
+            for other in otherOutput.Accounts do
+                __.GetAccount (other.Key) |> ignore
             for other in otherOutput.Assets do
                 __.GetAsset (other.Key) |> ignore
 
@@ -79,8 +79,8 @@ module Processing =
         member __.GetHolding (accountHash : AccountHash, assetHash : AssetHash) : HoldingState =
             holdings.GetOrAdd((accountHash, assetHash), getHoldingState)
 
-        member __.GetAccountController (accountHash : AccountHash) =
-            accountControllers.GetOrAdd(accountHash, getAccountControllerFromStorage)
+        member __.GetAccount (accountHash : AccountHash) =
+            accounts.GetOrAdd(accountHash, getAccountStateFromStorage)
 
         member __.GetAsset (assetHash : AssetHash) =
             assets.GetOrAdd(assetHash, getAssetStateFromStorage)
@@ -91,12 +91,12 @@ module Processing =
         member __.SetHolding (accountHash : AccountHash, assetHash : AssetHash, state : HoldingState) =
             holdings.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
-        member __.SetAccountController (accountHash : AccountHash, controllerAddress : ChainiumAddress) =
-            let controllerAddress = controllerAddress |> Some
-            accountControllers.AddOrUpdate (accountHash, controllerAddress, fun _ _ -> controllerAddress) |> ignore
+        member __.SetAccount (accountHash : AccountHash, state : AccountState) =
+            let state = Some state
+            accounts.AddOrUpdate (accountHash, state, fun _ _ -> state) |> ignore
 
         member __.SetAsset (assetHash : AssetHash, state : AssetState) =
-            let state = state |> Some
+            let state = Some state
             assets.AddOrUpdate (assetHash, state, fun _ _ -> state) |> ignore
 
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
@@ -107,7 +107,10 @@ module Processing =
                 TxResults = txResults |> Map.ofDict
                 ChxBalances = chxBalances |> Map.ofDict
                 Holdings = holdings |> Map.ofDict
-                AccountControllers = accountControllers |> Map.ofDict
+                Accounts =
+                    accounts
+                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Map.ofSeq
                 Assets =
                     assets
                     |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
@@ -148,8 +151,8 @@ module Processing =
         : Result<ProcessingState, TxErrorCode>
         =
 
-        match state.GetAccountController(action.FromAccountHash) with
-        | Some accountController when accountController = senderAddress ->
+        match state.GetAccount(action.FromAccountHash) with
+        | Some accountState when accountState.ControllerAddress = senderAddress ->
             let fromState = state.GetHolding(action.FromAccountHash, action.AssetHash)
             let toState = state.GetHolding(action.ToAccountHash, action.AssetHash)
 
@@ -179,11 +182,11 @@ module Processing =
 
         match state.GetAsset(action.AssetHash) with
         | Some assetState when assetState.ControllerAddress = senderAddress ->
-            let accountState = state.GetHolding(action.EmissionAccountHash, action.AssetHash)
+            let holdingState = state.GetHolding(action.EmissionAccountHash, action.AssetHash)
             state.SetHolding(
                 action.EmissionAccountHash,
                 action.AssetHash,
-                { accountState with Amount = accountState.Amount + action.Amount }
+                { holdingState with Amount = holdingState.Amount + action.Amount }
             )
             Ok state
         | _ ->
@@ -196,12 +199,13 @@ module Processing =
         : Result<ProcessingState, TxErrorCode>
         =
 
-        match state.GetAccountController(action.AccountHash) with
-        | None -> // New controller entry.
-            state.SetAccountController(action.AccountHash, action.ControllerAddress)
+        match state.GetAccount(action.AccountHash) with
+        | None -> // TODO: Implement as a separate TxAction type
+            state.SetAccount(action.AccountHash, {ControllerAddress = action.ControllerAddress})
             Ok state
-        | Some accountController when accountController = senderAddress ->
-            state.SetAccountController(action.AccountHash, action.ControllerAddress)
+            // TODO: Error TxErrorCode.AccountNotFound
+        | Some accountState when accountState.ControllerAddress = senderAddress ->
+            state.SetAccount(action.AccountHash, {accountState with ControllerAddress = action.ControllerAddress})
             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
@@ -214,7 +218,7 @@ module Processing =
         =
 
         match state.GetAsset(action.AssetHash) with
-        | None -> // New controller entry.
+        | None -> // TODO: Implement as a separate TxAction type
             state.SetAsset(action.AssetHash, {AssetCode = None; ControllerAddress = action.ControllerAddress})
             Ok state
             // TODO: Error TxErrorCode.AssetNotFound
@@ -409,7 +413,7 @@ module Processing =
         isValidAddress
         (getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState option)
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
-        (getAccountControllerFromStorage : AccountHash -> ChainiumAddress option)
+        (getAccountStateFromStorage : AccountHash -> AccountState option)
         (getAssetStateFromStorage : AssetHash -> AssetState option)
         minTxActionFee
         (validator : ChainiumAddress)
@@ -452,7 +456,7 @@ module Processing =
             ProcessingState (
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
-                getAccountControllerFromStorage,
+                getAccountStateFromStorage,
                 getAssetStateFromStorage
             )
 

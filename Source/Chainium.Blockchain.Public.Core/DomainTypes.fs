@@ -163,6 +163,10 @@ type HoldingState = {
     Amount : AssetAmount
 }
 
+type AccountState = {
+    ControllerAddress : ChainiumAddress
+}
+
 type AssetState = {
     AssetCode : AssetCode option
     ControllerAddress : ChainiumAddress
@@ -172,7 +176,7 @@ type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
-    AccountControllers : Map<AccountHash, ChainiumAddress option>
+    Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
 }
 
