@@ -22,6 +22,7 @@ module Helpers =
         | CreateAssetEmission action -> box action :?> 'T
         | SetAccountController action -> box action :?> 'T
         | SetAssetController action -> box action :?> 'T
+        | SetAssetCode action -> box action :?> 'T
 
     let newPendingTxInfo
         (txHash : TxHash)

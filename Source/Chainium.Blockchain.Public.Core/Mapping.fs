@@ -63,6 +63,12 @@ module Mapping =
                 ControllerAddress = ChainiumAddress a.ControllerAddress
             }
             |> SetAssetController
+        | :? SetAssetCodeTxActionDto as a ->
+            {
+                SetAssetCodeTxAction.AssetHash = AssetHash a.AssetHash
+                AssetCode = AssetCode a.AssetCode
+            }
+            |> SetAssetCode
         | _ ->
             failwith "Invalid action type to map."
 

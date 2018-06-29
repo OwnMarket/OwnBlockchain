@@ -66,12 +66,18 @@ type SetAssetControllerTxAction = {
     ControllerAddress : ChainiumAddress
 }
 
+type SetAssetCodeTxAction = {
+    AssetHash : AssetHash
+    AssetCode : AssetCode
+}
+
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
     | CreateAssetEmission of CreateAssetEmissionTxAction
     | SetAccountController of SetAccountControllerTxAction
     | SetAssetController of SetAssetControllerTxAction
+    | SetAssetCode of SetAssetCodeTxAction
 
 type Tx = {
     TxHash : TxHash
@@ -122,6 +128,7 @@ type TxErrorCode =
     | NonceTooLow = 10s
     | InsufficientChxBalance = 20s
     | InsufficientAssetHoldingBalance = 30s
+    | AssetNotFound = 40s
     | SenderIsNotSourceAccountController = 110s
     | SenderIsNotAssetController = 120s
 

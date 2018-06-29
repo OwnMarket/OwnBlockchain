@@ -30,6 +30,7 @@ module Serialization =
             "CreateAssetEmission", tokenToAction<CreateAssetEmissionTxActionDto>
             "SetAccountController", tokenToAction<SetAccountControllerTxActionDto>
             "SetAssetController", tokenToAction<SetAssetControllerTxActionDto>
+            "SetAssetCode", tokenToAction<SetAssetCodeTxActionDto>
         ] |> Map.ofList
 
     let private tokenValue tokenName (jObject : JObject) =

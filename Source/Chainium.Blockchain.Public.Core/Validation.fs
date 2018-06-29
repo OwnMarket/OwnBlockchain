@@ -72,20 +72,29 @@ module Validation =
 
     let private validateSetAccountController isValidAddress (action : SetAccountControllerTxActionDto) =
         [
-            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
-                yield AppError "Controller address is not valid."
-
             if action.AccountHash.IsNullOrWhiteSpace() then
                 yield AppError "Account hash is not valid."
+
+            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+                yield AppError "Controller address is not valid."
         ]
 
     let private validateSetAssetController isValidAddress (action : SetAssetControllerTxActionDto) =
         [
-            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
-                yield AppError "Controller address is not valid."
-
             if action.AssetHash.IsNullOrWhiteSpace() then
                 yield AppError "Asset hash is not valid."
+
+            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+                yield AppError "Controller address is not valid."
+        ]
+
+    let private validateSetAssetCode (action : SetAssetCodeTxActionDto) =
+        [
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "Asset hash is not valid."
+
+            if action.AssetCode.IsNullOrWhiteSpace() then
+                yield AppError "Asset code is not valid."
         ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +126,8 @@ module Validation =
                 validateSetAccountController isValidAddress a
             | :? SetAssetControllerTxActionDto as a ->
                 validateSetAssetController isValidAddress a
+            | :? SetAssetCodeTxActionDto as a ->
+                validateSetAssetCode a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

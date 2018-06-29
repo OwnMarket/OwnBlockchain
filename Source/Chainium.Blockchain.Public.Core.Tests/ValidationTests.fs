@@ -18,6 +18,7 @@ module ValidationTests =
     let createAssetEmissionActionType = "CreateAssetEmission"
     let setAccountControllerActionType = "SetAccountController"
     let setAssetControllerActionType = "SetAssetController"
+    let setAssetCodeActionType = "SetAssetCode"
 
     [<Fact>]
     let ``Validation.validateTx BasicValidation single validation error`` () =
@@ -482,6 +483,58 @@ module ValidationTests =
                 [
                     {
                         ActionType = setAssetControllerActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t -> failwith "This test should fail."
+        | Error e ->
+            test <@ e.Length = 2 @>
+
+    [<Fact>]
+    let ``Validation.validateTx SetAssetCode valid action`` () =
+        let expected =
+            {
+                SetAssetCodeTxActionDto.AssetHash = "A"
+                AssetCode = "B"
+            }
+
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = setAssetCodeActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t ->
+            let actual = Helpers.extractActionData<SetAssetCodeTxAction> t.Actions.Head
+            test <@ AssetHash expected.AssetHash = actual.AssetHash @>
+            test <@ AssetCode expected.AssetCode = actual.AssetCode @>
+        | Error e -> failwithf "%A" e
+
+    [<Fact>]
+    let ``Validation.validateTx SetAssetCode invalid action`` () =
+        let expected =
+            {
+                SetAssetCodeTxActionDto.AssetHash = ""
+                AssetCode = ""
+            }
+
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = setAssetCodeActionType
                         ActionData = expected
                     }
                 ]

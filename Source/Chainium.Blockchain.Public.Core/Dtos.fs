@@ -40,6 +40,12 @@ type SetAssetControllerTxActionDto = {
 }
 
 [<CLIMutable>]
+type SetAssetCodeTxActionDto = {
+    AssetHash : string
+    AssetCode : string
+}
+
+[<CLIMutable>]
 type TxActionDto = {
     ActionType : string
     ActionData : obj

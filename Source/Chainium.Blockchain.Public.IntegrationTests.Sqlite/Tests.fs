@@ -41,3 +41,7 @@ module Tests =
     [<Fact>]
     let ``TransactionProcessing - set asset controller`` () =
         SharedTests.setAssetControllerTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
+    let ``TransactionProcessing - set asset code`` () =
+        SharedTests.setAssetCodeTest Config.DbEngineType Config.DbConnectionString

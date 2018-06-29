@@ -224,6 +224,22 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
+    let processSetAssetCodeTxAction
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (action : SetAssetCodeTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.AssetHash) with
+        | None ->
+            Error TxErrorCode.AssetNotFound
+        | Some assetState when assetState.ControllerAddress = senderAddress ->
+            state.SetAsset(action.AssetHash, {assetState with AssetCode = Some action.AssetCode})
+            Ok state
+        | _ ->
+            Error TxErrorCode.SenderIsNotAssetController
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,6 +388,7 @@ module Processing =
         | CreateAssetEmission action -> processCreateAssetEmissionTxAction state senderAddress action
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
+        | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
 
     let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
         actions
