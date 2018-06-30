@@ -220,6 +220,33 @@ module Processing =
         | _ ->
             Error TxErrorCode.AccountAlreadyExists // Hash collision.
 
+    let processCreateAssetTxAction
+        decodeHash
+        createHash
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (Nonce nonce)
+        (TxActionNumber actionNumber)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        let assetHash =
+            [
+                senderAddress |> fun (ChainiumAddress a) -> decodeHash a
+                nonce |> Conversion.int64ToBytes
+                actionNumber |> Conversion.int16ToBytes
+            ]
+            |> Array.concat
+            |> createHash
+            |> AssetHash
+
+        match state.GetAsset(assetHash) with
+        | None ->
+            state.SetAsset(assetHash, {AssetCode = None; ControllerAddress = senderAddress})
+            Ok state
+        | _ ->
+            Error TxErrorCode.AssetAlreadyExists // Hash collision.
+
     let processSetAccountControllerTxAction
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
@@ -244,10 +271,8 @@ module Processing =
         =
 
         match state.GetAsset(action.AssetHash) with
-        | None -> // TODO: Implement as a separate TxAction type
-            state.SetAsset(action.AssetHash, {AssetCode = None; ControllerAddress = action.ControllerAddress})
-            Ok state
-            // TODO: Error TxErrorCode.AssetNotFound
+        | None ->
+            Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
             state.SetAsset(action.AssetHash, {assetState with ControllerAddress = action.ControllerAddress})
             Ok state
@@ -426,6 +451,7 @@ module Processing =
         | TransferAsset action -> processTransferAssetTxAction state senderAddress action
         | CreateAssetEmission action -> processCreateAssetEmissionTxAction state senderAddress action
         | CreateAccount -> processCreateAccountTxAction decodeHash createHash state senderAddress nonce actionNumber
+        | CreateAsset -> processCreateAssetTxAction decodeHash createHash state senderAddress nonce actionNumber
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action

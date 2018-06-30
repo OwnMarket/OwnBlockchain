@@ -30,6 +30,9 @@ type CreateAssetEmissionTxActionDto = {
 type CreateAccountTxActionDto () =
     class end // Using empty class to satisfy the deserialization logic (class because record cannot be empty).
 
+type CreateAssetTxActionDto () =
+    class end // Using empty class to satisfy the deserialization logic (class because record cannot be empty).
+
 [<CLIMutable>]
 type SetAccountControllerTxActionDto = {
     AccountHash : string

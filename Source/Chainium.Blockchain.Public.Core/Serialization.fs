@@ -29,6 +29,7 @@ module Serialization =
             "TransferAsset", tokenToAction<TransferAssetTxActionDto>
             "CreateAssetEmission", tokenToAction<CreateAssetEmissionTxActionDto>
             "CreateAccount", tokenToAction<CreateAccountTxActionDto>
+            "CreateAsset", tokenToAction<CreateAssetTxActionDto>
             "SetAccountController", tokenToAction<SetAccountControllerTxActionDto>
             "SetAssetController", tokenToAction<SetAssetControllerTxActionDto>
             "SetAssetCode", tokenToAction<SetAssetCodeTxActionDto>

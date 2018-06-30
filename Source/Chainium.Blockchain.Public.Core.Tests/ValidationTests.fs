@@ -17,6 +17,7 @@ module ValidationTests =
     let transferAssetActionType = "TransferAsset"
     let createAssetEmissionActionType = "CreateAssetEmission"
     let createAccountActionType = "CreateAccount"
+    let createAssetActionType = "CreateAsset"
     let setAccountControllerActionType = "SetAccountController"
     let setAssetControllerActionType = "SetAssetController"
     let setAssetCodeActionType = "SetAssetCode"
@@ -407,6 +408,25 @@ module ValidationTests =
         match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
         | Ok t ->
             test <@ t.Actions.Head = CreateAccount @>
+        | Error e -> failwithf "%A" e
+
+    [<Fact>]
+    let ``Validation.validateTx CreateAsset valid action`` () =
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = createAssetActionType
+                        ActionData = CreateAssetTxActionDto()
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t ->
+            test <@ t.Actions.Head = CreateAsset @>
         | Error e -> failwithf "%A" e
 
     [<Fact>]

@@ -76,6 +76,7 @@ type TxAction =
     | TransferAsset of TransferAssetTxAction
     | CreateAssetEmission of CreateAssetEmissionTxAction
     | CreateAccount
+    | CreateAsset
     | SetAccountController of SetAccountControllerTxAction
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction

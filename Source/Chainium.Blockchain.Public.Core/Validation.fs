@@ -124,6 +124,8 @@ module Validation =
                 validateCreateAssetEmission a
             | :? CreateAccountTxActionDto ->
                 [] // Nothing to validate.
+            | :? CreateAssetTxActionDto ->
+                [] // Nothing to validate.
             | :? SetAccountControllerTxActionDto as a ->
                 validateSetAccountController isValidAddress a
             | :? SetAssetControllerTxActionDto as a ->

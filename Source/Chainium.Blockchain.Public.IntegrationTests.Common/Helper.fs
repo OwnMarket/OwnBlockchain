@@ -63,7 +63,7 @@ module internal Helper =
         Signing.generateRandomBytes 64
         |> Hashing.hash
 
-    let createAccountHash (ChainiumAddress address) (Nonce nonce) (TxActionNumber actionNumber) =
+    let createNewHashForSender (ChainiumAddress address) (Nonce nonce) (TxActionNumber actionNumber) =
         [
             address |> Hashing.decode
             nonce |> Conversion.int64ToBytes
@@ -71,7 +71,6 @@ module internal Helper =
         ]
         |> Array.concat
         |> Hashing.hash
-        |> AccountHash
 
     let addChxBalance connectionString (address : string) (amount : decimal) =
         let insertStatement =

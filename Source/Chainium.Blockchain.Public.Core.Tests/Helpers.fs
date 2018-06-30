@@ -21,6 +21,7 @@ module Helpers =
         | TransferAsset action -> box action :?> 'T
         | CreateAssetEmission action -> box action :?> 'T
         | CreateAccount -> failwith "CreateAccount TxAction has no data to extract."
+        | CreateAsset -> failwith "CreateAsset TxAction has no data to extract."
         | SetAccountController action -> box action :?> 'T
         | SetAssetController action -> box action :?> 'T
         | SetAssetCode action -> box action :?> 'T

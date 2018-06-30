@@ -280,8 +280,7 @@ module SharedTests =
         Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
 
         let nonce = 1L
-
-        let accountHash = Helper.createAccountHash sender.Address (Nonce nonce) (TxActionNumber 1s)
+        let accountHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
 
         let txActions =
             [
@@ -293,7 +292,7 @@ module SharedTests =
                     ActionType = "SetAccountController"
                     ActionData =
                         {
-                            SetAccountControllerTxActionDto.AccountHash = accountHash |> fun (AccountHash h) -> h
+                            SetAccountControllerTxActionDto.AccountHash = accountHash
                             ControllerAddress = newController.Address |> addressToString
                         }
                 }
@@ -313,7 +312,7 @@ module SharedTests =
 
         // ASSERT
         let accountState =
-            Db.getAccountState connectionString accountHash
+            Db.getAccountState connectionString (AccountHash accountHash)
             |> Option.map Mapping.accountStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
         let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
@@ -326,7 +325,6 @@ module SharedTests =
         // ARRANGE
         let client = testInit engineType connectionString
 
-        let assetHash = Helper.generateRandomHash ()
         let sender = Signing.generateWallet()
         let newController = Signing.generateWallet()
         let initialSenderChxBalance = 10M
@@ -335,20 +333,29 @@ module SharedTests =
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
         Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
 
-        let txAction =
-            {
-                ActionType = "SetAssetController"
-                ActionData =
-                    {
-                        SetAssetControllerTxActionDto.AssetHash = assetHash
-                        ControllerAddress = newController.Address |> addressToString
-                    }
-            }
+        let nonce = 1L
+        let assetHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
+
+        let txActions =
+            [
+                {
+                    ActionType = "CreateAsset"
+                    ActionData = CreateAssetTxActionDto()
+                }
+                {
+                    ActionType = "SetAssetController"
+                    ActionData =
+                        {
+                            SetAssetControllerTxActionDto.AssetHash = assetHash
+                            ControllerAddress = newController.Address |> addressToString
+                        }
+                }
+            ]
 
         let fee = 1M
-        let nonce = 1L
-        let txDto = newTxDto fee nonce [ txAction ]
+        let totalFee = fee * (decimal txActions.Length)
 
+        let txDto = newTxDto fee nonce txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -365,14 +372,13 @@ module SharedTests =
         let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
 
         test <@ assetState = Some { AssetCode = None; ControllerAddress = newController.Address } @>
-        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - fee); Nonce = nonce } @>
-        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + fee); Nonce = 0L } @>
+        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
+        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
     let setAssetCodeTest engineType connectionString =
         // ARRANGE
         let client = testInit engineType connectionString
 
-        let assetHash = Helper.generateRandomHash ()
         let assetCode = "Foo"
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10M
@@ -381,15 +387,14 @@ module SharedTests =
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
         Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
 
+        let nonce = 1L
+        let assetHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
+
         let txActions =
             [
                 {
-                    ActionType = "SetAssetController"
-                    ActionData =
-                        {
-                            SetAssetControllerTxActionDto.AssetHash = assetHash
-                            ControllerAddress = sender.Address |> fun (ChainiumAddress a) -> a
-                        }
+                    ActionType = "CreateAsset"
+                    ActionData = CreateAssetTxActionDto()
                 }
                 {
                     ActionType = "SetAssetCode"
@@ -403,9 +408,8 @@ module SharedTests =
 
         let fee = 1M
         let totalFee = fee * (decimal txActions.Length)
-        let nonce = 1L
-        let txDto = newTxDto fee nonce txActions
 
+        let txDto = newTxDto fee nonce txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
