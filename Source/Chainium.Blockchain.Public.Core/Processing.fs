@@ -3,6 +3,7 @@ namespace Chainium.Blockchain.Public.Core
 open System
 open System.Collections.Concurrent
 open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 
@@ -192,6 +193,33 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
+    let processCreateAccountTxAction
+        decodeHash
+        createHash
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (Nonce nonce)
+        (TxActionNumber actionNumber)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        let accountHash =
+            [
+                senderAddress |> fun (ChainiumAddress a) -> decodeHash a
+                nonce |> Conversion.int64ToBytes
+                actionNumber |> Conversion.int16ToBytes
+            ]
+            |> Array.concat
+            |> createHash
+            |> AccountHash
+
+        match state.GetAccount(accountHash) with
+        | None ->
+            state.SetAccount(accountHash, {ControllerAddress = senderAddress})
+            Ok state
+        | _ ->
+            Error TxErrorCode.AccountAlreadyExists // Hash collision.
+
     let processSetAccountControllerTxAction
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
@@ -200,10 +228,8 @@ module Processing =
         =
 
         match state.GetAccount(action.AccountHash) with
-        | None -> // TODO: Implement as a separate TxAction type
-            state.SetAccount(action.AccountHash, {ControllerAddress = action.ControllerAddress})
-            Ok state
-            // TODO: Error TxErrorCode.AccountNotFound
+        | None ->
+            Error TxErrorCode.AccountNotFound
         | Some accountState when accountState.ControllerAddress = senderAddress ->
             state.SetAccount(action.AccountHash, {accountState with ControllerAddress = action.ControllerAddress})
             Ok state
@@ -385,32 +411,50 @@ module Processing =
         |> processTransferChxTxAction state tx.Sender
         |> Result.mapError TxError
 
-    let processTxAction (senderAddress : ChainiumAddress) (action : TxAction) (state : ProcessingState) =
+    let processTxAction
+        decodeHash
+        createHash
+        (senderAddress : ChainiumAddress)
+        (nonce : Nonce)
+        (actionNumber : TxActionNumber)
+        (action : TxAction)
+        (state : ProcessingState)
+        =
+
         match action with
         | TransferChx action -> processTransferChxTxAction state senderAddress action
         | TransferAsset action -> processTransferAssetTxAction state senderAddress action
         | CreateAssetEmission action -> processCreateAssetEmissionTxAction state senderAddress action
+        | CreateAccount -> processCreateAccountTxAction decodeHash createHash state senderAddress nonce actionNumber
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
 
-    let processTxActions (senderAddress : ChainiumAddress) (actions : TxAction list) (state : ProcessingState) =
+    let processTxActions
+        decodeHash
+        createHash
+        (senderAddress : ChainiumAddress)
+        (nonce : Nonce)
+        (actions : TxAction list)
+        (state : ProcessingState)
+        =
+
         actions
         |> List.indexed
         |> List.fold (fun result (index, action) ->
             result
             >>= fun state ->
-                processTxAction senderAddress action state
-                |> Result.mapError (fun e ->
-                    let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
-                    TxActionError (actionNumber, e)
-                )
+                let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
+                processTxAction decodeHash createHash senderAddress nonce actionNumber action state
+                |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
     let processTxSet
         getTx
         verifySignature
         isValidAddress
+        decodeHash
+        createHash
         (getChxBalanceStateFromStorage : ChainiumAddress -> ChxBalanceState option)
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
         (getAccountStateFromStorage : AccountHash -> AccountState option)
@@ -443,7 +487,7 @@ module Processing =
                     state
                 | Ok oldState ->
                     let newState = oldState.Clone()
-                    match processTxActions tx.Sender tx.Actions newState with
+                    match processTxActions decodeHash createHash tx.Sender tx.Nonce tx.Actions newState with
                     | Error e ->
                         oldState.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
                         oldState.MergeStateAfterFailedTx(newState)

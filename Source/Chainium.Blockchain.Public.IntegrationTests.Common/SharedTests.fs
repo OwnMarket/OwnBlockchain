@@ -271,7 +271,6 @@ module SharedTests =
         // ARRANGE
         let client = testInit engineType connectionString
 
-        let accountHash = Helper.generateRandomHash ()
         let sender = Signing.generateWallet()
         let newController = Signing.generateWallet()
         let initialSenderChxBalance = 10M
@@ -280,20 +279,30 @@ module SharedTests =
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
         Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
 
-        let txAction =
-            {
-                ActionType = "SetAccountController"
-                ActionData =
-                    {
-                        SetAccountControllerTxActionDto.AccountHash = accountHash
-                        ControllerAddress = newController.Address |> addressToString
-                    }
-            }
+        let nonce = 1L
+
+        let accountHash = Helper.createAccountHash sender.Address (Nonce nonce) (TxActionNumber 1s)
+
+        let txActions =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAccountTxActionDto()
+                }
+                {
+                    ActionType = "SetAccountController"
+                    ActionData =
+                        {
+                            SetAccountControllerTxActionDto.AccountHash = accountHash |> fun (AccountHash h) -> h
+                            ControllerAddress = newController.Address |> addressToString
+                        }
+                }
+            ]
 
         let fee = 1M
-        let nonce = 1L
-        let txDto = newTxDto fee nonce [ txAction ]
+        let totalFee = fee * (decimal txActions.Length)
 
+        let txDto = newTxDto fee nonce txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -304,14 +313,14 @@ module SharedTests =
 
         // ASSERT
         let accountState =
-            Db.getAccountState connectionString (AccountHash accountHash)
+            Db.getAccountState connectionString accountHash
             |> Option.map Mapping.accountStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
         let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
 
         test <@ accountState = Some { ControllerAddress = newController.Address } @>
-        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - fee); Nonce = nonce } @>
-        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + fee); Nonce = 0L } @>
+        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
+        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
     let setAssetControllerTest engineType connectionString =
         // ARRANGE

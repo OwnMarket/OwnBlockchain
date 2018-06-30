@@ -3,6 +3,7 @@ namespace Chainium.Blockchain.Public.Core.Tests
 open Xunit
 open Swensen.Unquote
 open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
@@ -181,6 +182,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -262,6 +265,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -344,6 +349,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -425,6 +432,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -511,6 +520,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -603,6 +614,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -693,6 +706,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -779,6 +794,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -861,6 +878,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -886,13 +905,100 @@ module ProcessingTests =
         test <@ output.Holdings = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CreateAccount
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processTxSet CreateAccount`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAccountTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        let accountHash =
+            [
+                senderWallet.Address |> fun (ChainiumAddress a) -> Hashing.decode a
+                nonce |> fun (Nonce n) -> Conversion.int64ToBytes n
+                1s |> Conversion.int16ToBytes
+            ]
+            |> Array.concat
+            |> Hashing.hash
+            |> AccountHash
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            None
+
+        let getAccountState _ =
+            None
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Accounts.Count = 1 @>
+        test <@ output.Accounts.[accountHash] = {ControllerAddress = senderWallet.Address} @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountController
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    [<Theory>]
-    [<InlineData ("None")>]
-    [<InlineData ("Sender")>]
-    let ``Processing.processTxSet SetAccountController`` (currentControllerCase) =
+    [<Fact>]
+    let ``Processing.processTxSet SetAccountController`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -937,10 +1043,7 @@ module ProcessingTests =
             failwith "getHoldingState should not be called"
 
         let getAccountState _ =
-            match currentControllerCase with
-            | "None" -> None
-            | "Sender" -> Some {AccountState.ControllerAddress = senderWallet.Address}
-            | c -> failwithf "Unhandled account controller case: %s" c
+            Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -951,6 +1054,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -971,6 +1076,90 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Accounts.[accountHash] = {AccountState.ControllerAddress = newControllerWallet.Address} @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetAccountController fails if account not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let newControllerWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetAccountController"
+                    ActionData =
+                        {
+                            AccountHash = accountHash |> fun (AccountHash h) -> h
+                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountState _ =
+            None
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedTxStatus =
+            (TxActionNumber 1s, TxErrorCode.AccountNotFound)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Accounts = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAccountController fails if sender not current controller`` () =
@@ -1030,6 +1219,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -1122,6 +1313,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -1201,6 +1394,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountState
@@ -1288,6 +1483,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountCode
@@ -1366,6 +1563,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountCode
@@ -1449,6 +1648,8 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
                 getChxBalanceState
                 getHoldingState
                 getAccountCode

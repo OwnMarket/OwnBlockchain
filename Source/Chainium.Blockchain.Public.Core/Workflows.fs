@@ -96,6 +96,8 @@ module Workflows =
                         getTx
                         verifySignature
                         isValidAddress
+                        decodeHash
+                        createHash
                         getChxBalanceState
                         getHoldingState
                         getAccountState
@@ -165,6 +167,8 @@ module Workflows =
                 getTx
                 verifySignature
                 isValidAddress
+                decodeHash
+                createHash
                 getChxBalanceState
                 getHoldingState
                 getAccountState

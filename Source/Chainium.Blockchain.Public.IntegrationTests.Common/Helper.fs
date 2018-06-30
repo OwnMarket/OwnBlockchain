@@ -8,6 +8,8 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.Configuration
 open Microsoft.Data.Sqlite
+open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
@@ -60,6 +62,16 @@ module internal Helper =
     let generateRandomHash () =
         Signing.generateRandomBytes 64
         |> Hashing.hash
+
+    let createAccountHash (ChainiumAddress address) (Nonce nonce) (TxActionNumber actionNumber) =
+        [
+            address |> Hashing.decode
+            nonce |> Conversion.int64ToBytes
+            actionNumber |> Conversion.int16ToBytes
+        ]
+        |> Array.concat
+        |> Hashing.hash
+        |> AccountHash
 
     let addChxBalance connectionString (address : string) (amount : decimal) =
         let insertStatement =

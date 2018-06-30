@@ -16,6 +16,7 @@ module ValidationTests =
     let transferChxActionType = "TransferChx"
     let transferAssetActionType = "TransferAsset"
     let createAssetEmissionActionType = "CreateAssetEmission"
+    let createAccountActionType = "CreateAccount"
     let setAccountControllerActionType = "SetAccountController"
     let setAssetControllerActionType = "SetAssetController"
     let setAssetCodeActionType = "SetAssetCode"
@@ -388,6 +389,25 @@ module ValidationTests =
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 3 @>
+
+    [<Fact>]
+    let ``Validation.validateTx CreateAccount valid action`` () =
+        let tx = {
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = createAccountActionType
+                        ActionData = CreateAccountTxActionDto()
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t ->
+            test <@ t.Actions.Head = CreateAccount @>
+        | Error e -> failwithf "%A" e
 
     [<Fact>]
     let ``Validation.validateTx SetAccountController valid action`` () =

@@ -75,6 +75,7 @@ type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
     | CreateAssetEmission of CreateAssetEmissionTxAction
+    | CreateAccount
     | SetAccountController of SetAccountControllerTxAction
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction
@@ -124,13 +125,24 @@ type Block = {
 type TxActionNumber = TxActionNumber of int16
 
 type TxErrorCode =
-    // DO NOT CHANGE THESE NUMBERS - IT WILL BREAK THE BLOCKS!!!
-    | NonceTooLow = 10s
-    | InsufficientChxBalance = 20s
-    | InsufficientAssetHoldingBalance = 30s
-    | AssetNotFound = 40s
-    | SenderIsNotSourceAccountController = 110s
-    | SenderIsNotAssetController = 120s
+    // CHANGING THESE NUMBERS WILL INVALIDATE TX RESULTS MERKLE ROOT IN EXISTING BLOCKS!!!
+
+    // Address
+    | NonceTooLow = 100s
+    | InsufficientChxBalance = 110s
+
+    // Holding
+    | InsufficientAssetHoldingBalance = 210s
+
+    // Account
+    | AccountNotFound = 310s
+    | AccountAlreadyExists = 320s
+    | SenderIsNotSourceAccountController = 330s
+
+    // Asset
+    | AssetNotFound = 410s
+    | AssetAlreadyExists = 420s
+    | SenderIsNotAssetController = 430s
 
 type TxError =
     | TxError of TxErrorCode

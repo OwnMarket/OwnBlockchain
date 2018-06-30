@@ -225,6 +225,25 @@ module SerializationTests =
             failwithf "%A" appErrors
 
     [<Fact>]
+    let ``Serialization.deserializeTx CreateAccount`` () =
+        let expectedTxAction =
+            {
+                ActionType = "CreateAccount"
+                ActionData = CreateAccountTxActionDto()
+            }
+
+        let serializedTx =
+            [ expectedTxAction |> box ]
+            |> Helpers.newRawTxDto 10L 20M
+
+        match Serialization.deserializeTx serializedTx with
+        | Ok txDto ->
+            test <@ txDto.Actions.Head.ActionType = expectedTxAction.ActionType @>
+            test <@ txDto.Actions.Head.ActionData :? CreateAccountTxActionDto @>
+        | Error appErrors ->
+            failwithf "%A" appErrors
+
+    [<Fact>]
     let ``Serialization.deserializeTx SetAccountController`` () =
         let expectedTxAction =
             {

@@ -51,6 +51,8 @@ module Mapping =
                 Amount = AssetAmount a.Amount
             }
             |> CreateAssetEmission
+        | :? CreateAccountTxActionDto ->
+            CreateAccount
         | :? SetAccountControllerTxActionDto as a ->
             {
                 SetAccountControllerTxAction.AccountHash = AccountHash a.AccountHash
