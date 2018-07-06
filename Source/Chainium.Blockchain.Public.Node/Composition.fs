@@ -131,4 +131,4 @@ module Composition =
 
     let getBlockApi = Workflows.getBlockApi getBlock
 
-    let getTxApi = Workflows.getTxApi getTxInfo getTx getTxResult
+    let getTxApi = Workflows.getTxApi getTx Signing.verifySignature getTxResult

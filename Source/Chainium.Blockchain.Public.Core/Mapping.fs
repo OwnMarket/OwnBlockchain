@@ -340,24 +340,25 @@ module Mapping =
         }
 
     let txToGetTxApiResponseDto
-        (tx : TxInfoDto)
-        (actions : TxActionDto list)
-        (result : TxResultDto)
+        (TxHash txHash)
+        (ChainiumAddress senderAddress)
+        (txDto : TxDto)
+        (txResult : TxResultDto option)
         =
 
-        let blockNumber =
-            match result.BlockNumber with
-            | 0L -> Nullable()
-            | _ -> Nullable<int64> result.BlockNumber
+        let txStatus, errorCode, failedActionNumber, blockNumber =
+            match txResult with
+            | Some r -> r.Status, r.ErrorCode, r.FailedActionNumber, Nullable r.BlockNumber
+            | None -> 0s, Nullable(), Nullable(), Nullable()
 
         {
-            GetTxApiResponseDto.TxHash = tx.TxHash
-            GetTxApiResponseDto.SenderAddress = tx.SenderAddress
-            GetTxApiResponseDto.Nonce = tx.Nonce
-            GetTxApiResponseDto.Fee = tx.Fee
-            GetTxApiResponseDto.Actions = actions
-            GetTxApiResponseDto.Status = byte result.Status
-            GetTxApiResponseDto.ErrorCode = result.ErrorCode
-            GetTxApiResponseDto.FailedActionNumber = result.FailedActionNumber
+            GetTxApiResponseDto.TxHash = txHash
+            GetTxApiResponseDto.SenderAddress = senderAddress
+            GetTxApiResponseDto.Nonce = txDto.Nonce
+            GetTxApiResponseDto.Fee = txDto.Fee
+            GetTxApiResponseDto.Actions = txDto.Actions
+            GetTxApiResponseDto.Status = Convert.ToByte txStatus
+            GetTxApiResponseDto.ErrorCode = errorCode
+            GetTxApiResponseDto.FailedActionNumber = failedActionNumber
             GetTxApiResponseDto.BlockNumber = blockNumber
         }
