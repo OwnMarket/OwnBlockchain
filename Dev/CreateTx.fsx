@@ -5,14 +5,15 @@ open System.Text
 
 """
 {
-    Nonce: 1,
-    Fee: 0.1,
+    Nonce: 2,
+    Fee: 0.001,
     Actions: [
         {
-            ActionType: "TransferChx",
+            ActionType: "CreateAssetEmission",
             ActionData: {
-                RecipientAddress: "CHKj2rtVz5z6Pyy1bpH8GaEyhTX7eabQzdw",
-                Amount: 10
+                EmissionAccountHash: "HD2NGMksGUNMyCLJdkHkfvcZ4PXMMoSh1eLcKxW2M1Zq",
+                AssetHash: "2ZK8jQJ7TAoJqAWKPnCUxGU8HTaQ72sdLA96wosZxdZX",
+                Amount: 1000000
             }
         }
     ]
@@ -23,28 +24,92 @@ open System.Text
 |> printfn "%s"
 
 (*
-CnsKICAgIE5vbmNlOiAxLAogICAgRmVlOiAxLAogICAgQWN0aW9uczogWwogICAgICAgIHsKICAgICAgICAgICAgQWN0aW9uVHlwZTogIkNoeFRyYW5zZmVyIiwKICAgICAgICAgICAgQWN0aW9uRGF0YTogewogICAgICAgICAgICAgICAgUmVjaXBpZW50QWRkcmVzczogIkNIS2oycnRWejV6NlB5eTFicEg4R2FFeWhUWDdlYWJRemR3IiwKICAgICAgICAgICAgICAgIEFtb3VudDogMTAKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIF0KfQo=
-
+// Transfer faucet CHX supply from genesis to faucet supply holder
 Private Key: 1EQKWYpFtKZ1rMTqAH8CSLVjE5TN1nPpofzWF68io1HPV
 Address: CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2
-
-V: 1
-R: 1FdmCDScepMzMbkYwwF6nupAgE5WqhLcWjFUjBm11kjVa
-S: bGPah3wtfWmC6RuNN3Ur1MzMNAutYF1ehcq3DoVUBWZ
-
-// 10 CHX to CHKj2rtVz5z6Pyy1bpH8GaEyhTX7eabQzdw
 {
-    "tx": "CnsKICAgIE5vbmNlOiAxLAogICAgRmVlOiAwLjEsCiAgICBBY3Rpb25zOiBbCiAgICAgICAgewogICAgICAgICAgICBBY3Rpb25UeXBlOiAiQ2h4VHJhbnNmZXIiLAogICAgICAgICAgICBBY3Rpb25EYXRhOiB7CiAgICAgICAgICAgICAgICBSZWNpcGllbnRBZGRyZXNzOiAiQ0hLajJydFZ6NXo2UHl5MWJwSDhHYUV5aFRYN2VhYlF6ZHciLAogICAgICAgICAgICAgICAgQW1vdW50OiAxMAogICAgICAgICAgICB9CiAgICAgICAgfQogICAgXQp9Cg==",
-    "v": "2",
-    "r": "6Mi4QHn5BCVeycvPMHMUqP7hEiZeGR76dC4YvPYytGpD",
-    "s": "7sQpvc6Awj1XkSG8ppDtFC4qd9wpTG5tCDtfTK8KfH5o"
+    Nonce: 1,
+    Fee: 0.001,
+    Actions: [
+        {
+            ActionType: "TransferChx",
+            ActionData: {
+                RecipientAddress: "CHb4ojxy1245voxbSWZDdidRqg8T9L3d2Ts",
+                Amount: 100000000
+            }
+        }
+    ]
+}
+{
+    tx: "CnsKICAgIE5vbmNlOiAxLAogICAgRmVlOiAwLjAwMSwKICAgIEFjdGlvbnM6IFsKICAgICAgICB7CiAgICAgICAgICAgIEFjdGlvblR5cGU6ICJUcmFuc2ZlckNoeCIsCiAgICAgICAgICAgIEFjdGlvbkRhdGE6IHsKICAgICAgICAgICAgICAgIFJlY2lwaWVudEFkZHJlc3M6ICJDSGI0b2p4eTEyNDV2b3hiU1daRGRpZFJxZzhUOUwzZDJUcyIsCiAgICAgICAgICAgICAgICBBbW91bnQ6IDEwMDAwMDAwMAogICAgICAgICAgICB9CiAgICAgICAgfQogICAgXQp9Cg==",
+    v: "2",
+    r: "7ibQNu6d39NMLFzD7dLzRo1AHKrunwYQWzYSx1haPTve",
+    s: "35V7Kfx1exDSSF71FyPq6NhJ4fihPx42b27ENHyR95Zt"
 }
 
-// 5 CHX to CHen2J21nxRj1rQhwQWBXfehs97YJ2TJVoC
+// Faucet Supply Holder
+Private Key: 1HU9REFJ5nKX3Q2bdYFdf4pNmiW4zJFH3zP38ntcBnyCd
+Address: CHb4ojxy1245voxbSWZDdidRqg8T9L3d2Ts
 {
-    "tx": "CnsKICAgIE5vbmNlOiAyLAogICAgRmVlOiAwLjEsCiAgICBBY3Rpb25zOiBbCiAgICAgICAgewogICAgICAgICAgICBBY3Rpb25UeXBlOiAiQ2h4VHJhbnNmZXIiLAogICAgICAgICAgICBBY3Rpb25EYXRhOiB7CiAgICAgICAgICAgICAgICBSZWNpcGllbnRBZGRyZXNzOiAiQ0hlbjJKMjFueFJqMXJRaHdRV0JYZmVoczk3WUoyVEpWb0MiLAogICAgICAgICAgICAgICAgQW1vdW50OiA1CiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICBdCn0K",
-    "v": "2",
-    "r": "1DaEpxNa3vKqXVUn7e6tWTGLqcVKvqku9KGGffqaLcZtW",
-    "s": "1Fcr7Yhc6KZeQhT8DPaKoH4JkupMn2VrPc3gPGw4Vywm4"
+    Nonce: 1,
+    Fee: 0.001,
+    Actions: [
+        {
+            ActionType: "CreateAsset",
+            ActionData: {}
+        },
+        {
+            ActionType: "CreateAccount",
+            ActionData: {}
+        }
+    ]
 }
+{
+    tx: "CnsKICAgIE5vbmNlOiAxLAogICAgRmVlOiAwLjAwMSwKICAgIEFjdGlvbnM6IFsKICAgICAgICB7CiAgICAgICAgICAgIEFjdGlvblR5cGU6ICJDcmVhdGVBc3NldCIsCiAgICAgICAgICAgIEFjdGlvbkRhdGE6IHt9CiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAgIEFjdGlvblR5cGU6ICJDcmVhdGVBY2NvdW50IiwKICAgICAgICAgICAgQWN0aW9uRGF0YToge30KICAgICAgICB9CiAgICBdCn0K",
+    v: "1",
+    r: "1BNagozWLZorRwEDSt6u9xNqCB1nDBkPLr5AU5Hk9vFft",
+    s: "7pWCabj8ZtV5vdwEk41gYfBtPEeLe1jBtHwk8HGp74JJ"
+}
+{
+    Nonce: 2,
+    Fee: 0.001,
+    Actions: [
+        {
+            ActionType: "CreateAssetEmission",
+            ActionData: {
+                EmissionAccountHash: "HD2NGMksGUNMyCLJdkHkfvcZ4PXMMoSh1eLcKxW2M1Zq",
+                AssetHash: "2ZK8jQJ7TAoJqAWKPnCUxGU8HTaQ72sdLA96wosZxdZX",
+                Amount: 1000000
+            }
+        }
+    ]
+}
+{
+    tx: "CnsKICAgIE5vbmNlOiAyLAogICAgRmVlOiAwLjAwMSwKICAgIEFjdGlvbnM6IFsKICAgICAgICB7CiAgICAgICAgICAgIEFjdGlvblR5cGU6ICJDcmVhdGVBc3NldEVtaXNzaW9uIiwKICAgICAgICAgICAgQWN0aW9uRGF0YTogewogICAgICAgICAgICAgICAgRW1pc3Npb25BY2NvdW50SGFzaDogIkhEMk5HTWtzR1VOTXlDTEpka0hrZnZjWjRQWE1Nb1NoMWVMY0t4VzJNMVpxIiwKICAgICAgICAgICAgICAgIEFzc2V0SGFzaDogIjJaSzhqUUo3VEFvSnFBV0tQbkNVeEdVOEhUYVE3MnNkTEE5Nndvc1p4ZFpYIiwKICAgICAgICAgICAgICAgIEFtb3VudDogMTAwMDAwMAogICAgICAgICAgICB9CiAgICAgICAgfQogICAgXQp9Cg==",
+    v: "1",
+    r: "1DATQCmcmc2N3YWj5k5PRRBSx7ZNuZqziRumxN3nSUycx",
+    s: "73f47MMMSggZDwuayyegk72u4u9rfucvjKvUWuEh3qS5"
+}
+
+// Investor
+Private Key: 1C7t8nYdKbieSAoYyNbmqhmwkfxjCK2C5ffzoHipRhEbd
+Address: CHTvddBEYpCMqfBMhdnoDwbMWNoyBwB1Vya
+{
+    Nonce: 1,
+    Fee: 0.001,
+    Actions: [
+        {
+            ActionType: "CreateAccount",
+            ActionData: {}
+        }
+    ]
+}
+{
+    tx: "CnsKICAgIE5vbmNlOiAxLAogICAgRmVlOiAwLjAwMSwKICAgIEFjdGlvbnM6IFsKICAgICAgICB7CiAgICAgICAgICAgIEFjdGlvblR5cGU6ICJDcmVhdGVBY2NvdW50IiwKICAgICAgICAgICAgQWN0aW9uRGF0YToge30KICAgICAgICB9CiAgICBdCn0K",
+    v: "1",
+    r: "1BAAwy3pCj9zdUTX2FCi5LGAEZhAKEspP6Fqs9QsTbHm3",
+    s: "1G78BPqtFs5xUpEV6urMizHRmqJgXimApemcap9UyBZ8Q"
+}
+
+ACCOUNT: 55Nz6e5K6b9jK7fkfPFoDfubgvBLcCfXmyi8xmDEu5k2
 *)
