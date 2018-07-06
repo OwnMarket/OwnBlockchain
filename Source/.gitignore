@@ -3,8 +3,9 @@
 **/.vs
 *.user
 
-# SQLite
+# SQLite and Raw data
 *.db
+Chainium.Blockchain.Public.Node/Data
 
 # Binaries
 package
