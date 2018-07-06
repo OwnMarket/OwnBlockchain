@@ -119,7 +119,7 @@ module Composition =
             getLastBlockNumber
             blockExists
             getBlock
-            (ChxAmount Config.GenesisChxSupply)
+            (ChxAmount Config.MinTxActionFee)
 
     let propagateTx = Workflows.propagateTx Peers.sendMessage
 
