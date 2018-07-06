@@ -24,7 +24,7 @@ module PaceMaker =
                     | Some timestamp -> timestamp
                     | None -> failwith "Blockchain state is not initialized."
 
-                let timeSinceLastBlock = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - lastBlockTimestamp
+                let timeSinceLastBlock = Utils.getUnixTimestamp () - lastBlockTimestamp
                 if timeSinceLastBlock >= blockCreationInterval then
                     Composition.createNewBlock ()
                     |> Option.iter (fun result ->
