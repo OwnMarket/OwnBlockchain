@@ -12,11 +12,6 @@ module Mapping =
     // Tx
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let txStatusToCode txStatus : byte =
-        match txStatus with
-        | Success -> 1uy
-        | Failure _ -> 2uy
-
     let txEnvelopeFromDto (dto : TxEnvelopeDto) : TxEnvelope =
         {
             RawTx = dto.Tx |> Convert.FromBase64String
