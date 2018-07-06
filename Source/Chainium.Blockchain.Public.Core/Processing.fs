@@ -498,6 +498,7 @@ module Processing =
                 match getTxBody getTx verifySignature isValidAddress minTxActionFee txHash with
                 | Ok tx -> tx
                 | Error err ->
+                    Log.appErrors err
                     txHash
                     |> fun (TxHash h) -> h
                     |> failwithf "Cannot load tx %s" rawTxHash // TODO: Remove invalid tx from the pool?
