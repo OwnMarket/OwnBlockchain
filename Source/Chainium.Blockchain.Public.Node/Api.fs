@@ -2,6 +2,7 @@
 
 open System
 open Microsoft.AspNetCore.Builder
+open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
@@ -107,11 +108,27 @@ module Api =
     let configureApp (app : IApplicationBuilder) =
         // Add Giraffe to the ASP.NET Core pipeline
         app.UseGiraffeErrorHandler(errorHandler)
+            .UseCors("Default")
             .UseGiraffe(api)
 
     let configureServices (services : IServiceCollection) =
+        let corsPolicies (options : CorsOptions) =
+            options.AddPolicy(
+                "Default",
+                fun builder ->
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithExposedHeaders("Access-Control-Allow-Origin")
+                    |> ignore
+            )
+
         // Add Giraffe dependencies
-        services.AddGiraffe() |> ignore
+        services
+            .AddCors(fun options -> corsPolicies options)
+            .AddGiraffe()
+        |> ignore
 
     let start () =
         WebHostBuilder()
@@ -119,5 +136,6 @@ module Api =
             .UseKestrel()
             .Configure(Action<IApplicationBuilder> configureApp)
             .ConfigureServices(configureServices)
+            .UseUrls(Config.ListeningAddresses)
             .Build()
             .Run()

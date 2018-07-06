@@ -4,10 +4,11 @@ open System
 open System.IO
 open System.Reflection
 open Microsoft.Extensions.Configuration
+open Chainium.Common
 
 type Config () =
 
-    static let appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+    static let appDir = Directory.GetCurrentDirectory()
 
     static let config =
         (
@@ -30,6 +31,17 @@ type Config () =
     static member DbEngineType
         with get () =
             config.["DbEngineType"]
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member ListeningAddresses
+        with get () =
+            let configAddress = config.["ListeningAddresses"]
+            if configAddress.IsNullOrWhiteSpace() then
+                "http://*:10717"
+            else
+                configAddress
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Genesis
