@@ -349,6 +349,18 @@ module Workflows =
             |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress
             |> Ok
 
+    let getAddressAccountsApi
+        (getAddressAccounts : ChainiumAddress -> AccountHash list)
+        (address : ChainiumAddress)
+        : Result<GetAddressAccountsApiResponseDto, AppErrors>
+        =
+
+        let accounts =
+            getAddressAccounts address
+            |> List.map (fun (AccountHash h) -> h)
+
+        Ok {GetAddressAccountsApiResponseDto.Accounts = accounts}
+
     let getAccountApi
         (getAccountState : AccountHash -> AccountStateDto option)
         getAccountHoldings

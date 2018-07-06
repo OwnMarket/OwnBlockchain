@@ -42,6 +42,8 @@ module Composition =
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
 
+    let getAddressAccounts = Db.getAddressAccounts Config.DbConnectionString
+
     let getAccountHoldings = Db.getAccountHoldings Config.DbConnectionString
 
     let getHoldingState = Db.getHoldingState Config.DbConnectionString
@@ -126,6 +128,8 @@ module Composition =
     let propagateBlock = Workflows.propagateBlock Peers.sendMessage
 
     let getAddressApi = Workflows.getAddressApi getChxBalanceState
+
+    let getAddressAccountsApi = Workflows.getAddressAccountsApi getAddressAccounts
 
     let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
 

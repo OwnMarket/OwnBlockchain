@@ -51,6 +51,15 @@ module Api =
             return! response next ctx
         }
 
+    let getAddressAccountsHandler chxAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAddressAccountsApi (ChainiumAddress chxAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAccountHandler (accountHash : string): HttpHandler = fun next ctx ->
         task {
 
@@ -89,6 +98,7 @@ module Api =
         choose [
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
+                routef "/address/%s/accounts" (fun chainiumAddress -> getAddressAccountsHandler chainiumAddress)
                 routef "/address/%s" (fun chainiumAddress -> getAddressHandler chainiumAddress)
                 routef "/account/%s" (fun accountHash -> getAccountHandler accountHash)
                 routef "/tx/%s" (fun txHash -> getTxHandler txHash)

@@ -192,6 +192,26 @@ module Db =
         | [holdingDetails] -> Some holdingDetails
         | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
 
+    let getAddressAccounts
+        (dbConnectionString : string)
+        (ChainiumAddress address)
+        : AccountHash list
+        =
+
+        let sql =
+            """
+            SELECT account_hash
+            FROM account
+            WHERE controller_address = @controllerAddress
+            ORDER BY account_id;
+            """
+
+        [
+            "@controllerAddress", address |> box
+        ]
+        |> DbTools.query<string> dbConnectionString sql
+        |> List.map AccountHash
+
     let getAccountHoldings
         (dbConnectionString : string)
         (AccountHash accountHash)

@@ -216,6 +216,10 @@ type GetAddressApiResponseDto = {
     Nonce : int64
 }
 
+type GetAddressAccountsApiResponseDto = {
+    Accounts : string list
+}
+
 type GetAccountApiRequestDto = {
     AccountHash : string option
 }
