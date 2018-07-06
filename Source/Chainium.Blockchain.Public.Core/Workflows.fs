@@ -338,12 +338,16 @@ module Workflows =
         : Result<GetAddressApiResponseDto, AppErrors> =
         match getChxBalanceState chainiumAddress with
         | Some addressState ->
-            Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress addressState
+            addressState
+            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress
             |> Ok
         | None ->
-            chainiumAddress
-            |> fun (ChainiumAddress a) -> sprintf "Chainium address %s does not exist." a
-            |> Result.appError
+            {
+                ChxBalanceStateDto.Amount = 0M
+                Nonce = 0L
+            }
+            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress
+            |> Ok
 
     let getAccountApi
         (getAccountState : AccountHash -> AccountStateDto option)
