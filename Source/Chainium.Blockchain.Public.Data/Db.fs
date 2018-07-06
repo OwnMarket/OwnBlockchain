@@ -174,7 +174,7 @@ module Db =
         : HoldingStateDto option =
         let sql =
             """
-            SELECT h.amount, h.nonce
+            SELECT h.amount
             FROM holding AS h
             JOIN account AS a USING (account_id)
             WHERE a.account_hash = @accountHash
