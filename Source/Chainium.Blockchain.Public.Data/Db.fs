@@ -325,7 +325,7 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Failed to remove processed transaction from the pool."
+            | _ -> Result.appError "Didn't remove processed transaction from the pool."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
@@ -357,7 +357,7 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Failed to insert block"
+            | _ -> Result.appError "Didn't insert block"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
@@ -381,7 +381,7 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addBlock conn transaction blockInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Failed to update block number"
+            | _ -> Result.appError "Didn't update block number"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
@@ -404,7 +404,7 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Failed to insert CHX balance"
+            | _ -> Result.appError "Didn't insert CHX balance"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
@@ -429,7 +429,7 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addChxBalance conn transaction chxBalanceInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Failed to update CHX balance"
+            | _ -> Result.appError "Didn't update CHX balance"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
@@ -478,7 +478,7 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Failed to insert holding"
+            | _ -> Result.appError "Didn't insert holding"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
@@ -504,7 +504,7 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addHolding conn transaction holdingInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Failed to update holding"
+            | _ -> Result.appError "Didn't update holding"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
