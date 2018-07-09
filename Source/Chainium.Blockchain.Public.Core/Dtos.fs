@@ -206,10 +206,6 @@ type ErrorResponseDto = {
     Errors : string list
 }
 
-type GetAddressApiRequestDto = {
-    ChainiumAddress : string
-}
-
 type GetAddressApiResponseDto = {
     ChainiumAddress : string
     Balance : decimal
@@ -218,10 +214,6 @@ type GetAddressApiResponseDto = {
 
 type GetAddressAccountsApiResponseDto = {
     Accounts : string list
-}
-
-type GetAccountApiRequestDto = {
-    AccountHash : string option
 }
 
 type GetAccountApiHoldingDto = {
