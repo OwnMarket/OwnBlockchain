@@ -139,6 +139,8 @@ type TxErrorCode =
     | AccountNotFound = 310s
     | AccountAlreadyExists = 320s
     | SenderIsNotSourceAccountController = 330s
+    | SourceAccountNotFound = 340s
+    | DestinationAccountNotFound = 350s
 
     // Asset
     | AssetNotFound = 410s

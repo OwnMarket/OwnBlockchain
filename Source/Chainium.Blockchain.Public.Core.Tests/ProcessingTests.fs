@@ -643,6 +643,200 @@ module ProcessingTests =
         test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
+    [<Fact>]
+    let ``Processing.processTxSet TransferAsset fails if source account not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9M}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let amountToTransfer = AssetAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
+                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
+                            Amount = amountToTransfer |> fun (AssetAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getAccountState accountHash =
+            if accountHash = recipientAccountHash then
+                Some {AccountState.ControllerAddress = senderWallet.Address}
+            else
+                None
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.SourceAccountNotFound)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings = Map.empty @>
+
+    [<Fact>]
+    let ``Processing.processTxSet TransferAsset fails if destination account not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9M}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let amountToTransfer = AssetAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
+                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
+                            Amount = amountToTransfer |> fun (AssetAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getAccountState accountHash =
+            if accountHash = senderAccountHash then
+                Some {AccountState.ControllerAddress = senderWallet.Address}
+            else
+                None
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.DestinationAccountNotFound)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings = Map.empty @>
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -652,6 +846,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
+        let someOtherWallet = Signing.generateWallet ()
         let emissionAccountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
 
@@ -695,7 +890,7 @@ module ProcessingTests =
             None
 
         let getAccountState _ =
-            failwith "getAccountState should not be called"
+            Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
@@ -733,6 +928,7 @@ module ProcessingTests =
     let ``Processing.processTxSet CreateAssetEmission additional emission`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
+        let someOtherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let emissionAccountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -783,7 +979,7 @@ module ProcessingTests =
             initialHoldingState |> Map.tryFind key
 
         let getAccountState _ =
-            failwith "getAccountState should not be called"
+            Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
@@ -820,6 +1016,180 @@ module ProcessingTests =
 
     [<Fact>]
     let ``Processing.processTxSet CreateAssetEmission fails if sender not current controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let someOtherWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let currentControllerWallet = Signing.generateWallet ()
+        let emissionAccountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let emissionAmount = AssetAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAssetEmission"
+                    ActionData =
+                        {
+                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
+                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = someOtherWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings = Map.empty @>
+
+    [<Fact>]
+    let ``Processing.processTxSet CreateAssetEmission fails if asset not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let someOtherWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let currentControllerWallet = Signing.generateWallet ()
+        let emissionAccountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let emissionAmount = AssetAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAssetEmission"
+                    ActionData =
+                        {
+                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
+                            AssetHash = assetHash |> fun (AssetHash c) -> c
+                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 0L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = someOtherWallet.Address}
+
+        let getAssetState _ =
+            None
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.AssetNotFound)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Holdings = Map.empty @>
+
+    [<Fact>]
+    let ``Processing.processTxSet CreateAssetEmission fails if account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -867,7 +1237,7 @@ module ProcessingTests =
             None
 
         let getAccountState _ =
-            failwith "getAccountState should not be called"
+            None
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
@@ -893,7 +1263,7 @@ module ProcessingTests =
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
         let expectedStatus =
-            (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
+            (TxActionNumber 1s, TxErrorCode.AccountNotFound)
             |> TxActionError
             |> Failure
 

@@ -152,8 +152,12 @@ module Processing =
         : Result<ProcessingState, TxErrorCode>
         =
 
-        match state.GetAccount(action.FromAccountHash) with
-        | Some accountState when accountState.ControllerAddress = senderAddress ->
+        match state.GetAccount(action.FromAccountHash), state.GetAccount(action.ToAccountHash) with
+        | None, _ ->
+            Error TxErrorCode.SourceAccountNotFound
+        | _, None ->
+            Error TxErrorCode.DestinationAccountNotFound
+        | Some fromAccountState, Some _ when fromAccountState.ControllerAddress = senderAddress ->
             let fromState = state.GetHolding(action.FromAccountHash, action.AssetHash)
             let toState = state.GetHolding(action.ToAccountHash, action.AssetHash)
 
@@ -181,8 +185,12 @@ module Processing =
         : Result<ProcessingState, TxErrorCode>
         =
 
-        match state.GetAsset(action.AssetHash) with
-        | Some assetState when assetState.ControllerAddress = senderAddress ->
+        match state.GetAsset(action.AssetHash), state.GetAccount(action.EmissionAccountHash) with
+        | None, _ ->
+            Error TxErrorCode.AssetNotFound
+        | _, None ->
+            Error TxErrorCode.AccountNotFound
+        | Some assetState, Some _ when assetState.ControllerAddress = senderAddress ->
             let holdingState = state.GetHolding(action.EmissionAccountHash, action.AssetHash)
             state.SetHolding(
                 action.EmissionAccountHash,
