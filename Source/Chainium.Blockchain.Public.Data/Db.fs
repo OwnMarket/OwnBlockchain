@@ -740,6 +740,5 @@ module Db =
         | Error errors ->
             transaction.Rollback()
             conn.Close()
-            for e in errors do
-                Log.error e
+            Log.appErrors errors
             Result.appError "Failed to apply new state"
