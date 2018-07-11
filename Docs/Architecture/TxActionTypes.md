@@ -7,8 +7,8 @@ An action is a single command that changes the state. The action types supported
 - [Transfer CHX](#transfer-chx)
 - [Create Asset Emission](#create-asset-emission)
 - [Transfer Asset](#transfer-asset)
-- [Set Asset Controller](#set-account-controller)
-- [Set Account Controller](#set-asset-controller)
+- [Set Asset Controller](#set-asset-controller)
+- [Set Account Controller](#set-account-controller)
 - [Set Asset Code Controller](#set-asset-code-controller)
 
 ## Transfer CHX
