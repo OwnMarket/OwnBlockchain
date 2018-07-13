@@ -21,8 +21,27 @@ module Signing =
     let private curve = SecNamedCurves.GetByName("secp256k1")
     let private domain = ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H)
 
-    let bytesToBigInteger (bytes : byte[]) =
+    let private generateKeyPair () =
+        let gen = ECKeyPairGenerator()
+        let secureRandom = SecureRandom()
+
+        let keyGenParams = ECKeyGenerationParameters(domain, secureRandom)
+
+        gen.Init(keyGenParams)
+
+        let keyPair = gen.GenerateKeyPair()
+
+        let privateKey = keyPair.Private :?> ECPrivateKeyParameters
+        let publicKey = keyPair.Public :?> ECPublicKeyParameters
+
+        (privateKey.D.ToByteArray(), publicKey.Q.GetEncoded())
+
+    let private bytesToBigInteger (bytes : byte[]) =
         BigInteger(1, bytes)
+
+    let private calculatePublicKey (privateKey : BigInteger) =
+        curve.G.Multiply(privateKey).GetEncoded()
+        |> bytesToBigInteger
 
     let private getCompressionArrayBasedOnRecId recId (x : BigInteger) =
         let compressionArraySize = 33
@@ -127,25 +146,6 @@ module Signing =
 
         ecdsa.Init(true, paramsWithRandom)
         ecdsa.GenerateSignature(messageHash)
-
-    let private calculatePublicKey (privateKey : BigInteger) =
-        curve.G.Multiply(privateKey).GetEncoded()
-        |> bytesToBigInteger
-
-    let private generateKeyPair () =
-        let gen = ECKeyPairGenerator()
-        let secureRandom = SecureRandom()
-
-        let keyGenParams = ECKeyGenerationParameters(domain, secureRandom)
-
-        gen.Init(keyGenParams)
-
-        let keyPair = gen.GenerateKeyPair()
-
-        let privateKey = keyPair.Private :?> ECPrivateKeyParameters
-        let publicKey = keyPair.Public :?> ECPublicKeyParameters
-
-        (privateKey.D.ToByteArray(), publicKey.Q.GetEncoded())
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public facing functions, operating with domain types instead of raw bytes or BigInteger.
