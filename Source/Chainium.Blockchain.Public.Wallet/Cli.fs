@@ -24,13 +24,19 @@ module Cli =
         let (ChainiumAddress address) = wallet.Address
         printfn "Private Key: %s\nAddress: %s" pk address
 
+    let handleDeriveAddressCommand privateKey =
+        privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
+        |> PrivateKey
+        |> Signing.addressFromPrivateKey
+        |> (fun (ChainiumAddress a) -> printfn "Address: %s" a)
+
     let handleSignMessageCommand privateKey message =
         let privateKey = PrivateKey privateKey
 
         message
         |> Convert.FromBase64String // TODO: Provide input as a file path, so the raw data can be read.
         |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
-        |> (fun { V = v; R = r; S = s } -> printfn "V: %s\nR: %s\nS: %s" v r s )
+        |> (fun { V = v; R = r; S = s } -> printfn "V: %s\nR: %s\nS: %s" v r s)
 
     let handleHelpCommand args =
         printfn "TODO: Print short command reference"
@@ -43,5 +49,6 @@ module Cli =
         match args with
         | ["-v"] -> handleShowVersionCommand ()
         | ["-g"] -> handleGenerateWalletCommand ()
+        | ["-a"; privateKey] -> handleDeriveAddressCommand privateKey
         | ["-s"; privateKey; message] -> handleSignMessageCommand privateKey message
         | ["--help"] | _ -> handleHelpCommand args
