@@ -185,10 +185,9 @@ module Signing =
         let vComponent =
             calculateVComponent publicKey messageHash signature
             |> (fun v -> [| Convert.ToByte v |])
-            |> Hashing.encode
 
         {
-            V = vComponent
+            V = vComponent |> Hashing.encode
             R = signature.[0].ToByteArray() |> Hashing.encode
             S = signature.[1].ToByteArray() |> Hashing.encode
         }
