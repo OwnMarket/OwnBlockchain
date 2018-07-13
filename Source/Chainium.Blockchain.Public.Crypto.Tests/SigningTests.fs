@@ -30,6 +30,13 @@ module SigningTests =
 
     [<Fact>]
     let ``Signing.addressFromPrivateKey`` () =
+        for _ in [1 .. 100] do
+            let wallet = Signing.generateWallet ()
+            let derivedAddress = Signing.addressFromPrivateKey wallet.PrivateKey
+            test <@ derivedAddress = wallet.Address @>
+
+    [<Fact>]
+    let ``Signing.addressFromPrivateKey keys from JS`` () =
         // These keys are generated using Chainium's crypto JS library, to ensure consistent results.
         let keys =
             [
