@@ -172,6 +172,16 @@ module Signing =
                 |> Hashing.chainiumAddress
         }
 
+    let addressFromPrivateKey (PrivateKey privateKey) =
+        let publicKey =
+            privateKey
+            |> Hashing.decode
+            |> bytesToBigInteger
+            |> calculatePublicKey
+
+        publicKey.ToByteArray()
+        |> Hashing.chainiumAddress
+
     let signMessage (PrivateKey privateKey) (message : byte[]) : Signature =
         let privateKey =
             privateKey

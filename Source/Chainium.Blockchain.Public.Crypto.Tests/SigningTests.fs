@@ -29,6 +29,33 @@ module SigningTests =
             test <@ address.StartsWith("CH") @>
 
     [<Fact>]
+    let ``Signing.addressFromPrivateKey`` () =
+        // These keys are generated using Chainium's crypto JS library, to ensure consistent results.
+        let keys =
+            [
+                "2C6sgXHMLkwiWeUK4fpyVFa3XG59MBa221pkW7kq2KB8", "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD"
+                "3H2V8pM1h4wJEzCfuBHbNBC4w2FvXszKXx6nMEs3mUcC", "CHfDeuB1y1eJnWd6aWfYaRvpS9Qgrh1eqe7"
+                "CpxNZ1YsPCmVrLwJzP7H88gHthSjBSySgVR3iK1c1VBk", "CHb5Sgdq1MNDVDUG8UPLHBKzUGZZ7ZtAuzy"
+                "GzsiWSoVZtDKwGeLELjpqRW618eBsWmFxJhE2wobkzmP", "CHJeYbKnr8icRezrdrEQsLXrxpDbXxri6j4"
+                "Ai6m6px88vHv9L3uVtqSGMRoRDatem7xYXdUyAgg7fon", "CHTjSrn385LBC7rzbqRvE9csKPJS8BT725y"
+                "DdJtweNMxs6vfL3dGUMzZHM3GM7gi6RbGyHHwDcQaxXT", "CHZzZNYPCGfyC5zZyjpJAV68njzcqK3YYsE"
+                "9hYD2Xsky8PUpQStvE8UhPaHmhaqxhJth8VuQT5TDTjA", "CHWcs2fFSaPbDYuMosuUYRazZEahVEV96nc"
+                "AAscexBi2v8agKdHwbDgfiKzs9eMbH8JQQB3vzvx5k7X", "CHfRWRaiVVcQvb8CpNmPfBhRX1BLgXURDWg"
+                "9exbLv213SGiHnSppnLYsRVTQqW96BHcMDg9ECZZEBCt", "CHM1QepZLdazpGpVVPEmcmMP2mQn1HeMniJ"
+                "AvLDKGB7SAqjjs4RhT87GCdBdxyyJHSqcALvWRrQnggd", "CHTEKKKTSCt32C9yEaKHvckgKYNKcKXuryw"
+            ]
+
+        let expected =
+            keys
+            |> List.map (snd >> ChainiumAddress)
+
+        let actual =
+            keys
+            |> List.map (fst >> PrivateKey >> Signing.addressFromPrivateKey)
+
+        test <@ actual = expected @>
+
+    [<Fact>]
     let ``Signing.signMessage same message for multiple users`` () =
         let numOfReps = 100
         let messageToSign = Conversion.stringToBytes "Chainium"
