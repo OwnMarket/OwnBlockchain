@@ -34,7 +34,7 @@ module Signing =
         let privateKey = keyPair.Private :?> ECPrivateKeyParameters
         let publicKey = keyPair.Public :?> ECPublicKeyParameters
 
-        (privateKey.D.ToByteArray(), publicKey.Q.GetEncoded())
+        (privateKey.D.ToByteArrayUnsigned(), publicKey.Q.GetEncoded())
 
     let private bytesToBigInteger (bytes : byte[]) =
         BigInteger(1, bytes)
@@ -107,7 +107,7 @@ module Signing =
             |> Some
 
     let private verify originalMesageHash messageHash signature (publicKey : BigInteger) =
-        let ecPoint = domain.Curve.DecodePoint(publicKey.ToByteArray())
+        let ecPoint = domain.Curve.DecodePoint(publicKey.ToByteArrayUnsigned())
         let publicKeyParameters = ECPublicKeyParameters(ecPoint, domain)
 
         let ecdsa = ECDsaSigner()
@@ -179,7 +179,7 @@ module Signing =
             |> bytesToBigInteger
             |> calculatePublicKey
 
-        publicKey.ToByteArray()
+        publicKey.ToByteArrayUnsigned()
         |> Hashing.chainiumAddress
 
     let signMessage (PrivateKey privateKey) (message : byte[]) : Signature =
@@ -189,17 +189,17 @@ module Signing =
             |> bytesToBigInteger
 
         let messageHash = Hashing.hashBytes message
-        let publicKey = calculatePublicKey privateKey
         let signature = getBouncyCastleSignatureArray privateKey messageHash
 
+        let publicKey = calculatePublicKey privateKey
         let vComponent =
             calculateVComponent publicKey messageHash signature
             |> (fun v -> [| Convert.ToByte v |])
 
         {
             V = vComponent |> Hashing.encode
-            R = signature.[0].ToByteArray() |> Hashing.encode
-            S = signature.[1].ToByteArray() |> Hashing.encode
+            R = signature.[0].ToByteArrayUnsigned() |> Hashing.encode
+            S = signature.[1].ToByteArrayUnsigned() |> Hashing.encode
         }
 
     let verifySignature (signature : Signature) (message : byte[]) : ChainiumAddress option =
@@ -223,7 +223,7 @@ module Signing =
         recoverPublicKeyFromSignature vComponent rComponent sComponent messageHash
         |> Option.bind (fun publicKey ->
             if verify messageHash rComponent sComponent publicKey then
-                publicKey.ToByteArray()
+                publicKey.ToByteArrayUnsigned()
                 |> Hashing.chainiumAddress
                 |> Some
             else
