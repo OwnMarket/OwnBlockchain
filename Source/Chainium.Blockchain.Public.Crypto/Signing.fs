@@ -21,6 +21,9 @@ module Signing =
     let private curve = SecNamedCurves.GetByName("secp256k1")
     let private domain = ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H)
 
+    let bytesToBigInteger (bytes : byte[]) =
+        BigInteger(1, bytes)
+
     let private getCompressionArrayBasedOnRecId recId (x : BigInteger) =
         let compressionArraySize = 33
         let xUnsigned = x.ToByteArrayUnsigned()
@@ -42,14 +45,14 @@ module Signing =
         (r : ECPoint)
         =
 
-        let messageE = BigInteger(1, message)
+        let messageE = message |> bytesToBigInteger
         let e = BigInteger.Zero.Subtract(messageE).Mod(order)
         let rr = rComponent.ModInverse(order)
         let sor = sComponent.Multiply(rr).Mod(order)
         let eor = e.Multiply(rr).Mod(order)
 
         let q = curve.G.Multiply(eor).Add(r.Multiply(sor))
-        q.Normalize().GetEncoded() |> BigInteger
+        q.Normalize().GetEncoded() |> bytesToBigInteger
 
     let private recoverPublicKeyFromSignature
         (recId : int)
@@ -127,7 +130,7 @@ module Signing =
 
     let private calculatePublicKey (privateKey : BigInteger) =
         curve.G.Multiply(privateKey).GetEncoded()
-        |> BigInteger
+        |> bytesToBigInteger
 
     let private generateKeyPair () =
         let gen = ECKeyPairGenerator()
@@ -173,7 +176,7 @@ module Signing =
         let privateKey =
             privateKey
             |> Hashing.decode
-            |> BigInteger
+            |> bytesToBigInteger
 
         let messageHash = Hashing.hashBytes message
         let publicKey = calculatePublicKey privateKey
@@ -200,12 +203,12 @@ module Signing =
         let rComponent =
             signature.R
             |> Hashing.decode
-            |> BigInteger
+            |> bytesToBigInteger
 
         let sComponent =
             signature.S
             |> Hashing.decode
-            |> BigInteger
+            |> bytesToBigInteger
 
         let messageHash = Hashing.hashBytes message
         recoverPublicKeyFromSignature vComponent rComponent sComponent messageHash
