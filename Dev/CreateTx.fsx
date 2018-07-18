@@ -5,15 +5,15 @@ open System.Text
 
 """
 {
-    Nonce: 2,
+    SenderAddress: "CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2",
+    Nonce: 1,
     Fee: 0.001,
     Actions: [
         {
-            ActionType: "CreateAssetEmission",
+            ActionType: "TransferChx",
             ActionData: {
-                EmissionAccountHash: "HD2NGMksGUNMyCLJdkHkfvcZ4PXMMoSh1eLcKxW2M1Zq",
-                AssetHash: "2ZK8jQJ7TAoJqAWKPnCUxGU8HTaQ72sdLA96wosZxdZX",
-                Amount: 1000000
+                RecipientAddress: "CHYbsyKS6fdDPRnDNRbEmUQkR3GXzNZmStS",
+                Amount: 10
             }
         }
     ]
