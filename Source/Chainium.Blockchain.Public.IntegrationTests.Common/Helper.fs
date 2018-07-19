@@ -21,14 +21,32 @@ module internal Helper =
     let SQLite = "SQLite"
     let Postgres = "PostgreSQL"
 
+    let private deleteFile filePath =
+        let numberOfDeletionTrys = 20
+
+        let rec tryDeleteFile filePath numOfChecks =
+            if File.Exists filePath |> not || numOfChecks >= numberOfDeletionTrys then
+                ()
+            else
+                try
+                    File.Delete filePath
+                with
+                | :? System.IO.IOException as ex ->
+                    if numOfChecks = numberOfDeletionTrys then
+                        failwithf "%A" ex
+                    else
+                        System.Threading.Thread.Sleep(1000)
+                        tryDeleteFile filePath numOfChecks
+
+        tryDeleteFile filePath 0
+
     let testCleanup sqlEngineType connString =
         if Directory.Exists(Config.DataDir) then do
             Directory.Delete(Config.DataDir, true)
 
         if sqlEngineType = SQLite then
             let conn = new SqliteConnection(connString)
-            if File.Exists conn.DataSource then do
-                File.Delete conn.DataSource
+            deleteFile conn.DataSource
 
         if sqlEngineType = Postgres then
             let schemaName = (Npgsql.NpgsqlConnectionStringBuilder connString).SearchPath
