@@ -155,7 +155,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -238,7 +238,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -322,7 +322,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -406,7 +406,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -493,7 +493,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -587,7 +587,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -684,7 +684,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -781,7 +781,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -874,7 +874,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -963,7 +963,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1048,7 +1048,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1135,7 +1135,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1221,7 +1221,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1302,7 +1302,7 @@ module ProcessingTests =
                     ActionData = CreateAccountTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1391,7 +1391,7 @@ module ProcessingTests =
                     ActionData = CreateAssetTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1486,7 +1486,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1566,7 +1566,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1651,7 +1651,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1740,7 +1740,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1820,7 +1820,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1905,7 +1905,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -1994,7 +1994,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -2074,7 +2074,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;
@@ -2159,7 +2159,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce fee
+            |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 0L;

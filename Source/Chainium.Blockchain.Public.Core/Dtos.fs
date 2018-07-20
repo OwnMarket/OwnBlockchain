@@ -59,6 +59,7 @@ type TxActionDto = {
 
 [<CLIMutable>]
 type TxDto = {
+    SenderAddress : string
     Nonce : int64
     Fee : decimal
     Actions : TxActionDto list

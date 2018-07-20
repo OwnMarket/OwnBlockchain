@@ -26,6 +26,7 @@ module ValidationTests =
     let ``Validation.validateTx BasicValidation single validation error`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = -10L
             Fee = 20M
             Actions =
@@ -65,6 +66,7 @@ module ValidationTests =
     let ``Validation.validateTx BasicValidation multiple validation errors`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
+            SenderAddress = ""
             Nonce = -10L
             Fee = 0M
             Actions =
@@ -96,11 +98,12 @@ module ValidationTests =
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
         | Error errors ->
-            test <@ errors.Length = 3 @>
+            test <@ errors.Length = 4 @>
 
     [<Fact>]
     let ``Validation.validateTx BasicValidation unknown action type`` () =
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -123,6 +126,7 @@ module ValidationTests =
     let ``Validation.validateTx TransferChx invalid Amount`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -149,6 +153,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferChx invalid RecipientAddress`` () =
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -174,6 +179,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid FromAccount`` () =
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -201,6 +207,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid ToAccount`` () =
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -228,6 +235,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid Asset`` () =
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -255,6 +263,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid Amount`` () =
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -283,6 +292,7 @@ module ValidationTests =
     let ``Validation.validateTx validate action`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -346,6 +356,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -375,6 +386,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -394,6 +406,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx CreateAccount valid action`` () =
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -413,6 +426,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx CreateAsset valid action`` () =
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -438,6 +452,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -465,6 +480,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -490,6 +506,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -517,6 +534,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -542,6 +560,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =
@@ -569,6 +588,7 @@ module ValidationTests =
             }
 
         let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
             Fee = 1M
             Actions =

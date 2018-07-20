@@ -19,8 +19,9 @@ module SharedTests =
 
     let addressToString (ChainiumAddress a) = a
 
-    let newTxDto fee nonce actions =
+    let newTxDto (ChainiumAddress senderAddress) nonce fee actions =
         {
+            SenderAddress = senderAddress
             Nonce = nonce
             Fee = fee
             Actions = actions
@@ -113,7 +114,7 @@ module SharedTests =
                     }
             }
 
-        let txDto = newTxDto 1M 1L [action]
+        let txDto = newTxDto senderWallet.Address 1L 1M [action]
         let expectedTx = transactionEnvelope senderWallet txDto
 
         submitTransaction client expectedTx
@@ -158,7 +159,7 @@ module SharedTests =
 
                     let fee = 1M
                     let nonce = 1L
-                    let txDto = newTxDto fee nonce [ action ]
+                    let txDto = newTxDto senderWallet.Address nonce fee [action]
 
                     let expectedTx = transactionEnvelope senderWallet txDto
 
@@ -301,7 +302,7 @@ module SharedTests =
         let fee = 1M
         let totalFee = fee * (decimal txActions.Length)
 
-        let txDto = newTxDto fee nonce txActions
+        let txDto = newTxDto sender.Address nonce fee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -355,7 +356,7 @@ module SharedTests =
         let fee = 1M
         let totalFee = fee * (decimal txActions.Length)
 
-        let txDto = newTxDto fee nonce txActions
+        let txDto = newTxDto sender.Address nonce fee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -409,7 +410,7 @@ module SharedTests =
         let fee = 1M
         let totalFee = fee * (decimal txActions.Length)
 
-        let txDto = newTxDto fee nonce txActions
+        let txDto = newTxDto sender.Address nonce fee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT

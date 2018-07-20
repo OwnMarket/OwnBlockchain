@@ -45,6 +45,7 @@ module Helpers =
         }
 
     let newRawTxDto
+        (ChainiumAddress senderAddress)
         (nonce : int64)
         (fee : decimal)
         (actions : obj list)
@@ -54,11 +55,13 @@ module Helpers =
             sprintf
                 """
                 {
+                    SenderAddress: "%s",
                     Nonce: %i,
                     Fee: %s,
                     Actions: %s
                 }
                 """
+                senderAddress
                 nonce
                 (fee.ToString())
                 (JsonConvert.SerializeObject(actions))
@@ -66,19 +69,19 @@ module Helpers =
         Conversion.stringToBytes json
 
     let newTx
-        (privateKey : PrivateKey)
+        (sender : WalletInfo)
         (Nonce nonce)
         (ChxAmount fee)
         (actions : obj list)
         =
 
-        let rawTx = newRawTxDto nonce fee actions
+        let rawTx = newRawTxDto sender.Address nonce fee actions
 
         let txHash =
             rawTx |> Hashing.hash |> TxHash
 
         let signature =
-            Signing.signMessage privateKey rawTx
+            Signing.signMessage sender.PrivateKey rawTx
 
         let txEnvelopeDto =
             {

@@ -101,8 +101,10 @@ module Validation =
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private validateTxFields (ChxAmount minTxActionFee) (t : TxDto) =
+    let private validateTxFields (ChxAmount minTxActionFee) (ChainiumAddress signerAddress) (t : TxDto) =
         [
+            if t.SenderAddress <> signerAddress then
+                yield AppError "Sender address doesn't match the signature."
             if t.Nonce <= 0L then
                 yield AppError "Nonce must be positive."
             if t.Fee <= 0M then
@@ -140,7 +142,8 @@ module Validation =
         |> List.collect validateTxAction
 
     let validateTx isValidAddress minTxActionFee sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        validateTxFields minTxActionFee txDto @ validateTxActions isValidAddress txDto.Actions
+        validateTxFields minTxActionFee sender txDto
+        @ validateTxActions isValidAddress txDto.Actions
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
 
     let checkIfBalanceCanCoverFees

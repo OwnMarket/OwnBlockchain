@@ -45,7 +45,7 @@ module SubmissionTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet.PrivateKey nonce txFee
+            |> Helpers.newTx senderWallet nonce txFee
 
         let expectedResult : Result<TxSubmittedEvent, AppErrors> = Error [AppError error]
 
