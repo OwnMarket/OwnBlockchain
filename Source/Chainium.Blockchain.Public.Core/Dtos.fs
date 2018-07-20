@@ -246,8 +246,8 @@ type GetTxApiResponseDto = {
     Nonce : int64
     Fee : decimal
     Actions : TxActionDto list
-    Status : byte
-    ErrorCode : Nullable<int16>
+    Status : string
+    ErrorCode : string
     FailedActionNumber : Nullable<int16>
     BlockNumber : Nullable<int64>
 }

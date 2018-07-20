@@ -12,6 +12,23 @@ module Mapping =
     // Tx
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let txStatusNumberToString (txStatusNumber : byte) =
+        match txStatusNumber with
+        | 0uy -> "Pending"
+        | 1uy -> "Success"
+        | 2uy -> "Failure"
+        | s -> failwithf "Unknown tx status: %i" s
+
+    let txErrorCodeNumberToString (txErrorCodeNumber : Nullable<int16>) : string =
+        if not txErrorCodeNumber.HasValue then
+            None
+        elif Enum.IsDefined(typeof<TxErrorCode>, txErrorCodeNumber.Value) then
+            let txErrorCode : TxErrorCode = LanguagePrimitives.EnumOfValue txErrorCodeNumber.Value
+            txErrorCode.ToString() |> Some
+        else
+            failwithf "Unknown tx error code: %s" (txErrorCodeNumber.ToString())
+        |> Option.toObj
+
     let txEnvelopeFromDto (dto : TxEnvelopeDto) : TxEnvelope =
         {
             RawTx = dto.Tx |> Convert.FromBase64String
@@ -341,7 +358,7 @@ module Mapping =
         (txResult : TxResultDto option)
         =
 
-        let txStatus, errorCode, failedActionNumber, blockNumber =
+        let txStatus, txErrorCode, failedActionNumber, blockNumber =
             match txResult with
             | Some r -> r.Status, r.ErrorCode, r.FailedActionNumber, Nullable r.BlockNumber
             | None -> 0s, Nullable(), Nullable(), Nullable()
@@ -352,8 +369,8 @@ module Mapping =
             GetTxApiResponseDto.Nonce = txDto.Nonce
             GetTxApiResponseDto.Fee = txDto.Fee
             GetTxApiResponseDto.Actions = txDto.Actions
-            GetTxApiResponseDto.Status = Convert.ToByte txStatus
-            GetTxApiResponseDto.ErrorCode = errorCode
+            GetTxApiResponseDto.Status = txStatus |> Convert.ToByte |> txStatusNumberToString
+            GetTxApiResponseDto.ErrorCode = txErrorCode |> txErrorCodeNumberToString
             GetTxApiResponseDto.FailedActionNumber = failedActionNumber
             GetTxApiResponseDto.BlockNumber = blockNumber
         }
