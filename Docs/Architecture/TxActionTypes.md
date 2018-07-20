@@ -120,8 +120,8 @@ The &quot;Set Asset Code Controller&quot; action type sets the Chainium address 
 
 ## Useful links
 
-- [Blockchain Domain Types] (file:///tmp/d20180616-4-fnhcc/%E2%80%A2%09https:/github.com/Chainium/Chainium/blob/master/Source/Chainium.Blockchain.Public.Core/DomainTypes.fs)
-- [Blockchain Transaction Processing Source Code] (file:///tmp/d20180616-4-fnhcc/%E2%80%A2%09https:/github.com/Chainium/Chainium/blob/master/Source/Chainium.Blockchain.Public.Core/Processing.fs)
+- [Blockchain Domain Types](../../Source/Chainium.Blockchain.Public.Core/DomainTypes.fs#L74)
+- [Blockchain Transaction Processing Source Code](../../Source/Chainium.Blockchain.Public.Core/Processing.fs)
 
 ## Phase 2  tx Action types
 
