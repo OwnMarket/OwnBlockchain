@@ -13,7 +13,7 @@ module Blocks =
 
         [
             decodeHash txHash
-            txResult.Status |> int16ToBytes
+            [| txResult.Status |]
             txResult.ErrorCode |?? 0s |> int16ToBytes
             txResult.FailedActionNumber |?? 0s |> int16ToBytes
             txResult.BlockNumber |> int64ToBytes

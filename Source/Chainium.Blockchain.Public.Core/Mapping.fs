@@ -119,9 +119,9 @@ module Mapping =
     let txResultToDto (txResult : TxResult) =
         let status, errorCode, failedActionNumber =
             match txResult.Status with
-            | Success -> 1s, Nullable (), Nullable ()
+            | Success -> 1uy, Nullable (), Nullable ()
             | Failure txError ->
-                let statusNumber = 2s
+                let statusNumber = 2uy
                 match txError with
                 | TxError errorCode ->
                     let errorNumber = errorCode |> LanguagePrimitives.EnumToValue
@@ -141,8 +141,8 @@ module Mapping =
         {
             Status =
                 match dto.Status with
-                | 1s -> Success
-                | 2s ->
+                | 1uy -> Success
+                | 2uy ->
                     match dto.ErrorCode.HasValue, dto.FailedActionNumber.HasValue with
                     | true, false ->
                         let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
@@ -361,7 +361,7 @@ module Mapping =
         let txStatus, txErrorCode, failedActionNumber, blockNumber =
             match txResult with
             | Some r -> r.Status, r.ErrorCode, r.FailedActionNumber, Nullable r.BlockNumber
-            | None -> 0s, Nullable(), Nullable(), Nullable()
+            | None -> 0uy, Nullable(), Nullable(), Nullable()
 
         {
             GetTxApiResponseDto.TxHash = txHash
@@ -369,7 +369,7 @@ module Mapping =
             GetTxApiResponseDto.Nonce = txDto.Nonce
             GetTxApiResponseDto.Fee = txDto.Fee
             GetTxApiResponseDto.Actions = txDto.Actions
-            GetTxApiResponseDto.Status = txStatus |> Convert.ToByte |> txStatusNumberToString
+            GetTxApiResponseDto.Status = txStatus |> txStatusNumberToString
             GetTxApiResponseDto.ErrorCode = txErrorCode |> txErrorCodeNumberToString
             GetTxApiResponseDto.FailedActionNumber = failedActionNumber
             GetTxApiResponseDto.BlockNumber = blockNumber

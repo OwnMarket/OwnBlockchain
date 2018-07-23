@@ -25,7 +25,7 @@ module BlocksTests =
         let txResultHash = Blocks.createTxResultHash DummyHash.decode DummyHash.create (txHash, txStatus)
 
         // ASSERT
-        test <@ txResultHash = "ABC.A...........D" @>
+        test <@ txResultHash = "ABCA...........D" @>
 
     [<Fact>]
     let ``Blocks.createTxResultHash for TxError`` () =
@@ -40,7 +40,7 @@ module BlocksTests =
         let txResultHash = Blocks.createTxResultHash DummyHash.decode DummyHash.create (txHash, txStatus)
 
         // ASSERT
-        test <@ txResultHash = "ABC.B...........D" @>
+        test <@ txResultHash = "ABCB...........D" @>
 
     [<Fact>]
     let ``Blocks.createTxResultHash for TxActionError`` () =
@@ -55,7 +55,7 @@ module BlocksTests =
         let txResultHash = Blocks.createTxResultHash DummyHash.decode DummyHash.create (txHash, txStatus)
 
         // ASSERT
-        test <@ txResultHash = "ABC.B...C.......D" @>
+        test <@ txResultHash = "ABCB...C.......D" @>
 
     [<Fact>]
     let ``Blocks.createChxBalanceStateHash`` () =
@@ -178,9 +178,9 @@ module BlocksTests =
 
         let txResultSetRoot =
             [
-                "AAA.A...........E" // Tx 1
-                "BBB.B...G.......E" // Tx 2
-                "CCC.A...........E" // Tx 3
+                "AAAA...........E" // Tx 1
+                "BBBB...G.......E" // Tx 2
+                "CCCA...........E" // Tx 3
             ]
             |> String.Concat
 
