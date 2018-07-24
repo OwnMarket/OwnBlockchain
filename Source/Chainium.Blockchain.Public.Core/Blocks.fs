@@ -84,6 +84,19 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createValidatorStateHash
+        decodeHash
+        createHash
+        (ChainiumAddress validatorAddress, state : ValidatorState)
+        =
+
+        [
+            decodeHash validatorAddress
+            stringToBytes state.NetworkAddress
+        ]
+        |> Array.concat
+        |> createHash
+
     let createBlockHash
         decodeHash
         createHash
@@ -166,8 +179,14 @@ module Blocks =
             |> List.sort // We need a predictable order
             |> List.map (createAssetStateHash decodeHash createHash)
 
+        let validatorHashes =
+            output.Validators
+            |> Map.toList
+            |> List.sort // We need a predictable order
+            |> List.map (createValidatorStateHash decodeHash createHash)
+
         let stateRoot =
-            chxBalanceHashes @ holdingHashes @ accountHashes @ assetHashes
+            chxBalanceHashes @ holdingHashes @ accountHashes @ assetHashes @ validatorHashes
             |> createMerkleTree
 
         let blockHash =
@@ -228,7 +247,7 @@ module Blocks =
 
         block.Header.Hash = blockHash
 
-    let createGenesisState genesisChxSupply genesisAddress : ProcessingOutput =
+    let createGenesisState genesisChxSupply genesisAddress genesisValidators : ProcessingOutput =
         let genesisChxBalanceState =
             {
                 Amount = genesisChxSupply
@@ -247,6 +266,7 @@ module Blocks =
             Holdings = Map.empty
             Accounts = Map.empty
             Assets = Map.empty
+            Validators = genesisValidators
         }
 
     let createGenesisBlock

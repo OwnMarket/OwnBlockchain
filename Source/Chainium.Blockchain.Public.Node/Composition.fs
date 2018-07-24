@@ -52,6 +52,8 @@ module Composition =
 
     let getAssetState = Db.getAssetState Config.DbConnectionString
 
+    let getValidatorState = Db.getValidatorState Config.DbConnectionString
+
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
     // Workflows
@@ -77,6 +79,7 @@ module Composition =
             getHoldingState
             getAccountState
             getAssetState
+            getValidatorState
             getLastBlockNumber
             getBlock
             Hashing.decode
@@ -102,6 +105,7 @@ module Composition =
             Hashing.zeroAddress
             (ChxAmount Config.GenesisChxSupply)
             (ChainiumAddress Config.GenesisAddress)
+            Config.GenesisValidators
 
     let advanceToLastKnownBlock () =
         Workflows.advanceToLastKnownBlock
@@ -112,6 +116,7 @@ module Composition =
             getHoldingState
             getAccountState
             getAssetState
+            getValidatorState
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree

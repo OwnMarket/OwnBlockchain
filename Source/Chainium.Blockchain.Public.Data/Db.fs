@@ -288,6 +288,24 @@ module Db =
         | [assetState] -> Some assetState
         | _ -> failwithf "Multiple assets found for asset hash %A" assetHash
 
+    let getValidatorState (dbConnectionString : string) (ChainiumAddress validatorAddress) : ValidatorStateDto option =
+        let sql =
+            """
+            SELECT network_address
+            FROM validator
+            WHERE chainium_address = @chainiumAddress
+            """
+
+        let sqlParams =
+            [
+                "@chainiumAddress", validatorAddress |> box
+            ]
+
+        match DbTools.query<ValidatorStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [validatorState] -> Some validatorState
+        | _ -> failwithf "Multiple validators found for validator address %A" validatorAddress
+
     let getAssetHashByCode (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
         let sql =
             """
@@ -357,11 +375,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert block"
+            | _ -> Result.appError "Didn't insert block."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert block"
+            Result.appError "Failed to insert block."
 
     let private updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -381,11 +399,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addBlock conn transaction blockInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update block number"
+            | _ -> Result.appError "Didn't update block number."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update block number"
+            Result.appError "Failed to update block number."
 
     let private addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -404,11 +422,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert CHX balance"
+            | _ -> Result.appError "Didn't insert CHX balance state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert CHX balance"
+            Result.appError "Failed to insert CHX balance state."
 
     let private updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -429,11 +447,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addChxBalance conn transaction chxBalanceInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update CHX balance"
+            | _ -> Result.appError "Didn't update CHX balance state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update CHX balance"
+            Result.appError "Failed to update CHX balance state."
 
     let private updateChxBalances
         conn
@@ -478,11 +496,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert holding"
+            | _ -> Result.appError "Didn't insert holding state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert holding"
+            Result.appError "Failed to insert holding state."
 
     let private updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -504,11 +522,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addHolding conn transaction holdingInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update holding"
+            | _ -> Result.appError "Didn't update holding state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update holding"
+            Result.appError "Failed to update holding state."
 
     let private updateHoldings
         conn
@@ -553,15 +571,14 @@ module Db =
                 "@controllerAddress", accountInfo.ControllerAddress |> box
             ]
 
-        let error = Result.appError "Failed to insert account"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> error
+            | _ -> Result.appError "Didn't insert account state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            error
+            Result.appError "Failed to insert account state."
 
     let private updateAccount
         conn
@@ -583,16 +600,15 @@ module Db =
                 "@accountController", accountInfo.ControllerAddress |> box
             ]
 
-        let error = Result.appError "Failed to update account controller address"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addAccount conn transaction accountInfo
             | 1 -> Ok ()
-            | _ -> error
+            | _ -> Result.appError "Didn't update account state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            error
+            Result.appError "Failed to update account state."
 
     let private updateAccounts
         (conn : DbConnection)
@@ -641,15 +657,14 @@ module Db =
                 "@controllerAddress", assetInfo.ControllerAddress |> box
             ]
 
-        let error = Result.appError "Failed to insert asset"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> error
+            | _ -> Result.appError "Didn't insert asset state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            error
+            Result.appError "Failed to insert asset state."
 
     let private updateAsset
         conn
@@ -679,16 +694,15 @@ module Db =
                 "@controllerAddress", assetInfo.ControllerAddress |> box
             ]
 
-        let error = Result.appError "Failed to update asset controller address"
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addAsset conn transaction assetInfo
             | 1 -> Ok ()
-            | _ -> error
+            | _ -> Result.appError "Didn't update asset state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            error
+            Result.appError "Failed to update asset state."
 
     let private updateAssets
         (conn : DbConnection)
@@ -712,6 +726,85 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private addValidator
+        conn
+        transaction
+        (validatorInfo : ValidatorInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            INSERT INTO validator (chainium_address, network_address)
+            VALUES (@chainiumAddress, @networkAddress)
+            """
+
+        let sqlParams =
+            [
+                "@chainiumAddress", validatorInfo.ChainiumAddress |> box
+                "@networkAddress", validatorInfo.NetworkAddress |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert validator state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert validator state."
+
+    let private updateValidator
+        conn
+        transaction
+        (validatorInfo : ValidatorInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            UPDATE validator
+            SET network_address = @networkAddress
+            WHERE chainium_address = @chainiumAddress
+            """
+
+        let sqlParams =
+            [
+                "@chainiumAddress", validatorInfo.ChainiumAddress |> box
+                "@networkAddress", validatorInfo.NetworkAddress |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addValidator conn transaction validatorInfo
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update validator state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update validator state."
+
+    let private updateValidators
+        (conn : DbConnection)
+        (transaction : DbTransaction)
+        (validators : Map<string, ValidatorStateDto>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result (validatorAddress, (state : ValidatorStateDto)) =
+            result
+            >>= (fun _ ->
+                {
+                    ChainiumAddress = validatorAddress
+                    NetworkAddress = state.NetworkAddress
+                }
+                |> updateValidator conn transaction
+            )
+
+        validators
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
     let applyNewState
         (dbConnectionString : string)
         (blockInfoDto : BlockInfoDto)
@@ -730,6 +823,7 @@ module Db =
             >>= fun _ -> updateHoldings conn transaction state.Holdings
             >>= fun _ -> updateAccounts conn transaction state.Accounts
             >>= fun _ -> updateAssets conn transaction state.Assets
+            >>= fun _ -> updateValidators conn transaction state.Validators
             >>= fun _ -> updateBlock conn transaction blockInfoDto
 
         match result with
@@ -741,4 +835,4 @@ module Db =
             transaction.Rollback()
             conn.Close()
             Log.appErrors errors
-            Result.appError "Failed to apply new state"
+            Result.appError "Failed to apply new state."

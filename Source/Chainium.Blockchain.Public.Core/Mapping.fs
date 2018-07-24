@@ -234,9 +234,9 @@ module Mapping =
             ControllerAddress = ChainiumAddress dto.ControllerAddress
         }
 
-    let accountStateToDto (dto : AccountState) : AccountStateDto =
+    let accountStateToDto (state : AccountState) : AccountStateDto =
         {
-            ControllerAddress = dto.ControllerAddress |> fun (ChainiumAddress a) -> a
+            ControllerAddress = state.ControllerAddress |> fun (ChainiumAddress a) -> a
         }
 
     let assetStateFromDto (dto : AssetStateDto) : AssetState =
@@ -253,6 +253,16 @@ module Mapping =
         {
             AssetCode = state.AssetCode |> Option.map (fun (AssetCode c) -> c) |> Option.toObj
             ControllerAddress = state.ControllerAddress |> fun (ChainiumAddress a) -> a
+        }
+
+    let validatorStateFromDto (dto : ValidatorStateDto) : ValidatorState =
+        {
+            NetworkAddress = dto.NetworkAddress
+        }
+
+    let validatorStateToDto (state : ValidatorState) : ValidatorStateDto =
+        {
+            NetworkAddress = state.NetworkAddress
         }
 
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
@@ -286,12 +296,19 @@ module Mapping =
             |> List.map (fun (AssetHash ah, s : AssetState) -> ah, assetStateToDto s)
             |> Map.ofList
 
+        let validators =
+            output.Validators
+            |> Map.toList
+            |> List.map (fun (ChainiumAddress a, s : ValidatorState) -> a, validatorStateToDto s)
+            |> Map.ofList
+
         {
             ProcessingOutputDto.TxResults = txResults
             ChxBalances = chxBalances
             Holdings = holdings
             Accounts = accounts
             Assets = assets
+            Validators = validators
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

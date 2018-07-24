@@ -226,10 +226,16 @@ module SharedTests =
         DbInit.init engineType connString
         Composition.initBlockchainState ()
 
+        let genesisValidators =
+            Config.GenesisValidators
+            |> List.map (fun (ca, na) -> ChainiumAddress ca, {ValidatorState.NetworkAddress = na})
+            |> Map.ofList
+
         let expectedBlockDto =
             Blocks.createGenesisState
                 (ChxAmount Config.GenesisChxSupply)
                 (ChainiumAddress Config.GenesisAddress)
+                genesisValidators
             |> Blocks.createGenesisBlock
                 Hashing.decode Hashing.hash Hashing.merkleTree Hashing.zeroHash Hashing.zeroAddress
             |> Mapping.blockToDto

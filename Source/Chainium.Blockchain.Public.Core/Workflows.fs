@@ -55,6 +55,7 @@ module Workflows =
         getHoldingStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
+        getValidatorStateFromStorage
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         getBlock
         decodeHash
@@ -73,6 +74,7 @@ module Workflows =
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
+        let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
 
         match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with
         | [] -> None // Nothing to process.
@@ -102,6 +104,7 @@ module Workflows =
                         getHoldingState
                         getAccountState
                         getAssetState
+                        getValidatorState
                         minTxActionFee
                         validatorAddress
                         blockNumber
@@ -145,6 +148,7 @@ module Workflows =
         getHoldingStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
+        getValidatorStateFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -160,6 +164,7 @@ module Workflows =
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
+        let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
 
         let output =
             block.TxSet
@@ -173,6 +178,7 @@ module Workflows =
                 getHoldingState
                 getAccountState
                 getAssetState
+                getValidatorState
                 minTxActionFee
                 block.Header.Validator
                 block.Header.Number
@@ -215,6 +221,7 @@ module Workflows =
         getHoldingStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
+        getValidatorStateFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -243,6 +250,7 @@ module Workflows =
                                 getHoldingStateFromStorage
                                 getAccountStateFromStorage
                                 getAssetStateFromStorage
+                                getValidatorStateFromStorage
                                 decodeHash
                                 createHash
                                 createMerkleTree
@@ -289,10 +297,16 @@ module Workflows =
         zeroAddress
         genesisChxSupply
         genesisAddress
+        genesisValidators
         =
 
         if getLastAppliedBlockNumber () = None then
-            let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress
+            let genesisValidators =
+                genesisValidators
+                |> List.map (fun (ca, na) -> ChainiumAddress ca, {ValidatorState.NetworkAddress = na})
+                |> Map.ofList
+
+            let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress genesisValidators
 
             let genesisBlockDto =
                 Blocks.createGenesisBlock

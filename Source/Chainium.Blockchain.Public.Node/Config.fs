@@ -52,6 +52,16 @@ type Config () =
         with get () =
             config.["GenesisAddress"]
 
+    static member GenesisValidators
+        with get () =
+            config.GetSection("GenesisValidators").GetChildren()
+            |> Seq.map (fun e ->
+                match e.Value.Split(",") with
+                | [| chainiumAddress; networkAddress |] -> chainiumAddress, networkAddress
+                | _ -> failwith "Invalid GenesisValidators configuration."
+            )
+            |> Seq.toList
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////

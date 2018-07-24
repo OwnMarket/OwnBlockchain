@@ -95,6 +95,20 @@ module DbChanges =
                     );
                     """
             }
+            {
+                Number = 3
+                Script =
+                    """
+                    CREATE TABLE IF NOT EXISTS validator (
+                        validator_id INTEGER NOT NULL,
+                        chainium_address TEXT NOT NULL,
+                        network_address TEXT NOT NULL,
+
+                        CONSTRAINT validator__pk PRIMARY KEY (validator_id),
+                        CONSTRAINT validator__uk__chainium_address UNIQUE (chainium_address)
+                    );
+                    """
+            }
         ]
 
     let internal postgresqlChanges : DbChange list =
@@ -179,6 +193,20 @@ module DbChanges =
                         CONSTRAINT block__uk__number UNIQUE (block_number),
                         CONSTRAINT block__uk__hash UNIQUE (block_hash),
                         CONSTRAINT block__uk__timestamp UNIQUE (block_timestamp)
+                    );
+                    """
+            }
+            {
+                Number = 3
+                Script =
+                    """
+                    CREATE TABLE IF NOT EXISTS validator (
+                        validator_id BIGSERIAL NOT NULL,
+                        chainium_address TEXT NOT NULL,
+                        network_address TEXT NOT NULL,
+
+                        CONSTRAINT validator__pk PRIMARY KEY (validator_id),
+                        CONSTRAINT validator__uk__chainium_address UNIQUE (chainium_address)
                     );
                     """
             }

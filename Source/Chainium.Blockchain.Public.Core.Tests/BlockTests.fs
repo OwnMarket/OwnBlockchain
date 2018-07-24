@@ -165,6 +165,14 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let validators =
+            [
+                ChainiumAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
+                ChainiumAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
+                ChainiumAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -172,6 +180,7 @@ module BlocksTests =
                 Holdings = holdings
                 Accounts = accounts
                 Assets = assets
+                Validators = validators
             }
 
         let txSetRoot = "AAABBBCCC"
@@ -194,6 +203,9 @@ module BlocksTests =
                 "CCCCDDDD" // Account controller 2
                 "EEEEFFFF" // Asset controller 1
                 "GGGGHHHH" // Asset controller 2
+                "AAAAAGGG" // Validator 1
+                "BBBBBHHH" // Validator 2
+                "CCCCCIII" // Validator 3
             ]
             |> String.Concat
 
@@ -298,6 +310,14 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let validators =
+            [
+                ChainiumAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
+                ChainiumAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
+                ChainiumAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -305,6 +325,7 @@ module BlocksTests =
                 Holdings = holdings
                 Accounts = accounts
                 Assets = assets
+                Validators = validators
             }
 
         // ACT
@@ -361,11 +382,15 @@ module BlocksTests =
                 assets
                 |> Map.toList
                 |> List.map (Blocks.createAssetStateHash Hashing.decode Hashing.hash)
+
+                validators
+                |> Map.toList
+                |> List.map (Blocks.createValidatorStateHash Hashing.decode Hashing.hash)
             ]
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 8 true @>
+        test <@ stateMerkleProofs = List.replicate 11 true @>
 
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -435,6 +460,14 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let validators =
+            [
+                ChainiumAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
+                ChainiumAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
+                ChainiumAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -442,6 +475,7 @@ module BlocksTests =
                 Holdings = holdings
                 Accounts = accounts
                 Assets = assets
+                Validators = validators
             }
 
         let assembledBlock =

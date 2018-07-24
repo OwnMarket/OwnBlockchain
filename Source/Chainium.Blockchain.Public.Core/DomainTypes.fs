@@ -187,12 +187,17 @@ type AssetState = {
     ControllerAddress : ChainiumAddress
 }
 
+type ValidatorState = {
+    NetworkAddress : string
+}
+
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     ChxBalances : Map<ChainiumAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
+    Validators : Map<ChainiumAddress, ValidatorState>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
