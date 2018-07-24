@@ -323,6 +323,22 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
+    let processSetValidatorNetworkAddressTxAction
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (action : SetValidatorNetworkAddressTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetValidator(senderAddress) with
+        | None ->
+            // TODO: Prevent filling the validator table with junk, by requiring X amount of CHX for initial entry.
+            state.SetValidator(senderAddress, {ValidatorState.NetworkAddress = action.NetworkAddress})
+            Ok state
+        | Some validatorState ->
+            state.SetValidator(senderAddress, {validatorState with NetworkAddress = action.NetworkAddress})
+            Ok state
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -483,6 +499,7 @@ module Processing =
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
+        | SetValidatorNetworkAddress action -> processSetValidatorNetworkAddressTxAction state senderAddress action
 
     let processTxActions
         decodeHash

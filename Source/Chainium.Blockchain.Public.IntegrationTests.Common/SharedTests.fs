@@ -436,3 +436,51 @@ module SharedTests =
         test <@ assetState = Some { AssetCode = Some assetCode; ControllerAddress = sender.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
+
+    let setValidatorNetworkAddressTest engineType connectionString =
+        // ARRANGE
+        let client = testInit engineType connectionString
+
+        let networkAddress = "localhost:5000"
+        let sender = Signing.generateWallet()
+        let initialSenderChxBalance = 10M
+        let initialValidatorChxBalance = 0M
+
+        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+
+        let nonce = 1L
+
+        let txActions =
+            [
+                {
+                    ActionType = "SetValidatorNetworkAddress"
+                    ActionData =
+                        {
+                            SetValidatorNetworkAddressTxActionDto.NetworkAddress = networkAddress
+                        }
+                }
+            ]
+
+        let fee = 1M
+        let totalFee = fee * (decimal txActions.Length)
+
+        let txDto = newTxDto sender.Address nonce fee txActions
+        let txEnvelope = transactionEnvelope sender txDto
+
+        // ACT
+        submitTransaction client txEnvelope
+        |> submissionChecks connectionString true sender txDto txEnvelope
+
+        processTransactions Helper.ExpectedPathForFirstBlock
+
+        // ASSERT
+        let validatorState =
+            Db.getValidatorState connectionString sender.Address
+            |> Option.map Mapping.validatorStateFromDto
+        let senderBalance = Db.getChxBalanceState connectionString sender.Address
+        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+
+        test <@ validatorState = Some { NetworkAddress = networkAddress } @>
+        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
+        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>

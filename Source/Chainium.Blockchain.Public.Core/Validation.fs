@@ -97,6 +97,12 @@ module Validation =
                 yield AppError "Asset code is not valid."
         ]
 
+    let private validateSetValidatorNetworkAddress (action : SetValidatorNetworkAddressTxActionDto) =
+        [
+            if action.NetworkAddress.IsNullOrWhiteSpace() then
+                yield AppError "NetworkAddress is not provided."
+        ]
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,6 +140,8 @@ module Validation =
                 validateSetAssetController isValidAddress a
             | :? SetAssetCodeTxActionDto as a ->
                 validateSetAssetCode a
+            | :? SetValidatorNetworkAddressTxActionDto as a ->
+                validateSetValidatorNetworkAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

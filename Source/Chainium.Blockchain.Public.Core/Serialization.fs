@@ -33,6 +33,7 @@ module Serialization =
             "SetAccountController", tokenToAction<SetAccountControllerTxActionDto>
             "SetAssetController", tokenToAction<SetAssetControllerTxActionDto>
             "SetAssetCode", tokenToAction<SetAssetCodeTxActionDto>
+            "SetValidatorNetworkAddress", tokenToAction<SetValidatorNetworkAddressTxActionDto>
         ] |> Map.ofList
 
     let private tokenValue tokenName (jObject : JObject) =

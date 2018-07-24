@@ -85,6 +85,11 @@ module Mapping =
                 AssetCode = AssetCode a.AssetCode
             }
             |> SetAssetCode
+        | :? SetValidatorNetworkAddressTxActionDto as a ->
+            {
+                SetValidatorNetworkAddressTxAction.NetworkAddress = a.NetworkAddress
+            }
+            |> SetValidatorNetworkAddress
         | _ ->
             failwith "Invalid action type to map."
 

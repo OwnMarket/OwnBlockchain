@@ -329,3 +329,24 @@ module SerializationTests =
             test <@ txDto.Actions.Head = expectedTxAction @>
         | Error appErrors ->
             failwithf "%A" appErrors
+
+    [<Fact>]
+    let ``Serialization.deserializeTx SetValidatorNetworkAddress`` () =
+        let expectedTxAction =
+            {
+                ActionType = "SetValidatorNetworkAddress"
+                ActionData =
+                    {
+                        SetValidatorNetworkAddressTxActionDto.NetworkAddress = "localhost:5000"
+                    }
+            }
+
+        let serializedTx =
+            [ expectedTxAction |> box ]
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+
+        match Serialization.deserializeTx serializedTx with
+        | Ok txDto ->
+            test <@ txDto.Actions.Head = expectedTxAction @>
+        | Error appErrors ->
+            failwithf "%A" appErrors

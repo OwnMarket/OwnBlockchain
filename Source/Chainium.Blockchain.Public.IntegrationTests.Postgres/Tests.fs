@@ -42,3 +42,7 @@ module Tests =
     [<Fact>]
     let ``TransactionProcessing - set asset code`` () =
         SharedTests.setAssetCodeTest Config.DbEngineType Config.DbConnectionString
+
+    [<Fact>]
+    let ``TransactionProcessing - set validator network address`` () =
+        SharedTests.setValidatorNetworkAddressTest Config.DbEngineType Config.DbConnectionString

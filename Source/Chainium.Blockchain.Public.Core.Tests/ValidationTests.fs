@@ -21,6 +21,7 @@ module ValidationTests =
     let setAccountControllerActionType = "SetAccountController"
     let setAssetControllerActionType = "SetAssetController"
     let setAssetCodeActionType = "SetAssetCode"
+    let setValidatorNetworkAddressActionType = "SetValidatorNetworkAddress"
 
     [<Fact>]
     let ``Validation.validateTx BasicValidation single validation error`` () =
@@ -604,3 +605,54 @@ module ValidationTests =
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 2 @>
+
+    [<Fact>]
+    let ``Validation.validateTx SetValidatorNetworkAddress valid action`` () =
+        let expected =
+            {
+                SetValidatorNetworkAddressTxActionDto.NetworkAddress = "A"
+            }
+
+        let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = setValidatorNetworkAddressActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t ->
+            let actual = Helpers.extractActionData<SetValidatorNetworkAddressTxAction> t.Actions.Head
+            test <@ expected.NetworkAddress = actual.NetworkAddress @>
+        | Error e -> failwithf "%A" e
+
+    [<Fact>]
+    let ``Validation.validateTx SetValidatorNetworkAddress invalid action`` () =
+        let expected =
+            {
+                SetValidatorNetworkAddressTxActionDto.NetworkAddress = ""
+            }
+
+        let tx = {
+            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            Nonce = 10L
+            Fee = 1M
+            Actions =
+                [
+                    {
+                        ActionType = setValidatorNetworkAddressActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
+        | Ok t -> failwith "This test should fail."
+        | Error e ->
+            test <@ e.Length = 1 @>

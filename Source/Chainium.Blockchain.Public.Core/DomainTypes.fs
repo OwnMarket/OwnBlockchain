@@ -71,6 +71,10 @@ type SetAssetCodeTxAction = {
     AssetCode : AssetCode
 }
 
+type SetValidatorNetworkAddressTxAction = {
+    NetworkAddress : string
+}
+
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
@@ -80,6 +84,7 @@ type TxAction =
     | SetAccountController of SetAccountControllerTxAction
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction
+    | SetValidatorNetworkAddress of SetValidatorNetworkAddressTxAction
 
 type Tx = {
     TxHash : TxHash
