@@ -158,7 +158,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -245,7 +245,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -333,7 +333,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -421,7 +421,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -512,7 +512,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -610,7 +610,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -711,7 +711,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -812,7 +812,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -909,7 +909,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1002,7 +1002,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1091,7 +1091,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1182,7 +1182,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1272,7 +1272,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1357,7 +1357,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         let accountHash =
             [
@@ -1450,7 +1450,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         let assetHash =
             [
@@ -1549,7 +1549,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1633,7 +1633,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1722,7 +1722,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1815,7 +1815,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1899,7 +1899,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1988,7 +1988,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2081,7 +2081,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2165,7 +2165,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2254,7 +2254,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2344,7 +2344,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2426,7 +2426,7 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce fee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 0L;
+        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
