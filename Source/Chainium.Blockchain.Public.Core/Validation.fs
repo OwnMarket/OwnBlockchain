@@ -34,25 +34,25 @@ module Validation =
     let private validateTransferChx isValidAddress (action : TransferChxTxActionDto) =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
-                yield AppError "Recipient address is not present."
+                yield AppError "RecipientAddress is not provided."
 
             if action.RecipientAddress |> ChainiumAddress |> isValidAddress |> not then
-                yield AppError "Recipient address is not valid."
+                yield AppError "RecipientAddress is not valid."
 
             if action.Amount <= 0M then
-                yield AppError "Chx transfer amount must be larger than zero."
+                yield AppError "CHX amount must be larger than zero."
         ]
 
     let private validateTransferAsset (action : TransferAssetTxActionDto) =
         [
             if action.FromAccount.IsNullOrWhiteSpace() then
-                yield AppError "FromAccount value is not valid."
+                yield AppError "FromAccount value is not provided."
 
             if action.ToAccount.IsNullOrWhiteSpace() then
-                yield AppError "ToAccount value is not valid."
+                yield AppError "ToAccount value is not provided."
 
             if action.AssetHash.IsNullOrWhiteSpace() then
-                yield AppError "Asset hash is not valid."
+                yield AppError "AssetHash is not provided."
 
             if action.Amount <= 0M then
                 yield AppError "Asset amount must be larger than zero."
@@ -61,10 +61,10 @@ module Validation =
     let private validateCreateAssetEmission (action : CreateAssetEmissionTxActionDto) =
         [
             if action.EmissionAccountHash.IsNullOrWhiteSpace() then
-                yield AppError "Emission account hash value is not valid."
+                yield AppError "EmissionAccountHash value is not provided."
 
             if action.AssetHash.IsNullOrWhiteSpace() then
-                yield AppError "Asset hash is not valid."
+                yield AppError "AssetHash is not provided."
 
             if action.Amount <= 0M then
                 yield AppError "Asset amount must be larger than zero."
@@ -73,28 +73,28 @@ module Validation =
     let private validateSetAccountController isValidAddress (action : SetAccountControllerTxActionDto) =
         [
             if action.AccountHash.IsNullOrWhiteSpace() then
-                yield AppError "Account hash is not valid."
+                yield AppError "AccountHash is not provided."
 
             if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
-                yield AppError "Controller address is not valid."
+                yield AppError "ControllerAddress is not valid."
         ]
 
     let private validateSetAssetController isValidAddress (action : SetAssetControllerTxActionDto) =
         [
             if action.AssetHash.IsNullOrWhiteSpace() then
-                yield AppError "Asset hash is not valid."
+                yield AppError "AssetHash is not provided."
 
             if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
-                yield AppError "Controller address is not valid."
+                yield AppError "ControllerAddress is not valid."
         ]
 
     let private validateSetAssetCode (action : SetAssetCodeTxActionDto) =
         [
             if action.AssetHash.IsNullOrWhiteSpace() then
-                yield AppError "Asset hash is not valid."
+                yield AppError "AssetHash is not provided."
 
             if action.AssetCode.IsNullOrWhiteSpace() then
-                yield AppError "Asset code is not valid."
+                yield AppError "AssetCode is not provided."
         ]
 
     let private validateSetValidatorNetworkAddress (action : SetValidatorNetworkAddressTxActionDto) =
