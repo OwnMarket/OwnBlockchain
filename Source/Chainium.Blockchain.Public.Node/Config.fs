@@ -57,7 +57,7 @@ type Config () =
             config.GetSection("GenesisValidators").GetChildren()
             |> Seq.map (fun e ->
                 match e.Value.Split(",") with
-                | [| chainiumAddress; networkAddress |] -> chainiumAddress, networkAddress
+                | [| validatorAddress; networkAddress |] -> validatorAddress, networkAddress
                 | _ -> failwith "Invalid GenesisValidators configuration."
             )
             |> Seq.toList

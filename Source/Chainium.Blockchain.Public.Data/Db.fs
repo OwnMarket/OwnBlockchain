@@ -293,12 +293,12 @@ module Db =
             """
             SELECT network_address
             FROM validator
-            WHERE chainium_address = @chainiumAddress
+            WHERE validator_address = @validatorAddress
             """
 
         let sqlParams =
             [
-                "@chainiumAddress", validatorAddress |> box
+                "@validatorAddress", validatorAddress |> box
             ]
 
         match DbTools.query<ValidatorStateDto> dbConnectionString sql sqlParams with
@@ -735,13 +735,13 @@ module Db =
 
         let sql =
             """
-            INSERT INTO validator (chainium_address, network_address)
-            VALUES (@chainiumAddress, @networkAddress)
+            INSERT INTO validator (validator_address, network_address)
+            VALUES (@validatorAddress, @networkAddress)
             """
 
         let sqlParams =
             [
-                "@chainiumAddress", validatorInfo.ChainiumAddress |> box
+                "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
             ]
 
@@ -765,12 +765,12 @@ module Db =
             """
             UPDATE validator
             SET network_address = @networkAddress
-            WHERE chainium_address = @chainiumAddress
+            WHERE validator_address = @validatorAddress
             """
 
         let sqlParams =
             [
-                "@chainiumAddress", validatorInfo.ChainiumAddress |> box
+                "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
             ]
 
@@ -795,7 +795,7 @@ module Db =
             result
             >>= (fun _ ->
                 {
-                    ChainiumAddress = validatorAddress
+                    ValidatorAddress = validatorAddress
                     NetworkAddress = state.NetworkAddress
                 }
                 |> updateValidator conn transaction

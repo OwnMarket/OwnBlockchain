@@ -197,7 +197,7 @@ type AssetInfoDto = {
 
 [<CLIMutable>]
 type ValidatorInfoDto = {
-    ChainiumAddress : string
+    ValidatorAddress : string
     NetworkAddress : string
 }
 

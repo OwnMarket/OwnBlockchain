@@ -101,11 +101,11 @@ module DbChanges =
                     """
                     CREATE TABLE IF NOT EXISTS validator (
                         validator_id INTEGER NOT NULL,
-                        chainium_address TEXT NOT NULL,
+                        validator_address TEXT NOT NULL,
                         network_address TEXT NOT NULL,
 
                         CONSTRAINT validator__pk PRIMARY KEY (validator_id),
-                        CONSTRAINT validator__uk__chainium_address UNIQUE (chainium_address)
+                        CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
                     );
                     """
             }
@@ -202,11 +202,11 @@ module DbChanges =
                     """
                     CREATE TABLE IF NOT EXISTS validator (
                         validator_id BIGSERIAL NOT NULL,
-                        chainium_address TEXT NOT NULL,
+                        validator_address TEXT NOT NULL,
                         network_address TEXT NOT NULL,
 
                         CONSTRAINT validator__pk PRIMARY KEY (validator_id),
-                        CONSTRAINT validator__uk__chainium_address UNIQUE (chainium_address)
+                        CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
                     );
                     """
             }
