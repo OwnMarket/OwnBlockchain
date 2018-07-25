@@ -4,7 +4,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyInfo.fs" />
+    <Compile Include="Helpers.fs" />
     <Compile Include="Peers.fs" />
+    <Compile Include="Transport.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NetMQ" Version="4.0.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />

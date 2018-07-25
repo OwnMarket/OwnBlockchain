@@ -128,9 +128,29 @@ module Composition =
             getBlock
             (ChxAmount Config.MinTxActionFee)
 
-    let propagateTx = Workflows.propagateTx Peers.sendMessage
+    let propagateTx = Workflows.propagateTx Peers.sendMessage Config.NetworkHost Config.NetworkPort getTx
 
-    let propagateBlock = Workflows.propagateBlock Peers.sendMessage
+    let propagateBlock = Workflows.propagateBlock Peers.sendMessage Config.NetworkHost Config.NetworkPort getBlock
+
+    // Network
+
+    let processPeerMessage (peerMessage : PeerMessage) =
+        Workflows.processPeerMessage getTx submitTx peerMessage
+
+    let startGossip publishEvent =
+        Peers.startGossip
+            Transport.sendGossipDiscoveryMessage
+            Transport.sendGossipMessage
+            Transport.sendMulticastMessage
+            Transport.receiveMessage
+            Transport.closeConnection
+            Config.NetworkHost
+            Config.NetworkPort
+            Config.NetworkBootstrapNodes
+            publishEvent
+            processPeerMessage
+
+    // API
 
     let getAddressApi = Workflows.getAddressApi getChxBalanceState
 

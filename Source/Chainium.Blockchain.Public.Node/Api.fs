@@ -146,6 +146,6 @@ module Api =
             .UseKestrel()
             .Configure(Action<IApplicationBuilder> configureApp)
             .ConfigureServices(configureServices)
-            .UseUrls(Config.ListeningAddresses)
+            .UseUrls(Config.ApiListeningAddresses)
             .Build()
             .Run()

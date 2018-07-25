@@ -13,15 +13,15 @@ open Newtonsoft.Json.Linq
 module Serialization =
 
     let private tokenToAction<'T> actionType (token : JToken option) =
-        if token.IsSome then
+        match token with
+        | Some _ ->
             {
                 ActionType = actionType
                 ActionData = token.Value.ToObject<'T>()
             }
             |> box
-        else
-            token
-            |> box
+        | None ->
+            token |> box
 
     let private actionsBasedOnTransactionType =
         [
@@ -46,10 +46,10 @@ module Serialization =
     let private actionsConverter = {
         new CustomCreationConverter<TxActionDto>() with
 
-        override this.Create objectType =
+        override __.Create objectType =
             failwith "NotImplemented"
 
-        override this.ReadJson
+        override __.ReadJson
             (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
             =
 
@@ -96,3 +96,69 @@ module Serialization =
 
     let deserializeTx (rawTx : byte[]) : Result<TxDto, AppErrors> =
         deserialize<TxDto> rawTx
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let private tokenToMessage<'T> messageType (token : JToken option) =
+        match token with
+        | Some _ ->
+            {
+                MessageType = messageType
+                MessageData = JsonConvert.DeserializeObject<'T> (token.Value.ToString())
+            }
+            |> box
+        | None ->
+            token |> box
+
+    let private messagesBasedOnMessageType =
+        [
+            "GossipDiscoveryMessage", tokenToMessage<GossipDiscoveryMessageDto>
+            "GossipMessage", tokenToMessage<GossipMessageDto>
+            "MulticastMessage", tokenToMessage<MulticastMessageDto>
+        ]
+        |> Map.ofList
+
+    let private peerMessageConverter = {
+        new CustomCreationConverter<PeerMessageDto>() with
+
+        override __.Create objectType =
+            failwith "NotImplemented"
+
+        override __.ReadJson
+            (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
+            =
+
+            let jObject = JObject.Load(reader)
+            let messageData = tokenValue "MessageData"
+
+            match (tokenValue "MessageType" jObject) with
+            | None -> jObject |> box
+            | Some messageType ->
+                let peerMessageType = messageType.Value<string>()
+                match peerMessageType |> messagesBasedOnMessageType.TryFind with
+                | Some create ->
+                    messageData jObject |> create peerMessageType
+                | None ->
+                    {
+                        MessageType = peerMessageType
+                        MessageData =
+                            match messageData jObject with
+                            | None -> null
+                            | Some x -> x.ToString()
+                    }
+                    |> box
+    }
+
+    let serializePeerMessage dto =
+        JsonConvert.SerializeObject dto
+
+    let deserializeMessage<'TDto> message =
+        JsonConvert.DeserializeObject<'TDto> (message, peerMessageConverter)
+
+    let deserializePeerMessage message =
+        deserializeMessage<PeerMessageDto> message
+
+    let deserializeJObject<'T> (data : obj) =
+        (data :?> JObject).ToObject<'T>()

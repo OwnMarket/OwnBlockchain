@@ -2,7 +2,6 @@
 
 open System
 open System.IO
-open System.Reflection
 open Microsoft.Extensions.Configuration
 open Chainium.Common
 
@@ -35,9 +34,27 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member ListeningAddresses
+
+    static member NetworkHost
         with get () =
-            let configAddress = config.["ListeningAddresses"]
+            config.["NetworkHost"]
+
+    static member NetworkPort
+        with get () =
+            config.["NetworkPort"] |> Convert.ToInt32
+
+    static member NetworkBootstrapNodes
+        with get () =
+            config.GetSection("NetworkBootstrapNodes").GetChildren()
+            |> Seq.map (fun c -> c.Value)
+            |> Seq.toList
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // API
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member ApiListeningAddresses
+        with get () =
+            let configAddress = config.["ApiListeningAddresses"]
             if configAddress.IsNullOrWhiteSpace() then
                 "http://*:10717"
             else

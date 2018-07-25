@@ -267,3 +267,42 @@ type GetTxApiResponseDto = {
     FailedActionNumber : Nullable<int16>
     BlockNumber : Nullable<int64>
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Network
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+[<CLIMutable>]
+type GossipMemberDto = {
+    Id : string
+    NetworkHost : string
+    NetworkPort : int
+    Heartbeat : int64
+}
+
+[<CLIMutable>]
+type GossipMessageDto = {
+    MessageType : string
+    MessageId : string
+    SenderId : string
+    Data : obj
+}
+
+[<CLIMutable>]
+type GossipDiscoveryMessageDto = {
+    NetworkHost : string
+    NetworkPort : int
+    ActiveMembers : GossipMemberDto list
+}
+
+type MulticastMessageDto = {
+    MessageType : string
+    MessageId : string
+    Data : obj
+}
+
+[<CLIMutable>]
+type PeerMessageDto = {
+    MessageType : string
+    MessageData : obj
+}

@@ -3,18 +3,19 @@ namespace Chainium.Blockchain.Public.Core.Events
 open System
 open Chainium.Blockchain.Public.Core.DomainTypes
 
-type TxSubmittedEvent = {
+type TxReceivedEventData = {
     TxHash : TxHash
 }
 
-type BlockCreatedEvent = {
+type BlockCreatedEventData = {
     BlockNumber : BlockNumber
 }
 
-type BlockProcessedEvent = {
+type BlockProcessedEventData = {
     BlockNumber : BlockNumber
 }
 
 type AppEvent =
-    | TxSubmitted of TxSubmittedEvent
-    | BlockCreated of BlockCreatedEvent
+    | TxSubmitted of TxReceivedEventData
+    | TxReceived of TxReceivedEventData
+    | BlockCreated of BlockCreatedEventData

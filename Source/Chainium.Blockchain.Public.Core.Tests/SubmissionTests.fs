@@ -47,7 +47,7 @@ module SubmissionTests =
             ]
             |> Helpers.newTx senderWallet nonce txFee
 
-        let expectedResult : Result<TxSubmittedEvent, AppErrors> = Error [AppError error]
+        let expectedResult : Result<TxReceivedEventData, AppErrors> = Error [AppError error]
 
         // COMPOSE
         let getChxBalanceState =

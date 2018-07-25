@@ -1,9 +1,6 @@
 namespace Chainium.Blockchain.Public.Node
 
-open System
-open System.Text
 open System.Reflection
-open Chainium.Common
 
 module Cli =
 
@@ -19,6 +16,7 @@ module Cli =
     let handleStartNodeCommand () =
         Composition.initDb ()
         Composition.initBlockchainState ()
+        Composition.startGossip Agents.publishEvent
         PaceMaker.start ()
         Api.start ()
 

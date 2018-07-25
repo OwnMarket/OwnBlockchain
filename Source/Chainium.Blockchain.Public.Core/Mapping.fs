@@ -320,7 +320,7 @@ module Mapping =
     // Events
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let txSubmittedEventToSubmitTxResponseDto (event : TxSubmittedEvent) =
+    let txSubmittedEventToSubmitTxResponseDto (event : TxReceivedEventData) =
         let (TxHash hash) = event.TxHash
         { SubmitTxResponseDto.TxHash = hash }
 
@@ -395,4 +395,117 @@ module Mapping =
             GetTxApiResponseDto.ErrorCode = txErrorCode |> txErrorCodeNumberToString
             GetTxApiResponseDto.FailedActionNumber = failedActionNumber
             GetTxApiResponseDto.BlockNumber = blockNumber
+        }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let endPointFromString (host : string) =
+        let tokens = host.Split ':' |> Array.toList
+        {
+            NetworkHost = NetworkHost tokens.[0]
+            NetworkPort = NetworkPort (tokens.[1] |> Convert.ToInt32)
+        }
+
+    let gossipMemberFromDto (dto: GossipMemberDto) : GossipMember =
+        {
+            Id = GossipMemberId dto.Id
+            NetworkHost = NetworkHost dto.NetworkHost
+            NetworkPort = NetworkPort dto.NetworkPort
+            Heartbeat = dto.Heartbeat
+        }
+
+    let gossipMemberToDto (gossipMember : GossipMember) =
+        {
+            Id = gossipMember.Id |> fun (GossipMemberId i) -> i
+            NetworkHost = gossipMember.NetworkHost |> fun (NetworkHost a) -> a
+            NetworkPort = gossipMember.NetworkPort |> fun (NetworkPort p) -> p
+            Heartbeat = gossipMember.Heartbeat
+        }
+
+    let gossipDiscoveryMessageFromDto (dto : GossipDiscoveryMessageDto) : GossipDiscoveryMessage =
+        {
+            NetworkHost = NetworkHost dto.NetworkHost
+            NetworkPort = NetworkPort dto.NetworkPort
+            ActiveMembers = dto.ActiveMembers |> List.map gossipMemberFromDto
+        }
+
+    let gossipDiscoveryMessageToDto (gossipDiscoveryMessage: GossipDiscoveryMessage) =
+        {
+            NetworkHost = gossipDiscoveryMessage.NetworkHost |> fun (NetworkHost a) -> a
+            NetworkPort = gossipDiscoveryMessage.NetworkPort |> fun (NetworkPort p) -> p
+            ActiveMembers = gossipDiscoveryMessage.ActiveMembers |> List.map gossipMemberToDto
+        }
+
+    let gossipMessageFromDto (dto : GossipMessageDto) =
+        let gossipMessageId =
+            match dto.MessageType with
+            | "Tx" -> Tx (TxHash dto.MessageId)
+            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
+            | _ -> failwithf "Invalid gossip message type %s" dto.MessageType
+
+        {
+            MessageId = gossipMessageId
+            SenderId = GossipMemberId dto.SenderId
+            Data = dto.Data
+        }
+
+    let gossipMessageToDto (gossipMessage : GossipMessage) =
+        let messageType, messageId =
+            match gossipMessage.MessageId with
+            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
+            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+
+        {
+            MessageId = messageId
+            MessageType = messageType
+            SenderId = gossipMessage.SenderId |> fun (GossipMemberId i) -> i
+            Data = gossipMessage.Data
+        }
+
+    let multicastMessageFromDto (dto : MulticastMessageDto) =
+        let multicastMssageId =
+            match dto.MessageType with
+            | "Tx" -> Tx (TxHash dto.MessageId)
+            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
+            | _ -> failwithf "Invalid gossip message type %s" dto.MessageType
+
+        {
+            MessageId = multicastMssageId
+            Data = dto.Data
+        }
+
+    let multicastMessageToDto (multicastMessage : MulticastMessage) =
+        let messageType, messageId =
+            match multicastMessage.MessageId with
+            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
+            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+
+        {
+            MessageId = messageId
+            MessageType = messageType
+            Data = multicastMessage.Data
+        }
+
+    let peerMessageFromDto (dto : PeerMessageDto) =
+        match dto.MessageData with
+        | :? GossipDiscoveryMessageDto as m ->
+            gossipDiscoveryMessageFromDto m |> GossipDiscoveryMessage
+        | :? GossipMessageDto as m ->
+            gossipMessageFromDto m |> GossipMessage
+        | :? MulticastMessageDto as m ->
+            multicastMessageFromDto m |> MulticastMessage
+        | _ -> failwith "Invalid message type to map."
+
+    let peerMessageToDto (serialize : (obj -> string)) (peerMessage : PeerMessage) : PeerMessageDto =
+        let messageType, data =
+            match peerMessage with
+            | GossipDiscoveryMessage m -> "GossipDiscoveryMessage", m |> gossipDiscoveryMessageToDto |> serialize
+            | GossipMessage m -> "GossipMessage", m |> gossipMessageToDto |> serialize
+            | MulticastMessage m -> "MulticastMessage", m |> multicastMessageToDto |> serialize
+
+        {
+            MessageType = messageType
+            MessageData = data
         }

@@ -20,7 +20,7 @@ module Workflows =
         saveTxToDb
         minTxActionFee
         txEnvelopeDto
-        : Result<TxSubmittedEvent, AppErrors>
+        : Result<TxReceivedEventData, AppErrors>
         =
 
         result {
@@ -67,7 +67,7 @@ module Workflows =
         minTxActionFee
         maxTxCountPerBlock
         validatorAddress
-        : Result<BlockCreatedEvent, AppErrors> option
+        : Result<BlockCreatedEventData, AppErrors> option
         =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
@@ -136,7 +136,7 @@ module Workflows =
 
                 do! applyNewState blockInfoDto outputDto
 
-                return { BlockCreatedEvent.BlockNumber = block.Header.Number }
+                return { BlockCreatedEventData.BlockNumber = block.Header.Number }
             }
             |> Some
 
@@ -157,7 +157,7 @@ module Workflows =
         applyNewState
         minTxActionFee
         (block : Block)
-        : Result<BlockProcessedEvent, AppErrors>
+        : Result<BlockProcessedEventData, AppErrors>
         =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
@@ -202,7 +202,7 @@ module Workflows =
 
             result {
                 do! applyNewState blockInfoDto outputDto
-                return { BlockProcessedEvent.BlockNumber = block.Header.Number }
+                return { BlockProcessedEventData.BlockNumber = block.Header.Number }
             }
         else
             let message =
@@ -340,13 +340,48 @@ module Workflows =
                 Log.appErrors errors
                 failwith "Cannot initialize blockchain state."
 
-    let propagateTx sendMessageToPeers (txHash : TxHash) =
-        sprintf "%A" txHash
-        |> sendMessageToPeers
+    let propagateTx sendMessageToPeers networkHost networkPort getTx (txHash : TxHash) =
+        match getTx txHash with
+        | Ok (txEnvelopeDto : TxEnvelopeDto) ->
+            let peerMessage = GossipMessage {
+                MessageId = Tx txHash
+                SenderId = GossipMemberId (sprintf "%s:%i" networkHost networkPort) // TODO: move it into network code
+                Data = txEnvelopeDto
+            }
 
-    let propagateBlock sendMessageToPeers (blockNumber : BlockNumber) =
-        sprintf "%A" blockNumber
-        |> sendMessageToPeers
+            peerMessage
+            |> sendMessageToPeers
+        | _ -> Log.errorf "Tx %s does not exist" (txHash |> fun (TxHash hash) -> hash)
+
+    let propagateBlock sendMessageToPeers networkHost networkPort getBlock (blockNumber : BlockNumber) =
+        match getBlock blockNumber with
+        | Ok (blockDto : BlockDto) ->
+            let peerMessage = GossipMessage {
+                MessageId = Block blockNumber
+                SenderId = GossipMemberId (sprintf "%s:%i" networkHost networkPort) // TODO: move it into network code
+                Data = blockDto
+            }
+            peerMessage
+            |> ignore // TODO: sendMessageToPeers
+        | _ -> Log.errorf "Block %i does not exist." (blockNumber |> fun (BlockNumber b) -> b)
+
+    let processPeerMessage getTx submitTx peerMessage =
+        let processData messageId (data : obj) =
+            match messageId with
+            | Tx txHash ->
+                let txEnvelopeDto = Serialization.deserializeJObject data
+                match getTx txHash with
+                | Ok _ -> Result.appError (sprintf "%A already exists" txHash)
+                | Error _ -> submitTx txEnvelopeDto
+
+            | Block blockNr ->
+                // TODO
+                failwith "TODO: Implemented process block"
+
+        match peerMessage with
+        | GossipDiscoveryMessage _ -> None
+        | GossipMessage m -> processData m.MessageId m.Data |> Some
+        | MulticastMessage m -> processData m.MessageId m.Data |> Some
 
     let getAddressApi getChxBalanceState (chainiumAddress : ChainiumAddress)
         : Result<GetAddressApiResponseDto, AppErrors> =

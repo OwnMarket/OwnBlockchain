@@ -1,10 +1,7 @@
 namespace Chainium.Blockchain.Public.Faucet
 
-open System
 open Chainium.Common
 open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Events
 
 module PaceMaker =
 

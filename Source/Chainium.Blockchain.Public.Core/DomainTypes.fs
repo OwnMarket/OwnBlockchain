@@ -274,3 +274,55 @@ type Tx with
 
 type PendingTxInfo with
     member __.TotalFee = __.Fee * decimal __.ActionCount
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Network
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type NetworkHost = NetworkHost of string
+type NetworkPort = NetworkPort of int
+
+type GossipMemberId = GossipMemberId of string
+type NetworkMessageId =
+    | Tx of TxHash
+    | Block of BlockNumber
+
+type Endpoint = {
+    NetworkHost : NetworkHost
+    NetworkPort : NetworkPort
+}
+
+type NetworkNodeConfig = {
+    NetworkHost : NetworkHost
+    NetworkPort : NetworkPort
+    BootstrapNodes : Endpoint list
+}
+
+type GossipMember = {
+    Id : GossipMemberId
+    NetworkHost : NetworkHost
+    NetworkPort : NetworkPort
+    Heartbeat : int64
+}
+
+type GossipDiscoveryMessage = {
+    NetworkHost : NetworkHost
+    NetworkPort : NetworkPort
+    ActiveMembers : GossipMember list
+}
+
+type GossipMessage = {
+    MessageId : NetworkMessageId
+    SenderId : GossipMemberId
+    Data : obj
+}
+
+type MulticastMessage = {
+    MessageId : NetworkMessageId
+    Data : obj
+}
+
+type PeerMessage =
+    | GossipDiscoveryMessage of GossipDiscoveryMessage
+    | GossipMessage of GossipMessage
+    | MulticastMessage of MulticastMessage
