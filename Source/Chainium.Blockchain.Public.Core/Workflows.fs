@@ -46,6 +46,25 @@ module Workflows =
             return { TxHash = txHash }
         }
 
+    let isMyTurnToProposeBlock
+        (getLastBlockNumber : unit -> BlockNumber option)
+        getValidators
+        myValidatorAddress
+        =
+
+        // This is a simple leader based protocol used as a temporary placeholder for real consensus implementation.
+        let nextBlockNumber =
+            match getLastBlockNumber () with
+            | Some bn -> bn + 1L
+            | None -> failwith "Blockchain state not initialized."
+
+        let blockProposer =
+            getValidators ()
+            |> List.sortBy (fun v -> v.ValidatorAddress)
+            |> Consensus.getBlockProposer nextBlockNumber
+
+        blockProposer.ValidatorAddress = myValidatorAddress
+
     let createNewBlock
         getPendingTxs
         getTx
@@ -85,7 +104,7 @@ module Workflows =
                     | Some blockNumber -> getBlock blockNumber
                     | None -> failwith "Blockchain state is not initialized."
                 let previousBlock = Mapping.blockFromDto previousBlockDto
-                let blockNumber = previousBlock.Header.Number |> fun (BlockNumber n) -> BlockNumber (n + 1L)
+                let blockNumber = previousBlock.Header.Number + 1L
                 let timestamp = Utils.getUnixTimestamp () |> Timestamp
 
                 let txSet =

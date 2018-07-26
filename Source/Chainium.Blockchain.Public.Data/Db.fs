@@ -324,6 +324,16 @@ module Db =
         | [assetHash] -> assetHash |> AssetHash |> Some
         | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
 
+    let getAllValidators (dbConnectionString : string) : ValidatorInfoDto list =
+        let sql =
+            """
+            SELECT validator_address, network_address
+            FROM validator
+            ORDER BY validator_address;
+            """
+
+        DbTools.query<ValidatorInfoDto> dbConnectionString sql []
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Apply New State
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -54,6 +54,8 @@ module Composition =
 
     let getValidatorState = Db.getValidatorState Config.DbConnectionString
 
+    let getAllValidators () = Db.getAllValidators Config.DbConnectionString
+
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
     // Workflows
@@ -68,6 +70,12 @@ module Composition =
             saveTx
             saveTxToDb
             (ChxAmount Config.MinTxActionFee)
+
+    let isMyTurnToProposeBlock () =
+        Workflows.isMyTurnToProposeBlock
+            getLastBlockNumber
+            getAllValidators
+            Config.ValidatorAddress
 
     let createNewBlock () =
         Workflows.createNewBlock
