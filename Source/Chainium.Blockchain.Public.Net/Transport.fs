@@ -78,8 +78,9 @@ module Transport =
             p.RunAsync()
         )
 
-    let closeConnection host =
-        let found, socket = connectionPool.TryGetValue host
-        if found then
-            connectionPool.TryRemove host |> ignore
+    let closeConnection networkAddress =
+        match connectionPool.TryGetValue networkAddress with
+        | true, socket ->
+            connectionPool.TryRemove networkAddress |> ignore
             socket.Dispose()
+        | _ -> ()

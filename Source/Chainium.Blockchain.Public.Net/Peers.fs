@@ -57,14 +57,13 @@ module Peers =
             the heartbeat the local node is bigger than the one passed by argument.
         *)
         let isDead inputMember =
-            let foundDead, deadMember = deadMembers.TryGetValue inputMember.NetworkAddress
-            if foundDead then
+            match deadMembers.TryGetValue inputMember.NetworkAddress with
+            | true, deadMember ->
                 Log.debugf "Received a node with heartbeat %i, in dead-members it has heartbeat %i"
                     inputMember.Heartbeat
                     deadMember.Heartbeat
                 deadMember.Heartbeat >= inputMember.Heartbeat
-            else
-                false
+            | _ -> false
         (*
             Once a member has been declared dead and it hasn't recovered in
             2xTFail time is removed from the dead-members list.
@@ -73,12 +72,13 @@ module Peers =
             elapsed is 2xTFail
         *)
         let setFinalDeadMember networkAddress =
-            let found, _ = activeMembers.TryGetValue networkAddress
-            if not found then
+            match activeMembers.TryGetValue networkAddress with
+            | false, _ ->
                 Log.debugf "*** Member marked as DEAD %s" (networkAddress |> networkAddressToString)
                 deadMembers.TryRemove networkAddress |> ignore
                 memberStateTimers.TryRemove networkAddress |> ignore
                 networkAddress |> networkAddressToString |> closeConnection
+            | _ -> ()
 
         (*
             It declares a member as dead.
@@ -89,14 +89,15 @@ module Peers =
         *)
         let setPendingDeadMember networkAddress =
             Log.debugf "*** Member potentially DEAD: %s" (networkAddress |> networkAddressToString)
-            let found, activeMember = activeMembers.TryGetValue networkAddress
-            if found then
+            match activeMembers.TryGetValue networkAddress with
+            | true, activeMember ->
                 activeMembers.TryRemove networkAddress |> ignore
                 deadMembers.AddOrUpdate (networkAddress, activeMember, fun _ _ -> activeMember) |> ignore
                 memberStateTimers.TryRemove networkAddress |> ignore
                 let timer = Timers.createTimer tFail (fun _ -> (setFinalDeadMember networkAddress))
                 timer.Start()
                 memberStateTimers.AddOrUpdate (networkAddress, timer, fun _ _ -> timer) |> ignore
+            | false, _ -> ()
 
         let restartTimer networkAddress =
             Timers.restartTimer<NetworkAddress>
@@ -156,8 +157,8 @@ module Peers =
             | GossipMessage m -> __.SendGossipMessage m
 
         member private __.SendGossipMessageToRecipient recipientAddress (gossipMessage : GossipMessage) =
-            let found, recipientMember = activeMembers.TryGetValue recipientAddress
-            if found then
+            match activeMembers.TryGetValue recipientAddress with
+            | true, recipientMember ->
                 Log.debugf "Sending gossip message %A to %s"
                     gossipMessage.MessageId
                     (recipientAddress |> networkAddressToString)
@@ -166,6 +167,7 @@ module Peers =
                 let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage peerMessage
                 let recipientMemberDto = Mapping.gossipMemberToDto recipientMember
                 sendGossipMessage peerMessageDto recipientMemberDto
+            | false, _ -> ()
 
         member private __.ProcessGossipMessage (gossipMessage : GossipMessage) recipientAddresses =
             match recipientAddresses with
@@ -201,12 +203,11 @@ module Peers =
                         |> List.map (fun m -> m.NetworkAddress)
                         |> List.filter (fun a -> a <> config.NetworkAddress)
 
-                    let found, processedAddresses = gossipMessages.TryGetValue msg.MessageId
-
                     let remainingrecipientAddresses =
-                        if found then
+                        match gossipMessages.TryGetValue msg.MessageId with
+                        | true, processedAddresses ->
                             List.except (msg.SenderAddress :: processedAddresses) recipientAddresses
-                        else
+                        | false, _ ->
                             List.except [msg.SenderAddress] recipientAddresses
 
                     __.ProcessGossipMessage msg remainingrecipientAddresses
@@ -219,9 +220,15 @@ module Peers =
             Async.Start (loop message)
 
         member private __.ReceiveGossipMessage processPeerMessage publishEvent (gossipMessage : GossipMessage) =
-            let processed, processedAddresses = gossipMessages.TryGetValue gossipMessage.MessageId
-            if not processed then
-                Log.debugf "*** RECEIVED GOSSIP MESSAGE %A from %s "
+            match gossipMessages.TryGetValue gossipMessage.MessageId with
+            | true, processedAddresses ->
+                if not (processedAddresses |> List.contains gossipMessage.SenderAddress) then
+                    gossipMessages.AddOrUpdate(
+                        gossipMessage.MessageId,
+                        gossipMessage.SenderAddress :: processedAddresses,
+                        fun _ _ -> gossipMessage.SenderAddress :: processedAddresses) |> ignore
+            | false, _ ->
+                Log.debugf "Received gossip message %A from %s "
                     gossipMessage.MessageId
                     (gossipMessage.SenderAddress |> networkAddressToString)
 
@@ -246,13 +253,6 @@ module Peers =
 
                 // Once a node is infected, propagate the message further.
                 __.SendMessage msg
-            else
-                // Message was already processed.
-                if not (processedAddresses |> List.contains gossipMessage.SenderAddress) then
-                    gossipMessages.AddOrUpdate(
-                        gossipMessage.MessageId,
-                        gossipMessage.SenderAddress :: processedAddresses,
-                        fun _ _ -> gossipMessage.SenderAddress :: processedAddresses) |> ignore
 
         member private __.ReceiveMulticastMessage
             processPeerMessage
@@ -273,8 +273,7 @@ module Peers =
                 Log.debugf "Adding new member : %s" (mem.NetworkAddress |> networkAddressToString)
                 activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
 
-                let isCurrentNode = mem.NetworkAddress = config.NetworkAddress
-                if not isCurrentNode then
+                if mem.NetworkAddress <> config.NetworkAddress then
                     restartTimer mem.NetworkAddress |> ignore
 
             loop inputMember
@@ -295,11 +294,9 @@ module Peers =
             |> List.iter (fun m -> __.AddMember m)
 
         member private __.GetActiveMember networkAddress =
-            let found, localMember = activeMembers.TryGetValue networkAddress
-            if found then
-                Some localMember
-            else
-                None
+            match activeMembers.TryGetValue networkAddress with
+            | true, localMember -> Some localMember
+            | false, _ -> None
 
         member private __.MergeMember inputMember =
             if inputMember.NetworkAddress <> config.NetworkAddress then
@@ -401,7 +398,7 @@ module Peers =
 
         let nodeConfig : NetworkNodeConfig = {
             BootstrapNodes = bootstrapNodes
-            |> List.map (fun n -> NetworkAddress n)
+            |> List.map (fun a -> NetworkAddress a)
 
             NetworkAddress = NetworkAddress networkAddress
         }
