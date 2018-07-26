@@ -154,9 +154,9 @@ module Composition =
             Transport.closeConnection
             Config.NetworkAddress
             Config.NetworkBootstrapNodes
-            publishEvent
+            getAllValidators
             processPeerMessage
-
+            publishEvent
     // API
 
     let getAddressApi = Workflows.getAddressApi getChxBalanceState

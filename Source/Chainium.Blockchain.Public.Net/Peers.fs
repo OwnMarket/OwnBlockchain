@@ -17,6 +17,7 @@ module Peers =
         sendMulticastMessage,
         receiveMessage,
         closeConnection,
+        getAllValidators : unit -> Dtos.ValidatorInfoDto list,
         config : NetworkNodeConfig
         ) =
 
@@ -152,7 +153,7 @@ module Peers =
                 sendMulticastMessage
                     (config.NetworkAddress |> networkAddressToString)
                     peerMessageDto
-                    (__.GetActiveMembers() |> List.map Mapping.gossipMemberToDto)
+                    (getAllValidators() |> List.map(fun v -> v.NetworkAddress))
 
             | GossipMessage m -> __.SendGossipMessage m
 
@@ -392,8 +393,9 @@ module Peers =
         closeConnection
         networkAddress
         (bootstrapNodes : string list)
-        (publishEvent : AppEvent -> unit)
+        getAllValidators
         processPeerMessage
+        (publishEvent : AppEvent -> unit)
         =
 
         let nodeConfig : NetworkNodeConfig = {
@@ -409,6 +411,7 @@ module Peers =
                 sendMulticastMessage,
                 receiveMessage,
                 closeConnection,
+                getAllValidators,
                 nodeConfig
             )
         n.Start processPeerMessage publishEvent

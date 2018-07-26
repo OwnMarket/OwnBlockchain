@@ -33,20 +33,20 @@ module Transport =
         let msg = packMessage gossipDiscoveryMessage
         send msg targetAddress
 
-    let sendMulticastMessage senderAddress multicastMessage connections =
-        let multicastGroupMembers =
-            connections
-            |> List.filter (fun m -> m.NetworkAddress <> senderAddress)
+    let sendMulticastMessage senderAddress multicastMessage multicastAddresses =
+        let multicastAddresses =
+            multicastAddresses
+            |> List.filter (fun a -> a <> senderAddress)
 
-        match multicastGroupMembers with
+        match multicastAddresses with
         | [] -> ()
         | _ ->
-            multicastGroupMembers
+            multicastAddresses
             |> Seq.shuffleG
             |> Seq.toList
-            |> List.iter (fun m ->
+            |> List.iter (fun networkAddress ->
                 let msg = packMessage multicastMessage
-                send msg m.NetworkAddress
+                send msg networkAddress
             )
 
     let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
