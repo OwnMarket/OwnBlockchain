@@ -35,13 +35,13 @@ type Config () =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    static member NetworkHost
+    static member NetworkAddress
         with get () =
-            config.["NetworkHost"]
-
-    static member NetworkPort
-        with get () =
-            config.["NetworkPort"] |> Convert.ToInt32
+            let networkAddress = config.["NetworkAddress"]
+            if networkAddress.IsNullOrWhiteSpace() then
+                "127.0.0.1:25718"
+            else
+                networkAddress
 
     static member NetworkBootstrapNodes
         with get () =

@@ -445,7 +445,7 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
-            SenderAddress = gossipMessage.SenderAddress |> fun (NetworkAddress i) -> i
+            SenderAddress = gossipMessage.SenderAddress |> fun (NetworkAddress a) -> a
             Data = gossipMessage.Data
         }
 

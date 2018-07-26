@@ -53,10 +53,10 @@ module Transport =
         let msg = packMessage gossipMessage
         send msg targetMember.NetworkAddress
 
-    let receiveMessage host receiveCallback =
+    let receiveMessage networkAddress receiveCallback =
         match receiverSocket with
         | Some _ -> ()
-        | None -> receiverSocket <- new PullSocket("@tcp://" + host) |> Some
+        | None -> receiverSocket <- new PullSocket("@tcp://" + networkAddress) |> Some
 
         match poller with
         | Some _ -> ()

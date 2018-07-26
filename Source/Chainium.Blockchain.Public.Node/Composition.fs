@@ -128,9 +128,9 @@ module Composition =
             getBlock
             (ChxAmount Config.MinTxActionFee)
 
-    let propagateTx = Workflows.propagateTx Peers.sendMessage Config.NetworkHost Config.NetworkPort getTx
+    let propagateTx = Workflows.propagateTx Peers.sendMessage Config.NetworkAddress getTx
 
-    let propagateBlock = Workflows.propagateBlock Peers.sendMessage Config.NetworkHost Config.NetworkPort getBlock
+    let propagateBlock = Workflows.propagateBlock Peers.sendMessage Config.NetworkAddress getBlock
 
     // Network
 
@@ -144,8 +144,7 @@ module Composition =
             Transport.sendMulticastMessage
             Transport.receiveMessage
             Transport.closeConnection
-            Config.NetworkHost
-            Config.NetworkPort
+            Config.NetworkAddress
             Config.NetworkBootstrapNodes
             publishEvent
             processPeerMessage

@@ -340,13 +340,13 @@ module Workflows =
                 Log.appErrors errors
                 failwith "Cannot initialize blockchain state."
 
-    let propagateTx sendMessageToPeers networkHost networkPort getTx (txHash : TxHash) =
+    let propagateTx sendMessageToPeers networkAddress getTx (txHash : TxHash) =
         match getTx txHash with
         | Ok (txEnvelopeDto : TxEnvelopeDto) ->
             let peerMessage = GossipMessage {
                 MessageId = Tx txHash
                 // TODO: move it into network code
-                SenderAddress = NetworkAddress (sprintf "%s:%i" networkHost networkPort)
+                SenderAddress = NetworkAddress networkAddress
                 Data = txEnvelopeDto
             }
 
@@ -354,13 +354,13 @@ module Workflows =
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" (txHash |> fun (TxHash hash) -> hash)
 
-    let propagateBlock sendMessageToPeers networkHost networkPort getBlock (blockNumber : BlockNumber) =
+    let propagateBlock sendMessageToPeers networkAddress getBlock (blockNumber : BlockNumber) =
         match getBlock blockNumber with
         | Ok (blockDto : BlockDto) ->
             let peerMessage = GossipMessage {
                 MessageId = Block blockNumber
                 // TODO: move it into network code
-                SenderAddress = NetworkAddress (sprintf "%s:%i" networkHost networkPort)
+                SenderAddress = NetworkAddress networkAddress
                 Data = blockDto
             }
             peerMessage

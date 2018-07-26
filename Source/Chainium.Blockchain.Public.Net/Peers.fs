@@ -180,17 +180,17 @@ module Peers =
                 If not, add the gossip message (and the corresponding recipient) to the processing queue
             *)
             | _ ->
-                let selectedrecipientAddresses =
+                let fanoutRecipientAddresses =
                     recipientAddresses
                     |> Seq.shuffleG
                     |> Seq.chunkBySize fanout
                     |> Seq.head
                     |> Seq.toList
 
-                selectedrecipientAddresses |> List.iter (fun recipientAddress ->
+                fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                     __.SendGossipMessageToRecipient recipientAddress gossipMessage)
                 updateGossipMessagesProcessingQueue
-                    (gossipMessage.SenderAddress :: selectedrecipientAddresses)
+                    (gossipMessage.SenderAddress :: fanoutRecipientAddresses)
                     gossipMessage.MessageId
 
         member private __.SendGossipMessage message =
@@ -393,8 +393,7 @@ module Peers =
         sendMulticastMessage
         receiveMessage
         closeConnection
-        networkHost
-        networkPort
+        networkAddress
         (bootstrapNodes : string list)
         (publishEvent : AppEvent -> unit)
         processPeerMessage
@@ -404,7 +403,7 @@ module Peers =
             BootstrapNodes = bootstrapNodes
             |> List.map (fun n -> NetworkAddress n)
 
-            NetworkAddress = NetworkAddress (sprintf "%s:%i" networkHost networkPort)
+            NetworkAddress = NetworkAddress networkAddress
         }
         let n =
             NetworkNode (
