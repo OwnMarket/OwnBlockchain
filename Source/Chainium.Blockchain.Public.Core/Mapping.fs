@@ -401,40 +401,25 @@ module Mapping =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let endPointFromString (host : string) =
-        let tokens = host.Split ':' |> Array.toList
-        {
-            NetworkHost = NetworkHost tokens.[0]
-            NetworkPort = NetworkPort (tokens.[1] |> Convert.ToInt32)
-        }
-
     let gossipMemberFromDto (dto: GossipMemberDto) : GossipMember =
         {
-            Id = GossipMemberId dto.Id
-            NetworkHost = NetworkHost dto.NetworkHost
-            NetworkPort = NetworkPort dto.NetworkPort
+            NetworkAddress = NetworkAddress dto.NetworkAddress
             Heartbeat = dto.Heartbeat
         }
 
-    let gossipMemberToDto (gossipMember : GossipMember) =
+    let gossipMemberToDto (gossipMember : GossipMember) : GossipMemberDto =
         {
-            Id = gossipMember.Id |> fun (GossipMemberId i) -> i
-            NetworkHost = gossipMember.NetworkHost |> fun (NetworkHost a) -> a
-            NetworkPort = gossipMember.NetworkPort |> fun (NetworkPort p) -> p
+            NetworkAddress = gossipMember.NetworkAddress |> fun (NetworkAddress a) -> a
             Heartbeat = gossipMember.Heartbeat
         }
 
     let gossipDiscoveryMessageFromDto (dto : GossipDiscoveryMessageDto) : GossipDiscoveryMessage =
         {
-            NetworkHost = NetworkHost dto.NetworkHost
-            NetworkPort = NetworkPort dto.NetworkPort
             ActiveMembers = dto.ActiveMembers |> List.map gossipMemberFromDto
         }
 
     let gossipDiscoveryMessageToDto (gossipDiscoveryMessage: GossipDiscoveryMessage) =
         {
-            NetworkHost = gossipDiscoveryMessage.NetworkHost |> fun (NetworkHost a) -> a
-            NetworkPort = gossipDiscoveryMessage.NetworkPort |> fun (NetworkPort p) -> p
             ActiveMembers = gossipDiscoveryMessage.ActiveMembers |> List.map gossipMemberToDto
         }
 
@@ -447,7 +432,7 @@ module Mapping =
 
         {
             MessageId = gossipMessageId
-            SenderId = GossipMemberId dto.SenderId
+            SenderAddress = NetworkAddress dto.SenderAddress
             Data = dto.Data
         }
 
@@ -460,7 +445,7 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
-            SenderId = gossipMessage.SenderId |> fun (GossipMemberId i) -> i
+            SenderAddress = gossipMessage.SenderAddress |> fun (NetworkAddress i) -> i
             Data = gossipMessage.Data
         }
 

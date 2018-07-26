@@ -279,41 +279,29 @@ type PendingTxInfo with
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type NetworkHost = NetworkHost of string
-type NetworkPort = NetworkPort of int
+type NetworkAddress = NetworkAddress of string
 
-type GossipMemberId = GossipMemberId of string
 type NetworkMessageId =
     | Tx of TxHash
     | Block of BlockNumber
 
-type Endpoint = {
-    NetworkHost : NetworkHost
-    NetworkPort : NetworkPort
-}
-
 type NetworkNodeConfig = {
-    NetworkHost : NetworkHost
-    NetworkPort : NetworkPort
-    BootstrapNodes : Endpoint list
+    NetworkAddress : NetworkAddress
+    BootstrapNodes : NetworkAddress list
 }
 
 type GossipMember = {
-    Id : GossipMemberId
-    NetworkHost : NetworkHost
-    NetworkPort : NetworkPort
+    NetworkAddress : NetworkAddress
     Heartbeat : int64
 }
 
 type GossipDiscoveryMessage = {
-    NetworkHost : NetworkHost
-    NetworkPort : NetworkPort
     ActiveMembers : GossipMember list
 }
 
 type GossipMessage = {
     MessageId : NetworkMessageId
-    SenderId : GossipMemberId
+    SenderAddress : NetworkAddress
     Data : obj
 }
 

@@ -33,10 +33,10 @@ module Transport =
         let msg = packMessage gossipDiscoveryMessage
         send msg targetAddress
 
-    let sendMulticastMessage sourceId multicastMessage connections =
+    let sendMulticastMessage senderAddress multicastMessage connections =
         let multicastGroupMembers =
             connections
-            |> List.filter (fun m -> m.Id <> sourceId)
+            |> List.filter (fun m -> m.NetworkAddress <> senderAddress)
 
         match multicastGroupMembers with
         | [] -> ()
@@ -46,12 +46,12 @@ module Transport =
             |> Seq.toList
             |> List.iter (fun m ->
                 let msg = packMessage multicastMessage
-                send msg m.Id
+                send msg m.NetworkAddress
             )
 
-    let sendGossipMessage gossipMessage (destMembers: GossipMemberDto) =
+    let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
         let msg = packMessage gossipMessage
-        send msg destMembers.Id
+        send msg targetMember.NetworkAddress
 
     let receiveMessage host receiveCallback =
         match receiverSocket with

@@ -274,25 +274,21 @@ type GetTxApiResponseDto = {
 
 [<CLIMutable>]
 type GossipMemberDto = {
-    Id : string
-    NetworkHost : string
-    NetworkPort : int
+    NetworkAddress : string
     Heartbeat : int64
+}
+
+[<CLIMutable>]
+type GossipDiscoveryMessageDto = {
+    ActiveMembers : GossipMemberDto list
 }
 
 [<CLIMutable>]
 type GossipMessageDto = {
     MessageType : string
     MessageId : string
-    SenderId : string
+    SenderAddress : string
     Data : obj
-}
-
-[<CLIMutable>]
-type GossipDiscoveryMessageDto = {
-    NetworkHost : string
-    NetworkPort : int
-    ActiveMembers : GossipMemberDto list
 }
 
 type MulticastMessageDto = {

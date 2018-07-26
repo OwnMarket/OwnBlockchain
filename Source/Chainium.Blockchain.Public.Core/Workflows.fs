@@ -345,7 +345,8 @@ module Workflows =
         | Ok (txEnvelopeDto : TxEnvelopeDto) ->
             let peerMessage = GossipMessage {
                 MessageId = Tx txHash
-                SenderId = GossipMemberId (sprintf "%s:%i" networkHost networkPort) // TODO: move it into network code
+                // TODO: move it into network code
+                SenderAddress = NetworkAddress (sprintf "%s:%i" networkHost networkPort)
                 Data = txEnvelopeDto
             }
 
@@ -358,7 +359,8 @@ module Workflows =
         | Ok (blockDto : BlockDto) ->
             let peerMessage = GossipMessage {
                 MessageId = Block blockNumber
-                SenderId = GossipMemberId (sprintf "%s:%i" networkHost networkPort) // TODO: move it into network code
+                // TODO: move it into network code
+                SenderAddress = NetworkAddress (sprintf "%s:%i" networkHost networkPort)
                 Data = blockDto
             }
             peerMessage
