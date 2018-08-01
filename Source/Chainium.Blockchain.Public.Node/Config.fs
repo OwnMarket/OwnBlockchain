@@ -88,6 +88,6 @@ type Config () =
 
     static member MaxTxCountPerBlock = 100 // TODO: Shall this be managed by consensus protocol?
 
-    static member ValidatorAddress
+    static member ValidatorPrivateKey
         with get () =
-            config.["ValidatorAddress"]
+            config.["ValidatorPrivateKey"]

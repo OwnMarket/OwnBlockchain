@@ -214,6 +214,17 @@ module Mapping =
             BlockTimestamp = blockHeaderDto.Timestamp
         }
 
+    let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
+        {
+            RawBlock = dto.Block |> Convert.FromBase64String
+            Signature =
+                {
+                    V = dto.V
+                    R = dto.R
+                    S = dto.S
+                }
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -49,7 +49,8 @@ module Workflows =
     let isMyTurnToProposeBlock
         (getLastBlockNumber : unit -> BlockNumber option)
         (getValidators : unit -> ValidatorInfoDto list)
-        myValidatorAddress
+        addressFromPrivateKey
+        myPrivateKey
         =
 
         // This is a simple leader based protocol used as a temporary placeholder for real consensus implementation.
@@ -63,6 +64,7 @@ module Workflows =
             |> List.sortBy (fun v -> v.ValidatorAddress)
             |> Consensus.getBlockProposer nextBlockNumber
 
+        let (ChainiumAddress myValidatorAddress) = myPrivateKey |> PrivateKey |> addressFromPrivateKey
         blockProposer.ValidatorAddress = myValidatorAddress
 
     let createNewBlock
@@ -82,11 +84,14 @@ module Workflows =
         createHash
         createMerkleTree
         saveTxResult
+        signBlock
         saveBlock
+        saveBlockEnvelope
         applyNewState
         minTxActionFee
         maxTxCountPerBlock
-        validatorAddress
+        addressFromPrivateKey
+        validatorPrivateKey
         : Result<BlockCreatedEventData, AppErrors> option
         =
 
@@ -108,6 +113,7 @@ module Workflows =
                 let previousBlock = Mapping.blockFromDto previousBlockDto
                 let blockNumber = previousBlock.Header.Number + 1L
                 let timestamp = Utils.getUnixTimestamp () |> Timestamp
+                let validatorAddress = validatorPrivateKey |> PrivateKey |> addressFromPrivateKey
 
                 let txSet =
                     txSet
@@ -155,6 +161,18 @@ module Workflows =
                     ) (Ok ())
 
                 do! saveBlock blockDto
+
+                match Serialization.serialize<BlockDto> blockDto with
+                | Ok blockBytes ->
+                    let signature : Signature = signBlock (PrivateKey validatorPrivateKey) blockBytes
+                    let blockEnvelopeDto = {
+                        Block = blockBytes |> Convert.ToBase64String
+                        V = signature.V
+                        S = signature.S
+                        R = signature.R
+                    }
+                    do! saveBlockEnvelope block.Header.Number blockEnvelopeDto
+                | _ -> ()
 
                 do! applyNewState blockInfoDto outputDto
 
@@ -381,31 +399,60 @@ module Workflows =
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" (txHash |> fun (TxHash hash) -> hash)
 
-    let propagateBlock sendMessageToPeers networkAddress getBlock (blockNumber : BlockNumber) =
-        match getBlock blockNumber with
-        | Ok (blockDto : BlockDto) ->
+    let propagateBlock
+        sendMessageToPeers
+        networkAddress
+        getBlockEnvelope
+        (blockNumber : BlockNumber)
+        =
+
+        match getBlockEnvelope blockNumber with
+        | Ok (blockEnvelopeDto : BlockEnvelopeDto) ->
             let peerMessage = GossipMessage {
                 MessageId = Block blockNumber
                 // TODO: move it into network code
                 SenderAddress = NetworkAddress networkAddress
-                Data = blockDto
+                Data = blockEnvelopeDto
             }
             peerMessage
-            |> ignore // TODO: sendMessageToPeers
+            |> sendMessageToPeers
         | _ -> Log.errorf "Block %i does not exist." (blockNumber |> fun (BlockNumber b) -> b)
 
-    let processPeerMessage getTx submitTx peerMessage =
+    let processPeerMessage
+        getTx
+        getBlockEnvelope
+        verifySignature
+        submitTx
+        saveBlock
+        saveBlockEnvelope
+        peerMessage =
+        let processTxFromPeer txHash data =
+            let txEnvelopeDto = Serialization.deserializeJObject data
+            match getTx txHash with
+            | Ok _ -> Result.appError (sprintf "%A already exists" txHash)
+            | Error _ ->
+                submitTx txEnvelopeDto
+                |> Result.map (fun _ ->
+                    {TxHash = txHash} |> TxReceived
+                )
+
+        let processBlockFromPeer blockNr data =
+            match getBlockEnvelope blockNr with
+            | Ok _ -> Result.appError (sprintf "%A already exists" blockNr)
+            | Error _ ->
+                result {
+                    let blockEnvelopeDto = Serialization.deserializeJObject data
+                    let! blockDto = Blocks.getBlockDto verifySignature blockEnvelopeDto
+
+                    do! saveBlock blockDto
+                    do! saveBlockEnvelope blockNr blockEnvelopeDto
+                    return! {BlockCreatedEventData.BlockNumber = blockNr} |> BlockReceived |> Ok
+                }
+
         let processData messageId (data : obj) =
             match messageId with
-            | Tx txHash ->
-                let txEnvelopeDto = Serialization.deserializeJObject data
-                match getTx txHash with
-                | Ok _ -> Result.appError (sprintf "%A already exists" txHash)
-                | Error _ -> submitTx txEnvelopeDto
-
-            | Block blockNr ->
-                // TODO
-                failwith "TODO: Implemented process block"
+            | Tx txHash -> processTxFromPeer txHash data
+            | Block blockNr -> processBlockFromPeer blockNr data
 
         match peerMessage with
         | GossipDiscoveryMessage _ -> None

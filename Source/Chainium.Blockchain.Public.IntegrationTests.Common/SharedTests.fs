@@ -7,6 +7,7 @@ open System.Threading
 open System.Net.Http
 open Newtonsoft.Json
 open Swensen.Unquote
+open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Node
 open Chainium.Blockchain.Public.Core.Dtos
@@ -18,6 +19,8 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 module SharedTests =
 
     let addressToString (ChainiumAddress a) = a
+
+    let private addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
     let newTxDto (ChainiumAddress senderAddress) nonce fee actions =
         {
@@ -282,9 +285,13 @@ module SharedTests =
         let newController = Signing.generateWallet()
         let initialSenderChxBalance = 10M
         let initialValidatorChxBalance = 0M
+        let (ChainiumAddress validatorAddress) =
+            Config.ValidatorPrivateKey
+            |> PrivateKey
+            |> addressFromPrivateKey
 
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
-        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let accountHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -321,8 +328,10 @@ module SharedTests =
         let accountState =
             Db.getAccountState connectionString (AccountHash accountHash)
             |> Option.map Mapping.accountStateFromDto
+
+        let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
-        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
 
         test <@ accountState = Some { ControllerAddress = newController.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
@@ -336,9 +345,13 @@ module SharedTests =
         let newController = Signing.generateWallet()
         let initialSenderChxBalance = 10M
         let initialValidatorChxBalance = 0M
+        let (ChainiumAddress validatorAddress) =
+            Config.ValidatorPrivateKey
+            |> PrivateKey
+            |> addressFromPrivateKey
 
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
-        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let assetHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -376,7 +389,8 @@ module SharedTests =
             Db.getAssetState connectionString (AssetHash assetHash)
             |> Option.map Mapping.assetStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
-        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+        let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
+        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
 
         test <@ assetState = Some { AssetCode = None; ControllerAddress = newController.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
@@ -390,9 +404,13 @@ module SharedTests =
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10M
         let initialValidatorChxBalance = 0M
+        let (ChainiumAddress validatorAddress) =
+            Config.ValidatorPrivateKey
+            |> PrivateKey
+            |> addressFromPrivateKey
 
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
-        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let assetHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -431,7 +449,8 @@ module SharedTests =
             Db.getAssetState connectionString (AssetHash assetHash)
             |> Option.map Mapping.assetStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
-        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+        let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
+        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
 
         test <@ assetState = Some { AssetCode = Some assetCode; ControllerAddress = sender.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
@@ -445,9 +464,13 @@ module SharedTests =
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10M
         let initialValidatorChxBalance = 0M
+        let (ChainiumAddress validatorAddress) =
+            Config.ValidatorPrivateKey
+            |> PrivateKey
+            |> addressFromPrivateKey
 
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
-        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
 
@@ -479,7 +502,12 @@ module SharedTests =
             Db.getValidatorState connectionString sender.Address
             |> Option.map Mapping.validatorStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
-        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+        let validatorAddress =
+            Config.ValidatorPrivateKey
+            |> PrivateKey
+            |> addressFromPrivateKey
+
+        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
 
         test <@ validatorState = Some { NetworkAddress = networkAddress } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
@@ -496,7 +524,8 @@ module SharedTests =
         let initialValidatorChxBalance = 0M
 
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
-        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+        let (ChainiumAddress validatorAddress) = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
+        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
 
@@ -529,7 +558,8 @@ module SharedTests =
             Db.getStakeState connectionString (sender.Address, stakeValidatorAddress)
             |> Option.map Mapping.stakeStateFromDto
         let senderBalance = Db.getChxBalanceState connectionString sender.Address
-        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+        let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
+        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
 
         test <@ stakeState = Some { StakeState.Amount = ChxAmount stakeAmount } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>

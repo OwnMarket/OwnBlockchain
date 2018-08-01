@@ -19,3 +19,4 @@ type AppEvent =
     | TxSubmitted of TxReceivedEventData
     | TxReceived of TxReceivedEventData
     | BlockCreated of BlockCreatedEventData
+    | BlockReceived of BlockCreatedEventData

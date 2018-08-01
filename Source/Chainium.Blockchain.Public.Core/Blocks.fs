@@ -1,7 +1,7 @@
 namespace Chainium.Blockchain.Public.Core
 
-open System.Text
 open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Common.Conversion
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
@@ -319,3 +319,20 @@ module Blocks =
             previousBlockHash
             txSet
             output
+
+    let getBlockDto verifySignature blockEnvelopeDto =
+        result {
+            let! blockEnvelope = Validation.validateBlockEnvelope blockEnvelopeDto
+            let! blockDto =
+                match Validation.verifyBlockSignature verifySignature blockEnvelope with
+                | Ok address ->
+                    match blockEnvelope.RawBlock |> Serialization.deserialize<Dtos.BlockDto> with
+                    | Ok dto ->
+                        match address = (ChainiumAddress dto.Header.Validator) with
+                        | true -> Ok dto
+                        | false -> Result.appError "Invalid address"
+                    | Error err -> Error err
+                | Error err -> Error err
+
+            return blockDto
+        }

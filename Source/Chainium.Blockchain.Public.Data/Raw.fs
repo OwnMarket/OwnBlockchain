@@ -17,6 +17,7 @@ module Raw =
         | Tx
         | TxResult
         | Block
+        | BlockEnvelope
 
     let private createFileName (dataType : RawDataType) (key : string) =
         sprintf "%s_%s" (unionCaseName dataType) key
@@ -79,6 +80,18 @@ module Raw =
 
     let getBlock (dataDir : string) (BlockNumber blockNumber) : Result<BlockDto, AppErrors> =
         loadData<BlockDto> dataDir Block (string blockNumber)
+
+    let saveBlockEnvelope
+        (dataDir : string)
+        (BlockNumber blockNr)
+        (blockEnvelopeDto : BlockEnvelopeDto)
+        : Result<unit, AppErrors>
+        =
+
+        saveData dataDir BlockEnvelope (string blockNr) blockEnvelopeDto
+
+    let getBlockEnvelope (dataDir : string) (BlockNumber blockNumber) : Result<BlockEnvelopeDto, AppErrors> =
+        loadData<BlockEnvelopeDto> dataDir BlockEnvelope (string blockNumber)
 
     let blockExists (dataDir : string) (BlockNumber blockNumber) =
         blockNumber

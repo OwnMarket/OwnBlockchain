@@ -1,5 +1,6 @@
 ﻿namespace Chainium.Blockchain.Public.Node
 
+open Chainium.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Crypto
@@ -21,6 +22,10 @@ module Composition =
     let saveBlock = Raw.saveBlock Config.DataDir
 
     let getBlock = Raw.getBlock Config.DataDir
+
+    let saveBlockEnvelope = Raw.saveBlockEnvelope Config.DataDir
+
+    let getBlockEnvelope = Raw.getBlockEnvelope Config.DataDir
 
     let blockExists = Raw.blockExists Config.DataDir
 
@@ -73,11 +78,14 @@ module Composition =
             saveTxToDb
             (ChxAmount Config.MinTxActionFee)
 
+    let addressFromPrivateKey = memoize Signing.addressFromPrivateKey
+
     let isMyTurnToProposeBlock () =
         Workflows.isMyTurnToProposeBlock
             getLastBlockNumber
             getAllValidators
-            Config.ValidatorAddress
+            addressFromPrivateKey
+            Config.ValidatorPrivateKey
 
     let createNewBlock () =
         Workflows.createNewBlock
@@ -97,11 +105,14 @@ module Composition =
             Hashing.hash
             Hashing.merkleTree
             saveTxResult
+            Signing.signMessage
             saveBlock
+            saveBlockEnvelope
             applyNewState
             (ChxAmount Config.MinTxActionFee)
             Config.MaxTxCountPerBlock
-            (ChainiumAddress Config.ValidatorAddress)
+            addressFromPrivateKey
+            Config.ValidatorPrivateKey
 
     let initBlockchainState () =
         Workflows.initBlockchainState
@@ -142,12 +153,23 @@ module Composition =
 
     let propagateTx = Workflows.propagateTx Peers.sendMessage Config.NetworkAddress getTx
 
-    let propagateBlock = Workflows.propagateBlock Peers.sendMessage Config.NetworkAddress getBlock
+    let propagateBlock =
+        Workflows.propagateBlock
+            Peers.sendMessage
+            Config.NetworkAddress
+            getBlockEnvelope
 
     // Network
 
     let processPeerMessage (peerMessage : PeerMessage) =
-        Workflows.processPeerMessage getTx submitTx peerMessage
+        Workflows.processPeerMessage
+            getTx
+            getBlockEnvelope
+            Signing.verifySignature
+            submitTx
+            saveBlock
+            saveBlockEnvelope
+            peerMessage
 
     let startGossip publishEvent =
         Peers.startGossip

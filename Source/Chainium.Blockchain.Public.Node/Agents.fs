@@ -22,3 +22,4 @@ module Agents =
         | TxSubmitted e -> txPropagator.Post e
         | TxReceived e -> txPropagator.Post e
         | BlockCreated e -> blockPropagator.Post e
+        | BlockReceived e -> blockPropagator.Post e

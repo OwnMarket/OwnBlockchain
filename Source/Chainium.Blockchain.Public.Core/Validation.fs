@@ -7,21 +7,55 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module Validation =
 
+    let validateSignature (signature : Signature) =
+        [
+            if signature.V.IsNullOrWhiteSpace() then
+                yield AppError "Signature component V is missing from the envelope."
+            if signature.R.IsNullOrWhiteSpace() then
+                yield AppError "Signature component R is missing from the envelope."
+            if signature.S.IsNullOrWhiteSpace() then
+                yield AppError "Signature component S is missing from the envelope."
+        ]
+
     let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
+        let signature =
+            {
+                V = txEnvelopeDto.V
+                R = txEnvelopeDto.R
+                S = txEnvelopeDto.S
+            }
         [
             if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
                 yield AppError "Tx is missing from the envelope."
-            if txEnvelopeDto.V.IsNullOrWhiteSpace() then
-                yield AppError "Signature component V is missing from the envelope."
-            if txEnvelopeDto.R.IsNullOrWhiteSpace() then
-                yield AppError "Signature component R is missing from the envelope."
-            if txEnvelopeDto.S.IsNullOrWhiteSpace() then
-                yield AppError "Signature component S is missing from the envelope."
+
+            yield! validateSignature signature
         ]
         |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
 
+    let validateBlockEnvelope (blockEnvelopeDto : BlockEnvelopeDto) : Result<BlockEnvelope, AppErrors> =
+        let signature =
+            {
+                V = blockEnvelopeDto.V
+                R = blockEnvelopeDto.R
+                S = blockEnvelopeDto.S
+            }
+        [
+            if blockEnvelopeDto.Block.IsNullOrWhiteSpace() then
+                yield AppError "Block is missing from the envelope."
+
+            yield! validateSignature signature
+        ]
+        |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
+
     let verifyTxSignature verifySignature (txEnvelope : TxEnvelope) : Result<ChainiumAddress, AppErrors> =
         match verifySignature txEnvelope.Signature txEnvelope.RawTx with
+        | Some chainiumAddress ->
+            Ok chainiumAddress
+        | None ->
+            Result.appError "Cannot verify signature"
+
+    let verifyBlockSignature verifySignature (blockEnvelope : BlockEnvelope) : Result<ChainiumAddress, AppErrors> =
+        match verifySignature blockEnvelope.Signature blockEnvelope.RawBlock with
         | Some chainiumAddress ->
             Ok chainiumAddress
         | None ->

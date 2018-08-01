@@ -239,12 +239,12 @@ module Peers =
                     [],
                     fun _ _ -> []) |> ignore
 
-                match processPeerMessage (GossipMessage gossipMessage) with
-                | Some result ->
+                processPeerMessage (GossipMessage gossipMessage)
+                |> Option.iter(fun result ->
                     match result with
-                    | Ok data -> data |> TxReceived |> publishEvent
+                    | Ok appEvent -> appEvent |> publishEvent
                     | Error errors -> Log.appErrors errors
-                | None -> ()
+                )
 
                 let msg = GossipMessage {
                     MessageId = gossipMessage.MessageId
@@ -257,17 +257,17 @@ module Peers =
 
         member private __.ReceiveMulticastMessage
             processPeerMessage
-            publishEvent
             (multicastMessage : MulticastMessage)
             =
 
-            printfn "Received multicast message from somebody"
-            match processPeerMessage (MulticastMessage multicastMessage) with
-            | Some result ->
+            processPeerMessage (MulticastMessage multicastMessage)
+            |> Option.iter(fun result ->
                 match result with
-                | Ok data -> data |> TxReceived |> publishEvent
+                | Ok appEvent ->
+                    // Do not propagate on multicast.
+                    Log.infof "EVENT: %A" appEvent
                 | Error errors -> Log.appErrors errors
-            | None -> ()
+            )
 
         member private __.AddMember inputMember =
             let rec loop (mem : GossipMember) =
@@ -328,7 +328,7 @@ module Peers =
             match peerMessage with
             | GossipDiscoveryMessage m -> __.ReceiveMembers m
             | GossipMessage m -> __.ReceiveGossipMessage processPeerMessage publishEvent m
-            | MulticastMessage m -> __.ReceiveMulticastMessage processPeerMessage publishEvent m
+            | MulticastMessage m -> __.ReceiveMulticastMessage processPeerMessage m
 
         member private __.SendMembership () =
             __.IncreaseHeartbeat()

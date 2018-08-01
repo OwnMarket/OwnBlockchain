@@ -11,7 +11,7 @@ open Chainium.Blockchain.Public.Crypto
 
 module ValidationTests =
 
-    let chAddress = ChainiumAddress "CHMHABow7Liry6TqswwzxHnMfcYNbrJBAtp"
+    let chAddress = ChainiumAddress "CHaLUjmvaJs2Yn6dyrLpsjVzcpWg6GENkEw"
     let txHash = TxHash "SampleHash"
     let transferChxActionType = "TransferChx"
     let transferAssetActionType = "TransferAsset"
