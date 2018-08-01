@@ -11,7 +11,7 @@ open Newtonsoft.Json
 module Transport =
 
     let mutable private receiverSocket : PullSocket option = None
-    let mutable private poller : NetMQPoller option = None
+    let private poller = new NetMQPoller()
     let private connectionPool = new ConcurrentDictionary<string, PushSocket>()
 
     let private packMessage message =
@@ -58,25 +58,18 @@ module Transport =
         | Some _ -> ()
         | None -> receiverSocket <- new PullSocket("@tcp://" + networkAddress) |> Some
 
-        match poller with
-        | Some _ -> ()
-        | None ->
-            poller <- new NetMQPoller() |> Some
-
-        poller |> Option.iter(fun p ->
-            receiverSocket |> Option.iter(fun socket ->
-                p.Add socket
-                socket.ReceiveReady
-                |> Observable.subscribe (fun eventArgs ->
-                    let received, message = eventArgs.Socket.TryReceiveFrameString()
-                    if received then
-                        let peerMessage = unpackMessage message
-                        receiveCallback peerMessage
-                )
-                |> ignore
+        receiverSocket |> Option.iter(fun socket ->
+            poller.Add socket
+            socket.ReceiveReady
+            |> Observable.subscribe (fun eventArgs ->
+                let received, message = eventArgs.Socket.TryReceiveFrameString()
+                if received then
+                    let peerMessage = unpackMessage message
+                    receiveCallback peerMessage
             )
-            p.RunAsync()
+            |> ignore
         )
+        poller.RunAsync()
 
     let closeConnection networkAddress =
         match connectionPool.TryGetValue networkAddress with
