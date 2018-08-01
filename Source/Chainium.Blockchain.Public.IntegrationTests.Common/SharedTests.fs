@@ -484,3 +484,53 @@ module SharedTests =
         test <@ validatorState = Some { NetworkAddress = networkAddress } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
+
+    let setStakeTest engineType connectionString =
+        // ARRANGE
+        let client = testInit engineType connectionString
+
+        let stakeValidatorAddress = (Signing.generateWallet ()).Address
+        let stakeAmount = 5M
+        let sender = Signing.generateWallet()
+        let initialSenderChxBalance = 10M
+        let initialValidatorChxBalance = 0M
+
+        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString (Config.ValidatorAddress) initialValidatorChxBalance
+
+        let nonce = 1L
+
+        let txActions =
+            [
+                {
+                    ActionType = "SetStake"
+                    ActionData =
+                        {
+                            SetStakeTxActionDto.ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                            Amount = stakeAmount
+                        }
+                }
+            ]
+
+        let fee = 1M
+        let totalFee = fee * (decimal txActions.Length)
+
+        let txDto = newTxDto sender.Address nonce fee txActions
+        let txEnvelope = transactionEnvelope sender txDto
+
+        // ACT
+        submitTransaction client txEnvelope
+        |> submissionChecks connectionString true sender txDto txEnvelope
+
+        processTransactions Helper.ExpectedPathForFirstBlock
+
+        // ASSERT
+        let stakeState =
+            Db.getStakeState connectionString (sender.Address, stakeValidatorAddress)
+            |> Option.map Mapping.stakeStateFromDto
+        let senderBalance = Db.getChxBalanceState connectionString sender.Address
+        let validatorBalance = Db.getChxBalanceState connectionString (Config.ValidatorAddress |> ChainiumAddress)
+
+        test <@ stakeState = Some { StakeState.Amount = ChxAmount stakeAmount } @>
+        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
+        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>

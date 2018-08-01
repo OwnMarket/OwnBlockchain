@@ -75,6 +75,11 @@ type SetValidatorNetworkAddressTxAction = {
     NetworkAddress : string
 }
 
+type SetStakeTxAction = {
+    ValidatorAddress : ChainiumAddress
+    Amount : ChxAmount
+}
+
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
@@ -85,6 +90,7 @@ type TxAction =
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction
     | SetValidatorNetworkAddress of SetValidatorNetworkAddressTxAction
+    | SetStake of SetStakeTxAction
 
 type Tx = {
     TxHash : TxHash

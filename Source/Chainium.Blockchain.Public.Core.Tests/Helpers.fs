@@ -26,6 +26,7 @@ module Helpers =
         | SetAssetController action -> box action :?> 'T
         | SetAssetCode action -> box action :?> 'T
         | SetValidatorNetworkAddress action -> box action :?> 'T
+        | SetStake action -> box action :?> 'T
 
     let newPendingTxInfo
         (txHash : TxHash)

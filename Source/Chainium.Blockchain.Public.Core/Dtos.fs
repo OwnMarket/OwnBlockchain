@@ -51,8 +51,15 @@ type SetAssetCodeTxActionDto = {
     AssetCode : string
 }
 
+[<CLIMutable>]
 type SetValidatorNetworkAddressTxActionDto = {
     NetworkAddress : string
+}
+
+[<CLIMutable>]
+type SetStakeTxActionDto = {
+    ValidatorAddress : string
+    Amount : decimal
 }
 
 [<CLIMutable>]

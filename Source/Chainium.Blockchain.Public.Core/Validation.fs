@@ -35,8 +35,7 @@ module Validation =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
                 yield AppError "RecipientAddress is not provided."
-
-            if action.RecipientAddress |> ChainiumAddress |> isValidAddress |> not then
+            elif action.RecipientAddress |> ChainiumAddress |> isValidAddress |> not then
                 yield AppError "RecipientAddress is not valid."
 
             if action.Amount <= 0M then
@@ -75,7 +74,9 @@ module Validation =
             if action.AccountHash.IsNullOrWhiteSpace() then
                 yield AppError "AccountHash is not provided."
 
-            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+            if action.ControllerAddress.IsNullOrWhiteSpace() then
+                yield AppError "ControllerAddress is not provided."
+            elif action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
                 yield AppError "ControllerAddress is not valid."
         ]
 
@@ -84,7 +85,9 @@ module Validation =
             if action.AssetHash.IsNullOrWhiteSpace() then
                 yield AppError "AssetHash is not provided."
 
-            if action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+            if action.ControllerAddress.IsNullOrWhiteSpace() then
+                yield AppError "ControllerAddress is not provided."
+            elif action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
                 yield AppError "ControllerAddress is not valid."
         ]
 
@@ -101,6 +104,17 @@ module Validation =
         [
             if action.NetworkAddress.IsNullOrWhiteSpace() then
                 yield AppError "NetworkAddress is not provided."
+        ]
+
+    let private validateSetStake isValidAddress (action : SetStakeTxActionDto) =
+        [
+            if action.ValidatorAddress.IsNullOrWhiteSpace() then
+                yield AppError "ValidatorAddress is not provided."
+            elif action.ValidatorAddress |> ChainiumAddress |> isValidAddress |> not then
+                yield AppError "ValidatorAddress is not valid."
+
+            if action.Amount < 0M then
+                yield AppError "CHX amount must not be negative."
         ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,6 +156,8 @@ module Validation =
                 validateSetAssetCode a
             | :? SetValidatorNetworkAddressTxActionDto as a ->
                 validateSetValidatorNetworkAddress a
+            | :? SetStakeTxActionDto as a ->
+                validateSetStake isValidAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

@@ -359,6 +359,25 @@ module Processing =
             state.SetValidator(senderAddress, {validatorState with NetworkAddress = action.NetworkAddress})
             Ok state
 
+    let processSetStakeTxAction
+        (state : ProcessingState)
+        (senderAddress : ChainiumAddress)
+        (action : SetStakeTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        let senderState = state.GetChxBalance(senderAddress)
+        if senderState.Amount < action.Amount then
+            Error TxErrorCode.InsufficientChxBalance
+        else
+            match state.GetStake(senderAddress, action.ValidatorAddress) with
+            | None ->
+                state.SetStake(senderAddress, action.ValidatorAddress, {StakeState.Amount = action.Amount})
+            | Some stakeState ->
+                state.SetStake(senderAddress, action.ValidatorAddress, {stakeState with Amount = action.Amount})
+
+            Ok state
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -520,6 +539,7 @@ module Processing =
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
         | SetValidatorNetworkAddress action -> processSetValidatorNetworkAddressTxAction state senderAddress action
+        | SetStake action -> processSetStakeTxAction state senderAddress action
 
     let processTxActions
         decodeHash

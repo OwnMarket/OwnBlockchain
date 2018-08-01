@@ -350,3 +350,25 @@ module SerializationTests =
             test <@ txDto.Actions.Head = expectedTxAction @>
         | Error appErrors ->
             failwithf "%A" appErrors
+
+    [<Fact>]
+    let ``Serialization.deserializeTx SetStake`` () =
+        let expectedTxAction =
+            {
+                ActionType = "SetStake"
+                ActionData =
+                    {
+                        SetStakeTxActionDto.ValidatorAddress = "SomeValidator"
+                        Amount = 1000M
+                    }
+            }
+
+        let serializedTx =
+            [ expectedTxAction |> box ]
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+
+        match Serialization.deserializeTx serializedTx with
+        | Ok txDto ->
+            test <@ txDto.Actions.Head = expectedTxAction @>
+        | Error appErrors ->
+            failwithf "%A" appErrors
