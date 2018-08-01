@@ -179,6 +179,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -192,6 +195,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -266,6 +270,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -279,6 +286,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -354,6 +362,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -367,6 +378,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -442,6 +454,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         let processTxSet () =
             Processing.processTxSet
                 getTx
@@ -454,6 +469,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -533,6 +549,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -546,6 +565,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -631,6 +651,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -644,6 +667,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -735,6 +759,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -748,6 +775,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -836,6 +864,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -849,6 +880,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -930,6 +962,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -943,6 +978,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1023,6 +1059,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1036,6 +1075,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1112,6 +1152,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1125,6 +1168,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1203,6 +1247,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1216,6 +1263,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1293,6 +1341,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1306,6 +1357,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1388,6 +1440,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1401,6 +1456,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1481,6 +1537,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1494,6 +1553,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1570,6 +1630,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1583,6 +1646,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1654,6 +1718,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1667,6 +1734,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1743,6 +1811,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1756,6 +1827,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1836,6 +1908,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1849,6 +1924,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1920,6 +1996,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1933,6 +2012,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2009,6 +2089,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2022,6 +2105,7 @@ module ProcessingTests =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2102,6 +2186,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2115,6 +2202,7 @@ module ProcessingTests =
                 getAccountCode
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2186,6 +2274,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2199,6 +2290,7 @@ module ProcessingTests =
                 getAccountCode
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2275,6 +2367,9 @@ module ProcessingTests =
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2288,6 +2383,7 @@ module ProcessingTests =
                 getAccountCode
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2365,6 +2461,9 @@ module ProcessingTests =
         let getValidatorState _ =
             Some {ValidatorState.NetworkAddress = "old-address:12345"}
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2378,6 +2477,7 @@ module ProcessingTests =
                 getAccountCode
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2447,6 +2547,9 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2460,6 +2563,7 @@ module ProcessingTests =
                 getAccountCode
                 getAssetState
                 getValidatorState
+                getStakeState
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber

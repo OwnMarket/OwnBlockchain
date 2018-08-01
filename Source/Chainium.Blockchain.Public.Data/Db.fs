@@ -203,7 +203,7 @@ module Db =
             SELECT account_hash
             FROM account
             WHERE controller_address = @controllerAddress
-            ORDER BY account_id;
+            ORDER BY account_id
             """
 
         [
@@ -306,6 +306,31 @@ module Db =
         | [validatorState] -> Some validatorState
         | _ -> failwithf "Multiple validators found for validator address %A" validatorAddress
 
+    let getStakeState
+        (dbConnectionString : string)
+        (ChainiumAddress stakeholderAddress, ChainiumAddress validatorAddress)
+        : StakeStateDto option
+        =
+
+        let sql =
+            """
+            SELECT amount
+            FROM stake
+            WHERE stakeholder_address = @stakeholderAddress
+            AND validator_address = @validatorAddress
+            """
+
+        let sqlParams =
+            [
+                "@stakeholderAddress", stakeholderAddress |> box
+                "@validatorAddress", validatorAddress |> box
+            ]
+
+        match DbTools.query<StakeStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [stakeState] -> Some stakeState
+        | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakeholderAddress validatorAddress
+
     let getAssetHashByCode (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
         let sql =
             """
@@ -329,7 +354,7 @@ module Db =
             """
             SELECT validator_address, network_address
             FROM validator
-            ORDER BY validator_address;
+            ORDER BY validator_address
             """
 
         DbTools.query<ValidatorInfoDto> dbConnectionString sql []
@@ -545,12 +570,12 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (accountAsset, holdingState : HoldingStateDto) =
+        let foldFn result ((accountHash, assetHash), holdingState : HoldingStateDto) =
             result
             >>= fun _ ->
                 {
-                    AccountHash = fst accountAsset
-                    AssetHash = snd accountAsset
+                    AccountHash = accountHash
+                    AssetHash = assetHash
                     HoldingState =
                         {
                             Amount = holdingState.Amount
@@ -815,6 +840,79 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private addStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            INSERT INTO stake (stakeholder_address, validator_address, amount)
+            VALUES (@stakeholderAddress, @validatorAddress, @amount)
+            """
+
+        let sqlParams =
+            [
+                "@stakeholderAddress", stakeInfo.StakeholderAddress |> box
+                "@validatorAddress", stakeInfo.ValidatorAddress |> box
+                "@amount", stakeInfo.StakeState.Amount |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert stake state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert stake state."
+
+    let private updateStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            UPDATE stake
+            SET amount = @amount
+            WHERE stakeholder_address = @stakeholderAddress
+            AND validator_address = @validatorAddress
+            """
+
+        let sqlParams =
+            [
+                "@stakeholderAddress", stakeInfo.StakeholderAddress |> box
+                "@validatorAddress", stakeInfo.ValidatorAddress |> box
+                "@amount", stakeInfo.StakeState.Amount |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addStake conn transaction stakeInfo
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update stake state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update stake state."
+
+    let private updateStakes
+        conn
+        transaction
+        (stakes : Map<string * string, StakeStateDto>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result ((stakeholderAddress, validatorAddress), stakeState : StakeStateDto) =
+            result
+            >>= fun _ ->
+                {
+                    StakeholderAddress = stakeholderAddress
+                    ValidatorAddress = validatorAddress
+                    StakeState =
+                        {
+                            Amount = stakeState.Amount
+                        }
+                }
+                |> updateStake conn transaction
+
+        stakes
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
     let applyNewState
         (dbConnectionString : string)
         (blockInfoDto : BlockInfoDto)
@@ -834,6 +932,7 @@ module Db =
             >>= fun _ -> updateAccounts conn transaction state.Accounts
             >>= fun _ -> updateAssets conn transaction state.Assets
             >>= fun _ -> updateValidators conn transaction state.Validators
+            >>= fun _ -> updateStakes conn transaction state.Stakes
             >>= fun _ -> updateBlock conn transaction blockInfoDto
 
         match result with

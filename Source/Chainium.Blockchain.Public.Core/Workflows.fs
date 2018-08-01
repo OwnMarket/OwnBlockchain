@@ -48,7 +48,7 @@ module Workflows =
 
     let isMyTurnToProposeBlock
         (getLastBlockNumber : unit -> BlockNumber option)
-        getValidators
+        (getValidators : unit -> ValidatorInfoDto list)
         myValidatorAddress
         =
 
@@ -75,6 +75,7 @@ module Workflows =
         getAccountStateFromStorage
         getAssetStateFromStorage
         getValidatorStateFromStorage
+        getStakeStateFromStorage
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         getBlock
         decodeHash
@@ -94,6 +95,7 @@ module Workflows =
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
+        let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
 
         match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with
         | [] -> None // Nothing to process.
@@ -124,6 +126,7 @@ module Workflows =
                         getAccountState
                         getAssetState
                         getValidatorState
+                        getStakeState
                         minTxActionFee
                         validatorAddress
                         blockNumber
@@ -168,6 +171,7 @@ module Workflows =
         getAccountStateFromStorage
         getAssetStateFromStorage
         getValidatorStateFromStorage
+        getStakeStateFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -184,6 +188,7 @@ module Workflows =
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
+        let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
 
         let output =
             block.TxSet
@@ -198,6 +203,7 @@ module Workflows =
                 getAccountState
                 getAssetState
                 getValidatorState
+                getStakeState
                 minTxActionFee
                 block.Header.Validator
                 block.Header.Number
@@ -241,6 +247,7 @@ module Workflows =
         getAccountStateFromStorage
         getAssetStateFromStorage
         getValidatorStateFromStorage
+        getStakeStateFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -270,6 +277,7 @@ module Workflows =
                                 getAccountStateFromStorage
                                 getAssetStateFromStorage
                                 getValidatorStateFromStorage
+                                getStakeStateFromStorage
                                 decodeHash
                                 createHash
                                 createMerkleTree

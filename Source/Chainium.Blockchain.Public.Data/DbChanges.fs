@@ -107,6 +107,17 @@ module DbChanges =
                         CONSTRAINT validator__pk PRIMARY KEY (validator_id),
                         CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
                     );
+
+                    CREATE TABLE IF NOT EXISTS stake (
+                        stake_id INTEGER NOT NULL,
+                        stakeholder_address TEXT NOT NULL,
+                        validator_address TEXT NOT NULL,
+                        amount DECIMAL(30, 18) NOT NULL,
+
+                        CONSTRAINT stake__pk PRIMARY KEY (stake_id),
+                        CONSTRAINT stake__uk__stakeholder_address__validator_address
+                            UNIQUE (stakeholder_address, validator_address)
+                    );
                     """
             }
         ]
@@ -207,6 +218,17 @@ module DbChanges =
 
                         CONSTRAINT validator__pk PRIMARY KEY (validator_id),
                         CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
+                    );
+
+                    CREATE TABLE IF NOT EXISTS stake (
+                        stake_id BIGSERIAL NOT NULL,
+                        stakeholder_address TEXT NOT NULL,
+                        validator_address TEXT NOT NULL,
+                        amount DECIMAL(30, 18) NOT NULL,
+
+                        CONSTRAINT stake__pk PRIMARY KEY (stake_id),
+                        CONSTRAINT stake__uk__stakeholder_address__validator_address
+                            UNIQUE (stakeholder_address, validator_address)
                     );
                     """
             }

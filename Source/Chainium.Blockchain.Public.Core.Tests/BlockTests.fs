@@ -173,6 +173,13 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let stakes =
+            [
+                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
+                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -181,6 +188,7 @@ module BlocksTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
+                Stakes = stakes
             }
 
         let txSetRoot = "AAABBBCCC"
@@ -206,6 +214,8 @@ module BlocksTests =
                 "AAAAAGGG" // Validator 1
                 "BBBBBHHH" // Validator 2
                 "CCCCCIII" // Validator 3
+                "HHAAAAA...A............" // Stake 1
+                "IIBBBBB...B............" // Stake 2
             ]
             |> String.Concat
 
@@ -318,6 +328,13 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let stakes =
+            [
+                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
+                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -326,6 +343,7 @@ module BlocksTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
+                Stakes = stakes
             }
 
         // ACT
@@ -386,11 +404,18 @@ module BlocksTests =
                 validators
                 |> Map.toList
                 |> List.map (Blocks.createValidatorStateHash Hashing.decode Hashing.hash)
+
+                stakes
+                |> Map.toList
+                |> List.map (fun ((stakeholderAddress, validatorAddress), state) ->
+                    (stakeholderAddress, validatorAddress, state)
+                    |> Blocks.createStakeStateHash Hashing.decode Hashing.hash
+                )
             ]
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 11 true @>
+        test <@ stateMerkleProofs = List.replicate 13 true @>
 
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -468,6 +493,13 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let stakes =
+            [
+                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
+                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -476,6 +508,7 @@ module BlocksTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
+                Stakes = stakes
             }
 
         let assembledBlock =

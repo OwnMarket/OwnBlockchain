@@ -54,6 +54,8 @@ module Composition =
 
     let getValidatorState = Db.getValidatorState Config.DbConnectionString
 
+    let getStakeState = Db.getStakeState Config.DbConnectionString
+
     let getAllValidators () = Db.getAllValidators Config.DbConnectionString
 
     let applyNewState = Db.applyNewState Config.DbConnectionString
@@ -88,6 +90,7 @@ module Composition =
             getAccountState
             getAssetState
             getValidatorState
+            getStakeState
             getLastBlockNumber
             getBlock
             Hashing.decode
@@ -125,6 +128,7 @@ module Composition =
             getAccountState
             getAssetState
             getValidatorState
+            getStakeState
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree

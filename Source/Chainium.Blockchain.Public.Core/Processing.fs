@@ -16,12 +16,14 @@ module Processing =
         getAccountStateFromStorage : AccountHash -> AccountState option,
         getAssetStateFromStorage : AssetHash -> AssetState option,
         getValidatorStateFromStorage : ChainiumAddress -> ValidatorState option,
+        getStakeStateFromStorage : ChainiumAddress * ChainiumAddress -> StakeState option,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         chxBalances : ConcurrentDictionary<ChainiumAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
-        validators : ConcurrentDictionary<ChainiumAddress, ValidatorState option>
+        validators : ConcurrentDictionary<ChainiumAddress, ValidatorState option>,
+        stakes : ConcurrentDictionary<ChainiumAddress * ChainiumAddress, StakeState option>
         ) =
 
         let getChxBalanceState address =
@@ -37,7 +39,8 @@ module Processing =
             getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
             getAccountStateFromStorage : AccountHash -> AccountState option,
             getAssetStateFromStorage : AssetHash -> AssetState option,
-            getValidatorStateFromStorage : ChainiumAddress -> ValidatorState option
+            getValidatorStateFromStorage : ChainiumAddress -> ValidatorState option,
+            getStakeStateFromStorage : ChainiumAddress * ChainiumAddress -> StakeState option
             ) =
             ProcessingState(
                 getChxBalanceStateFromStorage,
@@ -45,12 +48,14 @@ module Processing =
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
+                getStakeStateFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<ChainiumAddress, ChxBalanceState>(),
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
-                ConcurrentDictionary<ChainiumAddress, ValidatorState option>()
+                ConcurrentDictionary<ChainiumAddress, ValidatorState option>(),
+                ConcurrentDictionary<ChainiumAddress * ChainiumAddress, StakeState option>()
             )
 
         member __.Clone () =
@@ -60,12 +65,14 @@ module Processing =
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
+                getStakeStateFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(chxBalances),
                 ConcurrentDictionary(holdings),
                 ConcurrentDictionary(accounts),
                 ConcurrentDictionary(assets),
-                ConcurrentDictionary(validators)
+                ConcurrentDictionary(validators),
+                ConcurrentDictionary(stakes)
             )
 
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
@@ -82,6 +89,8 @@ module Processing =
                 __.GetAsset (other.Key) |> ignore
             for other in otherOutput.Validators do
                 __.GetValidator (other.Key) |> ignore
+            for other in otherOutput.Stakes do
+                __.GetStake (other.Key) |> ignore
 
         member __.GetChxBalance (address : ChainiumAddress) =
             chxBalances.GetOrAdd(address, getChxBalanceState)
@@ -97,6 +106,9 @@ module Processing =
 
         member __.GetValidator (address : ChainiumAddress) =
             validators.GetOrAdd(address, getValidatorStateFromStorage)
+
+        member __.GetStake (stakeholderAddress : ChainiumAddress, validatorAddress : ChainiumAddress) =
+            stakes.GetOrAdd((stakeholderAddress, validatorAddress), getStakeStateFromStorage)
 
         member __.SetChxBalance (address : ChainiumAddress, state : ChxBalanceState) =
             chxBalances.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
@@ -115,6 +127,10 @@ module Processing =
         member __.SetValidator (address : ChainiumAddress, state : ValidatorState) =
             let state = Some state
             validators.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
+
+        member __.SetStake (stakeholderAddr : ChainiumAddress, validatorAddr : ChainiumAddress, state : StakeState) =
+            let state = Some state
+            stakes.AddOrUpdate((stakeholderAddr, validatorAddr), state, fun _ _ -> state) |> ignore
 
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
@@ -135,6 +151,10 @@ module Processing =
                 Validators =
                     validators
                     |> Seq.choose (fun v -> v.Value |> Option.map (fun s -> v.Key, s))
+                    |> Map.ofSeq
+                Stakes =
+                    stakes
+                    |> Seq.choose (fun x -> x.Value |> Option.map (fun s -> x.Key, s))
                     |> Map.ofSeq
             }
 
@@ -531,6 +551,7 @@ module Processing =
         (getAccountStateFromStorage : AccountHash -> AccountState option)
         (getAssetStateFromStorage : AssetHash -> AssetState option)
         (getValidatorStateFromStorage : ChainiumAddress -> ValidatorState option)
+        (getStakeStateFromStorage : ChainiumAddress * ChainiumAddress -> StakeState option)
         minTxActionFee
         (validator : ChainiumAddress)
         (blockNumber : BlockNumber)
@@ -575,7 +596,8 @@ module Processing =
                 getHoldingStateFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
-                getValidatorStateFromStorage
+                getValidatorStateFromStorage,
+                getStakeStateFromStorage
             )
 
         let state =

@@ -164,6 +164,11 @@ type ValidatorStateDto = {
     NetworkAddress : string
 }
 
+[<CLIMutable>]
+type StakeStateDto = {
+    Amount : decimal
+}
+
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
@@ -171,6 +176,7 @@ type ProcessingOutputDto = {
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto>
+    Stakes : Map<string * string, StakeStateDto>
 }
 
 [<CLIMutable>]
@@ -203,6 +209,13 @@ type AssetInfoDto = {
 type ValidatorInfoDto = {
     ValidatorAddress : string
     NetworkAddress : string
+}
+
+[<CLIMutable>]
+type StakeInfoDto = {
+    StakeholderAddress : string
+    ValidatorAddress : string
+    StakeState : StakeStateDto
 }
 
 [<CLIMutable>]

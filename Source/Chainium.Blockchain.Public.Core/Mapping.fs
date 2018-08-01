@@ -270,6 +270,16 @@ module Mapping =
             NetworkAddress = state.NetworkAddress
         }
 
+    let stakeStateFromDto (dto : StakeStateDto) : StakeState =
+        {
+            Amount = ChxAmount dto.Amount
+        }
+
+    let stakeStateToDto (state : StakeState) : StakeStateDto =
+        {
+            Amount = state.Amount |> fun (ChxAmount a) -> a
+        }
+
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults
@@ -307,6 +317,12 @@ module Mapping =
             |> List.map (fun (ChainiumAddress a, s : ValidatorState) -> a, validatorStateToDto s)
             |> Map.ofList
 
+        let stakes =
+            output.Stakes
+            |> Map.toList
+            |> List.map (fun ((ChainiumAddress sa, ChainiumAddress va), s : StakeState) -> (sa, va), stakeStateToDto s)
+            |> Map.ofList
+
         {
             ProcessingOutputDto.TxResults = txResults
             ChxBalances = chxBalances
@@ -314,6 +330,7 @@ module Mapping =
             Accounts = accounts
             Assets = assets
             Validators = validators
+            Stakes = stakes
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
