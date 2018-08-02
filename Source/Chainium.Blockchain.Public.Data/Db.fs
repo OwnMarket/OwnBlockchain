@@ -288,6 +288,24 @@ module Db =
         | [assetState] -> Some assetState
         | _ -> failwithf "Multiple assets found for asset hash %A" assetHash
 
+    let getAssetHashByCode (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
+        let sql =
+            """
+            SELECT asset_hash
+            FROM asset
+            WHERE asset_code = @assetCode
+            """
+
+        let sqlParams =
+            [
+                "@assetCode", assetCode |> box
+            ]
+
+        match DbTools.query<string> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [assetHash] -> assetHash |> AssetHash |> Some
+        | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
+
     let getValidatorState (dbConnectionString : string) (ChainiumAddress validatorAddress) : ValidatorStateDto option =
         let sql =
             """
@@ -305,6 +323,16 @@ module Db =
         | [] -> None
         | [validatorState] -> Some validatorState
         | _ -> failwithf "Multiple validators found for validator address %A" validatorAddress
+
+    let getAllValidators (dbConnectionString : string) : ValidatorInfoDto list =
+        let sql =
+            """
+            SELECT validator_address, network_address
+            FROM validator
+            ORDER BY validator_address
+            """
+
+        DbTools.query<ValidatorInfoDto> dbConnectionString sql []
 
     let getStakeState
         (dbConnectionString : string)
@@ -330,34 +358,6 @@ module Db =
         | [] -> None
         | [stakeState] -> Some stakeState
         | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakeholderAddress validatorAddress
-
-    let getAssetHashByCode (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
-        let sql =
-            """
-            SELECT asset_hash
-            FROM asset
-            WHERE asset_code = @assetCode
-            """
-
-        let sqlParams =
-            [
-                "@assetCode", assetCode |> box
-            ]
-
-        match DbTools.query<string> dbConnectionString sql sqlParams with
-        | [] -> None
-        | [assetHash] -> assetHash |> AssetHash |> Some
-        | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
-
-    let getAllValidators (dbConnectionString : string) : ValidatorInfoDto list =
-        let sql =
-            """
-            SELECT validator_address, network_address
-            FROM validator
-            ORDER BY validator_address
-            """
-
-        DbTools.query<ValidatorInfoDto> dbConnectionString sql []
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Apply New State
