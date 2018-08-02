@@ -324,15 +324,12 @@ module Blocks =
         result {
             let! blockEnvelope = Validation.validateBlockEnvelope blockEnvelopeDto
             let! blockDto =
-                match Validation.verifyBlockSignature verifySignature blockEnvelope with
-                | Ok address ->
-                    match blockEnvelope.RawBlock |> Serialization.deserialize<Dtos.BlockDto> with
-                    | Ok dto ->
-                        match address = (ChainiumAddress dto.Header.Validator) with
-                        | true -> Ok dto
-                        | false -> Result.appError "Invalid address"
-                    | Error err -> Error err
-                | Error err -> Error err
-
+                Validation.verifyBlockSignature verifySignature blockEnvelope
+                >>= fun address ->
+                    blockEnvelope.RawBlock |> Serialization.deserialize<Dtos.BlockDto>
+                    >>= fun dto ->
+                        if address = (ChainiumAddress dto.Header.Validator) 
+                        then Ok dto
+                        else Result.appError "Invalid address"
             return blockDto
         }
