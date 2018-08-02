@@ -17,13 +17,15 @@ module Processing =
         getAssetStateFromStorage : AssetHash -> AssetState option,
         getValidatorStateFromStorage : ChainiumAddress -> ValidatorState option,
         getStakeStateFromStorage : ChainiumAddress * ChainiumAddress -> StakeState option,
+        getTotalChxStakedFromStorage : ChainiumAddress -> ChxAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         chxBalances : ConcurrentDictionary<ChainiumAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         validators : ConcurrentDictionary<ChainiumAddress, ValidatorState option>,
-        stakes : ConcurrentDictionary<ChainiumAddress * ChainiumAddress, StakeState option>
+        stakes : ConcurrentDictionary<ChainiumAddress * ChainiumAddress, StakeState option>,
+        totalChxStaked : ConcurrentDictionary<ChainiumAddress, ChxAmount> // Not part of the blockchain state
         ) =
 
         let getChxBalanceState address =
@@ -40,7 +42,8 @@ module Processing =
             getAccountStateFromStorage : AccountHash -> AccountState option,
             getAssetStateFromStorage : AssetHash -> AssetState option,
             getValidatorStateFromStorage : ChainiumAddress -> ValidatorState option,
-            getStakeStateFromStorage : ChainiumAddress * ChainiumAddress -> StakeState option
+            getStakeStateFromStorage : ChainiumAddress * ChainiumAddress -> StakeState option,
+            getTotalChxStakedFromStorage : ChainiumAddress -> ChxAmount
             ) =
             ProcessingState(
                 getChxBalanceStateFromStorage,
@@ -49,13 +52,15 @@ module Processing =
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
+                getTotalChxStakedFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<ChainiumAddress, ChxBalanceState>(),
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
                 ConcurrentDictionary<ChainiumAddress, ValidatorState option>(),
-                ConcurrentDictionary<ChainiumAddress * ChainiumAddress, StakeState option>()
+                ConcurrentDictionary<ChainiumAddress * ChainiumAddress, StakeState option>(),
+                ConcurrentDictionary<ChainiumAddress, ChxAmount>()
             )
 
         member __.Clone () =
@@ -66,13 +71,15 @@ module Processing =
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
+                getTotalChxStakedFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(chxBalances),
                 ConcurrentDictionary(holdings),
                 ConcurrentDictionary(accounts),
                 ConcurrentDictionary(assets),
                 ConcurrentDictionary(validators),
-                ConcurrentDictionary(stakes)
+                ConcurrentDictionary(stakes),
+                ConcurrentDictionary(totalChxStaked)
             )
 
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
@@ -110,6 +117,10 @@ module Processing =
         member __.GetStake (stakeholderAddress : ChainiumAddress, validatorAddress : ChainiumAddress) =
             stakes.GetOrAdd((stakeholderAddress, validatorAddress), getStakeStateFromStorage)
 
+        // Not part of the blockchain state
+        member __.GetTotalChxStaked (address : ChainiumAddress) =
+            totalChxStaked.GetOrAdd(address, getTotalChxStakedFromStorage)
+
         member __.SetChxBalance (address : ChainiumAddress, state : ChxBalanceState) =
             chxBalances.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
 
@@ -131,6 +142,10 @@ module Processing =
         member __.SetStake (stakeholderAddr : ChainiumAddress, validatorAddr : ChainiumAddress, state : StakeState) =
             let state = Some state
             stakes.AddOrUpdate((stakeholderAddr, validatorAddr), state, fun _ _ -> state) |> ignore
+
+        // Not part of the blockchain state
+        member __.SetTotalChxStaked (address : ChainiumAddress, amount) =
+            totalChxStaked.AddOrUpdate(address, amount, fun _ _ -> amount) |> ignore
 
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
@@ -172,7 +187,9 @@ module Processing =
         let fromState = state.GetChxBalance(senderAddress)
         let toState = state.GetChxBalance(action.RecipientAddress)
 
-        if fromState.Amount < action.Amount then
+        let availableBalance = fromState.Amount - state.GetTotalChxStaked(senderAddress)
+
+        if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
         else
             state.SetChxBalance(
@@ -367,14 +384,20 @@ module Processing =
         =
 
         let senderState = state.GetChxBalance(senderAddress)
-        if senderState.Amount < action.Amount then
+        let totalChxStaked = state.GetTotalChxStaked(senderAddress)
+
+        let availableBalance = senderState.Amount - totalChxStaked
+
+        if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
         else
             match state.GetStake(senderAddress, action.ValidatorAddress) with
             | None ->
                 state.SetStake(senderAddress, action.ValidatorAddress, {StakeState.Amount = action.Amount})
+                state.SetTotalChxStaked(senderAddress, totalChxStaked + action.Amount)
             | Some stakeState ->
                 state.SetStake(senderAddress, action.ValidatorAddress, {stakeState with Amount = action.Amount})
+                state.SetTotalChxStaked(senderAddress, totalChxStaked - stakeState.Amount + action.Amount)
 
             Ok state
 
@@ -409,42 +432,46 @@ module Processing =
         |> List.append destinedToFailDueToLowNonce
 
     let excludeTxsIfBalanceCannotCoverFees
-        (getChxBalanceState : ChainiumAddress -> ChxBalanceState option)
+        (getAvailableChxBalance : ChainiumAddress -> ChxAmount)
         senderAddress
         (txSet : PendingTxInfo list)
         =
 
-        let senderBalance =
-            getChxBalanceState senderAddress
-            |> Option.map (fun s -> s.Amount)
-            |? ChxAmount 0M
+        let availableBalance = getAvailableChxBalance senderAddress
 
         txSet
         |> List.sortBy (fun tx -> tx.Nonce)
         |> List.scan (fun newSet tx -> newSet @ [tx]) []
         |> List.takeWhile (fun newSet ->
             let totalTxSetFee = newSet |> List.sumBy (fun tx -> tx.TotalFee)
-            totalTxSetFee <= senderBalance
+            totalTxSetFee <= availableBalance
         )
         |> List.last
 
-    let excludeUnprocessableTxs getChxBalanceState (txSet : PendingTxInfo list) =
+    let excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance (txSet : PendingTxInfo list) =
         txSet
         |> List.groupBy (fun tx -> tx.Sender)
         |> List.collect (fun (senderAddress, txs) ->
             txs
             |> excludeTxsWithNonceGap getChxBalanceState senderAddress
-            |> excludeTxsIfBalanceCannotCoverFees getChxBalanceState senderAddress
+            |> excludeTxsIfBalanceCannotCoverFees getAvailableChxBalance senderAddress
         )
         |> List.sortBy (fun tx -> tx.AppearanceOrder)
 
-    let getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock : PendingTxInfo list =
+    let getTxSetForNewBlock
+        getPendingTxs
+        getChxBalanceState
+        getAvailableChxBalance
+        maxTxCountPerBlock
+        : PendingTxInfo list
+        =
+
         let rec getTxSet txHashesToSkip (txSet : PendingTxInfo list) =
             let txCountToFetch = maxTxCountPerBlock - txSet.Length
             let fetchedTxs =
                 getPendingTxs txHashesToSkip txCountToFetch
                 |> List.map Mapping.pendingTxInfoFromDto
-            let txSet = excludeUnprocessableTxs getChxBalanceState (txSet @ fetchedTxs)
+            let txSet = excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance (txSet @ fetchedTxs)
             if txSet.Length = maxTxCountPerBlock || fetchedTxs.Length = 0 then
                 txSet
             else
@@ -572,6 +599,7 @@ module Processing =
         (getAssetStateFromStorage : AssetHash -> AssetState option)
         (getValidatorStateFromStorage : ChainiumAddress -> ValidatorState option)
         (getStakeStateFromStorage : ChainiumAddress * ChainiumAddress -> StakeState option)
+        (getTotalChxStakedFromStorage : ChainiumAddress -> ChxAmount)
         minTxActionFee
         (validator : ChainiumAddress)
         (blockNumber : BlockNumber)
@@ -617,7 +645,8 @@ module Processing =
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
-                getStakeStateFromStorage
+                getStakeStateFromStorage,
+                getTotalChxStakedFromStorage
             )
 
         let state =

@@ -14,9 +14,9 @@ open Chainium.Blockchain.Public.Crypto
 module SubmissionTests =
 
     [<Theory>]
-    [<InlineData (1, "CHX balance is insufficient to cover the fee.")>]
-    [<InlineData (10, "CHX balance is insufficient to cover the fee for all pending transactions.")>]
-    let ``Workflows.submitTx fails on insufficient CHX balance to cover Tx fee`` (balance : int, error : string) =
+    [<InlineData (1, "Available CHX balance is insufficient to cover the fee.")>]
+    [<InlineData (10, "Available CHX balance is insufficient to cover the fee for all pending transactions.")>]
+    let ``Workflows.submitTx fails on insufficient CHX balance to cover Tx fee`` (balance : decimal, error : string) =
         // ARRANGE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -24,7 +24,7 @@ module SubmissionTests =
         let txFee = ChxAmount 1M
         let totalTxFee = txFee * 2M // Two txs
         let totalPendingTxsFee = ChxAmount 9M
-        let senderBalance = balance |> decimal |> ChxAmount
+        let senderBalance = ChxAmount balance
 
         let txHash, txEnvelopeDto =
             [
@@ -50,17 +50,15 @@ module SubmissionTests =
         let expectedResult : Result<TxReceivedEventData, AppErrors> = Error [AppError error]
 
         // COMPOSE
-        let getChxBalanceState =
+        let getAvailableChxBalance =
             let data =
                 [
-                    senderWallet.Address, { ChxBalanceState.Amount = senderBalance; Nonce = Nonce 1L }
+                    senderWallet.Address, senderBalance
                 ]
                 |> Map.ofSeq
 
             fun (address : ChainiumAddress) ->
-                data
-                |> Map.tryFind address
-                |> Option.map Mapping.chxBalanceStateToDto
+                data.[address]
 
         let getTotalFeeForPendingTxs _ =
             totalPendingTxsFee
@@ -77,7 +75,7 @@ module SubmissionTests =
                 Signing.verifySignature
                 Hashing.isValidChainiumAddress
                 Hashing.hash
-                getChxBalanceState
+                getAvailableChxBalance
                 getTotalFeeForPendingTxs
                 saveTx
                 saveTxToDb

@@ -205,25 +205,21 @@ module Validation =
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
 
     let checkIfBalanceCanCoverFees
-        getChxBalanceState
+        (getAvailableBalance : ChainiumAddress -> ChxAmount)
         getTotalFeeForPendingTxs
         senderAddress
         txFee
         : Result<unit, AppErrors>
         =
 
-        let chxBalance =
-            senderAddress
-            |> getChxBalanceState
-            |> Option.map (Mapping.chxBalanceStateFromDto >> fun state -> state.Amount)
-            |? ChxAmount 0M
+        let availableBalance = getAvailableBalance senderAddress
 
-        if txFee > chxBalance then
-            Result.appError "CHX balance is insufficient to cover the fee."
+        if txFee > availableBalance then
+            Result.appError "Available CHX balance is insufficient to cover the fee."
         else
             let totalFeeForPendingTxs = getTotalFeeForPendingTxs senderAddress
 
-            if (totalFeeForPendingTxs + txFee) > chxBalance then
-                Result.appError "CHX balance is insufficient to cover the fee for all pending transactions."
+            if (totalFeeForPendingTxs + txFee) > availableBalance then
+                Result.appError "Available CHX balance is insufficient to cover the fee for all pending transactions."
             else
                 Ok ()

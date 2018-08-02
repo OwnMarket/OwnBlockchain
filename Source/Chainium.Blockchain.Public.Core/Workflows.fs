@@ -10,11 +10,22 @@ open Chainium.Blockchain.Public.Core.Events
 
 module Workflows =
 
+    let getAvailableChxBalance getChxBalanceState getTotalChxStaked senderAddress : ChxAmount =
+        let chxBalance =
+            senderAddress
+            |> getChxBalanceState
+            |> Option.map (Mapping.chxBalanceStateFromDto >> fun state -> state.Amount)
+            |? ChxAmount 0M
+
+        let chxStaked = getTotalChxStaked senderAddress
+
+        chxBalance - chxStaked
+
     let submitTx
         verifySignature
         isValidAddress
         createHash
-        getChxBalanceState
+        getAvailableChxBalance
         getTotalFeeForPendingTxs
         saveTx
         saveTxToDb
@@ -33,7 +44,7 @@ module Workflows =
 
             do!
                 Validation.checkIfBalanceCanCoverFees
-                    getChxBalanceState
+                    getAvailableChxBalance
                     getTotalFeeForPendingTxs
                     senderAddress
                     tx.TotalFee
@@ -73,11 +84,13 @@ module Workflows =
         verifySignature
         isValidAddress
         getChxBalanceStateFromStorage
+        getAvailableChxBalanceFromStorage
         getHoldingStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
         getValidatorStateFromStorage
         getStakeStateFromStorage
+        getTotalChxStakedFromStorage
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         getBlock
         decodeHash
@@ -96,13 +109,17 @@ module Workflows =
         =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
+        let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
         let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
+        let getTotalChxStaked = memoize getTotalChxStakedFromStorage
 
-        match Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState maxTxCountPerBlock with
+        match
+            Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState getAvailableChxBalance maxTxCountPerBlock
+            with
         | [] -> None // Nothing to process.
         | txSet ->
             result {
@@ -133,6 +150,7 @@ module Workflows =
                         getAssetState
                         getValidatorState
                         getStakeState
+                        getTotalChxStaked
                         minTxActionFee
                         validatorAddress
                         blockNumber
@@ -190,6 +208,7 @@ module Workflows =
         getAssetStateFromStorage
         getValidatorStateFromStorage
         getStakeStateFromStorage
+        getTotalChxStakedFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -207,6 +226,7 @@ module Workflows =
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
         let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
+        let getTotalChxStaked = memoize getTotalChxStakedFromStorage
 
         let output =
             block.TxSet
@@ -222,6 +242,7 @@ module Workflows =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 minTxActionFee
                 block.Header.Validator
                 block.Header.Number
@@ -266,6 +287,7 @@ module Workflows =
         getAssetStateFromStorage
         getValidatorStateFromStorage
         getStakeStateFromStorage
+        getTotalChxStakedFromStorage
         decodeHash
         createHash
         createMerkleTree
@@ -296,6 +318,7 @@ module Workflows =
                                 getAssetStateFromStorage
                                 getValidatorStateFromStorage
                                 getStakeStateFromStorage
+                                getTotalChxStakedFromStorage
                                 decodeHash
                                 createHash
                                 createMerkleTree

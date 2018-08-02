@@ -63,16 +63,23 @@ module Composition =
 
     let getStakeState = Db.getStakeState Config.DbConnectionString
 
+    let getTotalChxStaked = Db.getTotalChxStaked Config.DbConnectionString
+
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
     // Workflows
+
+    let getAvailableChxBalance =
+        Workflows.getAvailableChxBalance
+            getChxBalanceState
+            getTotalChxStaked
 
     let submitTx =
         Workflows.submitTx
             Signing.verifySignature
             Hashing.isValidChainiumAddress
             Hashing.hash
-            getChxBalanceState
+            getAvailableChxBalance
             getTotalFeeForPendingTxs
             saveTx
             saveTxToDb
@@ -94,11 +101,13 @@ module Composition =
             Signing.verifySignature
             Hashing.isValidChainiumAddress
             getChxBalanceState
+            getAvailableChxBalance
             getHoldingState
             getAccountState
             getAssetState
             getValidatorState
             getStakeState
+            getTotalChxStaked
             getLastBlockNumber
             getBlock
             Hashing.decode
@@ -140,6 +149,7 @@ module Composition =
             getAssetState
             getValidatorState
             getStakeState
+            getTotalChxStaked
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree

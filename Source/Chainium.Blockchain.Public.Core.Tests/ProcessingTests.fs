@@ -30,6 +30,9 @@ module ProcessingTests =
 
             fun (address : ChainiumAddress) -> data |> Map.tryFind address
 
+        let getAvailableChxBalance address =
+            (getChxBalanceState address).Value.Amount
+
         let txSet =
             [
                 Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 1s 2L
@@ -42,17 +45,19 @@ module ProcessingTests =
         // ACT
         let txHashes =
             txSet
-            |> Processing.excludeUnprocessableTxs getChxBalanceState
+            |> Processing.excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance
             |> List.map (fun tx -> tx.TxHash |> fun (TxHash hash) -> hash)
 
         test <@ txHashes = ["Tx1"; "Tx2"; "Tx3"; "Tx5"] @>
 
     [<Theory>]
-    [<InlineData (1, "Tx1")>]
-    [<InlineData (3, "Tx1; Tx3")>]
-    [<InlineData (4, "Tx1; Tx3; Tx5")>]
+    [<InlineData (1, 0, "Tx1")>]
+    [<InlineData (3, 0, "Tx1; Tx3")>]
+    [<InlineData (4, 1, "Tx1; Tx3")>]
+    [<InlineData (4, 0, "Tx1; Tx3; Tx5")>]
+    [<InlineData (5, 1, "Tx1; Tx3; Tx5")>]
     let ``Processing.excludeUnprocessableTxs excludes txs if CHX balance cannot cover the fees``
-        (balance : decimal, txHashes : string)
+        (balance : decimal, staked : decimal, txHashes : string)
         =
 
         let balance = ChxAmount balance
@@ -71,6 +76,16 @@ module ProcessingTests =
 
             fun (address : ChainiumAddress) -> data |> Map.tryFind address
 
+        let getAvailableChxBalance =
+            let data =
+                [
+                    w1.Address, balance - staked
+                    w2.Address, ChxAmount 200M
+                ]
+                |> Map.ofSeq
+
+            fun (address : ChainiumAddress) -> data.[address]
+
         let txSet =
             [
                 Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 1s 2L
@@ -83,7 +98,7 @@ module ProcessingTests =
         // ACT
         let txHashes =
             txSet
-            |> Processing.excludeUnprocessableTxs getChxBalanceState
+            |> Processing.excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance
             |> List.map (fun tx -> tx.TxHash |> fun (TxHash hash) -> hash)
 
         test <@ txHashes = expectedHashes @>
@@ -182,6 +197,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -196,6 +213,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -224,7 +242,7 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 10M; Nonce = Nonce 10L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 9M; Nonce = Nonce 10L}
                 recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
                 validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
             ]
@@ -273,6 +291,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -287,6 +307,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -316,7 +337,7 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 9.5M; Nonce = Nonce 10L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 10.5M; Nonce = Nonce 10L}
                 recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
                 validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
             ]
@@ -365,6 +386,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -379,6 +402,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -457,6 +481,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         let processTxSet () =
             Processing.processTxSet
                 getTx
@@ -470,6 +496,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -479,6 +506,105 @@ module ProcessingTests =
         raisesWith<exn>
             <@ processTxSet () @>
             (fun ex -> <@ ex.Message.StartsWith "Cannot process validator reward" @>)
+
+    [<Fact>]
+    let ``Processing.processTxSet TransferChx with insufficient balance to cover fee due to the staked CHX`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 11M; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+        let amountToTransfer = ChxAmount 10M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked address =
+            if address = senderWallet.Address then
+                ChxAmount 1M
+            else
+                ChxAmount 0M
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TransferAsset
@@ -552,6 +678,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -566,6 +694,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -654,6 +783,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -668,6 +799,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -762,6 +894,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -776,6 +910,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -867,6 +1002,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -881,6 +1018,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -965,6 +1103,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -979,6 +1119,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1062,6 +1203,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1076,6 +1219,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1155,6 +1299,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1169,6 +1315,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1250,6 +1397,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1264,6 +1413,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1344,6 +1494,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1358,6 +1510,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1443,6 +1596,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1457,6 +1612,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1540,6 +1696,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1554,6 +1712,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1633,6 +1792,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1647,6 +1808,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1721,6 +1883,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1735,6 +1899,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1814,6 +1979,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1828,6 +1995,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1911,6 +2079,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1925,6 +2095,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -1999,6 +2170,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2013,6 +2186,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2092,6 +2266,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2106,6 +2282,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2189,6 +2366,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2203,6 +2382,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2277,6 +2457,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2291,6 +2473,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2370,6 +2553,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2384,6 +2569,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2464,6 +2650,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2478,6 +2666,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2550,6 +2739,8 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2564,6 +2755,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2592,6 +2784,7 @@ module ProcessingTests =
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
         let stakeAmount = ChxAmount 10M
+        let currentStakeAmount = ChxAmount 4M
 
         let initialChxState =
             [
@@ -2640,7 +2833,9 @@ module ProcessingTests =
             failwith "getValidatorState should not be called"
 
         let getStakeState _ =
-            Some {StakeState.Amount = ChxAmount 5M}
+            Some {StakeState.Amount = currentStakeAmount}
+
+        let getTotalChxStaked _ = currentStakeAmount
 
         // ACT
         let output =
@@ -2656,6 +2851,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2730,6 +2926,8 @@ module ProcessingTests =
         let getStakeState _ =
             None
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2744,6 +2942,7 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
@@ -2818,6 +3017,8 @@ module ProcessingTests =
         let getStakeState _ =
             None
 
+        let getTotalChxStaked _ = ChxAmount 0M
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2832,6 +3033,103 @@ module ProcessingTests =
                 getAssetState
                 getValidatorState
                 getStakeState
+                getTotalChxStaked
+                Helpers.minTxActionFee
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedTxStatus =
+            (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Stakes = Map.empty @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetStake - staking more than available balance due to the staked CHX`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let stakeValidatorAddress = (Signing.generateWallet ()).Address
+        let stakeAmount = ChxAmount 50M
+        let currentStakeAmount = ChxAmount 50M
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1M
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetStake"
+                    ActionData =
+                        {
+                            ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                            Amount = stakeAmount |> fun (ChxAmount a) -> a
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountCode _ =
+            failwith "getAccountCode should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            Some {StakeState.Amount = currentStakeAmount}
+
+        let getTotalChxStaked _ = currentStakeAmount
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidChainiumAddress
+                Hashing.decode
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountCode
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
                 Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber

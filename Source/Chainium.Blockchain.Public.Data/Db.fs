@@ -359,6 +359,23 @@ module Db =
         | [stakeState] -> Some stakeState
         | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakeholderAddress validatorAddress
 
+    let getTotalChxStaked (dbConnectionString : string) (ChainiumAddress stakeholderAddress) : ChxAmount =
+        let sql =
+            """
+            SELECT sum(amount)
+            FROM stake
+            WHERE stakeholder_address = @stakeholderAddress
+            """
+
+        [
+            "@stakeholderAddress", stakeholderAddress |> box
+        ]
+        |> DbTools.query<Nullable<decimal>> dbConnectionString sql
+        |> List.tryHead
+        |> Option.bind Option.ofNullable
+        |? 0M
+        |> ChxAmount
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Apply New State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
