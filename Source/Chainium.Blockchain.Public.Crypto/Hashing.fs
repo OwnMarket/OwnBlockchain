@@ -2,7 +2,7 @@
 
 open System
 open System.Security.Cryptography
-open Multiformats.Base
+open Base58Check
 open Chainium.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
 
@@ -23,10 +23,10 @@ module Hashing =
         sha256 data
 
     let encode hash =
-        Multibase.Base58.Encode hash
+        Base58CheckEncoding.EncodePlain hash
 
     let decode hash =
-        Multibase.Base58.Decode hash
+        Base58CheckEncoding.DecodePlain hash
 
     let zeroHash =
         Array.zeroCreate<byte> 32 |> encode

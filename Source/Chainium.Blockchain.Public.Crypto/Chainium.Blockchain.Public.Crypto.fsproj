@@ -15,6 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.2" />
-    <PackageReference Include="Multiformats.Base" Version="2.0.1" />
+    <PackageReference Include="Base58Check" Version="0.2.0" />
   </ItemGroup>
 </Project>

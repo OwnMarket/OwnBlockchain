@@ -330,8 +330,8 @@ module BlocksTests =
 
         let stakes =
             [
-                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
-                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
+                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
             ]
             |> Map.ofList
 
@@ -495,8 +495,8 @@ module BlocksTests =
 
         let stakes =
             [
-                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
-                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
+                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
             ]
             |> Map.ofList
 
