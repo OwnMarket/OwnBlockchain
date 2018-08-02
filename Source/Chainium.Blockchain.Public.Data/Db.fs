@@ -168,30 +168,6 @@ module Db =
         | [chxAddressDetails] -> Some chxAddressDetails
         | _ -> failwithf "Multiple CHX balance entries found for address %A" address
 
-    let getHoldingState
-        (dbConnectionString : string)
-        (AccountHash accountHash, AssetHash assetHash)
-        : HoldingStateDto option =
-        let sql =
-            """
-            SELECT h.amount
-            FROM holding AS h
-            JOIN account AS a USING (account_id)
-            WHERE a.account_hash = @accountHash
-            AND h.asset_hash = @assetHash
-            """
-
-        let sqlParams =
-            [
-                "@accountHash", accountHash |> box
-                "@assetHash", assetHash |> box
-            ]
-
-        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
-        | [] -> None
-        | [holdingDetails] -> Some holdingDetails
-        | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
-
     let getAddressAccounts
         (dbConnectionString : string)
         (ChainiumAddress address)
@@ -211,6 +187,24 @@ module Db =
         ]
         |> DbTools.query<string> dbConnectionString sql
         |> List.map AccountHash
+
+    let getAccountState (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
+        let sql =
+            """
+            SELECT controller_address
+            FROM account
+            WHERE account_hash = @accountHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+            ]
+
+        match DbTools.query<AccountStateDto> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [accountState] -> Some accountState
+        | _ -> failwithf "Multiple accounts found for account hash %A" accountHash
 
     let getAccountHoldings
         (dbConnectionString : string)
@@ -252,23 +246,29 @@ module Db =
         | [] -> None
         | holdings -> Some holdings
 
-    let getAccountState (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
+    let getHoldingState
+        (dbConnectionString : string)
+        (AccountHash accountHash, AssetHash assetHash)
+        : HoldingStateDto option =
         let sql =
             """
-            SELECT controller_address
-            FROM account
-            WHERE account_hash = @accountHash
+            SELECT h.amount
+            FROM holding AS h
+            JOIN account AS a USING (account_id)
+            WHERE a.account_hash = @accountHash
+            AND h.asset_hash = @assetHash
             """
 
         let sqlParams =
             [
                 "@accountHash", accountHash |> box
+                "@assetHash", assetHash |> box
             ]
 
-        match DbTools.query<AccountStateDto> dbConnectionString sql sqlParams with
+        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
         | [] -> None
-        | [accountState] -> Some accountState
-        | _ -> failwithf "Multiple accounts found for account hash %A" accountHash
+        | [holdingDetails] -> Some holdingDetails
+        | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
 
     let getAssetState (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =

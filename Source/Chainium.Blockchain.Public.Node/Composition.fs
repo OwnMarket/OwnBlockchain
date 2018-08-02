@@ -41,27 +41,27 @@ module Composition =
 
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbConnectionString
 
-    let getLastBlockTimestamp () = Db.getLastBlockTimestamp Config.DbConnectionString
-
     let getLastBlockNumber () = Db.getLastBlockNumber Config.DbConnectionString
+
+    let getLastBlockTimestamp () = Db.getLastBlockTimestamp Config.DbConnectionString
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
 
     let getAddressAccounts = Db.getAddressAccounts Config.DbConnectionString
 
+    let getAccountState = Db.getAccountState Config.DbConnectionString
+
     let getAccountHoldings = Db.getAccountHoldings Config.DbConnectionString
 
     let getHoldingState = Db.getHoldingState Config.DbConnectionString
-
-    let getAccountState = Db.getAccountState Config.DbConnectionString
 
     let getAssetState = Db.getAssetState Config.DbConnectionString
 
     let getValidatorState = Db.getValidatorState Config.DbConnectionString
 
-    let getStakeState = Db.getStakeState Config.DbConnectionString
-
     let getAllValidators () = Db.getAllValidators Config.DbConnectionString
+
+    let getStakeState = Db.getStakeState Config.DbConnectionString
 
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
