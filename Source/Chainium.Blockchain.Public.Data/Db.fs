@@ -334,6 +334,34 @@ module Db =
 
         DbTools.query<ValidatorInfoDto> dbConnectionString sql []
 
+    let getTopValidatorsByStake
+        (dbConnectionString : string)
+        (topCount : int)
+        (ChxAmount threshold)
+        : ValidatorInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT validator_address, network_address
+            FROM validator
+            WHERE validator_address IN (
+                SELECT validator_address
+                FROM stake
+                GROUP BY validator_address
+                HAVING sum(amount) >= @threshold
+                ORDER BY sum(amount) DESC, count(stakeholder_address) DESC, validator_address
+                LIMIT @topCount
+            )
+            ORDER BY validator_address
+            """
+
+        [
+            "@topCount", topCount |> box
+            "@threshold", threshold |> box
+        ]
+        |> DbTools.query<ValidatorInfoDto> dbConnectionString sql
+
     let getStakeState
         (dbConnectionString : string)
         (ChainiumAddress stakeholderAddress, ChainiumAddress validatorAddress)
