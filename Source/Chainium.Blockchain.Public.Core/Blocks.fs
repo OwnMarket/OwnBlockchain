@@ -320,16 +320,18 @@ module Blocks =
             txSet
             output
 
-    let getBlockDto verifySignature blockEnvelopeDto =
+    let getBlockDto verifySignature blockEnvelopeDto validatorAddress =
         result {
             let! blockEnvelope = Validation.validateBlockEnvelope blockEnvelopeDto
             let! blockDto =
                 Validation.verifyBlockSignature verifySignature blockEnvelope
-                >>= fun address ->
-                    blockEnvelope.RawBlock |> Serialization.deserialize<Dtos.BlockDto>
-                    >>= fun dto ->
-                        if address = (ChainiumAddress dto.Header.Validator) 
-                        then Ok dto
-                        else Result.appError "Invalid address"
+                >>= fun signedAddress ->
+                    if signedAddress <> validatorAddress
+                    then Result.appError "Block signature and expected validator missmatch"
+                    else blockEnvelope.RawBlock |> Serialization.deserialize<Dtos.BlockDto>
+                    >>= fun blockDto ->
+                        if signedAddress <> (ChainiumAddress blockDto.Header.Validator)
+                        then Result.appError "Block signature and block header missmatch"
+                        else Ok blockDto
             return blockDto
         }

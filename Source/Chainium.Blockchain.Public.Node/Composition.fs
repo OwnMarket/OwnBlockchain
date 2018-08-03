@@ -94,14 +94,16 @@ module Composition =
             addressFromPrivateKey
             Config.ValidatorPrivateKey
 
-    let createNewBlock () =
-        Workflows.createNewBlock
-            getPendingTxs
+    let persistTxResults =
+        Workflows.persistTxResults
+            saveTxResult
+
+    let createBlock =
+        Workflows.createBlock
             getTx
             Signing.verifySignature
             Hashing.isValidChainiumAddress
             getChxBalanceState
-            getAvailableChxBalance
             getHoldingState
             getAccountState
             getAssetState
@@ -113,15 +115,32 @@ module Composition =
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
-            saveTxResult
+            (ChxAmount Config.MinTxActionFee)
+
+    let createNewBlock () =
+        Workflows.createNewBlock
+            createBlock
+            getPendingTxs
+            getChxBalanceState
+            getAvailableChxBalance
+            persistTxResults
             Signing.signMessage
             saveBlock
             saveBlockEnvelope
             applyNewState
-            (ChxAmount Config.MinTxActionFee)
             Config.MaxTxCountPerBlock
             addressFromPrivateKey
             Config.ValidatorPrivateKey
+
+    let applyBlock =
+        Workflows.applyBlock
+            createBlock
+            getAllValidators
+            Signing.verifySignature
+            persistTxResults
+            saveBlock
+            saveBlockEnvelope
+            applyNewState
 
     let initBlockchainState () =
         Workflows.initBlockchainState
@@ -140,26 +159,14 @@ module Composition =
 
     let advanceToLastKnownBlock () =
         Workflows.advanceToLastKnownBlock
-            getTx
-            Signing.verifySignature
-            Hashing.isValidChainiumAddress
-            getChxBalanceState
-            getHoldingState
-            getAccountState
-            getAssetState
-            getValidatorState
-            getStakeState
-            getTotalChxStaked
+            createBlock
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
-            saveTxResult
-            saveBlock
             applyNewState
             getLastBlockNumber
             blockExists
             getBlock
-            (ChxAmount Config.MinTxActionFee)
 
     let propagateTx = Workflows.propagateTx Peers.sendMessage Config.NetworkAddress getTx
 
@@ -175,10 +182,8 @@ module Composition =
         Workflows.processPeerMessage
             getTx
             getBlockEnvelope
-            Signing.verifySignature
             submitTx
-            saveBlock
-            saveBlockEnvelope
+            applyBlock
             peerMessage
 
     let startGossip publishEvent =

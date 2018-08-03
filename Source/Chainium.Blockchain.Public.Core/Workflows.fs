@@ -78,13 +78,21 @@ module Workflows =
         let (ChainiumAddress myValidatorAddress) = myPrivateKey |> PrivateKey |> addressFromPrivateKey
         blockProposer.ValidatorAddress = myValidatorAddress
 
-    let createNewBlock
-        getPendingTxs
+    let persistTxResults saveTxResult txResults =
+        result {
+            do! txResults
+                |> Map.toList
+                |> List.fold (fun result (txHash, txResult) ->
+                    result
+                    >>= fun _ -> saveTxResult (TxHash txHash) txResult
+                ) (Ok ())
+        }
+
+    let createBlock
         getTx
         verifySignature
         isValidAddress
         getChxBalanceStateFromStorage
-        getAvailableChxBalanceFromStorage
         getHoldingStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
@@ -96,20 +104,13 @@ module Workflows =
         decodeHash
         createHash
         createMerkleTree
-        saveTxResult
-        signBlock
-        saveBlock
-        saveBlockEnvelope
-        applyNewState
         minTxActionFee
-        maxTxCountPerBlock
-        addressFromPrivateKey
-        validatorPrivateKey
-        : Result<BlockCreatedEventData, AppErrors> option
+        validatorAddress
+        timestamp
+        txSet
         =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
-        let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
@@ -117,66 +118,90 @@ module Workflows =
         let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
         let getTotalChxStaked = memoize getTotalChxStakedFromStorage
 
+        result {
+            let! previousBlockDto =
+                match getLastAppliedBlockNumber () with
+                | Some blockNumber -> getBlock blockNumber
+                | None -> failwith "Blockchain state is not initialized."
+            let previousBlock = Mapping.blockFromDto previousBlockDto
+            let blockNumber = previousBlock.Header.Number + 1L
+
+            let output =
+                txSet
+                |> Processing.processTxSet
+                    getTx
+                    verifySignature
+                    isValidAddress
+                    decodeHash
+                    createHash
+                    getChxBalanceState
+                    getHoldingState
+                    getAccountState
+                    getAssetState
+                    getValidatorState
+                    getStakeState
+                    getTotalChxStaked
+                    minTxActionFee
+                    validatorAddress
+                    blockNumber
+
+            let block =
+                Blocks.assembleBlock
+                    decodeHash
+                    createHash
+                    createMerkleTree
+                    validatorAddress
+                    blockNumber
+                    timestamp
+                    previousBlock.Header.Hash
+                    txSet
+                    output
+
+            return (block, output)
+        }
+
+    let createNewBlock
+        createBlock
+        getPendingTxs
+        getChxBalanceStateFromStorage
+        getAvailableChxBalanceFromStorage
+        persistTxResults
+        signBlock
+        saveBlock
+        saveBlockEnvelope
+        applyNewState
+        maxTxCountPerBlock
+        addressFromPrivateKey
+        validatorPrivateKey
+        : Result<BlockCreatedEventData, AppErrors> option
+        =
+
+        let timestamp = Utils.getUnixTimestamp () |> Timestamp
+
+        let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
+        let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage
+
+        let validatorAddress = validatorPrivateKey |> PrivateKey |> addressFromPrivateKey
         match
-            Processing.getTxSetForNewBlock getPendingTxs getChxBalanceState getAvailableChxBalance maxTxCountPerBlock
-            with
+            Processing.getTxSetForNewBlock
+                getPendingTxs
+                getChxBalanceState
+                getAvailableChxBalance
+                maxTxCountPerBlock with
         | [] -> None // Nothing to process.
         | txSet ->
             result {
-                let! previousBlockDto =
-                    match getLastAppliedBlockNumber () with
-                    | Some blockNumber -> getBlock blockNumber
-                    | None -> failwith "Blockchain state is not initialized."
-                let previousBlock = Mapping.blockFromDto previousBlockDto
-                let blockNumber = previousBlock.Header.Number + 1L
-                let timestamp = Utils.getUnixTimestamp () |> Timestamp
-                let validatorAddress = validatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-
                 let txSet =
                     txSet
                     |> Processing.orderTxSet
 
-                let output =
-                    txSet
-                    |> Processing.processTxSet
-                        getTx
-                        verifySignature
-                        isValidAddress
-                        decodeHash
-                        createHash
-                        getChxBalanceState
-                        getHoldingState
-                        getAccountState
-                        getAssetState
-                        getValidatorState
-                        getStakeState
-                        getTotalChxStaked
-                        minTxActionFee
-                        validatorAddress
-                        blockNumber
-
-                let block =
-                    Blocks.assembleBlock
-                        decodeHash
-                        createHash
-                        createMerkleTree
-                        validatorAddress
-                        blockNumber
-                        timestamp
-                        previousBlock.Header.Hash
-                        txSet
-                        output
-
+                let! block, output = createBlock validatorAddress timestamp txSet
                 let outputDto = Mapping.outputToDto output
                 let blockDto = Mapping.blockToDto block
+
                 let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
 
-                do! outputDto.TxResults
-                    |> Map.toList
-                    |> List.fold (fun result (txHash, txResult) ->
-                        result
-                        >>= fun _ -> saveTxResult (TxHash txHash) txResult
-                    ) (Ok ())
+                do! persistTxResults outputDto.TxResults
 
                 do! saveBlock blockDto
 
@@ -198,106 +223,88 @@ module Workflows =
             }
             |> Some
 
-    let processBlock
-        getTx
+    let applyBlock
+        createBlock
+        (getValidators : unit -> ValidatorInfoDto list)
         verifySignature
-        isValidAddress
-        getChxBalanceStateFromStorage
-        getHoldingStateFromStorage
-        getAccountStateFromStorage
-        getAssetStateFromStorage
-        getValidatorStateFromStorage
-        getStakeStateFromStorage
-        getTotalChxStakedFromStorage
-        decodeHash
-        createHash
-        createMerkleTree
-        saveTxResult
+        persistTxResults
         saveBlock
+        saveBlockEnvelope
         applyNewState
-        minTxActionFee
+        blockNumber
+        blockEnvelopeDto
+        =
+
+        result {
+            let blockProposer =
+                getValidators ()
+                |> List.sortBy (fun v -> v.ValidatorAddress)
+                |> Consensus.getBlockProposer blockNumber
+
+            let! blockDto =
+                Blocks.getBlockDto
+                    verifySignature
+                    blockEnvelopeDto
+                    (ChainiumAddress blockProposer.ValidatorAddress)
+
+            let txSet = blockDto.TxSet |> List.map(fun hash -> TxHash hash)
+            let! createdBlock, output =
+                createBlock
+                    (ChainiumAddress blockDto.Header.Validator)
+                    (Timestamp blockDto.Header.Timestamp)
+                    txSet
+
+            let outputDto = Mapping.outputToDto output
+            let createdBlockDto = Mapping.blockToDto createdBlock
+
+            if blockDto = createdBlockDto then
+                let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
+                do! persistTxResults outputDto.TxResults
+                do! saveBlock blockDto
+                do! saveBlockEnvelope blockNumber blockEnvelopeDto
+                do! applyNewState blockInfoDto outputDto
+            else
+                return!
+                    blockNumber
+                    |> fun (BlockNumber n) ->
+                        sprintf "Applying of block %i didn't result in expected blockchain state." n
+                    |> Result.appError
+        }
+
+    let processBlock
+        createBlock
+        applyNewState
         (block : Block)
         : Result<BlockProcessedEventData, AppErrors>
         =
 
-        let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
-        let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
-        let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
-        let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
-        let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
-        let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
-        let getTotalChxStaked = memoize getTotalChxStakedFromStorage
-
-        let output =
-            block.TxSet
-            |> Processing.processTxSet
-                getTx
-                verifySignature
-                isValidAddress
-                decodeHash
-                createHash
-                getChxBalanceState
-                getHoldingState
-                getAccountState
-                getAssetState
-                getValidatorState
-                getStakeState
-                getTotalChxStaked
-                minTxActionFee
-                block.Header.Validator
-                block.Header.Number
-
-        let resultingBlock =
-            Blocks.assembleBlock
-                decodeHash
-                createHash
-                createMerkleTree
-                block.Header.Validator
-                block.Header.Number
-                block.Header.Timestamp
-                block.Header.PreviousHash
-                block.TxSet
-                output
-
-        if resultingBlock = block then
-            let outputDto = Mapping.outputToDto output
-            let blockDto = Mapping.blockToDto block
-            let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
-
-            result {
+        result {
+            let! resultingBlock, output = createBlock block.Header.Validator block.Header.Timestamp block.TxSet
+            if resultingBlock = block then
+                let outputDto = Mapping.outputToDto output
+                let blockDto = Mapping.blockToDto block
+                let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
                 do! applyNewState blockInfoDto outputDto
                 return { BlockProcessedEventData.BlockNumber = block.Header.Number }
-            }
-        else
-            let message =
-                block.Header.Number
-                |> fun (BlockNumber n) -> n
-                |> sprintf "Processing of block %i didn't result in expected blockchain state."
+            else
+                let message =
+                    block.Header.Number
+                    |> fun (BlockNumber n) -> n
+                    |> sprintf "Processing of block %i didn't result in expected blockchain state."
 
-            Log.error message
-            Result.appError message
+                Log.error message
+                return! Result.appError message
+        }
 
     let advanceToLastKnownBlock
-        getTx
-        verifySignature
-        isValidAddress
-        getChxBalanceStateFromStorage
-        getHoldingStateFromStorage
-        getAccountStateFromStorage
-        getAssetStateFromStorage
-        getValidatorStateFromStorage
-        getStakeStateFromStorage
-        getTotalChxStakedFromStorage
+        createBlock
         decodeHash
         createHash
         createMerkleTree
-        saveTxResult
-        saveBlock
         applyNewState
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         (blockExists : BlockNumber -> bool)
         (getBlock : BlockNumber -> Result<BlockDto, AppErrors>)
-        minTxActionFee
         =
 
         let rec processNextBlock (previousBlockNumber : BlockNumber, previousBlockHash : BlockHash) =
@@ -309,23 +316,8 @@ module Workflows =
                     if Blocks.isValidBlock decodeHash createHash createMerkleTree previousBlockHash block then
                         let! event =
                             processBlock
-                                getTx
-                                verifySignature
-                                isValidAddress
-                                getChxBalanceStateFromStorage
-                                getHoldingStateFromStorage
-                                getAccountStateFromStorage
-                                getAssetStateFromStorage
-                                getValidatorStateFromStorage
-                                getStakeStateFromStorage
-                                getTotalChxStakedFromStorage
-                                decodeHash
-                                createHash
-                                createMerkleTree
-                                saveTxResult
-                                saveBlock
+                                createBlock
                                 applyNewState
-                                minTxActionFee
                                 block
 
                         event
@@ -444,16 +436,14 @@ module Workflows =
     let processPeerMessage
         getTx
         getBlockEnvelope
-        verifySignature
         submitTx
-        saveBlock
-        saveBlockEnvelope
+        applyBlock
         peerMessage =
         let processTxFromPeer txHash data =
             let txEnvelopeDto = Serialization.deserializeJObject data
             match getTx txHash with
-            | Ok _ -> Result.appError (sprintf "%A already exists" txHash)
-            | Error _ ->
+            | Ok _ -> Error []
+            | _ ->
                 submitTx txEnvelopeDto
                 |> Result.map (fun _ ->
                     {TxHash = txHash} |> TxReceived
@@ -461,16 +451,12 @@ module Workflows =
 
         let processBlockFromPeer blockNr data =
             match getBlockEnvelope blockNr with
-            | Ok _ -> Result.appError (sprintf "%A already exists" blockNr)
-            | Error _ ->
-                result {
-                    let blockEnvelopeDto = Serialization.deserializeJObject data
-                    let! blockDto = Blocks.getBlockDto verifySignature blockEnvelopeDto
-
-                    do! saveBlock blockDto
-                    do! saveBlockEnvelope blockNr blockEnvelopeDto
-                    return! {BlockCreatedEventData.BlockNumber = blockNr} |> BlockReceived |> Ok
-                }
+            | Ok _ -> Error []
+            | _ ->
+                let blockEnvelopeDto = Serialization.deserializeJObject data
+                match applyBlock blockNr blockEnvelopeDto with
+                | Ok () -> {BlockCreatedEventData.BlockNumber = blockNr} |> BlockReceived |> Ok
+                | _ -> Result.appError "Error creating block"
 
         let processData messageId (data : obj) =
             match messageId with
