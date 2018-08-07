@@ -405,6 +405,83 @@ module Db =
         |> ChxAmount
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let getAllPeerNodes (dbConnectionString : string) : NetworkAddress list =
+        let sql =
+            """
+            SELECT peer_address
+            FROM peer
+            """
+
+        DbTools.query<string> dbConnectionString sql []
+        |> List.map (fun a -> NetworkAddress a)
+
+    let removePeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+        let sql =
+            """
+            DELETE FROM peer
+            WHERE peer_address = @networkAddress
+            """
+        let sqlParams =
+            [
+                "@networkAddress", networkAddress |> box
+            ]
+        try
+            match DbTools.execute dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Unknown DB error"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "DB operation error"
+
+    let private getPeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : NetworkAddress option =
+        let sql =
+            """
+            SELECT peer_address
+            FROM peer
+            WHERE peer_address = @networkAddress
+            """
+
+        let sqlParams =
+            [
+                "@networkAddress", networkAddress |> box
+            ]
+
+        match DbTools.query<string> dbConnectionString sql sqlParams with
+        | [] -> None
+        | [a] -> a |> NetworkAddress |> Some
+        | _ -> failwithf "Multiple entries found for address %A" networkAddress
+
+    let private insertPeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+        let sql =
+            """
+            INSERT INTO peer (peer_address)
+            VALUES (@networkAddress)
+            """
+
+        let sqlParams =
+            [
+                "@networkAddress", networkAddress |> box
+            ]
+
+        try
+            match DbTools.execute dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert peer."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert peer"
+
+    let savePeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+        match getPeerNode dbConnectionString (NetworkAddress networkAddress) with
+        | Some _ -> Ok ()
+        | None -> insertPeerNode dbConnectionString (NetworkAddress networkAddress)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Apply New State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 

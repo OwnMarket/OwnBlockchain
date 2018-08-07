@@ -118,6 +118,13 @@ module DbChanges =
                         CONSTRAINT stake__uk__stakeholder_address__validator_address
                             UNIQUE (stakeholder_address, validator_address)
                     );
+
+                    CREATE TABLE IF NOT EXISTS peer (
+                        peer_id INTEGER NOT NULL,
+                        peer_address TEXT NOT NULL,
+
+                        CONSTRAINT peer__pk PRIMARY KEY (peer_id)
+                    );
                     """
             }
         ]
@@ -229,6 +236,13 @@ module DbChanges =
                         CONSTRAINT stake__pk PRIMARY KEY (stake_id),
                         CONSTRAINT stake__uk__stakeholder_address__validator_address
                             UNIQUE (stakeholder_address, validator_address)
+                    );
+
+                    CREATE TABLE IF NOT EXISTS peer (
+                        peer_id BIGSERIAL NOT NULL,
+                        peer_address TEXT NOT NULL,
+
+                        CONSTRAINT peer__pk PRIMARY KEY (peer_id)
                     );
                     """
             }

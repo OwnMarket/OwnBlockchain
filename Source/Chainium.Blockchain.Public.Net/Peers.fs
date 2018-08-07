@@ -12,6 +12,9 @@ module Peers =
 
     type NetworkNode
         (
+        getAllPeerNodes,
+        savePeerNode,
+        removePeerNode,
         sendGossipDiscoveryMessage,
         sendGossipMessage,
         sendMulticastMessage,
@@ -79,6 +82,10 @@ module Peers =
                 deadMembers.TryRemove networkAddress |> ignore
                 memberStateTimers.TryRemove networkAddress |> ignore
                 networkAddress |> networkAddressToString |> closeConnection
+
+                match removePeerNode networkAddress with
+                | Ok () -> ()
+                | _ -> Log.errorf "Error removing member %A" networkAddress
             | _ -> ()
 
         (*
@@ -273,6 +280,9 @@ module Peers =
             let rec loop (mem : GossipMember) =
                 Log.debugf "Adding new member : %s" (mem.NetworkAddress |> networkAddressToString)
                 activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
+                match savePeerNode mem.NetworkAddress with
+                | Ok () -> ()
+                | _ -> Log.errorf "Error saving member %A" mem.NetworkAddress
 
                 if mem.NetworkAddress <> config.NetworkAddress then
                     restartTimer mem.NetworkAddress |> ignore
@@ -286,7 +296,10 @@ module Peers =
             }
             __.AddMember self
 
+            let persistedNodes = getAllPeerNodes ()
             config.BootstrapNodes
+            |> List.append persistedNodes
+            |> List.distinct
             |> List.map (fun n ->
                 {
                     NetworkAddress = n
@@ -374,6 +387,10 @@ module Peers =
                     Heartbeat = inputMember.Heartbeat
                 }
                 activeMembers.AddOrUpdate (inputMember.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
+                match savePeerNode inputMember.NetworkAddress with
+                | Ok () -> ()
+                | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
+
                 restartTimer inputMember.NetworkAddress |> ignore
             | None -> ()
 
@@ -386,16 +403,19 @@ module Peers =
     let mutable private node : NetworkNode option = None
 
     let startGossip
+        getAllPeerNodes
+        (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
+        (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
         sendGossipDiscoveryMessage
         sendGossipMessage
         sendMulticastMessage
         receiveMessage
         closeConnection
         networkAddress
-        (bootstrapNodes : string list)
+        bootstrapNodes
         getAllValidators
         processPeerMessage
-        (publishEvent : AppEvent -> unit)
+        publishEvent
         =
 
         let nodeConfig : NetworkNodeConfig = {
@@ -406,6 +426,9 @@ module Peers =
         }
         let n =
             NetworkNode (
+                getAllPeerNodes,
+                savePeerNode,
+                removePeerNode,
                 sendGossipDiscoveryMessage,
                 sendGossipMessage,
                 sendMulticastMessage,

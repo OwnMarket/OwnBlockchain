@@ -65,6 +65,12 @@ module Composition =
 
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbConnectionString
 
+    let getAllPeerNodes () = Db.getAllPeerNodes Config.DbConnectionString
+
+    let savePeerNode = Db.savePeerNode Config.DbConnectionString
+
+    let removePeerNode = Db.removePeerNode Config.DbConnectionString
+
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
     // Workflows
@@ -188,6 +194,9 @@ module Composition =
 
     let startGossip publishEvent =
         Peers.startGossip
+            getAllPeerNodes
+            savePeerNode
+            removePeerNode
             Transport.sendGossipDiscoveryMessage
             Transport.sendGossipMessage
             Transport.sendMulticastMessage
