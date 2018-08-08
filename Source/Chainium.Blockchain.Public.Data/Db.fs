@@ -411,7 +411,7 @@ module Db =
     let getAllPeerNodes (dbConnectionString : string) : NetworkAddress list =
         let sql =
             """
-            SELECT peer_address
+            SELECT network_address
             FROM peer
             """
 
@@ -422,7 +422,7 @@ module Db =
         let sql =
             """
             DELETE FROM peer
-            WHERE peer_address = @networkAddress
+            WHERE network_address = @networkAddress
             """
         let sqlParams =
             [
@@ -431,18 +431,18 @@ module Db =
         try
             match DbTools.execute dbConnectionString sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Unknown DB error"
+            | _ -> Result.appError "Didn't remove peer."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "DB operation error"
+            Result.appError "Failed to remove peer."
 
     let private getPeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : NetworkAddress option =
         let sql =
             """
-            SELECT peer_address
+            SELECT network_address
             FROM peer
-            WHERE peer_address = @networkAddress
+            WHERE network_address = @networkAddress
             """
 
         let sqlParams =
@@ -458,7 +458,7 @@ module Db =
     let private insertPeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO peer (peer_address)
+            INSERT INTO peer (network_address)
             VALUES (@networkAddress)
             """
 
@@ -474,7 +474,7 @@ module Db =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert peer"
+            Result.appError "Failed to insert peer."
 
     let savePeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
         match getPeerNode dbConnectionString (NetworkAddress networkAddress) with

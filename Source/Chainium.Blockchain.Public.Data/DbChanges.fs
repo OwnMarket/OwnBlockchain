@@ -121,9 +121,10 @@ module DbChanges =
 
                     CREATE TABLE IF NOT EXISTS peer (
                         peer_id INTEGER NOT NULL,
-                        peer_address TEXT NOT NULL,
+                        network_address TEXT NOT NULL,
 
                         CONSTRAINT peer__pk PRIMARY KEY (peer_id)
+                        CONSTRAINT peer__uk__network_address UNIQUE (network_address)
                     );
                     """
             }
@@ -240,9 +241,10 @@ module DbChanges =
 
                     CREATE TABLE IF NOT EXISTS peer (
                         peer_id BIGSERIAL NOT NULL,
-                        peer_address TEXT NOT NULL,
+                        network_address TEXT NOT NULL,
 
                         CONSTRAINT peer__pk PRIMARY KEY (peer_id)
+                        CONSTRAINT peer__uk__network_address UNIQUE (network_address)
                     );
                     """
             }
