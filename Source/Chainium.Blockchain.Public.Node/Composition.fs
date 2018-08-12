@@ -190,6 +190,7 @@ module Composition =
             getBlockEnvelope
             submitTx
             applyBlock
+            Peers.respondToPeer
             peerMessage
 
     let startGossip publishEvent =
@@ -200,6 +201,7 @@ module Composition =
             Transport.sendGossipDiscoveryMessage
             Transport.sendGossipMessage
             Transport.sendMulticastMessage
+            Transport.sendUnicastMessage
             Transport.receiveMessage
             Transport.closeConnection
             Config.NetworkAddress
@@ -207,6 +209,7 @@ module Composition =
             getAllValidators
             processPeerMessage
             publishEvent
+
     // API
 
     let getAddressApi = Workflows.getAddressApi getChxBalanceState

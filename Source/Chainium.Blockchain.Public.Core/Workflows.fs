@@ -438,24 +438,25 @@ module Workflows =
         getBlockEnvelope
         submitTx
         applyBlock
+        respondToPeer
         peerMessage =
         let processTxFromPeer txHash data =
             let txEnvelopeDto = Serialization.deserializeJObject data
             match getTx txHash with
-            | Ok _ -> Error []
+            | Ok _ -> None |> Ok
             | _ ->
                 submitTx txEnvelopeDto
                 |> Result.map (fun _ ->
-                    {TxHash = txHash} |> TxReceived
+                    {TxReceivedEventData.TxHash = txHash} |> TxReceived |> Some
                 )
 
         let processBlockFromPeer blockNr data =
             match getBlockEnvelope blockNr with
-            | Ok _ -> Error []
+            | Ok _ -> None |> Ok
             | _ ->
                 let blockEnvelopeDto = Serialization.deserializeJObject data
                 match applyBlock blockNr blockEnvelopeDto with
-                | Ok () -> {BlockCreatedEventData.BlockNumber = blockNr} |> BlockReceived |> Ok
+                | Ok () -> {BlockCreatedEventData.BlockNumber = blockNr} |> BlockReceived |> Some |> Ok
                 | _ -> Result.appError "Error creating block"
 
         let processData messageId (data : obj) =
@@ -463,10 +464,38 @@ module Workflows =
             | Tx txHash -> processTxFromPeer txHash data
             | Block blockNr -> processBlockFromPeer blockNr data
 
+        let processRequest messageId senderAddress =
+            match messageId with
+            | Tx txHash ->
+                match getTx txHash with
+                | Ok txEvenvelopeDto ->
+                    let peerMessage = ResponseDataMessage {
+                        MessageId = messageId
+                        Data = txEvenvelopeDto
+                    }
+                    peerMessage
+                    |> respondToPeer senderAddress
+                    None |> Ok
+                | _ -> Result.appError (sprintf "Error Tx %A not found" txHash)
+
+            | Block blockNr ->
+                match getBlockEnvelope blockNr with
+                | Ok blockEnvelopeDto ->
+                    let peerMessage = ResponseDataMessage {
+                        MessageId = messageId
+                        Data = blockEnvelopeDto
+                    }
+                    peerMessage
+                    |> respondToPeer senderAddress
+                    None |> Ok
+                | _ -> Result.appError (sprintf "Error Block %A not found" blockNr)
+
         match peerMessage with
         | GossipDiscoveryMessage _ -> None
         | GossipMessage m -> processData m.MessageId m.Data |> Some
         | MulticastMessage m -> processData m.MessageId m.Data |> Some
+        | RequestDataMessage m -> processRequest m.MessageId m.SenderAddress |> Some
+        | ResponseDataMessage m -> processData m.MessageId m.Data |> Some
 
     let getAddressApi getChxBalanceState (chainiumAddress : ChainiumAddress)
         : Result<GetAddressApiResponseDto, AppErrors> =

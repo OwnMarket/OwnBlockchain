@@ -118,6 +118,8 @@ module Serialization =
             "GossipDiscoveryMessage", tokenToMessage<GossipDiscoveryMessageDto>
             "GossipMessage", tokenToMessage<GossipMessageDto>
             "MulticastMessage", tokenToMessage<MulticastMessageDto>
+            "RequestDataMessage", tokenToMessage<RequestDataMessageDto>
+            "ResponseDataMessage", tokenToMessage<ResponseDataMessageDto>
         ]
         |> Map.ofList
 

@@ -33,6 +33,14 @@ module Transport =
         let msg = packMessage gossipDiscoveryMessage
         send msg targetAddress
 
+    let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
+        let msg = packMessage gossipMessage
+        send msg targetMember.NetworkAddress
+
+    let sendUnicastMessage unicastMessage targetAddress =
+        let msg = packMessage unicastMessage
+        send msg targetAddress
+
     let sendMulticastMessage senderAddress multicastMessage multicastAddresses =
         let multicastAddresses =
             multicastAddresses
@@ -48,10 +56,6 @@ module Transport =
                 let msg = packMessage multicastMessage
                 send msg networkAddress
             )
-
-    let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
-        let msg = packMessage gossipMessage
-        send msg targetMember.NetworkAddress
 
     let receiveMessage networkAddress receiveCallback =
         match receiverSocket with

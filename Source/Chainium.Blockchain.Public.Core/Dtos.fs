@@ -319,7 +319,22 @@ type GossipMessageDto = {
     Data : obj
 }
 
+[<CLIMutable>]
 type MulticastMessageDto = {
+    MessageType : string
+    MessageId : string
+    Data : obj
+}
+
+[<CLIMutable>]
+type RequestDataMessageDto = {
+    MessageType : string
+    MessageId : string
+    SenderAddress : string
+}
+
+[<CLIMutable>]
+type ResponseDataMessageDto = {
     MessageType : string
     MessageId : string
     Data : obj

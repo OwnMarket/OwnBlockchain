@@ -483,15 +483,15 @@ module Mapping =
             Data = gossipMessage.Data
         }
 
-    let multicastMessageFromDto (dto : MulticastMessageDto) =
-        let multicastMssageId =
+    let multicastMessageFromDto (dto : MulticastMessageDto) : MulticastMessage =
+        let multicastMessageId =
             match dto.MessageType with
             | "Tx" -> Tx (TxHash dto.MessageId)
             | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
             | _ -> failwithf "Invalid gossip message type %s" dto.MessageType
 
         {
-            MessageId = multicastMssageId
+            MessageId = multicastMessageId
             Data = dto.Data
         }
 
@@ -507,6 +507,54 @@ module Mapping =
             Data = multicastMessage.Data
         }
 
+    let requestDataMessageFromDto (dto : RequestDataMessageDto) : RequestDataMessage =
+        let requestDataMessageId =
+            match dto.MessageType with
+            | "Tx" -> Tx (TxHash dto.MessageId)
+            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
+            | _ -> failwithf "Invalid requestData message type %s" dto.MessageType
+
+        {
+            MessageId = requestDataMessageId
+            SenderAddress = NetworkAddress dto.SenderAddress
+        }
+
+    let requestDataMessageToDto (requestDataMessage : RequestDataMessage) =
+        let messageType, messageId =
+            match requestDataMessage.MessageId with
+            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
+            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+
+        {
+            MessageId = messageId
+            MessageType = messageType
+            SenderAddress = requestDataMessage.SenderAddress |> fun (NetworkAddress a) -> a
+        }
+
+    let responseDataMessageFromDto (dto : ResponseDataMessageDto) : ResponseDataMessage =
+        let responseDataMessageId =
+            match dto.MessageType with
+            | "Tx" -> Tx (TxHash dto.MessageId)
+            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
+            | _ -> failwithf "Invalid responseData message type %s" dto.MessageType
+
+        {
+            MessageId = responseDataMessageId
+            Data = dto.Data
+        }
+
+    let responseDataMessageToDto (responseDataMessage : ResponseDataMessage) =
+        let messageType, messageId =
+            match responseDataMessage.MessageId with
+            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
+            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+
+        {
+            MessageId = messageId
+            MessageType = messageType
+            Data = responseDataMessage.Data
+        }
+
     let peerMessageFromDto (dto : PeerMessageDto) =
         match dto.MessageData with
         | :? GossipDiscoveryMessageDto as m ->
@@ -515,6 +563,10 @@ module Mapping =
             gossipMessageFromDto m |> GossipMessage
         | :? MulticastMessageDto as m ->
             multicastMessageFromDto m |> MulticastMessage
+        | :? RequestDataMessageDto as m ->
+            requestDataMessageFromDto m |> RequestDataMessage
+        | :? ResponseDataMessageDto as m ->
+            responseDataMessageFromDto m |> ResponseDataMessage
         | _ -> failwith "Invalid message type to map."
 
     let peerMessageToDto (serialize : (obj -> string)) (peerMessage : PeerMessage) : PeerMessageDto =
@@ -523,6 +575,8 @@ module Mapping =
             | GossipDiscoveryMessage m -> "GossipDiscoveryMessage", m |> gossipDiscoveryMessageToDto |> serialize
             | GossipMessage m -> "GossipMessage", m |> gossipMessageToDto |> serialize
             | MulticastMessage m -> "MulticastMessage", m |> multicastMessageToDto |> serialize
+            | RequestDataMessage m -> "RequestDataMessage", m |> requestDataMessageToDto |> serialize
+            | ResponseDataMessage m -> "ResponseDataMessage", m |> responseDataMessageToDto |> serialize
 
         {
             MessageType = messageType

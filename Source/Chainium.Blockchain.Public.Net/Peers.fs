@@ -5,7 +5,6 @@ open System.Collections.Concurrent
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.Events
 open Chainium.Blockchain.Public.Core.DomainTypes
 
 module Peers =
@@ -18,6 +17,7 @@ module Peers =
         sendGossipDiscoveryMessage,
         sendGossipMessage,
         sendMulticastMessage,
+        sendUnicastMessage,
         receiveMessage,
         closeConnection,
         getAllValidators : unit -> Dtos.ValidatorInfoDto list,
@@ -32,6 +32,7 @@ module Peers =
         let deadMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
         let memberStateTimers = new ConcurrentDictionary<NetworkAddress, System.Timers.Timer>()
         let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
+        let pendingDataRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
 
         let networkAddressToString (NetworkAddress a) = a
 
@@ -114,33 +115,13 @@ module Peers =
                 tFail
                 (fun _ -> (setPendingDeadMember networkAddress))
 
-        let updateGossipMessagesProcessingQueue networkAddresses gossipMessageId =
-            let found, processedAddresses = gossipMessages.TryGetValue gossipMessageId
-            let newProcessedAddresses = if found then networkAddresses @ processedAddresses else networkAddresses
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Public
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            gossipMessages.AddOrUpdate(
-                gossipMessageId,
-                newProcessedAddresses,
-                fun _ _ -> newProcessedAddresses) |> ignore
-
-        member __.Start processPeerMessage publishEvent =
+        member __.StartGossip processPeerMessage publishEvent =
             __.StartNode processPeerMessage publishEvent
             __.StartGossipDiscovery()
-
-        member __.StartNode processPeerMessage publishEvent =
-            Log.debug "Start node .."
-            __.InitializeMemberList()
-            __.StartServer processPeerMessage publishEvent
-
-        member __.StartGossipDiscovery () =
-            Log.info "Network layer initialized"
-            let rec loop () =
-                async {
-                    __.SendMembership ()
-                    do! Async.Sleep(tCycle)
-                    return! loop ()
-                }
-            Async.Start (loop ())
 
         member __.SendMessage message =
             match message with
@@ -163,6 +144,218 @@ module Peers =
                     (getAllValidators() |> List.map(fun v -> v.NetworkAddress))
 
             | GossipMessage m -> __.SendGossipMessage m
+            | _ -> ()
+
+        member __.SendRequestDataMessage requestId =
+            let rec loop id =
+                async {
+                    let targetAddress =
+                        match pendingDataRequests.TryGetValue id with
+                        | true, expiredAddresses ->
+                            let networkAddressPool =
+                                __.GetActiveMembers()
+                                |> List.map (fun m -> m.NetworkAddress)
+                                |> List.filter (fun a -> a <> config.NetworkAddress)
+                                |> List.except expiredAddresses
+
+                            let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
+                            match selectedUnicastPeer with
+                            | None ->
+                                Log.errorf "Cannot retrieve data for %A" id
+                                pendingDataRequests.TryRemove id |> ignore
+
+                            | Some networkAddress ->
+                                pendingDataRequests.AddOrUpdate(
+                                    id,
+                                    networkAddress :: expiredAddresses,
+                                    fun _ _ -> networkAddress :: expiredAddresses)
+                                |> ignore
+                            selectedUnicastPeer
+
+                        | false, _ ->
+                            let networkAddressPool =
+                                __.GetActiveMembers()
+                                |> List.map (fun m -> m.NetworkAddress)
+                                |> List.filter (fun a -> a <> config.NetworkAddress)
+
+                            let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
+                            match selectedUnicastPeer with
+                            | None ->
+                                Log.errorf "Cannot retrieve data for %A" id
+                                pendingDataRequests.TryRemove id |> ignore
+                            | Some networkAddress ->
+                                pendingDataRequests.AddOrUpdate(
+                                    id,
+                                    [networkAddress],
+                                    fun _ _ -> [networkAddress])
+                                |> ignore
+                            selectedUnicastPeer
+
+                    targetAddress |> Option.iter(fun address ->
+                        let unicastMessage = RequestDataMessage {
+                            MessageId = id
+                            SenderAddress = config.NetworkAddress
+                        }
+                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage unicastMessage
+                        sendUnicastMessage peerMessageDto (address |> networkAddressToString)
+                    )
+
+                    do! Async.Sleep(2 * tCycle)
+
+                    // If no answer is received within 2 cycles, repeat (i.e choose another peer).
+                    if not (pendingDataRequests.IsEmpty) then
+                        return! loop id
+                }
+            Async.Start(loop requestId)
+
+        member __.SendResponseDataMessage targetAddress responseMessage =
+            let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage responseMessage
+            sendUnicastMessage peerMessageDto (targetAddress |> networkAddressToString)
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Gossip Discovery
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        member private __.StartNode processPeerMessage publishEvent =
+            Log.debug "Start node .."
+            __.InitializeMemberList()
+            __.StartServer processPeerMessage publishEvent
+
+        member private __.StartServer processPeerMessage publishEvent =
+            Log.infof "Open communication channel for %s" (config.NetworkAddress |> networkAddressToString)
+            receiveMessage
+                (config.NetworkAddress |> networkAddressToString)
+                (__.ReceivePeerMessage processPeerMessage publishEvent)
+
+        member private __.StartGossipDiscovery () =
+            Log.info "Network layer initialized"
+            let rec loop () =
+                async {
+                    __.SendMembership ()
+                    do! Async.Sleep(tCycle)
+                    return! loop ()
+                }
+            Async.Start (loop ())
+
+        member private __.SendMembership () =
+            __.IncreaseHeartbeat()
+            let gossipDiscoveryMessage = GossipDiscoveryMessage {
+                ActiveMembers = __.GetActiveMembers()
+            }
+            __.SendMessage gossipDiscoveryMessage
+            printActiveMembers ()
+
+        member private __.InitializeMemberList () =
+            let self = {
+                NetworkAddress = config.NetworkAddress
+                Heartbeat = 0L
+            }
+            __.AddMember self
+
+            let persistedNodes = getAllPeerNodes ()
+            config.BootstrapNodes
+            |> List.append persistedNodes
+            |> List.distinct
+            |> List.map (fun n ->
+                {
+                    NetworkAddress = n
+                    Heartbeat = 0L
+                })
+            |> List.iter (fun m -> __.AddMember m)
+
+        member private __.AddMember inputMember =
+            let rec loop (mem : GossipMember) =
+                Log.debugf "Adding new member : %s" (mem.NetworkAddress |> networkAddressToString)
+                activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
+                match savePeerNode mem.NetworkAddress with
+                | Ok () -> ()
+                | _ -> Log.errorf "Error saving member %A" mem.NetworkAddress
+
+                if mem.NetworkAddress <> config.NetworkAddress then
+                    restartTimer mem.NetworkAddress |> ignore
+
+            loop inputMember
+
+        member private __.ReceiveActiveMember inputMember =
+            match __.GetActiveMember inputMember.NetworkAddress with
+            | Some m ->
+                let localMember = {
+                    NetworkAddress = m.NetworkAddress
+                    Heartbeat = inputMember.Heartbeat
+                }
+                activeMembers.AddOrUpdate (inputMember.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
+                match savePeerNode inputMember.NetworkAddress with
+                | Ok () -> ()
+                | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
+
+                restartTimer inputMember.NetworkAddress |> ignore
+            | None -> ()
+
+        member private __.ReceiveMembers msg =
+            __.MergeMemberList msg.ActiveMembers
+
+        member private __.MergeMember inputMember =
+            if inputMember.NetworkAddress <> config.NetworkAddress then
+                Log.debugf "Receive member: %s ..." (inputMember.NetworkAddress |> networkAddressToString)
+                match __.GetActiveMember inputMember.NetworkAddress with
+                | Some localMember ->
+                    if localMember.Heartbeat < inputMember.Heartbeat then
+                        __.ReceiveActiveMember inputMember
+                | None ->
+                    if not (isDead inputMember) then
+                        __.AddMember inputMember
+                        deadMembers.TryRemove inputMember.NetworkAddress |> ignore
+
+        member private __.MergeMemberList members =
+            members |> List.iter (fun m -> __.MergeMember m)
+
+        member private __.GetActiveMember networkAddress =
+            match activeMembers.TryGetValue networkAddress with
+            | true, localMember -> Some localMember
+            | false, _ -> None
+
+        member private __.GetActiveMembers () =
+            activeMembers |> seqOfKeyValuePairToList
+
+        member private __.IncreaseHeartbeat () =
+            match __.GetActiveMember config.NetworkAddress with
+            | Some m ->
+                let localMember = {
+                    NetworkAddress = m.NetworkAddress
+                    Heartbeat = m.Heartbeat + 1L
+                }
+                activeMembers.AddOrUpdate (config.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
+            | None -> ()
+
+        member private __.SelectRandomMembers () =
+            let connectedMembers =
+                activeMembers
+                |> Map.ofDict
+                |> Map.filter (fun a _ -> a <> config.NetworkAddress)
+                |> Seq.toList
+
+            match connectedMembers with
+            | [] -> None
+            | _ ->
+                connectedMembers
+                |> Seq.shuffleG
+                |> Seq.chunkBySize fanout
+                |> Seq.head
+                |> seqOfKeyValuePairToList
+                |> Some
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Gossip Message Passing
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        member private __.UpdateGossipMessagesProcessingQueue networkAddresses gossipMessageId =
+            let found, processedAddresses = gossipMessages.TryGetValue gossipMessageId
+            let newProcessedAddresses = if found then networkAddresses @ processedAddresses else networkAddresses
+
+            gossipMessages.AddOrUpdate(
+                gossipMessageId,
+                newProcessedAddresses,
+                fun _ _ -> newProcessedAddresses) |> ignore
 
         member private __.SendGossipMessageToRecipient recipientAddress (gossipMessage : GossipMessage) =
             match activeMembers.TryGetValue recipientAddress with
@@ -199,7 +392,8 @@ module Peers =
 
                 fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                     __.SendGossipMessageToRecipient recipientAddress gossipMessage)
-                updateGossipMessagesProcessingQueue
+
+                __.UpdateGossipMessagesProcessingQueue
                     (gossipMessage.SenderAddress :: fanoutRecipientAddresses)
                     gossipMessage.MessageId
 
@@ -249,7 +443,7 @@ module Peers =
                 processPeerMessage (GossipMessage gossipMessage)
                 |> Option.iter(fun result ->
                     match result with
-                    | Ok appEvent -> appEvent |> publishEvent
+                    | Ok appEvent -> appEvent |> Option.iter(fun e -> e |> publishEvent)
                     | Error errors -> Log.appErrors errors
                 )
 
@@ -262,143 +456,62 @@ module Peers =
                 // Once a node is infected, propagate the message further.
                 __.SendMessage msg
 
-        member private __.ReceiveMulticastMessage
-            processPeerMessage
-            (multicastMessage : MulticastMessage)
-            =
-
-            processPeerMessage (MulticastMessage multicastMessage)
-            |> Option.iter(fun result ->
-                match result with
-                | Ok appEvent ->
-                    // Do not propagate on multicast.
-                    Log.infof "EVENT: %A" appEvent
-                | Error errors -> Log.appErrors errors
-            )
-
-        member private __.AddMember inputMember =
-            let rec loop (mem : GossipMember) =
-                Log.debugf "Adding new member : %s" (mem.NetworkAddress |> networkAddressToString)
-                activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
-                match savePeerNode mem.NetworkAddress with
-                | Ok () -> ()
-                | _ -> Log.errorf "Error saving member %A" mem.NetworkAddress
-
-                if mem.NetworkAddress <> config.NetworkAddress then
-                    restartTimer mem.NetworkAddress |> ignore
-
-            loop inputMember
-
-        member private __.InitializeMemberList () =
-            let self = {
-                NetworkAddress = config.NetworkAddress
-                Heartbeat = 0L
-            }
-            __.AddMember self
-
-            let persistedNodes = getAllPeerNodes ()
-            config.BootstrapNodes
-            |> List.append persistedNodes
-            |> List.distinct
-            |> List.map (fun n ->
-                {
-                    NetworkAddress = n
-                    Heartbeat = 0L
-                })
-            |> List.iter (fun m -> __.AddMember m)
-
-        member private __.GetActiveMember networkAddress =
-            match activeMembers.TryGetValue networkAddress with
-            | true, localMember -> Some localMember
-            | false, _ -> None
-
-        member private __.MergeMember inputMember =
-            if inputMember.NetworkAddress <> config.NetworkAddress then
-                Log.debugf "Receive member: %s ..." (inputMember.NetworkAddress |> networkAddressToString)
-                match __.GetActiveMember inputMember.NetworkAddress with
-                | Some localMember ->
-                    if localMember.Heartbeat < inputMember.Heartbeat then
-                        __.ReceiveActiveMember inputMember
-                | None ->
-                    if not (isDead inputMember) then
-                        __.AddMember inputMember
-                        deadMembers.TryRemove inputMember.NetworkAddress |> ignore
-
-        member private __.MergeMemberList members =
-            members |> List.iter (fun m -> __.MergeMember m)
-
-        member private __.ReceiveMembers msg =
-            __.MergeMemberList msg.ActiveMembers
-
-        member private __.StartServer processPeerMessage publishEvent =
-            Log.infof "Open communication channel for %s" (config.NetworkAddress |> networkAddressToString)
-            receiveMessage
-                (config.NetworkAddress |> networkAddressToString)
-                (__.ReceivePeerMessage processPeerMessage publishEvent)
-
         member private __.ReceivePeerMessage processPeerMessage publishEvent dto =
             let peerMessage = Mapping.peerMessageFromDto dto
             match peerMessage with
             | GossipDiscoveryMessage m -> __.ReceiveMembers m
             | GossipMessage m -> __.ReceiveGossipMessage processPeerMessage publishEvent m
             | MulticastMessage m -> __.ReceiveMulticastMessage processPeerMessage m
+            | RequestDataMessage m -> __.ReceiveRequestMessage processPeerMessage m
+            | ResponseDataMessage m -> __.ReceiveResponseMessage processPeerMessage m
 
-        member private __.SendMembership () =
-            __.IncreaseHeartbeat()
-            let gossipDiscoveryMessage = GossipDiscoveryMessage {
-                ActiveMembers = __.GetActiveMembers()
-            }
-            __.SendMessage gossipDiscoveryMessage
-            printActiveMembers ()
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Multicast Message Passing
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        // Returns N (fanout) members from the memberlist without local address
-        member private __.SelectRandomMembers () =
-            let connectedMembers =
-                activeMembers
-                |> Map.ofDict
-                |> Map.filter (fun a _ -> a <> config.NetworkAddress)
-                |> Seq.toList
+        member private __.ReceiveMulticastMessage processPeerMessage multicastMessage =
+            processPeerMessage (MulticastMessage multicastMessage)
+            |> Option.iter(fun result ->
+                match result with
+                | Ok appEvent ->
+                    // Do not propagate on multicast.
+                    appEvent |> Option.iter(fun e -> Log.infof "EVENT: %A" e)
+                | Error errors -> Log.appErrors errors
+            )
 
-            match connectedMembers with
-            | [] -> None
-            | _ ->
-                connectedMembers
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Request/Response
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        member private __.ReceiveRequestMessage processPeerMessage (requestDataMessage : RequestDataMessage) =
+            processPeerMessage (RequestDataMessage requestDataMessage)
+            |> Option.iter(fun result ->
+                match result with
+                | Ok appEvent ->
+                    appEvent |> Option.iter(fun e -> Log.infof "EVENT: %A" e)
+                | Error errors -> Log.appErrors errors
+            )
+
+        member private __.ReceiveResponseMessage processPeerMessage (requestDataMessage : ResponseDataMessage) =
+            processPeerMessage (ResponseDataMessage requestDataMessage)
+            |> Option.iter(fun result ->
+                match result with
+                | Ok appEvent ->
+                    pendingDataRequests.TryRemove requestDataMessage.MessageId |> ignore
+                    appEvent |> Option.iter(fun e -> Log.infof "EVENT: %A" e)
+                | Error errors -> Log.appErrors errors
+            )
+
+        member private __.SelectNewUnicastPeer networkAddressPool =
+            let targetAddresses =
+                networkAddressPool
+                |> List.toSeq
                 |> Seq.shuffleG
-                |> Seq.chunkBySize fanout
-                |> Seq.head
-                |> seqOfKeyValuePairToList
-                |> Some
+                |> List.ofSeq
 
-        member private __.IncreaseHeartbeat () =
-            match __.GetActiveMember config.NetworkAddress with
-            | Some m ->
-                let localMember = {
-                    NetworkAddress = m.NetworkAddress
-                    Heartbeat = m.Heartbeat + 1L
-                }
-                activeMembers.AddOrUpdate (config.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
-            | None -> ()
-
-        member private __.ReceiveActiveMember inputMember =
-            match __.GetActiveMember inputMember.NetworkAddress with
-            | Some m ->
-                let localMember = {
-                    NetworkAddress = m.NetworkAddress
-                    Heartbeat = inputMember.Heartbeat
-                }
-                activeMembers.AddOrUpdate (inputMember.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
-                match savePeerNode inputMember.NetworkAddress with
-                | Ok () -> ()
-                | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
-
-                restartTimer inputMember.NetworkAddress |> ignore
-            | None -> ()
-
-        member private __.GetActiveMembers () =
-            activeMembers |> seqOfKeyValuePairToList
-
-        member private __.GetDeadMembers () =
-            deadMembers |> seqOfKeyValuePairToList
+            match targetAddresses with
+            | [] -> None
+            | _ -> Some targetAddresses.Head
 
     let mutable private node : NetworkNode option = None
 
@@ -409,6 +522,7 @@ module Peers =
         sendGossipDiscoveryMessage
         sendGossipMessage
         sendMulticastMessage
+        sendUnicastMessage
         receiveMessage
         closeConnection
         networkAddress
@@ -432,15 +546,26 @@ module Peers =
                 sendGossipDiscoveryMessage,
                 sendGossipMessage,
                 sendMulticastMessage,
+                sendUnicastMessage,
                 receiveMessage,
                 closeConnection,
                 getAllValidators,
                 nodeConfig
             )
-        n.Start processPeerMessage publishEvent
+        n.StartGossip processPeerMessage publishEvent
         node <- Some n
 
     let sendMessage message =
         match node with
         | Some n -> n.SendMessage message
         | None -> failwith "Please start gossip first"
+
+    let requestFromPeer requestId =
+        match node with
+        | Some n -> n.SendRequestDataMessage requestId
+        | None -> failwith "Please start the node first"
+
+    let respondToPeer targetAddress peerMessage =
+        match node with
+        | Some n -> n.SendResponseDataMessage targetAddress peerMessage
+        | None -> failwith "Please start the node first"

@@ -326,7 +326,19 @@ type MulticastMessage = {
     Data : obj
 }
 
+type RequestDataMessage = {
+    MessageId : NetworkMessageId
+    SenderAddress : NetworkAddress
+}
+
+type ResponseDataMessage = {
+    MessageId : NetworkMessageId
+    Data : obj
+}
+
 type PeerMessage =
     | GossipDiscoveryMessage of GossipDiscoveryMessage
     | GossipMessage of GossipMessage
     | MulticastMessage of MulticastMessage
+    | RequestDataMessage of RequestDataMessage
+    | ResponseDataMessage of ResponseDataMessage
