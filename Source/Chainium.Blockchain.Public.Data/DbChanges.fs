@@ -123,7 +123,7 @@ module DbChanges =
                         peer_id INTEGER NOT NULL,
                         network_address TEXT NOT NULL,
 
-                        CONSTRAINT peer__pk PRIMARY KEY (peer_id)
+                        CONSTRAINT peer__pk PRIMARY KEY (peer_id),
                         CONSTRAINT peer__uk__network_address UNIQUE (network_address)
                     );
                     """
@@ -243,7 +243,7 @@ module DbChanges =
                         peer_id BIGSERIAL NOT NULL,
                         network_address TEXT NOT NULL,
 
-                        CONSTRAINT peer__pk PRIMARY KEY (peer_id)
+                        CONSTRAINT peer__pk PRIMARY KEY (peer_id),
                         CONSTRAINT peer__uk__network_address UNIQUE (network_address)
                     );
                     """
