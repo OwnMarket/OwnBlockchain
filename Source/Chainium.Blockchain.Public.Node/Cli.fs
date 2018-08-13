@@ -19,6 +19,7 @@ module Cli =
         Composition.startGossip Agents.publishEvent
         PaceMaker.start ()
         Api.start ()
+        Composition.stopGossip ()
 
     let handleHelpCommand args =
         printfn "TODO: Print short command reference"

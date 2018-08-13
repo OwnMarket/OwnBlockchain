@@ -204,11 +204,14 @@ module Composition =
             Transport.sendUnicastMessage
             Transport.receiveMessage
             Transport.closeConnection
+            Transport.closeAllConnections
             Config.NetworkAddress
             Config.NetworkBootstrapNodes
             getAllValidators
             processPeerMessage
             publishEvent
+
+    let stopGossip () = Peers.stopGossip ()
 
     // API
 

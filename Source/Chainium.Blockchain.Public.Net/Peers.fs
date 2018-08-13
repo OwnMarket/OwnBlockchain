@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Concurrent
+open System.Threading
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
@@ -20,6 +21,7 @@ module Peers =
         sendUnicastMessage,
         receiveMessage,
         closeConnection,
+        closeAllConnections,
         getAllValidators : unit -> Dtos.ValidatorInfoDto list,
         config : NetworkNodeConfig
         ) =
@@ -33,6 +35,7 @@ module Peers =
         let memberStateTimers = new ConcurrentDictionary<NetworkAddress, System.Timers.Timer>()
         let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
         let pendingDataRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
+        let cts = new CancellationTokenSource()
 
         let networkAddressToString (NetworkAddress a) = a
 
@@ -123,6 +126,10 @@ module Peers =
             __.StartNode processPeerMessage publishEvent
             __.StartGossipDiscovery()
 
+        member __.StopGossip () =
+            closeAllConnections()
+            cts.Cancel()
+
         member __.SendMessage message =
             match message with
             | GossipDiscoveryMessage _ ->
@@ -206,7 +213,7 @@ module Peers =
                     if not (pendingDataRequests.IsEmpty) then
                         return! loop id
                 }
-            Async.Start(loop requestId)
+            Async.Start(loop requestId, cts.Token)
 
         member __.SendResponseDataMessage targetAddress responseMessage =
             let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage responseMessage
@@ -235,7 +242,7 @@ module Peers =
                     do! Async.Sleep(tCycle)
                     return! loop ()
                 }
-            Async.Start (loop ())
+            Async.Start (loop (), cts.Token)
 
         member private __.SendMembership () =
             __.IncreaseHeartbeat()
@@ -419,7 +426,7 @@ module Peers =
                         return! loop msg
                 }
 
-            Async.Start (loop message)
+            Async.Start (loop message, cts.Token)
 
         member private __.ReceiveGossipMessage processPeerMessage publishEvent (gossipMessage : GossipMessage) =
             match gossipMessages.TryGetValue gossipMessage.MessageId with
@@ -525,6 +532,7 @@ module Peers =
         sendUnicastMessage
         receiveMessage
         closeConnection
+        closeAllConnections
         networkAddress
         bootstrapNodes
         getAllValidators
@@ -549,11 +557,15 @@ module Peers =
                 sendUnicastMessage,
                 receiveMessage,
                 closeConnection,
+                closeAllConnections,
                 getAllValidators,
                 nodeConfig
             )
         n.StartGossip processPeerMessage publishEvent
         node <- Some n
+
+    let stopGossip () =
+        node |> Option.iter(fun n -> n.StopGossip())
 
     let sendMessage message =
         match node with

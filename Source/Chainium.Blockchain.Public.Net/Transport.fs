@@ -81,3 +81,9 @@ module Transport =
             connectionPool.TryRemove networkAddress |> ignore
             socket.Dispose()
         | _ -> ()
+
+    let closeAllConnections () =
+        poller.Dispose()
+        connectionPool
+        |> Map.ofDict
+        |> Seq.iter (fun x -> x.Value.Dispose())
