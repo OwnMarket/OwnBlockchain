@@ -215,7 +215,7 @@ module Workflows =
                         R = signature.R
                     }
                     do! saveBlockEnvelope block.Header.Number blockEnvelopeDto
-                | _ -> ()
+                | _ -> do! Result.appError "Error serializing block"
 
                 do! applyNewState blockInfoDto outputDto
 

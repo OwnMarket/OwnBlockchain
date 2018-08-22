@@ -222,6 +222,58 @@ type ProcessingOutput = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Network
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type NetworkAddress = NetworkAddress of string
+
+type NetworkMessageId =
+    | Tx of TxHash
+    | Block of BlockNumber
+
+type NetworkNodeConfig = {
+    NetworkAddress : NetworkAddress
+    BootstrapNodes : NetworkAddress list
+}
+
+type GossipMember = {
+    NetworkAddress : NetworkAddress
+    Heartbeat : int64
+}
+
+type GossipDiscoveryMessage = {
+    ActiveMembers : GossipMember list
+}
+
+type GossipMessage = {
+    MessageId : NetworkMessageId
+    SenderAddress : NetworkAddress
+    Data : obj
+}
+
+type MulticastMessage = {
+    MessageId : NetworkMessageId
+    Data : obj
+}
+
+type RequestDataMessage = {
+    MessageId : NetworkMessageId
+    SenderAddress : NetworkAddress
+}
+
+type ResponseDataMessage = {
+    MessageId : NetworkMessageId
+    Data : obj
+}
+
+type PeerMessage =
+    | GossipDiscoveryMessage of GossipDiscoveryMessage
+    | GossipMessage of GossipMessage
+    | MulticastMessage of MulticastMessage
+    | RequestDataMessage of RequestDataMessage
+    | ResponseDataMessage of ResponseDataMessage
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Domain Type Logic
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -290,55 +342,3 @@ type Tx with
 
 type PendingTxInfo with
     member __.TotalFee = __.Fee * decimal __.ActionCount
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Network
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type NetworkAddress = NetworkAddress of string
-
-type NetworkMessageId =
-    | Tx of TxHash
-    | Block of BlockNumber
-
-type NetworkNodeConfig = {
-    NetworkAddress : NetworkAddress
-    BootstrapNodes : NetworkAddress list
-}
-
-type GossipMember = {
-    NetworkAddress : NetworkAddress
-    Heartbeat : int64
-}
-
-type GossipDiscoveryMessage = {
-    ActiveMembers : GossipMember list
-}
-
-type GossipMessage = {
-    MessageId : NetworkMessageId
-    SenderAddress : NetworkAddress
-    Data : obj
-}
-
-type MulticastMessage = {
-    MessageId : NetworkMessageId
-    Data : obj
-}
-
-type RequestDataMessage = {
-    MessageId : NetworkMessageId
-    SenderAddress : NetworkAddress
-}
-
-type ResponseDataMessage = {
-    MessageId : NetworkMessageId
-    Data : obj
-}
-
-type PeerMessage =
-    | GossipDiscoveryMessage of GossipDiscoveryMessage
-    | GossipMessage of GossipMessage
-    | MulticastMessage of MulticastMessage
-    | RequestDataMessage of RequestDataMessage
-    | ResponseDataMessage of ResponseDataMessage
