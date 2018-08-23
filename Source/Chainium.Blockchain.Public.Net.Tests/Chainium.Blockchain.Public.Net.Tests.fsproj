@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\AssemblyInfo.fs"/>
+    <Compile Include="DbMock.fs" />
+    <Compile Include="TransportMock.fs" />
+    <Compile Include="Tests.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Chainium.Blockchain.Public.Core\Chainium.Blockchain.Public.Core.fsproj" />
+    <ProjectReference Include="..\Chainium.Blockchain.Public.Net\Chainium.Blockchain.Public.Net.fsproj" />
+    <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />
+  </ItemGroup>  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+    <PackageReference Include="Unquote" Version="4.0.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+</Project>

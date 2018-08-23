@@ -23,12 +23,11 @@ module Peers =
         closeConnection,
         closeAllConnections,
         getAllValidators : unit -> Dtos.ValidatorInfoDto list,
-        config : NetworkNodeConfig
+        config : NetworkNodeConfig,
+        fanout,
+        tCycle,
+        tFail
         ) =
-
-        let fanout = 2
-        let tCycle = 10000
-        let tFail = 50000
 
         let activeMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
         let deadMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
@@ -129,6 +128,12 @@ module Peers =
         member __.StopGossip () =
             closeAllConnections()
             cts.Cancel()
+
+        member __.GetActiveMembers () =
+            activeMembers |> seqOfKeyValuePairToList
+
+        member __.GetNetworkAddress () =
+            config.NetworkAddress
 
         member __.SendMessage message =
             match message with
@@ -320,9 +325,6 @@ module Peers =
             match activeMembers.TryGetValue networkAddress with
             | true, localMember -> Some localMember
             | false, _ -> None
-
-        member private __.GetActiveMembers () =
-            activeMembers |> seqOfKeyValuePairToList
 
         member private __.IncreaseHeartbeat () =
             match __.GetActiveMember config.NetworkAddress with
@@ -546,6 +548,9 @@ module Peers =
 
             NetworkAddress = NetworkAddress networkAddress
         }
+
+        let fanout, tCycle, tFail = 2, 10000, 50000
+
         let n =
             NetworkNode (
                 getAllPeerNodes,
@@ -559,7 +564,10 @@ module Peers =
                 closeConnection,
                 closeAllConnections,
                 getAllValidators,
-                nodeConfig
+                nodeConfig,
+                fanout,
+                tCycle,
+                tFail
             )
         n.StartGossip processPeerMessage publishEvent
         node <- Some n
