@@ -12,6 +12,7 @@
     <Compile Include="SubmissionTests.fs" />
     <Compile Include="ProcessingTests.fs" />
     <Compile Include="BlockTests.fs" />
+    <Compile Include="ConsensusTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

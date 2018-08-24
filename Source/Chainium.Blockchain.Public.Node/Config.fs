@@ -90,3 +90,12 @@ type Config () =
     static member ValidatorPrivateKey
         with get () =
             config.["ValidatorPrivateKey"]
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member MinValidatorCount = 20
+
+    static member MaxValidatorCount = 100
+
+    static member QuorumSupplyPercent = 0m // TODO: Set proper value
