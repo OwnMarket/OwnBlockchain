@@ -45,7 +45,7 @@ module ConsensusTests =
         let expectedValidatorThreshold = ChxAmount 10m
 
         // ACT
-        let actualValidatorThreshold = Consensus.calculateValidatorThreshold quorumSupply maxValidatorCount
+        let actualValidatorThreshold = Consensus.calculateValidatorThreshold maxValidatorCount quorumSupply
 
         // ASSERT
         test <@ actualValidatorThreshold = expectedValidatorThreshold @>
@@ -58,7 +58,7 @@ module ConsensusTests =
         let expectedValidatorThreshold = ChxAmount 90.909090909090909091m
 
         // ACT
-        let actualValidatorThreshold = Consensus.calculateValidatorThreshold quorumSupply maxValidatorCount
+        let actualValidatorThreshold = Consensus.calculateValidatorThreshold maxValidatorCount quorumSupply
 
         // ASSERT
         test <@ actualValidatorThreshold = expectedValidatorThreshold @>

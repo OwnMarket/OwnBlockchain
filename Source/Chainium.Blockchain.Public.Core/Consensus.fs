@@ -10,7 +10,7 @@ module Consensus =
         Decimal.Round(totalSupply * quorumSupplyPercent / 100m, 18, MidpointRounding.AwayFromZero)
         |> ChxAmount
 
-    let calculateValidatorThreshold (ChxAmount quorumSupply) maxValidatorCount =
+    let calculateValidatorThreshold maxValidatorCount (ChxAmount quorumSupply) =
         Decimal.Round(quorumSupply / (decimal maxValidatorCount), 18, MidpointRounding.AwayFromZero)
         |> ChxAmount
 
