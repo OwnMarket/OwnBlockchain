@@ -60,7 +60,7 @@ module BlocksTests =
     [<Fact>]
     let ``Blocks.createChxBalanceStateHash`` () =
         let address = ChainiumAddress "ABC"
-        let state = {ChxBalanceState.Amount = ChxAmount 1M; Nonce = Nonce 2L}
+        let state = {ChxBalanceState.Amount = ChxAmount 1m; Nonce = Nonce 2L}
 
         // ACT
         let stateHash = Blocks.createChxBalanceStateHash DummyHash.decode DummyHash.create (address, state)
@@ -72,7 +72,7 @@ module BlocksTests =
     let ``Blocks.createHoldingStateHash`` () =
         let account = AccountHash "HHH"
         let assetHash = AssetHash "II"
-        let state = {HoldingState.Amount = AssetAmount 7M}
+        let state = {HoldingState.Amount = AssetAmount 7m}
 
         // ACT
         let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (account, assetHash, state)
@@ -139,15 +139,15 @@ module BlocksTests =
 
         let chxBalances =
             [
-                ChainiumAddress "HH", {ChxBalanceState.Amount = ChxAmount 5M; Nonce = Nonce 7L}
-                ChainiumAddress "II", {ChxBalanceState.Amount = ChxAmount 6M; Nonce = Nonce 8L}
+                ChainiumAddress "HH", {ChxBalanceState.Amount = ChxAmount 5m; Nonce = Nonce 7L}
+                ChainiumAddress "II", {ChxBalanceState.Amount = ChxAmount 6m; Nonce = Nonce 8L}
             ]
             |> Map.ofList
 
         let holdings =
             [
-                (AccountHash "DDD", AssetHash "EEE"), {HoldingState.Amount = AssetAmount 1M}
-                (AccountHash "FFF", AssetHash "GGG"), {HoldingState.Amount = AssetAmount 2M}
+                (AccountHash "DDD", AssetHash "EEE"), {HoldingState.Amount = AssetAmount 1m}
+                (AccountHash "FFF", AssetHash "GGG"), {HoldingState.Amount = AssetAmount 2m}
             ]
             |> Map.ofList
 
@@ -175,8 +175,8 @@ module BlocksTests =
 
         let stakes =
             [
-                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
-                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
+                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
             ]
             |> Map.ofList
 
@@ -294,15 +294,15 @@ module BlocksTests =
 
         let chxBalances =
             [
-                wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10M; Nonce = Nonce 1L}
-                wallet2.Address, {ChxBalanceState.Amount = ChxAmount 20M; Nonce = Nonce 2L}
+                wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10m; Nonce = Nonce 1L}
+                wallet2.Address, {ChxBalanceState.Amount = ChxAmount 20m; Nonce = Nonce 2L}
             ]
             |> Map.ofList
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100M}
-                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200M}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m}
             ]
             |> Map.ofList
 
@@ -330,8 +330,8 @@ module BlocksTests =
 
         let stakes =
             [
-                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
-                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
+                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
             ]
             |> Map.ofList
 
@@ -459,15 +459,15 @@ module BlocksTests =
 
         let chxBalances =
             [
-                wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10M; Nonce = Nonce 1L}
-                wallet2.Address, {ChxBalanceState.Amount = ChxAmount 20M; Nonce = Nonce 2L}
+                wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10m; Nonce = Nonce 1L}
+                wallet2.Address, {ChxBalanceState.Amount = ChxAmount 20m; Nonce = Nonce 2L}
             ]
             |> Map.ofList
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100M}
-                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200M}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m}
             ]
             |> Map.ofList
 
@@ -495,8 +495,8 @@ module BlocksTests =
 
         let stakes =
             [
-                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1M}
-                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2M}
+                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
+                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
             ]
             |> Map.ofList
 

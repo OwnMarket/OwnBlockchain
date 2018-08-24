@@ -15,7 +15,7 @@ module Workflows =
             senderAddress
             |> getChxBalanceState
             |> Option.map (Mapping.chxBalanceStateFromDto >> fun state -> state.Amount)
-            |? ChxAmount 0M
+            |? ChxAmount 0m
 
         let chxStaked = getTotalChxStaked senderAddress
 
@@ -506,7 +506,7 @@ module Workflows =
             |> Ok
         | None ->
             {
-                ChxBalanceStateDto.Amount = 0M
+                ChxBalanceStateDto.Amount = 0m
                 Nonce = 0L
             }
             |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress

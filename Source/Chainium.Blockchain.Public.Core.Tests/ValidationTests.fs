@@ -30,7 +30,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = -10L
-            Fee = 20M
+            Fee = 20m
             Actions =
                 [
                     {
@@ -39,7 +39,7 @@ module ValidationTests =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
-                                Amount = 20M
+                                Amount = 20m
                             }
                     }
                     {
@@ -49,7 +49,7 @@ module ValidationTests =
                                 FromAccount = "A"
                                 ToAccount = "B"
                                 AssetHash = "asset"
-                                Amount = 12M
+                                Amount = 12m
                             }
                     }
                 ]
@@ -70,7 +70,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = ""
             Nonce = -10L
-            Fee = 0M
+            Fee = 0m
             Actions =
                 [
                     {
@@ -79,7 +79,7 @@ module ValidationTests =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
-                                Amount = 20M
+                                Amount = 20m
                             }
                     }
                     {
@@ -89,7 +89,7 @@ module ValidationTests =
                                 FromAccount = "A"
                                 ToAccount = "B"
                                 AssetHash = "asset"
-                                Amount = 12M
+                                Amount = 12m
                             }
                     }
                 ]
@@ -107,7 +107,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -130,7 +130,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -139,7 +139,7 @@ module ValidationTests =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
-                                Amount = 0M
+                                Amount = 0m
                             }
                     }
                 ]
@@ -157,7 +157,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -165,7 +165,7 @@ module ValidationTests =
                         ActionData =
                             {
                                 TransferChxTxActionDto.RecipientAddress = ""
-                                Amount = 10M
+                                Amount = 10m
                             }
                     }
                 ]
@@ -183,7 +183,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -193,7 +193,7 @@ module ValidationTests =
                                 FromAccount = ""
                                 ToAccount = "B"
                                 AssetHash = "asset"
-                                Amount = 12M
+                                Amount = 12m
                             }
                     }
                 ]
@@ -211,7 +211,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -221,7 +221,7 @@ module ValidationTests =
                                 FromAccount = "A"
                                 ToAccount = ""
                                 AssetHash = "asset"
-                                Amount = 12M
+                                Amount = 12m
                             }
                     }
                 ]
@@ -239,7 +239,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -249,7 +249,7 @@ module ValidationTests =
                                 FromAccount = "A"
                                 ToAccount = "B"
                                 AssetHash = ""
-                                Amount = 12M
+                                Amount = 12m
                             }
                     }
                 ]
@@ -267,7 +267,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -277,7 +277,7 @@ module ValidationTests =
                                 FromAccount = "A"
                                 ToAccount = "B"
                                 AssetHash = "asset"
-                                Amount = 0M
+                                Amount = 0m
                             }
                     }
                 ]
@@ -296,7 +296,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -305,7 +305,7 @@ module ValidationTests =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
                                     recipientWallet.Address |> fun (ChainiumAddress a) -> a
-                                Amount = 10M
+                                Amount = 10m
                             }
                     }
                     {
@@ -315,7 +315,7 @@ module ValidationTests =
                                 FromAccount = "A"
                                 ToAccount = "B"
                                 AssetHash = "asset"
-                                Amount = 1M
+                                Amount = 1m
                             }
                     }
                 ]
@@ -354,13 +354,13 @@ module ValidationTests =
             {
                 CreateAssetEmissionTxActionDto.EmissionAccountHash = "AAA"
                 AssetHash = "BBB"
-                Amount = 100M
+                Amount = 100m
             }
 
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -384,13 +384,13 @@ module ValidationTests =
             {
                 CreateAssetEmissionTxActionDto.EmissionAccountHash = ""
                 AssetHash = ""
-                Amount = 0M
+                Amount = 0m
             }
 
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -410,7 +410,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -430,7 +430,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -456,7 +456,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -484,7 +484,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -510,7 +510,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -538,7 +538,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -564,7 +564,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -592,7 +592,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -617,7 +617,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -643,7 +643,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -663,13 +663,13 @@ module ValidationTests =
         let expected =
             {
                 SetStakeTxActionDto.ValidatorAddress = "A"
-                Amount = 1000M
+                Amount = 1000m
             }
 
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {
@@ -691,13 +691,13 @@ module ValidationTests =
         let expected =
             {
                 SetStakeTxActionDto.ValidatorAddress = ""
-                Amount = -1M
+                Amount = -1m
             }
 
         let tx = {
             SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
             Nonce = 10L
-            Fee = 1M
+            Fee = 1m
             Actions =
                 [
                     {

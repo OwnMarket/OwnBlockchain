@@ -23,8 +23,8 @@ module ProcessingTests =
         let getChxBalanceState =
             let data =
                 [
-                    w1.Address, { ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L }
-                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200M; Nonce = Nonce 20L }
+                    w1.Address, { ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L }
+                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200m; Nonce = Nonce 20L }
                 ]
                 |> Map.ofSeq
 
@@ -35,11 +35,11 @@ module ProcessingTests =
 
         let txSet =
             [
-                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 1s 2L
-                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1M) 1s 3L
-                Helpers.newPendingTxInfo (TxHash "Tx4") w1.Address (Nonce 14L) (ChxAmount 1M) 1s 4L
-                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1M) 1s 5L
-                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1M) 1s 1L
+                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1m) 1s 2L
+                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1m) 1s 3L
+                Helpers.newPendingTxInfo (TxHash "Tx4") w1.Address (Nonce 14L) (ChxAmount 1m) 1s 4L
+                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1m) 1s 5L
+                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1m) 1s 1L
             ]
 
         // ACT
@@ -70,7 +70,7 @@ module ProcessingTests =
             let data =
                 [
                     w1.Address, { ChxBalanceState.Amount = balance; Nonce = Nonce 10L }
-                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200M; Nonce = Nonce 20L }
+                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200m; Nonce = Nonce 20L }
                 ]
                 |> Map.ofSeq
 
@@ -80,7 +80,7 @@ module ProcessingTests =
             let data =
                 [
                     w1.Address, balance - staked
-                    w2.Address, ChxAmount 200M
+                    w2.Address, ChxAmount 200m
                 ]
                 |> Map.ofSeq
 
@@ -88,11 +88,11 @@ module ProcessingTests =
 
         let txSet =
             [
-                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 1s 2L
-                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1.5M) 2s 3L
-                Helpers.newPendingTxInfo (TxHash "Tx4") w1.Address (Nonce 14L) (ChxAmount 1M) 1s 4L
-                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1M) 1s 5L
-                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1M) 1s 1L
+                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1m) 1s 2L
+                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1.5m) 2s 3L
+                Helpers.newPendingTxInfo (TxHash "Tx4") w1.Address (Nonce 14L) (ChxAmount 1m) 1s 4L
+                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1m) 1s 5L
+                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1m) 1s 1L
             ]
 
         // ACT
@@ -111,8 +111,8 @@ module ProcessingTests =
         let getChxBalanceState =
             let data =
                 [
-                    w1.Address, { ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L }
-                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200M; Nonce = Nonce 20L }
+                    w1.Address, { ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L }
+                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200m; Nonce = Nonce 20L }
                 ]
                 |> Map.ofSeq
 
@@ -120,11 +120,11 @@ module ProcessingTests =
 
         let txSet =
             [
-                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1M) 1s 1L
-                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1M) 1s 2L
-                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1M) 1s 3L
-                Helpers.newPendingTxInfo (TxHash "Tx6") w2.Address (Nonce 21L) (ChxAmount 2M) 1s 6L
-                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1M) 1s 5L
+                Helpers.newPendingTxInfo (TxHash "Tx1") w2.Address (Nonce 21L) (ChxAmount 1m) 1s 1L
+                Helpers.newPendingTxInfo (TxHash "Tx2") w1.Address (Nonce 12L) (ChxAmount 1m) 1s 2L
+                Helpers.newPendingTxInfo (TxHash "Tx3") w1.Address (Nonce 10L) (ChxAmount 1m) 1s 3L
+                Helpers.newPendingTxInfo (TxHash "Tx6") w2.Address (Nonce 21L) (ChxAmount 2m) 1s 6L
+                Helpers.newPendingTxInfo (TxHash "Tx5") w1.Address (Nonce 11L) (ChxAmount 1m) 1s 5L
             ]
 
         // ACT
@@ -148,16 +148,16 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = ChxAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -197,7 +197,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -242,16 +242,16 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 9M; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 9m; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = ChxAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -291,7 +291,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -337,16 +337,16 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 10.5M; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 10.5m; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = ChxAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -386,7 +386,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -432,16 +432,16 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 0.5M; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 0.5m; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = ChxAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -481,7 +481,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         let processTxSet () =
             Processing.processTxSet
@@ -516,16 +516,16 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 11M; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 11m; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = ChxAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -567,9 +567,9 @@ module ProcessingTests =
 
         let getTotalChxStaked address =
             if address = senderWallet.Address then
-                ChxAmount 1M
+                ChxAmount 1m
             else
-                ChxAmount 0M
+                ChxAmount 0m
 
         // ACT
         let output =
@@ -621,22 +621,22 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50M}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -678,7 +678,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -726,22 +726,22 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9M}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -783,7 +783,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -834,22 +834,22 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9M}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -894,7 +894,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -942,22 +942,22 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9M}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0M}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let amountToTransfer = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -1002,7 +1002,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1054,15 +1054,15 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let emissionAmount = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -1103,7 +1103,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1148,21 +1148,21 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         let initialHoldingState =
             [
-                (emissionAccountHash, assetHash), {HoldingState.Amount = AssetAmount 30M}
+                (emissionAccountHash, assetHash), {HoldingState.Amount = AssetAmount 30m}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let emissionAmount = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -1203,7 +1203,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1250,15 +1250,15 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let emissionAmount = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -1299,7 +1299,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1348,15 +1348,15 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let emissionAmount = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -1397,7 +1397,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1445,15 +1445,15 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
-        let emissionAmount = AssetAmount 10M
+        let fee = ChxAmount 1m
+        let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
             [
@@ -1494,7 +1494,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1543,14 +1543,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -1596,7 +1596,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1643,14 +1643,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -1696,7 +1696,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1745,14 +1745,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -1792,7 +1792,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1836,14 +1836,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -1883,7 +1883,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -1932,14 +1932,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -1979,7 +1979,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2032,14 +2032,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2079,7 +2079,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2123,14 +2123,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2170,7 +2170,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2219,14 +2219,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2266,7 +2266,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2319,14 +2319,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2366,7 +2366,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2410,14 +2410,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2457,7 +2457,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2506,14 +2506,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2553,7 +2553,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2604,14 +2604,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2650,7 +2650,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2693,14 +2693,14 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2739,7 +2739,7 @@ module ProcessingTests =
         let getStakeState _ =
             failwith "getStakeState should not be called"
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2783,19 +2783,19 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
-        let stakeAmount = ChxAmount 10M
-        let currentStakeAmount = ChxAmount 4M
+        let stakeAmount = ChxAmount 10m
+        let currentStakeAmount = ChxAmount 4m
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2875,18 +2875,18 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
-        let stakeAmount = ChxAmount 10M
+        let stakeAmount = ChxAmount 10m
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2926,7 +2926,7 @@ module ProcessingTests =
         let getStakeState _ =
             None
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -2966,18 +2966,18 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
-        let stakeAmount = ChxAmount 101M
+        let stakeAmount = ChxAmount 101m
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -3017,7 +3017,7 @@ module ProcessingTests =
         let getStakeState _ =
             None
 
-        let getTotalChxStaked _ = ChxAmount 0M
+        let getTotalChxStaked _ = ChxAmount 0m
 
         // ACT
         let output =
@@ -3061,19 +3061,19 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
-        let stakeAmount = ChxAmount 50M
-        let currentStakeAmount = ChxAmount 50M
+        let stakeAmount = ChxAmount 50m
+        let currentStakeAmount = ChxAmount 50m
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100M; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1M
+        let fee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [

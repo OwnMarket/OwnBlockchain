@@ -12,7 +12,7 @@ open Chainium.Blockchain.Public.Crypto
 
 module Helpers =
 
-    let minTxActionFee = ChxAmount 0.001M
+    let minTxActionFee = ChxAmount 0.001m
 
     let addressToString (ChainiumAddress a) = a
 

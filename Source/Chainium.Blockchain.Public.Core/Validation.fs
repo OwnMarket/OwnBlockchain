@@ -72,7 +72,7 @@ module Validation =
             elif action.RecipientAddress |> ChainiumAddress |> isValidAddress |> not then
                 yield AppError "RecipientAddress is not valid."
 
-            if action.Amount <= 0M then
+            if action.Amount <= 0m then
                 yield AppError "CHX amount must be larger than zero."
         ]
 
@@ -87,7 +87,7 @@ module Validation =
             if action.AssetHash.IsNullOrWhiteSpace() then
                 yield AppError "AssetHash is not provided."
 
-            if action.Amount <= 0M then
+            if action.Amount <= 0m then
                 yield AppError "Asset amount must be larger than zero."
         ]
 
@@ -99,7 +99,7 @@ module Validation =
             if action.AssetHash.IsNullOrWhiteSpace() then
                 yield AppError "AssetHash is not provided."
 
-            if action.Amount <= 0M then
+            if action.Amount <= 0m then
                 yield AppError "Asset amount must be larger than zero."
         ]
 
@@ -147,7 +147,7 @@ module Validation =
             elif action.ValidatorAddress |> ChainiumAddress |> isValidAddress |> not then
                 yield AppError "ValidatorAddress is not valid."
 
-            if action.Amount < 0M then
+            if action.Amount < 0m then
                 yield AppError "CHX amount must not be negative."
         ]
 
@@ -161,7 +161,7 @@ module Validation =
                 yield AppError "Sender address doesn't match the signature."
             if t.Nonce <= 0L then
                 yield AppError "Nonce must be positive."
-            if t.Fee <= 0M then
+            if t.Fee <= 0m then
                 yield AppError "Fee must be positive."
             if t.Fee < minTxActionFee then
                 yield AppError "Fee is too low."

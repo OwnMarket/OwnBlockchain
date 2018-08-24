@@ -15,7 +15,7 @@ module SerializationTests =
             {
                 SenderAddress = "SomeAddress"
                 Nonce = 10L
-                Fee = 20M
+                Fee = 20m
                 Actions =
                     [
                         {
@@ -23,7 +23,7 @@ module SerializationTests =
                             ActionData =
                                 {
                                     RecipientAddress = "Recipient"
-                                    Amount = 20M
+                                    Amount = 20m
                                 }
                         }
                         {
@@ -33,7 +33,7 @@ module SerializationTests =
                                     FromAccount = "A"
                                     ToAccount = "B"
                                     AssetHash = "asset"
-                                    Amount = 12M
+                                    Amount = 12m
                                 }
                         }
                     ]
@@ -212,13 +212,13 @@ module SerializationTests =
                     {
                         CreateAssetEmissionTxActionDto.EmissionAccountHash = "FooAccount"
                         AssetHash = "FooAsset"
-                        Amount = 100M
+                        Amount = 100m
                     }
             }
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -236,7 +236,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -255,7 +255,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -278,7 +278,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -300,7 +300,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -322,7 +322,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -343,7 +343,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -359,13 +359,13 @@ module SerializationTests =
                 ActionData =
                     {
                         SetStakeTxActionDto.ValidatorAddress = "SomeValidator"
-                        Amount = 1000M
+                        Amount = 1000m
                     }
             }
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20M
+            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->

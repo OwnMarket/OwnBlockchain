@@ -113,11 +113,11 @@ module SharedTests =
                 ActionData =
                     {
                         RecipientAddress = receiverWallet.Address |> addressToString
-                        TransferChxTxActionDto.Amount = 10M
+                        TransferChxTxActionDto.Amount = 10m
                     }
             }
 
-        let txDto = newTxDto senderWallet.Address 1L 1M [action]
+        let txDto = newTxDto senderWallet.Address 1L 1m [action]
         let expectedTx = transactionEnvelope senderWallet txDto
 
         submitTransaction client expectedTx
@@ -144,11 +144,11 @@ module SharedTests =
                     let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
                     let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
 
-                    Helper.addBalanceAndAccount connString (addressToString senderWallet.Address) 100M
-                    Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0M
+                    Helper.addBalanceAndAccount connString (addressToString senderWallet.Address) 100m
+                    Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0m
 
                     let isValid = i % 2 = 0
-                    let amt = if isValid then 10M else -10M
+                    let amt = if isValid then 10m else -10m
                     // prepare transaction
                     let action =
                         {
@@ -160,7 +160,7 @@ module SharedTests =
                                 }
                         }
 
-                    let fee = 1M
+                    let fee = 1m
                     let nonce = 1L
                     let txDto = newTxDto senderWallet.Address nonce fee [action]
 
@@ -283,8 +283,8 @@ module SharedTests =
 
         let sender = Signing.generateWallet()
         let newController = Signing.generateWallet()
-        let initialSenderChxBalance = 10M
-        let initialValidatorChxBalance = 0M
+        let initialSenderChxBalance = 10m
+        let initialValidatorChxBalance = 0m
         let (ChainiumAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
@@ -312,7 +312,7 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1M
+        let fee = 1m
         let totalFee = fee * (decimal txActions.Length)
 
         let txDto = newTxDto sender.Address nonce fee txActions
@@ -343,8 +343,8 @@ module SharedTests =
 
         let sender = Signing.generateWallet()
         let newController = Signing.generateWallet()
-        let initialSenderChxBalance = 10M
-        let initialValidatorChxBalance = 0M
+        let initialSenderChxBalance = 10m
+        let initialValidatorChxBalance = 0m
         let (ChainiumAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
@@ -372,7 +372,7 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1M
+        let fee = 1m
         let totalFee = fee * (decimal txActions.Length)
 
         let txDto = newTxDto sender.Address nonce fee txActions
@@ -402,8 +402,8 @@ module SharedTests =
 
         let assetCode = "Foo"
         let sender = Signing.generateWallet()
-        let initialSenderChxBalance = 10M
-        let initialValidatorChxBalance = 0M
+        let initialSenderChxBalance = 10m
+        let initialValidatorChxBalance = 0m
         let (ChainiumAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
@@ -431,7 +431,7 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1M
+        let fee = 1m
         let totalFee = fee * (decimal txActions.Length)
 
         let txDto = newTxDto sender.Address nonce fee txActions
@@ -462,8 +462,8 @@ module SharedTests =
 
         let networkAddress = "localhost:5000"
         let sender = Signing.generateWallet()
-        let initialSenderChxBalance = 10M
-        let initialValidatorChxBalance = 0M
+        let initialSenderChxBalance = 10m
+        let initialValidatorChxBalance = 0m
         let (ChainiumAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
@@ -485,7 +485,7 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1M
+        let fee = 1m
         let totalFee = fee * (decimal txActions.Length)
 
         let txDto = newTxDto sender.Address nonce fee txActions
@@ -518,10 +518,10 @@ module SharedTests =
         let client = testInit engineType connectionString
 
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
-        let stakeAmount = 5M
+        let stakeAmount = 5m
         let sender = Signing.generateWallet()
-        let initialSenderChxBalance = 10M
-        let initialValidatorChxBalance = 0M
+        let initialSenderChxBalance = 10m
+        let initialValidatorChxBalance = 0m
 
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
         let (ChainiumAddress validatorAddress) = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
@@ -541,7 +541,7 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1M
+        let fee = 1m
         let totalFee = fee * (decimal txActions.Length)
 
         let txDto = newTxDto sender.Address nonce fee txActions

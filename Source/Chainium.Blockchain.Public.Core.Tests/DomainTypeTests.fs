@@ -11,23 +11,23 @@ module DomainTypesTests =
     [<Fact>]
     let ``Total tx fee is calculated everywhere in the same way`` () =
         // ARRANGE
-        let expectedFee = ChxAmount 4M
+        let expectedFee = ChxAmount 4m
 
         let tx =
             {
                 Tx.TxHash = TxHash ""
                 Sender = ChainiumAddress ""
                 Nonce = Nonce 0L
-                Fee = ChxAmount 2M
+                Fee = ChxAmount 2m
                 Actions =
                     [
                         TransferChx {
                             TransferChxTxAction.RecipientAddress = ChainiumAddress ""
-                            Amount = ChxAmount 0M
+                            Amount = ChxAmount 0m
                         }
                         TransferChx {
                             TransferChxTxAction.RecipientAddress = ChainiumAddress ""
-                            Amount = ChxAmount 0M
+                            Amount = ChxAmount 0m
                         }
                     ]
             }

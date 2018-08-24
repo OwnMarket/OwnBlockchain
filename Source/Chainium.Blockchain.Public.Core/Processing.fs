@@ -30,10 +30,10 @@ module Processing =
 
         let getChxBalanceState address =
             getChxBalanceStateFromStorage address
-            |? {Amount = ChxAmount 0M; Nonce = Nonce 0L}
+            |? {Amount = ChxAmount 0m; Nonce = Nonce 0L}
         let getHoldingState (accountHash, assetHash) =
             getHoldingStateFromStorage (accountHash, assetHash)
-            |? {Amount = AssetAmount 0M}
+            |? {Amount = AssetAmount 0m}
 
         new
             (

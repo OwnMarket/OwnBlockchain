@@ -299,7 +299,7 @@ type Nonce with
 
 type ChxAmount with
     static member Zero =
-        ChxAmount 0M
+        ChxAmount 0m
     static member (+) (ChxAmount a1, ChxAmount a2) =
         ChxAmount (Decimal.Round(a1 + a2, 18))
     static member (+) (ChxAmount a1, a2) =
@@ -319,7 +319,7 @@ type ChxAmount with
 
 type AssetAmount with
     static member Zero =
-        AssetAmount 0M
+        AssetAmount 0m
     static member (+) (AssetAmount a1, AssetAmount a2) =
         AssetAmount (Decimal.Round(a1 + a2, 18))
     static member (+) (AssetAmount a1, a2) =

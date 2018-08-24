@@ -21,9 +21,9 @@ module SubmissionTests =
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
         let nonce = Nonce 5L
-        let txFee = ChxAmount 1M
-        let totalTxFee = txFee * 2M // Two txs
-        let totalPendingTxsFee = ChxAmount 9M
+        let txFee = ChxAmount 1m
+        let totalTxFee = txFee * 2m // Two txs
+        let totalPendingTxsFee = ChxAmount 9m
         let senderBalance = ChxAmount balance
 
         let txHash, txEnvelopeDto =
@@ -33,7 +33,7 @@ module SubmissionTests =
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
-                            Amount = 10M
+                            Amount = 10m
                         }
                 } :> obj
                 {
@@ -41,7 +41,7 @@ module SubmissionTests =
                     ActionData =
                         {
                             RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
-                            Amount = 10M
+                            Amount = 10m
                         }
                 } :> obj
             ]

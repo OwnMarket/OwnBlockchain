@@ -121,7 +121,7 @@ module Db =
         |> DbTools.query<Nullable<decimal>> dbConnectionString sql
         |> List.tryHead
         |> Option.bind Option.ofNullable
-        |? 0M
+        |? 0m
         |> ChxAmount
 
     let getLastBlockNumber (dbConnectionString : string) : BlockNumber option =
@@ -401,7 +401,7 @@ module Db =
         |> DbTools.query<Nullable<decimal>> dbConnectionString sql
         |> List.tryHead
         |> Option.bind Option.ofNullable
-        |? 0M
+        |? 0m
         |> ChxAmount
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
