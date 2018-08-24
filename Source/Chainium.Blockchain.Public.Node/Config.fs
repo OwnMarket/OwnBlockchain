@@ -10,11 +10,10 @@ type Config () =
     static let appDir = Directory.GetCurrentDirectory()
 
     static let config =
-        (
-            ConfigurationBuilder()
-                .SetBasePath(appDir)
-                .AddJsonFile("AppSettings.json")
-        ).Build()
+        ConfigurationBuilder()
+            .SetBasePath(appDir)
+            .AddJsonFile("AppSettings.json")
+            .Build()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Storage
