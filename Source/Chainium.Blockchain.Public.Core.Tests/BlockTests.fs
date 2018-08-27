@@ -118,6 +118,21 @@ module BlockTests =
         test <@ stateHash = "AAAHHH" @>
 
     [<Fact>]
+    let ``Blocks.createValidatorSnapshotHash`` () =
+        let validatorSnapshot =
+            {
+                ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAA"
+                NetworkAddress = "XXX" // X = 88 = 8 = H
+                TotalStake = ChxAmount 5m
+            }
+
+        // ACT
+        let snapshotHash = Blocks.createValidatorSnapshotHash DummyHash.decode DummyHash.create validatorSnapshot
+
+        // ASSERT
+        test <@ snapshotHash = "AAAHHH...E............" @>
+
+    [<Fact>]
     let ``Blocks.createStakeStateHash`` () =
         let stakeholder = ChainiumAddress "AAA"
         let validator = ChainiumAddress "BBB"
@@ -278,6 +293,8 @@ module BlockTests =
                 "AAAAAGGG" // Validator 1
                 "BBBBBHHH" // Validator 2
                 "CCCCCIII" // Validator 3
+                "AAAAAGGG...A............" // Validator snapshot 1
+                "BBBBBHHH...B............" // Validator snapshot 2
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
             ]
@@ -484,6 +501,9 @@ module BlockTests =
                 |> Map.toList
                 |> List.map (Blocks.createValidatorStateHash Hashing.decode Hashing.hash)
 
+                validatorSnapshots
+                |> List.map (Blocks.createValidatorSnapshotHash Hashing.decode Hashing.hash)
+
                 stakes
                 |> Map.toList
                 |> List.map (fun ((stakeholderAddress, validatorAddress), state) ->
@@ -494,7 +514,7 @@ module BlockTests =
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 13 true @>
+        test <@ stateMerkleProofs = List.replicate 15 true @>
 
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]

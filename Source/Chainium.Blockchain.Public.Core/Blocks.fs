@@ -97,6 +97,23 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createValidatorSnapshotHash
+        decodeHash
+        createHash
+        (validatorSnapshot : ValidatorSnapshot)
+        =
+
+        let (ChainiumAddress validatorAddress) = validatorSnapshot.ValidatorAddress
+        let (ChxAmount totalStake) = validatorSnapshot.TotalStake
+
+        [
+            decodeHash validatorAddress
+            stringToBytes validatorSnapshot.NetworkAddress
+            decimalToBytes totalStake
+        ]
+        |> Array.concat
+        |> createHash
+
     let createStakeStateHash
         decodeHash
         createHash
@@ -201,6 +218,11 @@ module Blocks =
             |> List.sort // We need a predictable order
             |> List.map (createValidatorStateHash decodeHash createHash)
 
+        let validatorSnapshotHashes =
+            output.ValidatorSnapshots
+            |> List.sort // We need a predictable order
+            |> List.map (createValidatorSnapshotHash decodeHash createHash)
+
         let stakeHashes =
             output.Stakes
             |> Map.toList
@@ -210,7 +232,13 @@ module Blocks =
             )
 
         let stateRoot =
-            chxBalanceHashes @ holdingHashes @ accountHashes @ assetHashes @ validatorHashes @ stakeHashes
+            chxBalanceHashes
+            @ holdingHashes
+            @ accountHashes
+            @ assetHashes
+            @ validatorHashes
+            @ validatorSnapshotHashes
+            @ stakeHashes
             |> createMerkleTree
 
         let blockHash =
