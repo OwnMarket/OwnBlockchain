@@ -1,6 +1,6 @@
 namespace Chainium.Blockchain.Public.Net.Tests
 
-open System
+open System.Threading
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Net.Peers
 open Chainium.Blockchain.Public.Core.DomainTypes
@@ -9,6 +9,10 @@ open Xunit
 open Swensen.Unquote
 
 module PeerTests =
+
+    let testCleanup () =
+        DbMock.reset()
+        Thread.Sleep(1000)
 
     let publishEvent appEvent =
         ()
@@ -23,19 +27,19 @@ module PeerTests =
         node.StopGossip ()
 
     let checkGossipDiscoveryConvergence (nodeList : NetworkNode list) =
-        let inputAddresses =
+        let expectedPeerList =
             nodeList
             |> List.map (fun n -> n.GetNetworkAddress ())
             |> List.sort
 
         nodeList
         |> List.iter(fun n ->
-            let nodeAddresses =
+            let nodePeerList =
                 n.GetActiveMembers()
                 |> List.map(fun m -> m.NetworkAddress)
                 |> List.sort
 
-            test <@ nodeAddresses = inputAddresses @>
+            test <@ nodePeerList = expectedPeerList @>
         )
 
         nodeList |> List.iter(fun n -> stopGossip n)
@@ -43,11 +47,16 @@ module PeerTests =
     let testGossipDiscovery nodeConfigList cycleCount =
         // ARRANGE
         let fanout, tCycle, tFail = 4, 1000, 60000
-        let createNode nodeConfig =
+
+        let createNode (nodeConfig : NetworkNodeConfig) =
+            let getAllPeerNodes = DbMock.getAllPeerNodes nodeConfig.NetworkAddress
+            let savePeerNode = DbMock.savePeerNode nodeConfig.NetworkAddress
+            let removePeerNode = DbMock.removePeerNode nodeConfig.NetworkAddress
+            let getAllValidators = DbMock.getAllValidators nodeConfig.NetworkAddress
             NetworkNode (
-                DbMock.getAllPeerNodes,
-                DbMock.savePeerNode,
-                DbMock.removePeerNode,
+                getAllPeerNodes,
+                savePeerNode,
+                removePeerNode,
                 TransportMock.sendGossipDiscoveryMessage,
                 TransportMock.sendGossipMessage,
                 TransportMock.sendMulticastMessage,
@@ -55,7 +64,7 @@ module PeerTests =
                 TransportMock.receiveMessage,
                 TransportMock.closeConnection,
                 TransportMock.closeAllConnections,
-                DbMock.getAllValidators,
+                getAllValidators,
                 nodeConfig,
                 fanout,
                 tCycle,
@@ -77,6 +86,8 @@ module PeerTests =
     [<Fact>]
     let ``Gossip - test GossipDiscovery 3 nodes same bootstrap node`` () =
         // ARRANGE
+        testCleanup()
+
         let nodeConfig1 = {
             BootstrapNodes = []
             NetworkAddress = NetworkAddress "127.0.0.1:5555"
@@ -96,6 +107,8 @@ module PeerTests =
     [<Fact>]
     let ``Gossip - test GossipDiscovery 3 nodes different bootstrap node`` () =
         // ARRANGE
+        testCleanup()
+
         let nodeConfig1 = {
             BootstrapNodes = []
             NetworkAddress = NetworkAddress "127.0.0.1:5555"
@@ -115,16 +128,18 @@ module PeerTests =
     [<Fact>]
     let ``Gossip - test GossipDiscovery 100 nodes`` () =
         // ARRANGE
+        testCleanup()
+
         let nodeConfig1 = {
             BootstrapNodes = []
-            NetworkAddress = NetworkAddress "127.0.0.1:5555"
+            NetworkAddress = NetworkAddress "127.0.0.1:6555"
         }
 
         let nodeConfigList =
-            [5556..5654]
+            [6556..6654]
             |> List.map(fun port ->
                 {
-                    BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
+                    BootstrapNodes = [NetworkAddress "127.0.0.1:6555"]
                     NetworkAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                 }
             )
