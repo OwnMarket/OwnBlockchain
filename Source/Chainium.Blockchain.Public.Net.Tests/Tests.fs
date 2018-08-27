@@ -41,6 +41,7 @@ module PeerTests =
         nodeList |> List.iter(fun n -> stopGossip n)
 
     let testGossipDiscovery nodeConfigList cycleCount =
+        // ARRANGE
         let fanout, tCycle, tFail = 4, 1000, 60000
         let createNode nodeConfig =
             NetworkNode (
@@ -65,14 +66,17 @@ module PeerTests =
             nodeConfigList
             |> List.map (fun config -> createNode config)
 
+        // ACT
         nodeList |> List.iter(fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
+        // ASSERT
         checkGossipDiscoveryConvergence nodeList
 
     [<Fact>]
     let ``Gossip - test GossipDiscovery 3 nodes same bootstrap node`` () =
+        // ARRANGE
         let nodeConfig1 = {
             BootstrapNodes = []
             NetworkAddress = NetworkAddress "127.0.0.1:5555"
@@ -91,6 +95,7 @@ module PeerTests =
 
     [<Fact>]
     let ``Gossip - test GossipDiscovery 3 nodes different bootstrap node`` () =
+        // ARRANGE
         let nodeConfig1 = {
             BootstrapNodes = []
             NetworkAddress = NetworkAddress "127.0.0.1:5555"
@@ -109,6 +114,7 @@ module PeerTests =
 
     [<Fact>]
     let ``Gossip - test GossipDiscovery 100 nodes`` () =
+        // ARRANGE
         let nodeConfig1 = {
             BootstrapNodes = []
             NetworkAddress = NetworkAddress "127.0.0.1:5555"
