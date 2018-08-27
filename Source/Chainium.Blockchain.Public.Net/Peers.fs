@@ -264,9 +264,9 @@ module Peers =
             }
             __.AddMember self
 
-            let persistedNodes = getAllPeerNodes ()
-            config.BootstrapNodes
-            |> List.append persistedNodes
+            getAllPeerNodes ()
+            |> List.filter (fun n -> n <> config.NetworkAddress)
+            |> List.append config.BootstrapNodes
             |> List.distinct
             |> List.map (fun n ->
                 {
