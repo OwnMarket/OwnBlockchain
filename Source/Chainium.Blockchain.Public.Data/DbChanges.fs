@@ -39,6 +39,8 @@ module DbChanges =
                         CONSTRAINT tx__pk PRIMARY KEY (tx_id),
                         CONSTRAINT tx__uk__tx_hash UNIQUE (tx_hash)
                     );
+                    CREATE INDEX tx__ix__sender_address ON tx (sender_address);
+                    CREATE INDEX tx__ix__fee ON tx (fee DESC);
 
                     CREATE TABLE IF NOT EXISTS chx_balance (
                         chx_balance_id INTEGER NOT NULL,
@@ -159,7 +161,6 @@ module DbChanges =
                         CONSTRAINT tx__pk PRIMARY KEY (tx_id),
                         CONSTRAINT tx__uk__tx_hash UNIQUE (tx_hash)
                     );
-
                     CREATE INDEX tx__ix__sender_address ON tx (sender_address);
                     CREATE INDEX tx__ix__fee ON tx (fee DESC);
 
