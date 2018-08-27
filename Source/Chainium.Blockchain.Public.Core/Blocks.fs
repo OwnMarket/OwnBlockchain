@@ -271,7 +271,13 @@ module Blocks =
 
         block.Header.Hash = blockHash
 
-    let createGenesisState genesisChxSupply genesisAddress genesisValidators : ProcessingOutput =
+    let createGenesisState
+        genesisChxSupply
+        genesisAddress
+        (genesisValidators : Map<ChainiumAddress, ValidatorState>)
+        : ProcessingOutput
+        =
+
         let genesisChxBalanceState =
             {
                 Amount = genesisChxSupply
@@ -284,6 +290,17 @@ module Blocks =
             ]
             |> Map.ofList
 
+        let validatorSnapshots =
+            genesisValidators
+            |> Map.toList
+            |> List.map (fun (a, s) ->
+                {
+                    ValidatorAddress = a
+                    NetworkAddress = s.NetworkAddress
+                    TotalStake = ChxAmount 0m
+                }
+            )
+
         {
             TxResults = Map.empty
             ChxBalances = chxBalances
@@ -291,6 +308,7 @@ module Blocks =
             Accounts = Map.empty
             Assets = Map.empty
             Validators = genesisValidators
+            ValidatorSnapshots = validatorSnapshots
             Stakes = Map.empty
         }
 

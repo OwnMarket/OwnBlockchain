@@ -287,6 +287,20 @@ module Mapping =
             NetworkAddress = state.NetworkAddress
         }
 
+    let validatorSnapshotFromDto (dto : ValidatorSnapshotDto) : ValidatorSnapshot =
+        {
+            ValidatorAddress = ChainiumAddress dto.ValidatorAddress
+            NetworkAddress = dto.NetworkAddress
+            TotalStake = ChxAmount dto.TotalStake
+        }
+
+    let validatorSnapshotToDto (state : ValidatorSnapshot) : ValidatorSnapshotDto =
+        {
+            ValidatorAddress = state.ValidatorAddress |> fun (ChainiumAddress a) -> a
+            NetworkAddress = state.NetworkAddress
+            TotalStake = state.TotalStake |> fun (ChxAmount a) -> a
+        }
+
     let stakeStateFromDto (dto : StakeStateDto) : StakeState =
         {
             Amount = ChxAmount dto.Amount
@@ -334,6 +348,10 @@ module Mapping =
             |> List.map (fun (ChainiumAddress a, s : ValidatorState) -> a, validatorStateToDto s)
             |> Map.ofList
 
+        let validatorSnapshots =
+            output.ValidatorSnapshots
+            |> List.map validatorSnapshotToDto
+
         let stakes =
             output.Stakes
             |> Map.toList
@@ -347,6 +365,7 @@ module Mapping =
             Accounts = accounts
             Assets = assets
             Validators = validators
+            ValidatorSnapshots = validatorSnapshots
             Stakes = stakes
         }
 

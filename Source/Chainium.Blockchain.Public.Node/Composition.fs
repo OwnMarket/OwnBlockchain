@@ -61,6 +61,10 @@ module Composition =
 
     let getAllValidators () = Db.getAllValidators Config.DbConnectionString
 
+    let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbConnectionString
+
+    let getValidatorSnapshots () = Db.getValidatorSnapshots Config.DbConnectionString
+
     let getStakeState = Db.getStakeState Config.DbConnectionString
 
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbConnectionString
@@ -100,6 +104,17 @@ module Composition =
             addressFromPrivateKey
             Config.ValidatorPrivateKey
 
+    let getTopValidators () =
+        Workflows.getTopValidators
+            getTopValidatorsByStake
+            (ChxAmount Config.GenesisChxSupply)
+            Config.QuorumSupplyPercent
+            Config.MaxValidatorCount
+
+    let getActiveValidators () =
+        Workflows.getActiveValidators
+            getValidatorSnapshots
+
     let persistTxResults =
         Workflows.persistTxResults
             saveTxResult
@@ -116,11 +131,14 @@ module Composition =
             getValidatorState
             getStakeState
             getTotalChxStaked
+            getTopValidators
+            getActiveValidators
             getLastBlockNumber
             getBlock
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
+            Config.CheckpointBlockCount
             (ChxAmount Config.MinTxActionFee)
 
     let createNewBlock () =

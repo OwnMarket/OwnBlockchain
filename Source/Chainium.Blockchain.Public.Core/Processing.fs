@@ -167,6 +167,7 @@ module Processing =
                     validators
                     |> Seq.choose (fun v -> v.Value |> Option.map (fun s -> v.Key, s))
                     |> Map.ofSeq
+                ValidatorSnapshots = []
                 Stakes =
                     stakes
                     |> Seq.choose (fun x -> x.Value |> Option.map (fun s -> x.Key, s))

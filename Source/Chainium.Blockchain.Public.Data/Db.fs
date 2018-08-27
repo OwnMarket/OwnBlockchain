@@ -334,25 +334,35 @@ module Db =
 
         DbTools.query<ValidatorInfoDto> dbConnectionString sql []
 
+    let getValidatorSnapshots (dbConnectionString : string) : ValidatorSnapshotDto list =
+        let sql =
+            """
+            SELECT validator_address, network_address, total_stake
+            FROM validator_snapshot
+            ORDER BY validator_address
+            """
+
+        DbTools.query<ValidatorSnapshotDto> dbConnectionString sql []
+
     let getTopValidatorsByStake
         (dbConnectionString : string)
         (topCount : int)
         (ChxAmount threshold)
-        : ValidatorInfoDto list
+        : ValidatorSnapshotDto list
         =
 
         let sql =
             """
-            SELECT validator_address, network_address
+            SELECT validator_address, network_address, total_stake
             FROM validator
-            WHERE validator_address IN (
-                SELECT validator_address
+            JOIN (
+                SELECT validator_address, sum(amount) AS total_stake
                 FROM stake
                 GROUP BY validator_address
                 HAVING sum(amount) >= @threshold
                 ORDER BY sum(amount) DESC, count(stakeholder_address) DESC, validator_address
                 LIMIT @topCount
-            )
+            ) s USING (validator_address)
             ORDER BY validator_address
             """
 
@@ -360,7 +370,7 @@ module Db =
             "@topCount", topCount |> box
             "@threshold", threshold |> box
         ]
-        |> DbTools.query<ValidatorInfoDto> dbConnectionString sql
+        |> DbTools.query<ValidatorSnapshotDto> dbConnectionString sql
 
     let getStakeState
         (dbConnectionString : string)
@@ -962,6 +972,71 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private removeValidatorSnapshots
+        conn
+        transaction
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            // TODO: Use TRUNCATE if all used DB engine types support transactional DDL.
+            """
+            DELETE FROM validator_snapshot
+            """
+
+        try
+            DbTools.executeWithinTransaction conn transaction sql [] |> ignore
+            Ok ()
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to remove validator snapshots."
+
+    let private addValidatorSnapshot
+        conn
+        transaction
+        (validatorSnapshot : ValidatorSnapshotDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            INSERT INTO validator_snapshot (validator_address, network_address, total_stake)
+            VALUES (@validatorAddress, @networkAddress, @totalStake)
+            """
+
+        let sqlParams =
+            [
+                "@validatorAddress", validatorSnapshot.ValidatorAddress |> box
+                "@networkAddress", validatorSnapshot.NetworkAddress |> box
+                "@totalStake", validatorSnapshot.TotalStake |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert validator snapshot."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert validator snapshot."
+
+    let private updateValidatorSnapshots
+        conn
+        transaction
+        (validatorSnapshots : ValidatorSnapshotDto list)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result validatorSnapshot =
+            result
+            >>= fun _ -> addValidatorSnapshot conn transaction validatorSnapshot
+
+        removeValidatorSnapshots conn transaction
+        >>= fun _ ->
+            validatorSnapshots
+            |> List.fold foldFn (Ok ())
+
     let private addStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
@@ -1048,14 +1123,17 @@ module Db =
         let transaction = conn.BeginTransaction(Data.IsolationLevel.ReadCommitted)
 
         let result =
-            removeProcessedTxs conn transaction state.TxResults
-            >>= fun _ -> updateChxBalances conn transaction state.ChxBalances
-            >>= fun _ -> updateHoldings conn transaction state.Holdings
-            >>= fun _ -> updateAccounts conn transaction state.Accounts
-            >>= fun _ -> updateAssets conn transaction state.Assets
-            >>= fun _ -> updateValidators conn transaction state.Validators
-            >>= fun _ -> updateStakes conn transaction state.Stakes
-            >>= fun _ -> updateBlock conn transaction blockInfoDto
+            result {
+                do! removeProcessedTxs conn transaction state.TxResults
+                do! updateChxBalances conn transaction state.ChxBalances
+                do! updateHoldings conn transaction state.Holdings
+                do! updateAccounts conn transaction state.Accounts
+                do! updateAssets conn transaction state.Assets
+                do! updateValidators conn transaction state.Validators
+                do! updateValidatorSnapshots conn transaction state.ValidatorSnapshots
+                do! updateStakes conn transaction state.Stakes
+                do! updateBlock conn transaction blockInfoDto
+            }
 
         match result with
         | Ok () ->

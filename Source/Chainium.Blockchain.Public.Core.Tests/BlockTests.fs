@@ -173,6 +173,20 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let validatorSnapshots =
+            [
+                {
+                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAAAA"
+                    NetworkAddress = "WWW" // W = 87 = 7 = G
+                    TotalStake = ChxAmount 1m
+                }
+                {
+                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "BBBBB"
+                    NetworkAddress = "XXX" // X = 88 = 8 = H
+                    TotalStake = ChxAmount 2m
+                }
+            ]
+
         let stakes =
             [
                 (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
@@ -188,6 +202,7 @@ module BlocksTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
+                ValidatorSnapshots = validatorSnapshots
                 Stakes = stakes
             }
 
@@ -328,6 +343,20 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let validatorSnapshots =
+            [
+                {
+                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAAAA"
+                    NetworkAddress = "WWW" // W = 87 = 7 = G
+                    TotalStake = ChxAmount 1m
+                }
+                {
+                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "BBBBB"
+                    NetworkAddress = "XXX" // X = 88 = 8 = H
+                    TotalStake = ChxAmount 2m
+                }
+            ]
+
         let stakes =
             [
                 (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
@@ -343,6 +372,7 @@ module BlocksTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
+                ValidatorSnapshots = validatorSnapshots
                 Stakes = stakes
             }
 
@@ -493,6 +523,20 @@ module BlocksTests =
             ]
             |> Map.ofList
 
+        let validatorSnapshots =
+            [
+                {
+                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAAAA"
+                    NetworkAddress = "WWW" // W = 87 = 7 = G
+                    TotalStake = ChxAmount 1m
+                }
+                {
+                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "BBBBB"
+                    NetworkAddress = "XXX" // X = 88 = 8 = H
+                    TotalStake = ChxAmount 2m
+                }
+            ]
+
         let stakes =
             [
                 (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
@@ -508,6 +552,7 @@ module BlocksTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
+                ValidatorSnapshots = validatorSnapshots
                 Stakes = stakes
             }
 

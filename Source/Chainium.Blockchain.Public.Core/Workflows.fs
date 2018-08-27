@@ -78,6 +78,26 @@ module Workflows =
         let (ChainiumAddress myValidatorAddress) = myPrivateKey |> PrivateKey |> addressFromPrivateKey
         blockProposer.ValidatorAddress = myValidatorAddress
 
+    let getTopValidators
+        getTopValidatorsByStake
+        totalSupply
+        quorumSupplyPercent
+        maxValidatorCount
+        =
+
+        totalSupply
+        |> Consensus.calculateQuorumSupply quorumSupplyPercent
+        |> Consensus.calculateValidatorThreshold maxValidatorCount
+        |> getTopValidatorsByStake maxValidatorCount
+        |> List.map Mapping.validatorSnapshotFromDto
+
+    let getActiveValidators
+        getValidatorSnapshots
+        =
+
+        getValidatorSnapshots ()
+        |> List.map Mapping.validatorSnapshotFromDto
+
     let persistTxResults saveTxResult txResults =
         result {
             do! txResults
@@ -99,11 +119,14 @@ module Workflows =
         getValidatorStateFromStorage
         getStakeStateFromStorage
         getTotalChxStakedFromStorage
+        (getTopValidators : unit -> ValidatorSnapshot list)
+        (getActiveValidators : unit -> ValidatorSnapshot list)
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         getBlock
         decodeHash
         createHash
         createMerkleTree
+        checkpointBlockCount
         minTxActionFee
         validatorAddress
         timestamp
@@ -126,6 +149,13 @@ module Workflows =
             let previousBlock = Mapping.blockFromDto previousBlockDto
             let blockNumber = previousBlock.Header.Number + 1L
 
+            let shouldCreateSnapshot = blockNumber |> fun (BlockNumber n) -> n % (int64 checkpointBlockCount) = 0L
+            let activeValidators =
+                if shouldCreateSnapshot then
+                    getTopValidators ()
+                else
+                    getActiveValidators ()
+
             let output =
                 txSet
                 |> Processing.processTxSet
@@ -144,6 +174,8 @@ module Workflows =
                     minTxActionFee
                     validatorAddress
                     blockNumber
+
+            let output = { output with ValidatorSnapshots = activeValidators }
 
             let block =
                 Blocks.assembleBlock

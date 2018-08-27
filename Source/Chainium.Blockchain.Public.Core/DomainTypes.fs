@@ -207,6 +207,12 @@ type ValidatorState = {
     NetworkAddress : string
 }
 
+type ValidatorSnapshot = {
+    ValidatorAddress : ChainiumAddress
+    NetworkAddress : string
+    TotalStake : ChxAmount
+}
+
 type StakeState = {
     Amount : ChxAmount
 }
@@ -218,6 +224,7 @@ type ProcessingOutput = {
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
     Validators : Map<ChainiumAddress, ValidatorState>
+    ValidatorSnapshots : ValidatorSnapshot list
     Stakes : Map<ChainiumAddress * ChainiumAddress, StakeState>
 }
 

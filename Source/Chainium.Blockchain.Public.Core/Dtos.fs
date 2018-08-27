@@ -180,6 +180,13 @@ type ValidatorStateDto = {
 }
 
 [<CLIMutable>]
+type ValidatorSnapshotDto = {
+    ValidatorAddress : string
+    NetworkAddress : string
+    TotalStake : decimal
+}
+
+[<CLIMutable>]
 type StakeStateDto = {
     Amount : decimal
 }
@@ -191,6 +198,7 @@ type ProcessingOutputDto = {
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto>
+    ValidatorSnapshots : ValidatorSnapshotDto list
     Stakes : Map<string * string, StakeStateDto>
 }
 
