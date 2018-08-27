@@ -11,7 +11,7 @@ module Log =
 
     let info o = log "INFO" o |> printfn "%s"
     let warning o = log "WARNING" o |> printfn "%s"
-    let error o = log "ERROR" o |> eprintfn "%s"
+    let error o = log "ERROR" o |> printfn "%s"
     let debug o =
         #if DEBUG
             log "DEBUG" o |> printfn "%s"
