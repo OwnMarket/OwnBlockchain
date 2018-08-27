@@ -10,7 +10,7 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 open Chainium.Blockchain.Public.Crypto
 
-module BlocksTests =
+module BlockTests =
 
     [<Fact>]
     let ``Blocks.createTxResultHash for Success`` () =
@@ -79,6 +79,55 @@ module BlocksTests =
 
         // ASSERT
         test <@ stateHash = "HHHII...G............" @>
+
+    [<Fact>]
+    let ``Blocks.createAccountStateHash`` () =
+        let account = AccountHash "AAA"
+        let controllerAddress = ChainiumAddress "CC"
+        let state = {AccountState.ControllerAddress = controllerAddress}
+
+        // ACT
+        let stateHash = Blocks.createAccountStateHash DummyHash.decode DummyHash.create (account, state)
+
+        // ASSERT
+        test <@ stateHash = "AAACC" @>
+
+    [<Fact>]
+    let ``Blocks.createAssetStateHash`` () =
+        let asset = AssetHash "AAA"
+        let assetCode = AssetCode "XXX" |> Some // X = 88 = 8 = H
+        let controllerAddress = ChainiumAddress "CC"
+        let state = {AssetState.AssetCode = assetCode; ControllerAddress = controllerAddress}
+
+        // ACT
+        let stateHash = Blocks.createAssetStateHash DummyHash.decode DummyHash.create (asset, state)
+
+        // ASSERT
+        test <@ stateHash = "AAAHHHCC" @>
+
+    [<Fact>]
+    let ``Blocks.createValidatorStateHash`` () =
+        let validator = ChainiumAddress "AAA"
+        let networkAddress = "XXX" // X = 88 = 8 = H
+        let state = {ValidatorState.NetworkAddress = networkAddress}
+
+        // ACT
+        let stateHash = Blocks.createValidatorStateHash DummyHash.decode DummyHash.create (validator, state)
+
+        // ASSERT
+        test <@ stateHash = "AAAHHH" @>
+
+    [<Fact>]
+    let ``Blocks.createStakeStateHash`` () =
+        let stakeholder = ChainiumAddress "AAA"
+        let validator = ChainiumAddress "BBB"
+        let state = {StakeState.Amount = ChxAmount 5m}
+
+        // ACT
+        let stateHash = Blocks.createStakeStateHash DummyHash.decode DummyHash.create (stakeholder, validator, state)
+
+        // ASSERT
+        test <@ stateHash = "AAABBB...E............" @>
 
     [<Fact>]
     let ``Blocks.createBlockHash`` () =
