@@ -22,7 +22,7 @@ module ValidationTests =
     let setAssetControllerActionType = "SetAssetController"
     let setAssetCodeActionType = "SetAssetCode"
     let setValidatorNetworkAddressActionType = "SetValidatorNetworkAddress"
-    let setStakeActionType = "SetStake"
+    let setStakeActionType = "DelegateStake"
 
     [<Fact>]
     let ``Validation.validateTx BasicValidation single validation error`` () =
@@ -659,10 +659,10 @@ module ValidationTests =
             test <@ e.Length = 1 @>
 
     [<Fact>]
-    let ``Validation.validateTx SetStake valid action`` () =
+    let ``Validation.validateTx DelegateStake valid action`` () =
         let expected =
             {
-                SetStakeTxActionDto.ValidatorAddress = "A"
+                DelegateStakeTxActionDto.ValidatorAddress = "A"
                 Amount = 1000m
             }
 
@@ -681,16 +681,16 @@ module ValidationTests =
 
         match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
         | Ok t ->
-            let actual = Helpers.extractActionData<SetStakeTxAction> t.Actions.Head
+            let actual = Helpers.extractActionData<DelegateStakeTxAction> t.Actions.Head
             test <@ ChainiumAddress expected.ValidatorAddress = actual.ValidatorAddress @>
             test <@ ChxAmount expected.Amount = actual.Amount @>
         | Error e -> failwithf "%A" e
 
     [<Fact>]
-    let ``Validation.validateTx SetStake invalid action`` () =
+    let ``Validation.validateTx DelegateStake invalid action`` () =
         let expected =
             {
-                SetStakeTxActionDto.ValidatorAddress = ""
+                DelegateStakeTxActionDto.ValidatorAddress = ""
                 Amount = -1m
             }
 

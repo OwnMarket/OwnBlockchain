@@ -377,10 +377,10 @@ module Processing =
             state.SetValidator(senderAddress, {validatorState with NetworkAddress = action.NetworkAddress})
             Ok state
 
-    let processSetStakeTxAction
+    let processDelegateStakeTxAction
         (state : ProcessingState)
         (senderAddress : ChainiumAddress)
-        (action : SetStakeTxAction)
+        (action : DelegateStakeTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
@@ -567,7 +567,7 @@ module Processing =
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
         | SetValidatorNetworkAddress action -> processSetValidatorNetworkAddressTxAction state senderAddress action
-        | SetStake action -> processSetStakeTxAction state senderAddress action
+        | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
 
     let processTxActions
         decodeHash

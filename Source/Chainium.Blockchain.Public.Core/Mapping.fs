@@ -90,12 +90,12 @@ module Mapping =
                 SetValidatorNetworkAddressTxAction.NetworkAddress = a.NetworkAddress
             }
             |> SetValidatorNetworkAddress
-        | :? SetStakeTxActionDto as a ->
+        | :? DelegateStakeTxActionDto as a ->
             {
-                SetStakeTxAction.ValidatorAddress = ChainiumAddress a.ValidatorAddress
+                DelegateStakeTxAction.ValidatorAddress = ChainiumAddress a.ValidatorAddress
                 Amount = ChxAmount a.Amount
             }
-            |> SetStake
+            |> DelegateStake
         | _ ->
             failwith "Invalid action type to map."
 

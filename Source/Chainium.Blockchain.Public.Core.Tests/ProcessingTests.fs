@@ -2774,11 +2774,11 @@ module ProcessingTests =
         test <@ output.Validators.[senderWallet.Address].NetworkAddress = newNetworkAddress @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // SetStake
+    // DelegateStake
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetStake - updating existing stake`` () =
+    let ``Processing.processTxSet DelegateStake - updating existing stake`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -2800,7 +2800,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetStake"
+                    ActionType = "DelegateStake"
                     ActionData =
                         {
                             ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
@@ -2870,7 +2870,7 @@ module ProcessingTests =
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = stakeAmount @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetStake - setting new stake`` () =
+    let ``Processing.processTxSet DelegateStake - setting new stake`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -2891,7 +2891,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetStake"
+                    ActionType = "DelegateStake"
                     ActionData =
                         {
                             ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
@@ -2961,7 +2961,7 @@ module ProcessingTests =
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = stakeAmount @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetStake - staking more than available balance`` () =
+    let ``Processing.processTxSet DelegateStake - staking more than available balance`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -2982,7 +2982,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetStake"
+                    ActionType = "DelegateStake"
                     ActionData =
                         {
                             ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
@@ -3056,7 +3056,7 @@ module ProcessingTests =
         test <@ output.Stakes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetStake - staking more than available balance due to the staked CHX`` () =
+    let ``Processing.processTxSet DelegateStake - staking more than available balance due to the staked CHX`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -3078,7 +3078,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetStake"
+                    ActionType = "DelegateStake"
                     ActionData =
                         {
                             ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a

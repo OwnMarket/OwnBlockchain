@@ -532,10 +532,11 @@ module SharedTests =
         let txActions =
             [
                 {
-                    ActionType = "SetStake"
+                    ActionType = "DelegateStake"
                     ActionData =
                         {
-                            SetStakeTxActionDto.ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                            DelegateStakeTxActionDto.ValidatorAddress =
+                                stakeValidatorAddress |> fun (ChainiumAddress a) -> a
                             Amount = stakeAmount
                         }
                 }

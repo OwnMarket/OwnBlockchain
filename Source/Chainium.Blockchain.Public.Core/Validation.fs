@@ -140,7 +140,7 @@ module Validation =
                 yield AppError "NetworkAddress is not provided."
         ]
 
-    let private validateSetStake isValidAddress (action : SetStakeTxActionDto) =
+    let private validateDelegateStake isValidAddress (action : DelegateStakeTxActionDto) =
         [
             if action.ValidatorAddress.IsNullOrWhiteSpace() then
                 yield AppError "ValidatorAddress is not provided."
@@ -190,8 +190,8 @@ module Validation =
                 validateSetAssetCode a
             | :? SetValidatorNetworkAddressTxActionDto as a ->
                 validateSetValidatorNetworkAddress a
-            | :? SetStakeTxActionDto as a ->
-                validateSetStake isValidAddress a
+            | :? DelegateStakeTxActionDto as a ->
+                validateDelegateStake isValidAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

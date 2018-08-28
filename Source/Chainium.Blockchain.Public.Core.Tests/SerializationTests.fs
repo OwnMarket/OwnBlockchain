@@ -352,13 +352,13 @@ module SerializationTests =
             failwithf "%A" appErrors
 
     [<Fact>]
-    let ``Serialization.deserializeTx SetStake`` () =
+    let ``Serialization.deserializeTx DelegateStake`` () =
         let expectedTxAction =
             {
-                ActionType = "SetStake"
+                ActionType = "DelegateStake"
                 ActionData =
                     {
-                        SetStakeTxActionDto.ValidatorAddress = "SomeValidator"
+                        DelegateStakeTxActionDto.ValidatorAddress = "SomeValidator"
                         Amount = 1000m
                     }
             }

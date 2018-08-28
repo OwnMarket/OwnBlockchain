@@ -57,7 +57,7 @@ type SetValidatorNetworkAddressTxActionDto = {
 }
 
 [<CLIMutable>]
-type SetStakeTxActionDto = {
+type DelegateStakeTxActionDto = {
     ValidatorAddress : string
     Amount : decimal
 }
