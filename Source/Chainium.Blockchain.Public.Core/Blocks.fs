@@ -5,6 +5,7 @@ open Chainium.Blockchain.Common
 open Chainium.Blockchain.Common.Conversion
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
+open Chainium.Blockchain.Public.Core.Dtos
 
 module Blocks =
 
@@ -308,7 +309,7 @@ module Blocks =
 
         let genesisChxBalanceState =
             {
-                Amount = genesisChxSupply
+                ChxBalanceState.Amount = genesisChxSupply
                 Nonce = Nonce 0L
             }
 
@@ -323,7 +324,7 @@ module Blocks =
             |> Map.toList
             |> List.map (fun (a, s) ->
                 {
-                    ValidatorAddress = a
+                    ValidatorSnapshot.ValidatorAddress = a
                     NetworkAddress = s.NetworkAddress
                     TotalStake = ChxAmount 0m
                 }
@@ -365,6 +366,12 @@ module Blocks =
             previousBlockHash
             txSet
             output
+
+    let extractBlockFromEnvelopeDto blockEnvelopeDto =
+        blockEnvelopeDto
+        |> Mapping.blockEnvelopeFromDto
+        |> fun envelope -> Serialization.deserialize<BlockDto> envelope.RawBlock
+        |> Result.map Mapping.blockFromDto
 
     let getBlockDto verifySignature blockEnvelopeDto validatorAddress =
         result {

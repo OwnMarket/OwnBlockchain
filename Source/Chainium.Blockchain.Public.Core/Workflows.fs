@@ -72,10 +72,16 @@ module Workflows =
 
         let blockProposer =
             getValidators ()
-            |> List.sortBy (fun v -> v.ValidatorAddress)
+            |> List.map (fun v -> // TODO: Remove this once we start using validator snapshots
+                {
+                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress v.ValidatorAddress
+                    NetworkAddress = v.NetworkAddress
+                    TotalStake = ChxAmount 0m
+                }
+            )
             |> Consensus.getBlockProposer nextBlockNumber
 
-        let (ChainiumAddress myValidatorAddress) = myPrivateKey |> PrivateKey |> addressFromPrivateKey
+        let myValidatorAddress = myPrivateKey |> addressFromPrivateKey
         blockProposer.ValidatorAddress = myValidatorAddress
 
     let getTopValidators
@@ -91,10 +97,7 @@ module Workflows =
         |> getTopValidatorsByStake maxValidatorCount
         |> List.map Mapping.validatorSnapshotFromDto
 
-    let getActiveValidators
-        getValidatorSnapshots
-        =
-
+    let getActiveValidators getValidatorSnapshots =
         getValidatorSnapshots ()
         |> List.map Mapping.validatorSnapshotFromDto
 
@@ -142,11 +145,11 @@ module Workflows =
         let getTotalChxStaked = memoize getTotalChxStakedFromStorage
 
         result {
-            let! previousBlockDto =
+            let! previousBlock =
                 match getLastAppliedBlockNumber () with
-                | Some blockNumber -> getBlock blockNumber
                 | None -> failwith "Blockchain state is not initialized."
-            let previousBlock = Mapping.blockFromDto previousBlockDto
+                | Some blockNumber -> getBlock blockNumber >>= Blocks.extractBlockFromEnvelopeDto
+
             let blockNumber = previousBlock.Header.Number + 1L
 
             let shouldCreateSnapshot = blockNumber |> fun (BlockNumber n) -> n % (int64 checkpointBlockCount) = 0L
@@ -200,7 +203,6 @@ module Workflows =
         persistTxResults
         signBlock
         saveBlock
-        saveBlockEnvelope
         applyNewState
         maxTxCountPerBlock
         addressFromPrivateKey
@@ -213,13 +215,14 @@ module Workflows =
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage
 
-        let validatorAddress = validatorPrivateKey |> PrivateKey |> addressFromPrivateKey
+        let validatorAddress = validatorPrivateKey |> addressFromPrivateKey
         match
             Processing.getTxSetForNewBlock
                 getPendingTxs
                 getChxBalanceState
                 getAvailableChxBalance
-                maxTxCountPerBlock with
+                maxTxCountPerBlock
+            with
         | [] -> None // Nothing to process.
         | txSet ->
             result {
@@ -230,25 +233,22 @@ module Workflows =
                 let! block, output = createBlock validatorAddress timestamp txSet
                 let outputDto = Mapping.outputToDto output
                 let blockDto = Mapping.blockToDto block
-
                 let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
 
+                let! blockEnvelopeDto =
+                    Serialization.serialize<BlockDto> blockDto
+                    >>= fun blockBytes ->
+                        let signature : Signature = signBlock validatorPrivateKey blockBytes
+                        {
+                            Block = blockBytes |> Convert.ToBase64String
+                            V = signature.V
+                            S = signature.S
+                            R = signature.R
+                        }
+                        |> Ok
+
                 do! persistTxResults outputDto.TxResults
-
-                do! saveBlock blockDto
-
-                match Serialization.serialize<BlockDto> blockDto with
-                | Ok blockBytes ->
-                    let signature : Signature = signBlock (PrivateKey validatorPrivateKey) blockBytes
-                    let blockEnvelopeDto = {
-                        Block = blockBytes |> Convert.ToBase64String
-                        V = signature.V
-                        S = signature.S
-                        R = signature.R
-                    }
-                    do! saveBlockEnvelope block.Header.Number blockEnvelopeDto
-                | _ -> do! Result.appError "Error serializing block"
-
+                do! saveBlock block.Header.Number blockEnvelopeDto
                 do! applyNewState blockInfoDto outputDto
 
                 return { BlockCreatedEventData.BlockNumber = block.Header.Number }
@@ -261,7 +261,6 @@ module Workflows =
         verifySignature
         persistTxResults
         saveBlock
-        saveBlockEnvelope
         applyNewState
         blockNumber
         blockEnvelopeDto
@@ -270,14 +269,20 @@ module Workflows =
         result {
             let blockProposer =
                 getValidators ()
-                |> List.sortBy (fun v -> v.ValidatorAddress)
+                |> List.map (fun v -> // TODO: Remove this once we start using validator snapshots
+                    {
+                        ValidatorSnapshot.ValidatorAddress = ChainiumAddress v.ValidatorAddress
+                        NetworkAddress = v.NetworkAddress
+                        TotalStake = ChxAmount 0m
+                    }
+                )
                 |> Consensus.getBlockProposer blockNumber
 
             let! blockDto =
                 Blocks.getBlockDto
                     verifySignature
                     blockEnvelopeDto
-                    (ChainiumAddress blockProposer.ValidatorAddress)
+                    blockProposer.ValidatorAddress
 
             let txSet = blockDto.TxSet |> List.map(fun hash -> TxHash hash)
             let! createdBlock, output =
@@ -292,8 +297,6 @@ module Workflows =
             if blockDto = createdBlockDto then
                 let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
                 do! persistTxResults outputDto.TxResults
-                do! saveBlock blockDto
-                do! saveBlockEnvelope blockNumber blockEnvelopeDto
                 do! applyNewState blockInfoDto outputDto
             else
                 return!
@@ -336,15 +339,15 @@ module Workflows =
         applyNewState
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         (blockExists : BlockNumber -> bool)
-        (getBlock : BlockNumber -> Result<BlockDto, AppErrors>)
+        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
         =
 
         let rec processNextBlock (previousBlockNumber : BlockNumber, previousBlockHash : BlockHash) =
             let nextBlockNumber = previousBlockNumber + 1L
             if blockExists nextBlockNumber then
                 result {
-                    let! blockDto = getBlock nextBlockNumber
-                    let block = Mapping.blockFromDto blockDto
+                    let! block = getBlock nextBlockNumber >>= Blocks.extractBlockFromEnvelopeDto
+
                     if Blocks.isValidBlock decodeHash createHash createMerkleTree previousBlockHash block then
                         let! event =
                             processBlock
@@ -373,13 +376,13 @@ module Workflows =
         | None -> failwith "Blockchain state is not initialized."
         | Some blockNumber ->
             getBlock blockNumber
-            >>= (fun lastBlock ->
-                processNextBlock (BlockNumber lastBlock.Header.Number, BlockHash lastBlock.Header.Hash)
-            )
+            >>= Blocks.extractBlockFromEnvelopeDto
+            >>= fun lastBlock ->
+                processNextBlock (lastBlock.Header.Number, lastBlock.Header.Hash)
 
     let initBlockchainState
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
-        (getBlock : BlockNumber -> Result<BlockDto, AppErrors>)
+        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
         saveBlock
         applyNewState
         decodeHash
@@ -400,26 +403,37 @@ module Workflows =
 
             let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress genesisValidators
 
-            let genesisBlockDto =
+            let genesisBlock =
                 Blocks.createGenesisBlock
                     decodeHash createHash createMerkleTree zeroHash zeroAddress genesisState
-                |> Mapping.blockToDto
 
             let genesisBlockExists =
-                match getBlock (BlockNumber 0L) with
-                | Ok genesisBlockDtoFromDisk ->
-                    if genesisBlockDtoFromDisk <> genesisBlockDto then
+                match getBlock genesisBlock.Header.Number >>= Blocks.extractBlockFromEnvelopeDto with
+                | Ok genesisBlockFromDisk ->
+                    if genesisBlockFromDisk <> genesisBlock then
                         failwith "Stored genesis block is invalid."
                     true
                 | _ ->
                     false
+
+            let genesisBlockDto = genesisBlock |> Mapping.blockToDto
 
             let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto genesisBlockDto.Header
 
             let result =
                 result {
                     if not genesisBlockExists then
-                        do! saveBlock genesisBlockDto
+                        let! blockEnvelopeDto =
+                            Serialization.serialize<BlockDto> genesisBlockDto
+                            >>= fun blockBytes ->
+                                {
+                                    Block = blockBytes |> Convert.ToBase64String
+                                    V = ""
+                                    S = ""
+                                    R = ""
+                                }
+                                |> Ok
+                        do! saveBlock genesisBlock.Header.Number blockEnvelopeDto
                     do! genesisState
                         |> Mapping.outputToDto
                         |> applyNewState blockInfoDto
@@ -581,8 +595,12 @@ module Workflows =
         : Result<GetBlockApiResponseDto, AppErrors>
         =
 
-        match getBlock blockNumber with
-        | Ok block -> Ok (Mapping.blockTxsToGetBlockApiResponseDto block)
+        match getBlock blockNumber >>= Blocks.extractBlockFromEnvelopeDto with
+        | Ok block ->
+            block
+            |> Mapping.blockToDto
+            |> Mapping.blockTxsToGetBlockApiResponseDto
+            |> Ok
         | _ -> Result.appError (sprintf "Block %i does not exist" (blockNumber |> fun (BlockNumber b) -> b))
 
     let getTxApi

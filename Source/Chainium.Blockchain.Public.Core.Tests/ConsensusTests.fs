@@ -67,8 +67,16 @@ module ConsensusTests =
     let ``Consensus.getBlockProposer`` () =
         // ARRANGE
         let blockNumber = BlockNumber 1L
-        let validators = ["A"; "B"; "C"; "D"]
-        let expectedValidator = "B"
+        let validators =
+            [
+                {ValidatorSnapshotDto.ValidatorAddress = "A"; NetworkAddress = "1"; TotalStake = 0m}
+                {ValidatorSnapshotDto.ValidatorAddress = "B"; NetworkAddress = "2"; TotalStake = 0m}
+                {ValidatorSnapshotDto.ValidatorAddress = "C"; NetworkAddress = "3"; TotalStake = 0m}
+                {ValidatorSnapshotDto.ValidatorAddress = "D"; NetworkAddress = "4"; TotalStake = 0m}
+            ]
+            |> List.map Mapping.validatorSnapshotFromDto
+
+        let expectedValidator = validators.[1]
 
         // ACT
         let actualValidator = Consensus.getBlockProposer blockNumber validators

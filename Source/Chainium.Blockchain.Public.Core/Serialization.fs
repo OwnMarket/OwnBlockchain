@@ -77,10 +77,14 @@ module Serialization =
     }
 
     let serialize<'T> (dto : 'T) =
-        dto
-        |> JsonConvert.SerializeObject
-        |> stringToBytes
-        |> Ok
+        try
+            dto
+            |> JsonConvert.SerializeObject
+            |> stringToBytes
+            |> Ok
+        with
+        | ex ->
+            Result.appError ex.AllMessagesAndStackTraces
 
     let deserialize<'T> (rawData : byte[]) : Result<'T, AppErrors> =
         try

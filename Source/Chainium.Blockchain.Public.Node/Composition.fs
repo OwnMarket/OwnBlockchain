@@ -23,10 +23,6 @@ module Composition =
 
     let getBlock = Raw.getBlock Config.DataDir
 
-    let saveBlockEnvelope = Raw.saveBlockEnvelope Config.DataDir
-
-    let getBlockEnvelope = Raw.getBlockEnvelope Config.DataDir
-
     let blockExists = Raw.blockExists Config.DataDir
 
     // DB
@@ -102,7 +98,7 @@ module Composition =
             getLastBlockNumber
             getAllValidators
             addressFromPrivateKey
-            Config.ValidatorPrivateKey
+            (PrivateKey Config.ValidatorPrivateKey)
 
     let getTopValidators () =
         Workflows.getTopValidators
@@ -150,11 +146,10 @@ module Composition =
             persistTxResults
             Signing.signMessage
             saveBlock
-            saveBlockEnvelope
             applyNewState
             Config.MaxTxCountPerBlock
             addressFromPrivateKey
-            Config.ValidatorPrivateKey
+            (PrivateKey Config.ValidatorPrivateKey)
 
     let applyBlock =
         Workflows.applyBlock
@@ -163,7 +158,6 @@ module Composition =
             Signing.verifySignature
             persistTxResults
             saveBlock
-            saveBlockEnvelope
             applyNewState
 
     let initBlockchainState () =
@@ -198,14 +192,14 @@ module Composition =
         Workflows.propagateBlock
             Peers.sendMessage
             Config.NetworkAddress
-            getBlockEnvelope
+            getBlock
 
     // Network
 
     let processPeerMessage (peerMessage : PeerMessage) =
         Workflows.processPeerMessage
             getTx
-            getBlockEnvelope
+            getBlock
             submitTx
             applyBlock
             Peers.respondToPeer

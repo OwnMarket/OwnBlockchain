@@ -14,7 +14,8 @@ module Consensus =
         Decimal.Round(quorumSupply / (decimal maxValidatorCount), 18, MidpointRounding.AwayFromZero)
         |> ChxAmount
 
-    let getBlockProposer (BlockNumber blockNumber) (validators : _ list) =
-        // This is a simple leader based protocol used as a temporary placeholder for real consensus implementation.
+    let getBlockProposer (BlockNumber blockNumber) (validators : ValidatorSnapshot list) =
         let validatorIndex = blockNumber % (int64 validators.Length) |> Convert.ToInt32
-        validators.[validatorIndex]
+        validators
+        |> List.sortBy (fun v -> v.ValidatorAddress)
+        |> List.item validatorIndex

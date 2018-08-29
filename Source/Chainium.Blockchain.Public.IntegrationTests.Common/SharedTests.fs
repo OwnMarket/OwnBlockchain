@@ -241,10 +241,11 @@ module SharedTests =
                 genesisValidators
             |> Blocks.createGenesisBlock
                 Hashing.decode Hashing.hash Hashing.merkleTree Hashing.zeroHash Hashing.zeroAddress
-            |> Mapping.blockToDto
 
         // ACT
-        let loadedBlockDto = Raw.getBlock Config.DataDir (BlockNumber 0L)
+        let loadedBlockDto =
+            Raw.getBlock Config.DataDir (BlockNumber 0L)
+            >>= Blocks.extractBlockFromEnvelopeDto
 
         // ASSERT
         test <@ loadedBlockDto = Ok expectedBlockDto @>

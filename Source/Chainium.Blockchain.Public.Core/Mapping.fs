@@ -411,19 +411,19 @@ module Mapping =
         }
 
     let blockTxsToGetBlockApiResponseDto
-        (blockInfo : BlockDto)
+        (blockDto : BlockDto)
         =
 
         {
-            GetBlockApiResponseDto.Number = blockInfo.Header.Number
-            GetBlockApiResponseDto.Hash = blockInfo.Header.Hash
-            GetBlockApiResponseDto.PreviousHash = blockInfo.Header.PreviousHash
-            GetBlockApiResponseDto.Timestamp = blockInfo.Header.Timestamp
-            GetBlockApiResponseDto.Validator = blockInfo.Header.Validator
-            GetBlockApiResponseDto.TxSetRoot = blockInfo.Header.TxSetRoot
-            GetBlockApiResponseDto.TxResultSetRoot = blockInfo.Header.TxResultSetRoot
-            GetBlockApiResponseDto.StateRoot = blockInfo.Header.StateRoot
-            GetBlockApiResponseDto.TxSet = blockInfo.TxSet
+            GetBlockApiResponseDto.Number = blockDto.Header.Number
+            GetBlockApiResponseDto.Hash = blockDto.Header.Hash
+            GetBlockApiResponseDto.PreviousHash = blockDto.Header.PreviousHash
+            GetBlockApiResponseDto.Timestamp = blockDto.Header.Timestamp
+            GetBlockApiResponseDto.Validator = blockDto.Header.Validator
+            GetBlockApiResponseDto.TxSetRoot = blockDto.Header.TxSetRoot
+            GetBlockApiResponseDto.TxResultSetRoot = blockDto.Header.TxResultSetRoot
+            GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
+            GetBlockApiResponseDto.TxSet = blockDto.TxSet
         }
 
     let txToGetTxApiResponseDto
