@@ -4,7 +4,7 @@
 
 Private/public key pairs are generated using Elliptic Curve Cryptography. Similar to other major blockchain projects, Chainium blockchain uses a specific Koblitz curve [secp256k1](https://en.bitcoin.it/wiki/Secp256k1).
 
-Concrete implementation of algorithm used in Chainium blockchain, comes from [Bouncy Castle project](https://www.bouncycastle.org/csharp).
+Concrete implementation of algorithm used in Chainium blockchain, comes from [secp256k1 library](https://github.com/bitcoin-core/secp256k1).
 
 ## Hashing
 

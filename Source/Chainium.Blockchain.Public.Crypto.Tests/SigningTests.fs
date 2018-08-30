@@ -68,7 +68,7 @@ module SigningTests =
         let expectedSignatures =
             [
                 "2C6sgXHMLkwiWeUK4fpyVFa3XG59MBa221pkW7kq2KB8",
-                    "1", "HeBRVYhpjgrc1DgyxgBZJj7YPsgc5pYh2gAxQX6imSw2", "A9m7q528reZGoATB1SwjnMjiqYFPTTA8JEDHuBQccd6m"
+                    "2", "HeBRVYhpjgrc1DgyxgBZJj7YPsgc5pYh2gAxQX6imSw2", "95ZFfijTwQBVmvLFDjEZQrNdTxDziDvKyxj6VUKdFe4A"
                 "3H2V8pM1h4wJEzCfuBHbNBC4w2FvXszKXx6nMEs3mUcC",
                     "1", "HP95LoxHV9B1bSAahTyNFereLdhP7jFhykBeKRjxE3Xh", "G6AVurMM9CDqFt5zPNQmRCjnLfEp6PWoJ587Xq7Zge4"
                 "CpxNZ1YsPCmVrLwJzP7H88gHthSjBSySgVR3iK1c1VBk",
@@ -76,15 +76,15 @@ module SigningTests =
                 "GzsiWSoVZtDKwGeLELjpqRW618eBsWmFxJhE2wobkzmP",
                     "2", "GwBjy1FLwSfcjUGZA66JzZjHDdHZPSc4o72Jx9y4pU5J", "4KQcT4oXgukyDSxFaE3ExMQQC4FqKBkWMS7TQ3zbwK8K"
                 "Ai6m6px88vHv9L3uVtqSGMRoRDatem7xYXdUyAgg7fon",
-                    "1", "4oUzXs8wb1gwbD3VjpSMD1T7TwLBa4d5ZRPWNfTEs9Pd", "AMKcue6nperyfHzVL9a9G4m6m7Eo3upmwcffi3wYqxa3"
+                    "2", "4oUzXs8wb1gwbD3VjpSMD1T7TwLBa4d5ZRPWNfTEs9Pd", "8szkb9eoyPsnunnvu2c9w9MFYPEb7mFgLaGigbnh2Jat"
                 "DdJtweNMxs6vfL3dGUMzZHM3GM7gi6RbGyHHwDcQaxXT",
-                    "2", "G1aERxvq4GiXWSbFpfqWUmxw9WbxFyyRcqdJCHPTdqB7", "G6sM4kyW3eA8fQz4QghWSeakeNFuqFhaqKms3z6AQP27"
+                    "1", "G1aERxvq4GiXWSbFpfqWUmxw9WbxFyyRcqdJCHPTdqB7", "38T2S2n6kQadufoMpVUnkZXbf8DULRNsSsAXLfe5Tt8p"
                 "9hYD2Xsky8PUpQStvE8UhPaHmhaqxhJth8VuQT5TDTjA",
                     "1", "J42GqMsdoxSC8bDnmDNP6yTrkDUdTZZRmdApjnUq2zNf", "JqM6oVHiGqnw2ck1n5kof2H7okxMwPzLJRQB1LpUzWF"
                 "AAscexBi2v8agKdHwbDgfiKzs9eMbH8JQQB3vzvx5k7X",
                     "2", "CazzRXDKrzqoVsgm46sT7PmaaYUMgngpCNz111h2nCD5", "2TYq8RgJYpyneTLJvTPXpgohPqUfRaTBMrgmZZB76Zbd"
                 "9exbLv213SGiHnSppnLYsRVTQqW96BHcMDg9ECZZEBCt",
-                    "1", "56hztYT5Jw31AH36xaDAyxi3MKG4xXtjduu2RWo3jaa4", "DSdapmpcR4Y4Rpq7zSmsHgzmu41PpdAeoAXFVpsiwNcV"
+                    "2", "56hztYT5Jw31AH36xaDAyxi3MKG4xXtjduu2RWo3jaa4", "5ngng1vzNzCi9FxJEjQRuX7aQSTzM3uoV2R8tprWvtYS"
                 "AvLDKGB7SAqjjs4RhT87GCdBdxyyJHSqcALvWRrQnggd",
                     "2", "A6r5TmuuqP8foTMmfnPWUPoMH3FT55ebYR5N4KxFFuja", "2Usa4YfjD9Rv5L2p8b5ig8LTsp4kbFYd8JWTGMKWGGLV"
             ]
