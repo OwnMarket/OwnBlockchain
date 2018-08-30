@@ -8,22 +8,14 @@ open Chainium.Blockchain.Public.Core.Dtos
 module Validation =
 
     let validateSignature (signature : Signature) =
+        let signatureEncodedString = signature |> fun (Signature s) -> s
         [
-            if signature.V.IsNullOrWhiteSpace() then
-                yield AppError "Signature component V is missing from the envelope."
-            if signature.R.IsNullOrWhiteSpace() then
-                yield AppError "Signature component R is missing from the envelope."
-            if signature.S.IsNullOrWhiteSpace() then
-                yield AppError "Signature component S is missing from the envelope."
+            if signatureEncodedString.IsNullOrWhiteSpace() then
+                yield AppError "Signature is missing from the envelope."
         ]
 
     let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
-        let signature =
-            {
-                V = txEnvelopeDto.V
-                R = txEnvelopeDto.R
-                S = txEnvelopeDto.S
-            }
+        let signature = Signature txEnvelopeDto.Signature
         [
             if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
                 yield AppError "Tx is missing from the envelope."
@@ -33,12 +25,7 @@ module Validation =
         |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
 
     let validateBlockEnvelope (blockEnvelopeDto : BlockEnvelopeDto) : Result<BlockEnvelope, AppErrors> =
-        let signature =
-            {
-                V = blockEnvelopeDto.V
-                R = blockEnvelopeDto.R
-                S = blockEnvelopeDto.S
-            }
+        let signature = Signature blockEnvelopeDto.Signature
         [
             if blockEnvelopeDto.Block.IsNullOrWhiteSpace() then
                 yield AppError "Block is missing from the envelope."

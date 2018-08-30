@@ -14,11 +14,7 @@ type WalletInfo = {
     Address : ChainiumAddress
 }
 
-type Signature = {
-    V : string
-    R : string
-    S : string
-}
+type Signature = Signature of string
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Accounts

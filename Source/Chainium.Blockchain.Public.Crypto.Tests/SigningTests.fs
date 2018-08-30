@@ -68,27 +68,27 @@ module SigningTests =
         let expectedSignatures =
             [
                 "2C6sgXHMLkwiWeUK4fpyVFa3XG59MBa221pkW7kq2KB8",
-                    "2", "HeBRVYhpjgrc1DgyxgBZJj7YPsgc5pYh2gAxQX6imSw2", "95ZFfijTwQBVmvLFDjEZQrNdTxDziDvKyxj6VUKdFe4A"
+                "NpWshZ58Z5PjCYGt5ERd1X7LidvNkAHKKCs5CzVtTwBRrkJigcR9LcVtCtYeFByTqXEco9CT5jzyHho23d5ca2VTN"
                 "3H2V8pM1h4wJEzCfuBHbNBC4w2FvXszKXx6nMEs3mUcC",
-                    "1", "HP95LoxHV9B1bSAahTyNFereLdhP7jFhykBeKRjxE3Xh", "G6AVurMM9CDqFt5zPNQmRCjnLfEp6PWoJ587Xq7Zge4"
+                "NUo5XKiMNfh1bKQDLQPAuBw9aS6RonNJwMKUKGgcwYTXHcz6XnjKiU6CqFNbkqmbx9NduVeLwe3JfCHL55ikWsKb5"
                 "CpxNZ1YsPCmVrLwJzP7H88gHthSjBSySgVR3iK1c1VBk",
-                    "2", "DafxKcuoczzbxo7rw7aVvaKyZDSKdqRJesMntUDVnHuj", "2UtKBjCJfzf9cSq6nxgEUMmaPDAd93j5xpvxj4Bnza2v"
+                "HViz1vmVcT6RN1PhTZGhEuo2LkK8wibYnSYcoCRiHysP7v1MfmhmjVraFhHvFdGqx41mYfwqKP3vS23csBRMRinB2"
                 "GzsiWSoVZtDKwGeLELjpqRW618eBsWmFxJhE2wobkzmP",
-                    "2", "GwBjy1FLwSfcjUGZA66JzZjHDdHZPSc4o72Jx9y4pU5J", "4KQcT4oXgukyDSxFaE3ExMQQC4FqKBkWMS7TQ3zbwK8K"
+                "MtmL3y4RV8QtXc2U9iQ5m6CkGtTdtjg9tWmdgjpHPYUUM6S3QVDNfg4J9tNvRedgorAFHUsSRijYDvWStSBdU3Aw2"
                 "Ai6m6px88vHv9L3uVtqSGMRoRDatem7xYXdUyAgg7fon",
-                    "2", "4oUzXs8wb1gwbD3VjpSMD1T7TwLBa4d5ZRPWNfTEs9Pd", "8szkb9eoyPsnunnvu2c9w9MFYPEb7mFgLaGigbnh2Jat"
+                "5z6EjhTdpTf5osbENz6UJU6r9NKThBF4gaBA23SyMnJvt6RbF577dW4nLYsaBHGZ8Xd54bmehEgbHwqapxt11pEaU"
                 "DdJtweNMxs6vfL3dGUMzZHM3GM7gi6RbGyHHwDcQaxXT",
-                    "1", "G1aERxvq4GiXWSbFpfqWUmxw9WbxFyyRcqdJCHPTdqB7", "38T2S2n6kQadufoMpVUnkZXbf8DULRNsSsAXLfe5Tt8p"
+                "LgUETDP6czyLyZhaxqfR17bTtTUxEw2HdmARgzbpi6Yy8ePqwnaoZHUuBFdDCbyQBnZR79XiWKPXk2YWmiTakBfkB"
                 "9hYD2Xsky8PUpQStvE8UhPaHmhaqxhJth8VuQT5TDTjA",
-                    "1", "J42GqMsdoxSC8bDnmDNP6yTrkDUdTZZRmdApjnUq2zNf", "JqM6oVHiGqnw2ck1n5kof2H7okxMwPzLJRQB1LpUzWF"
+                "PMn2a8Cxq8KCe6sGS2F6tnV2y7K9d5FgJFL1U6h53u5dG27d8fiAgVpeDuMu7r8Bb6ZwPcVmdNHPrCDkB6uZKHXWP"
                 "AAscexBi2v8agKdHwbDgfiKzs9eMbH8JQQB3vzvx5k7X",
-                    "2", "CazzRXDKrzqoVsgm46sT7PmaaYUMgngpCNz111h2nCD5", "2TYq8RgJYpyneTLJvTPXpgohPqUfRaTBMrgmZZB76Zbd"
+                "GC7AbefoXdTAoj5U6fQpzdVpoqddxxbyuJjtd9nhKJYj2AEoFwLpo6L3c8J42bGbVpz8bgshpir11D5tkEuphZDJQ"
                 "9exbLv213SGiHnSppnLYsRVTQqW96BHcMDg9ECZZEBCt",
-                    "2", "56hztYT5Jw31AH36xaDAyxi3MKG4xXtjduu2RWo3jaa4", "5ngng1vzNzCi9FxJEjQRuX7aQSTzM3uoV2R8tprWvtYS"
+                "6Ng73M2ReLhETgvmNvv8obg3eaEySZJkYdpyNBAMa6tsZ7q6WjPq4wNNQnWJ8Azr2FV7Rmw21cuLxLFJv7zMsmsFE"
                 "AvLDKGB7SAqjjs4RhT87GCdBdxyyJHSqcALvWRrQnggd",
-                    "2", "A6r5TmuuqP8foTMmfnPWUPoMH3FT55ebYR5N4KxFFuja", "2Usa4YfjD9Rv5L2p8b5ig8LTsp4kbFYd8JWTGMKWGGLV"
+                "Cw6aqjNxfa2myJhP2VFhWH7NrjBrqNdHFJfGPUxAzRxnnPUTgX9tCq8JbAnNuxGy16VsVejAQV2CZ9K6e4jMZrJR6"
             ]
-            |> List.map (fun (pk, v, r, s) -> pk, {V = v; R = r; S = s})
+            |> List.map (fun (pk, signature) -> pk, (Signature signature))
 
         let actualSignatures =
             expectedSignatures

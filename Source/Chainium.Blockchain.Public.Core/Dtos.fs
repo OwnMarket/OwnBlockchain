@@ -79,9 +79,7 @@ type TxDto = {
 [<CLIMutable>]
 type TxEnvelopeDto = {
     Tx : string
-    V : string
-    R : string
-    S : string
+    Signature : string
 }
 
 [<CLIMutable>]
@@ -143,9 +141,7 @@ type BlockInfoDto = {
 [<CLIMutable>]
 type BlockEnvelopeDto = {
     Block : string
-    V : string
-    R : string
-    S : string
+    Signature : string
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

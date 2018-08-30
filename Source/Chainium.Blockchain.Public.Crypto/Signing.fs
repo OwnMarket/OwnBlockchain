@@ -44,35 +44,26 @@ module Signing =
         let messageHash = Hashing.hashBytes message
         let (recoveryId, signatureSerialized) = Secp256k1.sign messageHash privateKey
 
-        {
-            V =
-                recoveryId
-                |> (fun v -> [| Convert.ToByte v |])
-                |> Hashing.encode
-            R =
-                signatureSerialized
-                |> Seq.take 32
-                |> Seq.toArray
-                |> Hashing.encode
-            S =
-                signatureSerialized
-                |> Seq.skip(32)
-                |> Seq.take(32)
-                |> Seq.toArray
-                |> Hashing.encode
-        }
+        [
+            signatureSerialized
+            recoveryId |> (fun v -> [| Convert.ToByte v |])
+        ]
+        |> Array.concat
+        |> Hashing.encode
+        |> Signature
 
     let verifySignature (signature : Signature) (message : byte[]) : ChainiumAddress option =
-        let recoveryId =
-            signature.V
+        let signatureBytes =
+            signature
+            |> fun (Signature s) -> s
             |> Hashing.decode
-            |> (fun arr -> arr.[0])
-            |> int
+
+        let recoveryId = signatureBytes.[64] |> int
 
         let signature =
             [
-                signature.R |> Hashing.decode
-                signature.S |> Hashing.decode
+                signatureBytes |> Seq.take 32 |> Seq.toArray
+                signatureBytes |> Seq.skip 32 |> Seq.take 32 |> Seq.toArray
             ]
             |> Array.concat
             |> Secp256k1.parseSignature recoveryId

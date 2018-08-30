@@ -36,12 +36,10 @@ module SharedTests =
             |> JsonConvert.SerializeObject
             |> Conversion.stringToBytes
 
-        let signature = Signing.signMessage sender.PrivateKey txBytes
+        let (Signature signature) = Signing.signMessage sender.PrivateKey txBytes
         {
             Tx = System.Convert.ToBase64String(txBytes)
-            V = signature.V
-            S = signature.S
-            R = signature.R
+            Signature = signature
         }
 
     let private submitTransaction (client : HttpClient) txToSubmit =

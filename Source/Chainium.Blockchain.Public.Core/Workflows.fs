@@ -213,9 +213,7 @@ module Workflows =
                         let signature : Signature = signBlock validatorPrivateKey blockBytes
                         {
                             Block = blockBytes |> Convert.ToBase64String
-                            V = signature.V
-                            S = signature.S
-                            R = signature.R
+                            Signature = signature |> fun (Signature s) -> s
                         }
                         |> Ok
 
@@ -400,9 +398,7 @@ module Workflows =
                             >>= fun blockBytes ->
                                 {
                                     Block = blockBytes |> Convert.ToBase64String
-                                    V = ""
-                                    S = ""
-                                    R = ""
+                                    Signature = ""
                                 }
                                 |> Ok
                         do! saveBlock genesisBlock.Header.Number blockEnvelopeDto

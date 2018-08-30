@@ -32,12 +32,7 @@ module Mapping =
     let txEnvelopeFromDto (dto : TxEnvelopeDto) : TxEnvelope =
         {
             RawTx = dto.Tx |> Convert.FromBase64String
-            Signature =
-                {
-                    V = dto.V
-                    R = dto.R
-                    S = dto.S
-                }
+            Signature = Signature dto.Signature
         }
 
     let txActionFromDto (action : TxActionDto) =
@@ -217,12 +212,7 @@ module Mapping =
     let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
         {
             RawBlock = dto.Block |> Convert.FromBase64String
-            Signature =
-                {
-                    V = dto.V
-                    R = dto.R
-                    S = dto.S
-                }
+            Signature = Signature dto.Signature
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -33,15 +33,11 @@ module Workflows =
             """
             {
                 tx: "%s",
-                v: "%s",
-                r: "%s",
-                s: "%s"
+                signature: "%s"
             }
             """
             (Convert.ToBase64String rawTx)
-            signature.V
-            signature.R
-            signature.S
+            (signature |> fun (Signature s) -> s)
 
     let private composeAndSubmitTx
         (getAddressNonce : ChainiumAddress -> Nonce)
