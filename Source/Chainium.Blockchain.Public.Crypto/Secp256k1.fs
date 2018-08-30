@@ -2,69 +2,84 @@
 
 open System
 open System.Security.Cryptography
+open Chainium.Common
 open Secp256k1Net
 
 module Secp256k1 =
 
     let private secp256k1 = new Secp256k1()
 
+    let private secretKeyVerify privateKey =
+        try
+            secp256k1.SecretKeyVerify(Span privateKey)
+        with
+        | _ -> false
+
     let internal generatePrivateKey () =
-        let rnd = RandomNumberGenerator.Create()
-        let privateKey = Span (Array.zeroCreate<byte> Secp256k1.PRIVKEY_LENGTH)
-        rnd.GetBytes privateKey
-        while not (secp256k1.SecretKeyVerify(privateKey)) do
-            rnd.GetBytes privateKey
-        privateKey.ToArray()
+        let privateKey = Array.zeroCreate<byte> Secp256k1.PRIVKEY_LENGTH
+        use rngCsp = new RNGCryptoServiceProvider()
+        rngCsp.GetBytes(privateKey)
+        while not (secretKeyVerify privateKey) do
+            rngCsp.GetBytes(privateKey)
+        privateKey
 
-    let internal serializePublicKey publicKey =
-        let serializedPublicKey = Span (Array.zeroCreate<byte> (Secp256k1.SERIALIZED_PUBKEY_LENGTH))
-        if secp256k1.PublicKeySerialize(serializedPublicKey, Span publicKey) then
-            serializedPublicKey.ToArray()
-        else
-            failwith "[Secp256k1] Error serializing publicKey"
+    let rec internal serializePublicKey publicKey =
+        try
+            let serializedPublicKey = Span (Array.zeroCreate<byte> Secp256k1.SERIALIZED_PUBKEY_LENGTH)
+            if secp256k1.PublicKeySerialize(serializedPublicKey, Span publicKey) then
+                Some (serializedPublicKey.ToArray())
+            else
+                None
+        with
+        | _ -> None
+        |?> (fun _ -> serializePublicKey publicKey)
 
-    let internal calculatePublicKey privateKey =
-        let publicKey = Span (Array.zeroCreate<byte> Secp256k1.PUBKEY_LENGTH)
-        if secp256k1.PublicKeyCreate(publicKey, Span privateKey) then
-            serializePublicKey (publicKey.ToArray())
-        else
-            failwith "[Secp256k1] Error generating publicKey from privateKey"
+    let rec internal calculatePublicKey privateKey =
+        try
+            let publicKey = Array.zeroCreate<byte> Secp256k1.PUBKEY_LENGTH
+            if secp256k1.PublicKeyCreate(Span publicKey, Span privateKey) then
+                Some (serializePublicKey publicKey)
+            else
+                None
+        with
+        | _ -> None
+        |?> (fun _ -> calculatePublicKey privateKey)
 
-    let internal generateKeyPair () =
+    let rec internal generateKeyPair () =
         let privateKey = generatePrivateKey ()
         let publicKey = calculatePublicKey privateKey
         (privateKey, publicKey)
 
     let internal signRecoverable messageHash privateKey =
-        let signature = Span (Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE)
-        if secp256k1.SignRecoverable(signature, Span messageHash, privateKey) then
-            signature.ToArray()
+        let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE
+        if secp256k1.SignRecoverable(Span signature, Span messageHash, Span privateKey) then
+            signature
         else
             failwith "[Secp256k1] Error signing message"
 
     let internal serializeSignature signature =
-        let serializedSignature = Span (Array.zeroCreate<byte> Secp256k1.SERIALIZED_SIGNATURE_SIZE)
+        let serializedSignature = Array.zeroCreate<byte> Secp256k1.SERIALIZED_SIGNATURE_SIZE
         let recoveryId = ref -1
-        if secp256k1.RecoverableSignatureSerializeCompact(serializedSignature, recoveryId, Span signature) then
-            (!recoveryId, serializedSignature.ToArray())
+        if secp256k1.RecoverableSignatureSerializeCompact(Span serializedSignature, recoveryId, Span signature) then
+            (!recoveryId, serializedSignature)
         else
             failwith "[Secp256k1] Error serializing signature"
 
     let internal sign messageHash privateKey =
-        let signature = signRecoverable messageHash (Span privateKey)
+        let signature = signRecoverable messageHash privateKey
         serializeSignature signature
 
     let internal parseSignature recoveryId serializedSignature =
-        let signature = Span (Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE)
-        if secp256k1.RecoverableSignatureParseCompact(signature, Span serializedSignature, recoveryId) then
-            signature.ToArray()
+        let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE
+        if secp256k1.RecoverableSignatureParseCompact(Span signature, Span serializedSignature, recoveryId) then
+            signature
         else
             failwith "[Secp256k1] Error parsing signature"
 
     let internal recoverPublicKeyFromSignature signature messageHash =
-        let publicKey = Span (Array.zeroCreate<byte> Secp256k1.PUBKEY_LENGTH)
-        if secp256k1.Recover(publicKey, Span signature, Span messageHash) then
-            publicKey.ToArray()
+        let publicKey = Array.zeroCreate<byte> (Secp256k1.PUBKEY_LENGTH)
+        if secp256k1.Recover(Span publicKey, Span signature, Span messageHash) then
+            publicKey
         else
             failwith "[Secp256k1] Error recovering publicKey"
 
