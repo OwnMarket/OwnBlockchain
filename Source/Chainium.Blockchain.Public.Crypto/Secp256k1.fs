@@ -14,7 +14,7 @@ module Secp256k1 =
         privateKey |> rnd.GetBytes
         while not (secp256k1.SecretKeyVerify(privateKey)) do
             privateKey |> rnd.GetBytes
-        privateKey
+        privateKey.ToArray()
 
     let internal serializePublicKey publicKey =
         let serializedPublicKey = Array.zeroCreate<byte> (Secp256k1.SERIALIZED_PUBKEY_LENGTH) |> Span
@@ -25,7 +25,7 @@ module Secp256k1 =
 
     let internal calculatePublicKey privateKey =
         let publicKey = Array.zeroCreate<byte> Secp256k1.PUBKEY_LENGTH |> Span
-        if secp256k1.PublicKeyCreate(publicKey, privateKey) then
+        if secp256k1.PublicKeyCreate(publicKey, privateKey |> Span) then
             serializePublicKey (publicKey.ToArray())
         else
             failwith "[Secp256k1] Error generating publicKey from privateKey"
@@ -33,7 +33,7 @@ module Secp256k1 =
     let internal generateKeyPair () =
         let privateKey = generatePrivateKey ()
         let publicKey = calculatePublicKey privateKey
-        (privateKey.ToArray(), publicKey)
+        (privateKey, publicKey)
 
     let internal signRecoverable messageHash privateKey =
         let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE |> Span
@@ -51,7 +51,7 @@ module Secp256k1 =
             failwith "[Secp256k1] Error serializing signature"
 
     let internal sign messageHash privateKey =
-        let signature = signRecoverable messageHash privateKey
+        let signature = signRecoverable messageHash (privateKey |> Span)
         serializeSignature signature
 
     let internal parseSignature recoveryId serializedSignature =

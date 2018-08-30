@@ -31,7 +31,6 @@ module Signing =
         let publicKey =
             privateKey
             |> Hashing.decode
-            |> Span
             |> Secp256k1.calculatePublicKey
             |> Hashing.chainiumAddress
 
@@ -41,7 +40,6 @@ module Signing =
         let privateKey =
             privateKey
             |> Hashing.decode
-            |> Span
 
         let messageHash = Hashing.hashBytes message
         let (recoveryId, signatureSerialized) = Secp256k1.sign messageHash privateKey
