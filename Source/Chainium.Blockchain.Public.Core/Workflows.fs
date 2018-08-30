@@ -57,6 +57,10 @@ module Workflows =
             return { TxHash = txHash }
         }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let isMyTurnToProposeBlock
         (getLastBlockNumber : unit -> BlockNumber option)
         (getValidators : unit -> ValidatorInfoDto list)
@@ -100,6 +104,10 @@ module Workflows =
     let getActiveValidators getValidatorSnapshots =
         getValidatorSnapshots ()
         |> List.map Mapping.validatorSnapshotFromDto
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Blockchain
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let persistTxResults saveTxResult txResults =
         result {
@@ -446,6 +454,10 @@ module Workflows =
                 Log.appErrors errors
                 failwith "Cannot initialize blockchain state."
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let propagateTx sendMessageToPeers networkAddress getTx (txHash : TxHash) =
         match getTx txHash with
         | Ok (txEnvelopeDto : TxEnvelopeDto) ->
@@ -542,6 +554,10 @@ module Workflows =
         | MulticastMessage m -> processData m.MessageId m.Data |> Some
         | RequestDataMessage m -> processRequest m.MessageId m.SenderAddress |> Some
         | ResponseDataMessage m -> processData m.MessageId m.Data |> Some
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // API
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let getAddressApi getChxBalanceState (chainiumAddress : ChainiumAddress)
         : Result<GetAddressApiResponseDto, AppErrors> =
