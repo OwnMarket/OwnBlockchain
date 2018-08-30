@@ -559,8 +559,51 @@ module Workflows =
             return { TxHash = txHash }
         }
 
-    let getAddressApi getChxBalanceState (chainiumAddress : ChainiumAddress)
-        : Result<GetAddressApiResponseDto, AppErrors> =
+    let getTxApi
+        getTx
+        verifySignature
+        getTxResult
+        (txHash : TxHash)
+        : Result<GetTxApiResponseDto, AppErrors>
+        =
+
+        result {
+            let! txEnvelope =
+                getTx txHash
+                |> Result.map Mapping.txEnvelopeFromDto
+
+            let! txDto = Serialization.deserializeTx txEnvelope.RawTx
+
+            let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
+
+            let txResult =
+                match getTxResult txHash with
+                | Ok result -> Some result
+                | _ -> None
+
+            return Mapping.txToGetTxApiResponseDto txHash senderAddress txDto txResult
+        }
+
+    let getBlockApi
+        getBlock
+        (blockNumber : BlockNumber)
+        : Result<GetBlockApiResponseDto, AppErrors>
+        =
+
+        match getBlock blockNumber >>= Blocks.extractBlockFromEnvelopeDto with
+        | Ok block ->
+            block
+            |> Mapping.blockToDto
+            |> Mapping.blockTxsToGetBlockApiResponseDto
+            |> Ok
+        | _ -> Result.appError (sprintf "Block %i does not exist" (blockNumber |> fun (BlockNumber b) -> b))
+
+    let getAddressApi
+        getChxBalanceState
+        (chainiumAddress : ChainiumAddress)
+        : Result<GetAddressApiResponseDto, AppErrors>
+        =
+
         match getChxBalanceState chainiumAddress with
         | Some addressState ->
             addressState
@@ -604,42 +647,3 @@ module Workflows =
             |? []
             |> Mapping.accountHoldingDtosToGetAccoungHoldingsResponseDto accountHash accountState
             |> Ok
-
-    let getBlockApi
-        getBlock
-        (blockNumber : BlockNumber)
-        : Result<GetBlockApiResponseDto, AppErrors>
-        =
-
-        match getBlock blockNumber >>= Blocks.extractBlockFromEnvelopeDto with
-        | Ok block ->
-            block
-            |> Mapping.blockToDto
-            |> Mapping.blockTxsToGetBlockApiResponseDto
-            |> Ok
-        | _ -> Result.appError (sprintf "Block %i does not exist" (blockNumber |> fun (BlockNumber b) -> b))
-
-    let getTxApi
-        getTx
-        verifySignature
-        getTxResult
-        (txHash : TxHash)
-        : Result<GetTxApiResponseDto, AppErrors>
-        =
-
-        result {
-            let! txEnvelope =
-                getTx txHash
-                |> Result.map Mapping.txEnvelopeFromDto
-
-            let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-
-            let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
-
-            let txResult =
-                match getTxResult txHash with
-                | Ok result -> Some result
-                | _ -> None
-
-            return Mapping.txToGetTxApiResponseDto txHash senderAddress txDto txResult
-        }
