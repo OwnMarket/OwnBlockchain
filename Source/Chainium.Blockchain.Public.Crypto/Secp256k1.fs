@@ -25,9 +25,9 @@ module Secp256k1 =
 
     let rec internal serializePublicKey publicKey =
         try
-            let serializedPublicKey = Span (Array.zeroCreate<byte> Secp256k1.SERIALIZED_PUBKEY_LENGTH)
-            if secp256k1.PublicKeySerialize(serializedPublicKey, Span publicKey) then
-                Some (serializedPublicKey.ToArray())
+            let serializedPublicKey = Array.zeroCreate<byte> Secp256k1.SERIALIZED_PUBKEY_LENGTH
+            if secp256k1.PublicKeySerialize(Span serializedPublicKey, Span publicKey) then
+                Some serializedPublicKey
             else
                 None
         with
