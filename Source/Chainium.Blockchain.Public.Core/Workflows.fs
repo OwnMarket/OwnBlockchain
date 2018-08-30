@@ -463,11 +463,11 @@ module Workflows =
     let propagateBlock
         sendMessageToPeers
         networkAddress
-        getBlockEnvelope
+        getBlock
         (blockNumber : BlockNumber)
         =
 
-        match getBlockEnvelope blockNumber with
+        match getBlock blockNumber with
         | Ok (blockEnvelopeDto : BlockEnvelopeDto) ->
             let peerMessage = GossipMessage {
                 MessageId = Block blockNumber
@@ -481,7 +481,7 @@ module Workflows =
 
     let processPeerMessage
         getTx
-        getBlockEnvelope
+        getBlock
         submitTx
         applyBlock
         respondToPeer
@@ -497,7 +497,7 @@ module Workflows =
                 )
 
         let processBlockFromPeer blockNr data =
-            match getBlockEnvelope blockNr with
+            match getBlock blockNr with
             | Ok _ -> None |> Ok
             | _ ->
                 let blockEnvelopeDto = Serialization.deserializeJObject data
@@ -525,7 +525,7 @@ module Workflows =
                 | _ -> Result.appError (sprintf "Error Tx %A not found" txHash)
 
             | Block blockNr ->
-                match getBlockEnvelope blockNr with
+                match getBlock blockNr with
                 | Ok blockEnvelopeDto ->
                     let peerMessage = ResponseDataMessage {
                         MessageId = messageId
