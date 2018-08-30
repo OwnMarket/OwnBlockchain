@@ -21,42 +21,6 @@ module Workflows =
 
         chxBalance - chxStaked
 
-    let submitTx
-        verifySignature
-        isValidAddress
-        createHash
-        getAvailableChxBalance
-        getTotalFeeForPendingTxs
-        saveTx
-        saveTxToDb
-        minTxActionFee
-        txEnvelopeDto
-        : Result<TxReceivedEventData, AppErrors>
-        =
-
-        result {
-            let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
-            let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
-            let txHash = txEnvelope.RawTx |> createHash |> TxHash
-
-            let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-            let! tx = Validation.validateTx isValidAddress minTxActionFee senderAddress txHash txDto
-
-            do!
-                Validation.checkIfBalanceCanCoverFees
-                    getAvailableChxBalance
-                    getTotalFeeForPendingTxs
-                    senderAddress
-                    tx.TotalFee
-
-            do! saveTx txHash txEnvelopeDto
-            do! tx
-                |> Mapping.txToTxInfoDto
-                |> saveTxToDb
-
-            return { TxHash = txHash }
-        }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -558,6 +522,42 @@ module Workflows =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let submitTx
+        verifySignature
+        isValidAddress
+        createHash
+        getAvailableChxBalance
+        getTotalFeeForPendingTxs
+        saveTx
+        saveTxToDb
+        minTxActionFee
+        txEnvelopeDto
+        : Result<TxReceivedEventData, AppErrors>
+        =
+
+        result {
+            let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
+            let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
+            let txHash = txEnvelope.RawTx |> createHash |> TxHash
+
+            let! txDto = Serialization.deserializeTx txEnvelope.RawTx
+            let! tx = Validation.validateTx isValidAddress minTxActionFee senderAddress txHash txDto
+
+            do!
+                Validation.checkIfBalanceCanCoverFees
+                    getAvailableChxBalance
+                    getTotalFeeForPendingTxs
+                    senderAddress
+                    tx.TotalFee
+
+            do! saveTx txHash txEnvelopeDto
+            do! tx
+                |> Mapping.txToTxInfoDto
+                |> saveTxToDb
+
+            return { TxHash = txHash }
+        }
 
     let getAddressApi getChxBalanceState (chainiumAddress : ChainiumAddress)
         : Result<GetAddressApiResponseDto, AppErrors> =
