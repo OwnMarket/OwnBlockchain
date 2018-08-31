@@ -1,7 +1,7 @@
 namespace Chainium.Blockchain.Public.Data
 
 open System.IO
-open Newtonsoft.Json
+open MessagePack
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core.DomainTypes
@@ -33,8 +33,10 @@ module Raw =
             if File.Exists(path) then
                 Result.appError (sprintf "%s %s already exists." dataTypeName key)
             else
-                let json = data |> JsonConvert.SerializeObject
-                File.WriteAllText(path, json)
+                let bytes = data |> LZ4MessagePackSerializer.Serialize
+                use fs = new FileStream(path, FileMode.OpenOrCreate)
+                use bw = new BinaryWriter(fs)
+                bw.Write(bytes)
                 Ok ()
         with
         | ex ->
@@ -48,8 +50,8 @@ module Raw =
             let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
-                File.ReadAllText path
-                |> JsonConvert.DeserializeObject<'T>
+                File.ReadAllBytes path
+                |> LZ4MessagePackSerializer.Deserialize<'T>
                 |> Ok
             else
                 Result.appError (sprintf "%s %s not found." dataTypeName key)

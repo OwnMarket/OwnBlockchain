@@ -1,6 +1,7 @@
 ﻿namespace Chainium.Blockchain.Public.Core.Dtos
 
 open System
+open MessagePack
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tx
@@ -77,8 +78,11 @@ type TxDto = {
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type TxEnvelopeDto = {
+    [<Key(0)>]
     Tx : string
+    [<Key(1)>]
     Signature : string
 }
 
@@ -102,10 +106,15 @@ type PendingTxInfoDto = {
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type TxResultDto = {
+    [<Key(0)>]
     Status : byte
+    [<Key(1)>]
     ErrorCode : Nullable<int16>
+    [<Key(2)>]
     FailedActionNumber : Nullable<int16>
+    [<Key(3)>]
     BlockNumber : int64
 }
 
@@ -114,20 +123,32 @@ type TxResultDto = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type BlockHeaderDto = {
+    [<Key(0)>]
     Number : int64
+    [<Key(1)>]
     Hash : string
+    [<Key(2)>]
     PreviousHash : string
+    [<Key(3)>]
     Timestamp : int64
+    [<Key(4)>]
     Validator : string
+    [<Key(5)>]
     TxSetRoot : string
+    [<Key(6)>]
     TxResultSetRoot : string
+    [<Key(7)>]
     StateRoot : string
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type BlockDto = {
+    [<Key(0)>]
     Header : BlockHeaderDto
+    [<Key(1)>]
     TxSet : string list
 }
 
@@ -139,8 +160,11 @@ type BlockInfoDto = {
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type BlockEnvelopeDto = {
+    [<Key(0)>]
     Block : string
+    [<Key(1)>]
     Signature : string
 }
 
