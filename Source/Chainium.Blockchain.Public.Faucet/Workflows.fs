@@ -28,7 +28,7 @@ module Workflows =
 
         getEntries []
 
-    let private createTxEnvelopeJson rawTx signature =
+    let private createTxEnvelopeJson rawTx (Signature signature) =
         sprintf
             """
             {
@@ -37,7 +37,7 @@ module Workflows =
             }
             """
             (Convert.ToBase64String rawTx)
-            (signature |> fun (Signature s) -> s)
+            signature
 
     let private composeAndSubmitTx
         (getAddressNonce : ChainiumAddress -> Nonce)
