@@ -52,11 +52,8 @@ module Signing =
         |> Hashing.encode
         |> Signature
 
-    let verifySignature (signature : Signature) (message : byte[]) : ChainiumAddress option =
-        let signatureBytes =
-            signature
-            |> fun (Signature s) -> s
-            |> Hashing.decode
+    let verifySignature (Signature signature) (message : byte[]) : ChainiumAddress option =
+        let signatureBytes = signature |> Hashing.decode
 
         let recoveryId = signatureBytes.[64] |> int
 
