@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Concurrent
+open System.Collections.Generic
 open System.Threading
 open Chainium.Common
 open Chainium.Blockchain.Common
