@@ -38,22 +38,17 @@ module Peers =
 
         let networkAddressToString (NetworkAddress a) = a
 
-        let seqOfKeyValuePairToList seq =
-            seq
-            |> Map.ofDict
+        let extractValuesFromKeyValuePairs (pairs : KeyValuePair<_, _> seq) =
+            pairs
+            |> Seq.map (fun p -> p.Value)
             |> Seq.toList
-            |> List.map (fun x -> x.Value)
 
         let printActiveMembers () =
             #if DEBUG
                 printfn "\n ========= ACTIVE CONNECTIONS [%s] ========="
                     (DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"))
-                activeMembers
-                |> Map.ofDict
-                |> Seq.toList
-                |> List.iter (fun x ->
-                    printfn " %s Heartbeat:%i" (x.Key |> networkAddressToString) x.Value.Heartbeat
-                )
+                for m in activeMembers do
+                    printfn " %s Heartbeat:%i" (m.Key |> networkAddressToString) m.Value.Heartbeat
                 printfn " ================================================================\n"
             #else
                 ()
@@ -71,6 +66,7 @@ module Peers =
                     deadMember.Heartbeat
                 deadMember.Heartbeat >= inputMember.Heartbeat
             | _ -> false
+
         (*
             Once a member has been declared dead and it hasn't recovered in
             2xTFail time is removed from the dead-members list.
@@ -130,7 +126,7 @@ module Peers =
             cts.Cancel()
 
         member __.GetActiveMembers () =
-            activeMembers |> seqOfKeyValuePairToList
+            activeMembers |> extractValuesFromKeyValuePairs
 
         member __.GetNetworkAddress () =
             config.NetworkAddress
@@ -350,7 +346,7 @@ module Peers =
                 |> Seq.shuffleG
                 |> Seq.chunkBySize fanout
                 |> Seq.head
-                |> seqOfKeyValuePairToList
+                |> extractValuesFromKeyValuePairs
                 |> Some
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
