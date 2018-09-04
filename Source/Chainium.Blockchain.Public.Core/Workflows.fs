@@ -454,6 +454,7 @@ module Workflows =
     let processPeerMessage
         getTx
         getBlock
+        getLastBlockNumber
         submitTx
         applyBlock
         respondToPeer
@@ -497,16 +498,24 @@ module Workflows =
                 | _ -> Result.appError (sprintf "Error Tx %A not found" txHash)
 
             | Block blockNr ->
-                match getBlock blockNr with
-                | Ok blockEnvelopeDto ->
-                    let peerMessage = ResponseDataMessage {
-                        MessageId = messageId
-                        Data = blockEnvelopeDto
-                    }
-                    peerMessage
-                    |> respondToPeer senderAddress
-                    None |> Ok
-                | _ -> Result.appError (sprintf "Error Block %A not found" blockNr)
+                let blockNr =
+                    match blockNr with
+                    | BlockNumber -1L -> getLastBlockNumber()
+                    | _ -> Some blockNr
+
+                match blockNr with
+                | Some blockNr ->
+                    match getBlock blockNr with
+                    | Ok blockEnvelopeDto ->
+                        let peerMessage = ResponseDataMessage {
+                            MessageId = messageId
+                            Data = blockEnvelopeDto
+                        }
+                        peerMessage
+                        |> respondToPeer senderAddress
+                        None |> Ok
+                    | _ -> Result.appError (sprintf "Error Block %A not found" blockNr)
+                | None -> Result.appError "Error retrieving last block"
 
         match peerMessage with
         | GossipDiscoveryMessage _ -> None

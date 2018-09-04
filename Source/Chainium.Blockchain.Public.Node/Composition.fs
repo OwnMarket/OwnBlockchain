@@ -200,6 +200,7 @@ module Composition =
         Workflows.processPeerMessage
             getTx
             getBlock
+            getLastBlockNumber
             submitTx
             applyBlock
             Peers.respondToPeer
