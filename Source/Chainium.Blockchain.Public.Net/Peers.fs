@@ -582,9 +582,14 @@ module Peers =
         | Some n -> n.SendRequestDataMessage requestId
         | None -> failwith "Please start the node first"
 
+    let requestBlockFromPeer blockNumber =
+        requestFromPeer (NetworkMessageId.Block blockNumber)
+
     let requestLastBlockFromPeer () =
-        let request = Block (BlockNumber -1L)
-        requestFromPeer request
+        requestBlockFromPeer (BlockNumber -1L)
+
+    let requestTxFromPeer txHash =
+        requestFromPeer (NetworkMessageId.Tx txHash)
 
     let respondToPeer targetAddress peerMessage =
         match node with
