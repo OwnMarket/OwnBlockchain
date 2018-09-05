@@ -94,3 +94,10 @@ module Raw =
         |> createFileName Block
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
+
+    let txExists (dataDir : string) (TxHash txHash) =
+        txHash
+        |> string
+        |> createFileName Tx
+        |> fun fileName -> Path.Combine (dataDir, fileName)
+        |> File.Exists

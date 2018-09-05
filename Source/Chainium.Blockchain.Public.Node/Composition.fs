@@ -25,6 +25,8 @@ module Composition =
 
     let blockExists = Raw.blockExists Config.DataDir
 
+    let txExists = Raw.txExists Config.DataDir
+
     // DB
 
     let initDb () = DbInit.init Config.DbEngineType Config.DbConnectionString
