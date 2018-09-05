@@ -4,8 +4,13 @@ open System
 
 module Result =
 
-    let iter (f : _ -> unit) result =
-        Result.map f result |> ignore
+    let iter f = function
+        | Ok v -> f v
+        | Error _ -> ()
+
+    let iterError f = function
+        | Ok _ -> ()
+        | Error e -> f e
 
 [<AutoOpen>]
 module ResultOperators =
