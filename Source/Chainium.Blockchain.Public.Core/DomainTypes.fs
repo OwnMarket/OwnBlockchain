@@ -281,6 +281,10 @@ type PeerMessage =
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type BlockNumber with
+    static member Zero =
+        BlockNumber 0L
+    static member One =
+        BlockNumber 1L
     static member (+) (BlockNumber n1, BlockNumber n2) =
         BlockNumber (n1 + n2)
     static member (+) (BlockNumber n1, n2) =
@@ -291,6 +295,10 @@ type BlockNumber with
         BlockNumber (n1 - n2)
 
 type Nonce with
+    static member Zero =
+        Nonce 0L
+    static member One =
+        Nonce 1L
     static member (+) (Nonce n1, Nonce n2) =
         Nonce (n1 + n2)
     static member (+) (Nonce n1, n2) =
