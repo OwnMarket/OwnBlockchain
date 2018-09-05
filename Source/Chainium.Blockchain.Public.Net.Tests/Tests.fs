@@ -18,6 +18,12 @@ module PeerTests =
     let sendMessage peerMessage (node : NetworkNode) =
         node.SendMessage peerMessage
 
+    let requestFromPeer requestId (node : NetworkNode) =
+        node.SendRequestDataMessage requestId
+
+    let respondToPeer (node : NetworkNode) targetAddress peerMessage =
+        node.SendResponseDataMessage targetAddress peerMessage
+
     let gossipTx (node : NetworkNode) txHash =
         let gossipMessage = GossipMessage {
             MessageId = Tx txHash
@@ -34,6 +40,9 @@ module PeerTests =
         }
 
         node |> sendMessage multicastMessage
+
+    let requestTx (node : NetworkNode) txHash =
+        node |> requestFromPeer (Tx txHash)
 
     let gossipBlock (node : NetworkNode) blockNr =
         let peerMessage = GossipMessage {
@@ -53,6 +62,9 @@ module PeerTests =
 
         node |> sendMessage peerMessage
 
+    let requestBlock (node : NetworkNode) blockNr =
+        node |> requestFromPeer (Block blockNr)
+
     let private txPropagator node (message : TxReceivedEventData) =
         gossipTx node message.TxHash
 
@@ -67,7 +79,8 @@ module PeerTests =
         | BlockReceived e -> blockPropagator node e
 
     let startGossip (node : NetworkNode) =
-        node.StartGossip (node.GetNetworkAddress() |> WorkflowsMock.processPeerMessage) (publishEvent node)
+        let processPeerMessage = WorkflowsMock.processPeerMessage (node.GetNetworkAddress()) (respondToPeer node)
+        node.StartGossip processPeerMessage (publishEvent node)
 
     let stopGossip (node : NetworkNode) =
         node.StopGossip ()
@@ -92,9 +105,13 @@ module PeerTests =
 
     let checkMessageReceived (nodeList : NetworkNode list) networkMessageId =
         nodeList |> List.iter(fun n ->
-            let nodeHashReceivedTx = RawMock.hasData (n.GetNetworkAddress()) networkMessageId
-            test <@ nodeHashReceivedTx = true @>
+            let nodeHasReceivedTx = RawMock.hasData (n.GetNetworkAddress()) networkMessageId
+            test <@ nodeHasReceivedTx = true @>
         )
+
+    let checkResponseReceived (node : NetworkNode) networkMessageId messageExists =
+        let nodeHasReceivedTx = RawMock.hasData (node.GetNetworkAddress()) networkMessageId
+        test <@ nodeHasReceivedTx = messageExists @>
 
     let createNodes nodeConfigList =
         // ARRANGE
@@ -208,8 +225,31 @@ module PeerTests =
         // ASSERT
         checkMessageReceived nodeList (Tx txHash)
 
+    let testRequestResponse nodeConfigList cycleCount txExists =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter(fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        let txHash = TxHash "txHash"
+        requestTx nodeList.[0] txHash
+
+        let nodeCount = nodeList.Length
+        if (txExists) then
+            // Last node contains the tx.
+            RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash) |> ignore
+
+        // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
+        System.Threading.Thread.Sleep ((nodeCount - 1) * tCycle)
+
+        // ASSERT
+        checkResponseReceived nodeList.[0] (Tx txHash) txExists
+
     [<Fact>]
-    let ``Gossip - test GossipDiscovery 3 nodes same bootstrap node`` () =
+    let ``Network - GossipDiscovery 3 nodes same bootstrap node`` () =
         // ARRANGE
         testCleanup()
 
@@ -218,7 +258,7 @@ module PeerTests =
         testGossipDiscovery nodeConfigList 5
 
     [<Fact>]
-    let ``Gossip - test GossipDiscovery 3 nodes different bootstrap node`` () =
+    let ``Network - GossipDiscovery 3 nodes different bootstrap node`` () =
         // ARRANGE
         testCleanup()
 
@@ -227,7 +267,7 @@ module PeerTests =
         testGossipDiscovery nodeConfigList 5
 
     [<Fact>]
-    let ``Gossip - test GossipDiscovery 100 nodes`` () =
+    let ``Network - GossipDiscovery 100 nodes`` () =
         // ARRANGE
         testCleanup()
 
@@ -248,7 +288,7 @@ module PeerTests =
         testGossipDiscovery (nodeConfig1 :: nodeConfigList) 20
 
     [<Fact>]
-    let ``Gossip - test GossipMessagePassing 3 nodes same bootstrap node`` () =
+    let ``Network - GossipMessagePassing 3 nodes same bootstrap node`` () =
         // ARRANGE
         testCleanup()
 
@@ -257,7 +297,7 @@ module PeerTests =
         testGossipMessagePassing nodeConfigList 5
 
     [<Fact>]
-    let ``Gossip - test GossipMessagePassing 3 nodes different bootstrap node`` () =
+    let ``Network - GossipMessagePassing 3 nodes different bootstrap node`` () =
         // ARRANGE
         testCleanup()
 
@@ -266,7 +306,7 @@ module PeerTests =
         testGossipMessagePassing nodeConfigList 5
 
     [<Fact>]
-    let ``Gossip - test MulticastMessagePassing 3 nodes same bootstrap node`` () =
+    let ``Network - MulticastMessagePassing 3 nodes same bootstrap node`` () =
         // ARRANGE
         testCleanup()
 
@@ -275,10 +315,28 @@ module PeerTests =
         testMulticastMessagePassing nodeConfigList 5
 
     [<Fact>]
-    let ``Gossip - test MulticastMessagePassing 3 nodes different bootstrap node`` () =
+    let ``Network - MulticastMessagePassing 3 nodes different bootstrap node`` () =
         // ARRANGE
         testCleanup()
 
         let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
 
         testMulticastMessagePassing nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - Request/Response Tx exists`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+
+        testRequestResponse nodeConfigList 5 true
+
+    [<Fact>]
+    let ``Network - Request/Response Tx doesn't exist`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+
+        testRequestResponse nodeConfigList 5 false

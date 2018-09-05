@@ -12,6 +12,7 @@ module RawMock =
         | (true, messageList) ->
             peerData.AddOrUpdate(address, messageId :: messageList, fun _ _ -> messageId :: messageList)
         | _ -> peerData.AddOrUpdate (address, [messageId], fun _ _ -> [messageId])
+        |> ignore
 
     let hasData address messageId =
         match peerData.TryGetValue address with
