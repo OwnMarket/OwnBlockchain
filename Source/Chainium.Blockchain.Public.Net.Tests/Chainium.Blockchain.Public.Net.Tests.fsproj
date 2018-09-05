@@ -3,9 +3,11 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\AssemblyInfo.fs"/>
+    <Compile Include="..\AssemblyInfo.fs" />
+    <Compile Include="RawMock.fs" />
     <Compile Include="DbMock.fs" />
     <Compile Include="TransportMock.fs" />
+    <Compile Include="WorkflowsMock.fs" />
     <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

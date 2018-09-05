@@ -7,7 +7,7 @@ open Chainium.Blockchain.Public.Core.DomainTypes
 
 module DbMock =
 
-    let peers = new ConcurrentDictionary<NetworkAddress, NetworkAddress list>()
+    let private peers = new ConcurrentDictionary<NetworkAddress, NetworkAddress list>()
 
     let getAllPeerNodes localAddress () =
         match peers.TryGetValue localAddress with
