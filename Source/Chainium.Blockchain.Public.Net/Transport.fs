@@ -1,9 +1,10 @@
 ﻿namespace Chainium.Blockchain.Public.Net
 
 open System.Collections.Concurrent
+open Chainium.Common
+open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Common
 open NetMQ
 open NetMQ.Sockets
 open Newtonsoft.Json
@@ -29,17 +30,22 @@ module Transport =
             connectionPool.AddOrUpdate (targetAddress, senderSocket, fun _ _ -> senderSocket) |> ignore
             senderSocket.TrySendFrame msg |> ignore
 
+    let private sendAgent = Agent.start <| fun (message, targetAddress) ->
+        async {
+            send message targetAddress
+        }
+
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
-        send msg targetAddress
+        sendAgent.Post(msg, targetAddress)
 
     let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
         let msg = packMessage gossipMessage
-        send msg targetMember.NetworkAddress
+        sendAgent.Post(msg, targetMember.NetworkAddress)
 
     let sendUnicastMessage unicastMessage targetAddress =
         let msg = packMessage unicastMessage
-        send msg targetAddress
+        sendAgent.Post(msg, targetAddress)
 
     let sendMulticastMessage senderAddress multicastMessage multicastAddresses =
         let multicastAddresses =
@@ -54,7 +60,7 @@ module Transport =
             |> Seq.toList
             |> List.iter (fun networkAddress ->
                 let msg = packMessage multicastMessage
-                send msg networkAddress
+                sendAgent.Post(msg, networkAddress)
             )
 
     let receiveMessage networkAddress receiveCallback =
