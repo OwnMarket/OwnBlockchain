@@ -158,9 +158,12 @@ module Peers =
         member __.SendRequestDataMessage requestId =
             let rec loop id =
                 async {
-                    let targetAddress =
+                    let expiredAddresses =
                         match pendingDataRequests.TryGetValue id with
-                        | true, expiredAddresses ->
+                        | true, expiredAddresses -> expiredAddresses
+                        | false, _ -> []
+
+                    let targetAddress =
                             let networkAddressPool =
                                 __.GetActiveMembers()
                                 |> List.map (fun m -> m.NetworkAddress)
@@ -177,25 +180,6 @@ module Peers =
                                     id,
                                     networkAddress :: expiredAddresses,
                                     fun _ _ -> networkAddress :: expiredAddresses)
-                                |> ignore
-                            selectedUnicastPeer
-
-                        | false, _ ->
-                            let networkAddressPool =
-                                __.GetActiveMembers()
-                                |> List.map (fun m -> m.NetworkAddress)
-                                |> List.filter (fun a -> a <> config.NetworkAddress)
-
-                            let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
-                            match selectedUnicastPeer with
-                            | None ->
-                                Log.errorf "Cannot retrieve data for %A" id
-                                pendingDataRequests.TryRemove id |> ignore
-                            | Some networkAddress ->
-                                pendingDataRequests.AddOrUpdate(
-                                    id,
-                                    [networkAddress],
-                                    fun _ _ -> [networkAddress])
                                 |> ignore
                             selectedUnicastPeer
 
