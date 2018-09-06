@@ -14,61 +14,59 @@ module Workers =
     // Applier
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let rec private applierLoop () =
-        async {
-            try
-                match Composition.getLastBlockNumber () with
-                | Some lastAppliedBlockNumber -> Composition.acquireAndApplyMissingBlocks ()
-                | None -> failwith "Cannot load last applied block info."
-            with
-            | ex -> Log.error ex.AllMessagesAndStackTraces
-
-            do! Async.Sleep 1000
-            return! applierLoop ()
-        }
-
     let startApplier () =
-        applierLoop ()
+        let rec loop () =
+            async {
+                try
+                    Composition.acquireAndApplyMissingBlocks ()
+                with
+                | ex -> Log.error ex.AllMessagesAndStackTraces
+
+                do! Async.Sleep 1000
+                return! loop ()
+            }
+
+        loop ()
         |> Async.Start
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Proposer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let rec private proposerLoop () =
-        async {
-            try
-                Config.ValidatorPrivateKey
-                |> Option.ofObj
-                |> Option.map (PrivateKey >> Composition.addressFromPrivateKey)
-                |> Option.iter (fun validatorAddress ->
-                    if Composition.isValidator validatorAddress then
-                        match Composition.getLastBlockNumber (), Composition.getLastBlockTimestamp () with
-                        | Some lastAppliedBlockNumber, Some lastBlockTimestamp ->
-                            let shouldProposeBlock =
-                                Composition.shouldProposeBlock
-                                    validatorAddress
-                                    lastAppliedBlockNumber
-                                    lastBlockTimestamp
-                                    (Utils.getUnixTimestamp () |> Timestamp)
-                            if shouldProposeBlock then
-                                Composition.proposeBlock lastAppliedBlockNumber
-                                |> Option.iter (fun result ->
-                                    match result with
-                                    | Ok event ->
-                                        event |> BlockCreated |> Agents.publishEvent
-                                    | Error errors ->
-                                        Log.appErrors errors
-                                )
-                        | _ -> failwith "Cannot load last applied block info."
-                )
-            with
-            | ex -> Log.error ex.AllMessagesAndStackTraces
-
-            do! Async.Sleep 1000
-            return! proposerLoop ()
-        }
-
     let startProposer () =
-        proposerLoop ()
+        let rec loop () =
+            async {
+                try
+                    Config.ValidatorPrivateKey
+                    |> Option.ofObj
+                    |> Option.map (PrivateKey >> Composition.addressFromPrivateKey)
+                    |> Option.iter (fun validatorAddress ->
+                        if Composition.isValidator validatorAddress then
+                            match Composition.getLastBlockNumber (), Composition.getLastBlockTimestamp () with
+                            | Some lastAppliedBlockNumber, Some lastBlockTimestamp ->
+                                let shouldProposeBlock =
+                                    Composition.shouldProposeBlock
+                                        validatorAddress
+                                        lastAppliedBlockNumber
+                                        lastBlockTimestamp
+                                        (Utils.getUnixTimestamp () |> Timestamp)
+                                if shouldProposeBlock then
+                                    Composition.proposeBlock lastAppliedBlockNumber
+                                    |> Option.iter (fun result ->
+                                        match result with
+                                        | Ok event ->
+                                            event |> BlockCreated |> Agents.publishEvent
+                                        | Error errors ->
+                                            Log.appErrors errors
+                                    )
+                            | _ -> failwith "Cannot load last applied block info."
+                    )
+                with
+                | ex -> Log.error ex.AllMessagesAndStackTraces
+
+                do! Async.Sleep 1000
+                return! loop ()
+            }
+
+        loop ()
         |> Async.Start
