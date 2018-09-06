@@ -2,11 +2,8 @@
 
 open System
 open System.IO
-open System.Text
 open System.Threading
 open System.Net.Http
-open Newtonsoft.Json
-open Swensen.Unquote
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Node
@@ -15,6 +12,9 @@ open Chainium.Blockchain.Public.Crypto
 open Chainium.Blockchain.Public.Data
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.DomainTypes
+open Newtonsoft.Json
+open MessagePack
+open Swensen.Unquote
 
 module SharedTests =
 
@@ -83,8 +83,8 @@ module SharedTests =
         if shouldExist then
             let savedData =
                 txFile
-                |> File.ReadAllText
-                |> JsonConvert.DeserializeObject<TxEnvelopeDto>
+                |> File.ReadAllBytes
+                |> LZ4MessagePackSerializer.Deserialize<TxEnvelopeDto>
 
             test <@ expectedTx = savedData @>
 
