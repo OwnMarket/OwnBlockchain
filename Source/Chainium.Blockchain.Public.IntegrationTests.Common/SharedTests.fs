@@ -217,7 +217,7 @@ module SharedTests =
             |> Db.getChxBalanceState connString
 
         let lastAppliedBlockNumber =
-            Db.getLastBlockNumber connString
+            Db.getLastAppliedBlockNumber connString
 
         test <@ genesisAddressChxBalanceState = Some expectedChxBalanceState @>
         test <@ lastAppliedBlockNumber = Some (BlockNumber 0L) @>

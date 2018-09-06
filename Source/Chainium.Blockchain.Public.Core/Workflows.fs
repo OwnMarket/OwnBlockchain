@@ -362,7 +362,7 @@ module Workflows =
     let processPeerMessage
         getTx
         getBlock
-        getLastBlockNumber
+        getLastAppliedBlockNumber
         submitTx
         saveBlock
         respondToPeer
@@ -411,7 +411,7 @@ module Workflows =
             | Block blockNr ->
                 let blockNr =
                     match blockNr with
-                    | BlockNumber -1L -> getLastBlockNumber()
+                    | BlockNumber -1L -> getLastAppliedBlockNumber()
                     | _ -> Some blockNr
 
                 match blockNr with

@@ -42,7 +42,7 @@ module Workers =
                     |> Option.map (PrivateKey >> Composition.addressFromPrivateKey)
                     |> Option.iter (fun validatorAddress ->
                         if Composition.isValidator validatorAddress then
-                            match Composition.getLastBlockNumber (), Composition.getLastBlockTimestamp () with
+                            match Composition.getLastAppliedBlockNumber (), Composition.getLastBlockTimestamp () with
                             | Some lastAppliedBlockNumber, Some lastBlockTimestamp ->
                                 let shouldProposeBlock =
                                     Composition.shouldProposeBlock

@@ -43,7 +43,7 @@ module Composition =
 
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbConnectionString
 
-    let getLastBlockNumber () = Db.getLastBlockNumber Config.DbConnectionString
+    let getLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbConnectionString
 
     let getLastBlockTimestamp () = Db.getLastBlockTimestamp Config.DbConnectionString
 
@@ -126,7 +126,7 @@ module Composition =
 
     let initBlockchainState () =
         Workflows.initBlockchainState
-            getLastBlockNumber
+            getLastAppliedBlockNumber
             getBlock
             saveBlock
             applyNewState
@@ -194,12 +194,12 @@ module Composition =
 
     let initSynchronizationState () =
         Synchronization.initSynchronizationState
-            getLastBlockNumber
+            getLastAppliedBlockNumber
             blockExists
 
     let acquireAndApplyMissingBlocks () =
         Synchronization.acquireAndApplyMissingBlocks
-            getLastBlockNumber
+            getLastAppliedBlockNumber
             getBlock
             blockExists
             txExists
@@ -255,7 +255,7 @@ module Composition =
         Workflows.processPeerMessage
             getTx
             getBlock
-            getLastBlockNumber
+            getLastAppliedBlockNumber
             submitTx
             saveBlock
             Peers.respondToPeer

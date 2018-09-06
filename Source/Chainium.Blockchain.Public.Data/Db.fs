@@ -124,7 +124,7 @@ module Db =
         |? 0m
         |> ChxAmount
 
-    let getLastBlockNumber (dbConnectionString : string) : BlockNumber option =
+    let getLastAppliedBlockNumber (dbConnectionString : string) : BlockNumber option =
         let sql =
             """
             SELECT block_number
@@ -137,7 +137,7 @@ module Db =
         |> List.tryHead
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
 
-    let getLastBlockTimestamp (dbConnectionString : string) : Timestamp option =
+    let getLastAppliedBlockTimestamp (dbConnectionString : string) : Timestamp option =
         let sql =
             """
             SELECT block_timestamp
