@@ -164,24 +164,24 @@ module Peers =
                         | false, _ -> []
 
                     let targetAddress =
-                            let networkAddressPool =
-                                __.GetActiveMembers()
-                                |> List.map (fun m -> m.NetworkAddress)
-                                |> List.filter (fun a -> a <> config.NetworkAddress)
-                                |> List.except expiredAddresses
+                        let networkAddressPool =
+                            __.GetActiveMembers()
+                            |> List.map (fun m -> m.NetworkAddress)
+                            |> List.filter (fun a -> a <> config.NetworkAddress)
+                            |> List.except expiredAddresses
 
-                            let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
-                            match selectedUnicastPeer with
-                            | None ->
-                                Log.errorf "Cannot retrieve data for %A" id
-                                pendingDataRequests.TryRemove id |> ignore
-                            | Some networkAddress ->
-                                pendingDataRequests.AddOrUpdate(
-                                    id,
-                                    networkAddress :: expiredAddresses,
-                                    fun _ _ -> networkAddress :: expiredAddresses)
-                                |> ignore
-                            selectedUnicastPeer
+                        let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
+                        match selectedUnicastPeer with
+                        | None ->
+                            Log.errorf "Cannot retrieve data for %A" id
+                            pendingDataRequests.TryRemove id |> ignore
+                        | Some networkAddress ->
+                            pendingDataRequests.AddOrUpdate(
+                                id,
+                                networkAddress :: expiredAddresses,
+                                fun _ _ -> networkAddress :: expiredAddresses)
+                            |> ignore
+                        selectedUnicastPeer
 
                     targetAddress |> Option.iter(fun address ->
                         let unicastMessage = RequestDataMessage {
