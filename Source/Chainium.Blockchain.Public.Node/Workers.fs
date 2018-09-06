@@ -9,7 +9,6 @@ open Chainium.Blockchain.Public.Core.Events
 open Chainium.Blockchain.Public.Net
 
 module Workers =
-    open System.Linq
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Applier

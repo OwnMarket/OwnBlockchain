@@ -276,7 +276,7 @@ module Workflows =
         blockNumber
         blockEnvelopeDto
         =
-        Log.debugf ">>> applyBlock %A" blockNumber
+
         result {
             let blockProposer =
                 getValidators ()
@@ -298,9 +298,6 @@ module Workflows =
                     blockEnvelopeDto
                     blockProposer.ValidatorAddress
                 |> Result.map Mapping.blockFromDto
-
-            //if not (Blocks.isValidBlock decodeHash createHash createMerkleTree previousBlockHash block) then
-            // TODO:
 
             let! createdBlock, output =
                 createBlock
