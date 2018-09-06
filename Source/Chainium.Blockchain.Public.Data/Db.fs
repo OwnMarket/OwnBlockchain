@@ -509,12 +509,16 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 // When applying the block during catch-up, tx might not be in the pool.
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't remove processed transaction from the pool."
+            | _ ->
+                sprintf "Didn't remove processed transaction from the pool: %s" txHash
+                |> Result.appError
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to remove processed transaction from the pool."
+            sprintf "Failed to remove processed transaction from the pool: %s" txHash
+            |> Result.appError
 
     let private removeProcessedTxs conn transaction (txResults : Map<string, TxResultDto>) : Result<unit, AppErrors> =
         let foldFn result (txHash, txResult : TxResultDto) =

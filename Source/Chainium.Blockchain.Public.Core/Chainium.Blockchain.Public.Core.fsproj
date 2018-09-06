@@ -16,6 +16,7 @@
     <Compile Include="Serialization.fs" />
     <Compile Include="Processing.fs" />
     <Compile Include="Blocks.fs" />
+    <Compile Include="Synchronization.fs" />
     <Compile Include="Consensus.fs" />
     <Compile Include="Workflows.fs" />
   </ItemGroup>

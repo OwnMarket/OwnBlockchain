@@ -172,7 +172,6 @@ module Peers =
                             | None ->
                                 Log.errorf "Cannot retrieve data for %A" id
                                 pendingDataRequests.TryRemove id |> ignore
-
                             | Some networkAddress ->
                                 pendingDataRequests.AddOrUpdate(
                                     id,
@@ -571,6 +570,13 @@ module Peers =
 
     let stopGossip () =
         node |> Option.iter(fun n -> n.StopGossip())
+
+    let discoverNetwork networkDiscoveryTime =
+        async {
+            do! Async.Sleep (networkDiscoveryTime * 1000) // Give gossip time to discover some of peers.
+            // TODO: If number of nodes reaches some threshold, consider network discovery done and proceed.
+        }
+        |> Async.RunSynchronously
 
     let sendMessage message =
         match node with

@@ -16,8 +16,12 @@ module Cli =
     let handleStartNodeCommand () =
         Composition.initDb ()
         Composition.initBlockchainState ()
+        Composition.initSynchronizationState ()
         Composition.startGossip Agents.publishEvent
-        PaceMaker.start ()
+        Composition.discoverNetwork ()
+        Composition.requestLastBlockFromPeer ()
+        Workers.startApplier ()
+        Workers.startProposer ()
         Api.start ()
         Composition.stopGossip ()
 

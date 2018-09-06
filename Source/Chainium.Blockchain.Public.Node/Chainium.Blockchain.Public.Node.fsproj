@@ -8,7 +8,7 @@
     <Compile Include="Config.fs" />
     <Compile Include="Composition.fs" />
     <Compile Include="Agents.fs" />
-    <Compile Include="PaceMaker.fs" />
+    <Compile Include="Workers.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="Cli.fs" />
     <Compile Include="Program.fs" />

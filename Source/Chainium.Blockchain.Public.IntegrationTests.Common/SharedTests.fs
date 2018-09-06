@@ -122,7 +122,8 @@ module SharedTests =
         |> submissionChecks connString isValidTransaction senderWallet txDto expectedTx
 
     let processTransactions expectedBlockPath =
-        PaceMaker.start()
+        Workers.startApplier ()
+        Workers.startProposer ()
 
         let mutable iter = 0
         let sleepTime = 2

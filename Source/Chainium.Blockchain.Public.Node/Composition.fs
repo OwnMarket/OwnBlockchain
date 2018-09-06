@@ -9,7 +9,9 @@ open Chainium.Blockchain.Public.Net
 
 module Composition =
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Raw storage
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let saveTx = Raw.saveTx Config.DataDir
 
@@ -27,7 +29,9 @@ module Composition =
 
     let txExists = Raw.txExists Config.DataDir
 
-    // DB
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Database
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let initDb () = DbInit.init Config.DbEngineType Config.DbConnectionString
 
@@ -75,32 +79,21 @@ module Composition =
 
     let applyNewState = Db.applyNewState Config.DbConnectionString
 
-    // Workflows
-
-    let getAvailableChxBalance =
-        Workflows.getAvailableChxBalance
-            getChxBalanceState
-            getTotalChxStaked
-
-    let submitTx =
-        Workflows.submitTx
-            Signing.verifySignature
-            Hashing.isValidChainiumAddress
-            Hashing.hash
-            getAvailableChxBalance
-            getTotalFeeForPendingTxs
-            saveTx
-            saveTxToDb
-            (ChxAmount Config.MinTxActionFee)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Validators
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
-    let isMyTurnToProposeBlock () =
-        Workflows.isMyTurnToProposeBlock
-            getLastBlockNumber
-            getAllValidators
-            addressFromPrivateKey
-            (PrivateKey Config.ValidatorPrivateKey)
+    let getGenesisValidators () =
+        Config.GenesisValidators
+        |> List.map (fun (validatorAddress, networkAddress) ->
+            {
+                ValidatorSnapshot.ValidatorAddress = ChainiumAddress validatorAddress
+                NetworkAddress = networkAddress
+                TotalStake = ChxAmount 0m
+            }
+        )
 
     let getTopValidators () =
         Workflows.getTopValidators
@@ -113,54 +106,23 @@ module Composition =
         Workflows.getActiveValidators
             getValidatorSnapshots
 
-    let persistTxResults =
-        Workflows.persistTxResults
-            saveTxResult
+    let isValidator =
+        Consensus.isValidator
+            getValidatorSnapshots
 
-    let createBlock =
-        Workflows.createBlock
-            getTx
-            Signing.verifySignature
-            Hashing.isValidChainiumAddress
+    let shouldProposeBlock =
+        Consensus.shouldProposeBlock
+            getGenesisValidators
+            (int64 Config.BlockCreationInterval)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Blockchain
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let getAvailableChxBalance =
+        Workflows.getAvailableChxBalance
             getChxBalanceState
-            getHoldingState
-            getAccountState
-            getAssetState
-            getValidatorState
-            getStakeState
             getTotalChxStaked
-            getTopValidators
-            getActiveValidators
-            getLastBlockNumber
-            getBlock
-            Hashing.decode
-            Hashing.hash
-            Hashing.merkleTree
-            Config.CheckpointBlockCount
-            (ChxAmount Config.MinTxActionFee)
-
-    let createNewBlock () =
-        Workflows.createNewBlock
-            createBlock
-            getPendingTxs
-            getChxBalanceState
-            getAvailableChxBalance
-            persistTxResults
-            Signing.signMessage
-            saveBlock
-            applyNewState
-            Config.MaxTxCountPerBlock
-            addressFromPrivateKey
-            (PrivateKey Config.ValidatorPrivateKey)
-
-    let applyBlock =
-        Workflows.applyBlock
-            createBlock
-            getAllValidators
-            Signing.verifySignature
-            persistTxResults
-            saveBlock
-            applyNewState
 
     let initBlockchainState () =
         Workflows.initBlockchainState
@@ -177,18 +139,109 @@ module Composition =
             (ChainiumAddress Config.GenesisAddress)
             Config.GenesisValidators
 
-    let advanceToLastKnownBlock () =
-        Workflows.advanceToLastKnownBlock
-            createBlock
+    let createBlock =
+        Workflows.createBlock
+            getTx
+            Signing.verifySignature
+            Hashing.isValidChainiumAddress
+            getChxBalanceState
+            getHoldingState
+            getAccountState
+            getAssetState
+            getValidatorState
+            getStakeState
+            getTotalChxStaked
+            getTopValidators
+            getActiveValidators
+            getBlock
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
+            Config.CheckpointBlockCount
+            (ChxAmount Config.MinTxActionFee)
+
+    let proposeBlock =
+        Workflows.proposeBlock
+            createBlock
+            getBlock
+            getPendingTxs
+            getChxBalanceState
+            getAvailableChxBalance
+            Signing.signMessage
+            saveBlock
             applyNewState
+            Config.MaxTxCountPerBlock
+            addressFromPrivateKey
+            (PrivateKey Config.ValidatorPrivateKey)
+
+    let persistTxResults =
+        Workflows.persistTxResults
+            saveTxResult
+
+    let applyBlock =
+        Workflows.applyBlock
+            createBlock
+            getBlock
+            getAllValidators
+            Signing.verifySignature
+            persistTxResults
+            saveBlock
+            applyNewState
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Synchronization
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let initSynchronizationState () =
+        Synchronization.initSynchronizationState
             getLastBlockNumber
             blockExists
-            getBlock
 
-    let propagateTx = Workflows.propagateTx Peers.sendMessage Config.NetworkAddress getTx
+    let acquireAndApplyMissingBlocks () =
+        Synchronization.acquireAndApplyMissingBlocks
+            getLastBlockNumber
+            getBlock
+            blockExists
+            txExists
+            Peers.requestBlockFromPeer
+            Peers.requestTxFromPeer
+            applyBlock
+            (int64 Config.MaxNumberOfBlocksToFetchInParallel)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // API
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let submitTx =
+        Workflows.submitTx
+            Signing.verifySignature
+            Hashing.isValidChainiumAddress
+            Hashing.hash
+            getAvailableChxBalance
+            getTotalFeeForPendingTxs
+            saveTx
+            saveTxToDb
+            (ChxAmount Config.MinTxActionFee)
+
+    let getTxApi = Workflows.getTxApi getTx Signing.verifySignature getTxResult
+
+    let getBlockApi = Workflows.getBlockApi getBlock
+
+    let getAddressApi = Workflows.getAddressApi getChxBalanceState
+
+    let getAddressAccountsApi = Workflows.getAddressAccountsApi getAddressAccounts
+
+    let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let propagateTx =
+        Workflows.propagateTx
+            Peers.sendMessage
+            Config.NetworkAddress
+            getTx
 
     let propagateBlock =
         Workflows.propagateBlock
@@ -196,7 +249,7 @@ module Composition =
             Config.NetworkAddress
             getBlock
 
-    // Network
+    let requestLastBlockFromPeer () = Peers.requestLastBlockFromPeer ()
 
     let processPeerMessage (peerMessage : PeerMessage) =
         Workflows.processPeerMessage
@@ -204,7 +257,7 @@ module Composition =
             getBlock
             getLastBlockNumber
             submitTx
-            applyBlock
+            saveBlock
             Peers.respondToPeer
             peerMessage
 
@@ -228,14 +281,4 @@ module Composition =
 
     let stopGossip () = Peers.stopGossip ()
 
-    // API
-
-    let getAddressApi = Workflows.getAddressApi getChxBalanceState
-
-    let getAddressAccountsApi = Workflows.getAddressAccountsApi getAddressAccounts
-
-    let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
-
-    let getBlockApi = Workflows.getBlockApi getBlock
-
-    let getTxApi = Workflows.getTxApi getTx Signing.verifySignature getTxResult
+    let discoverNetwork () = Peers.discoverNetwork Config.NetworkDiscoveryTime
