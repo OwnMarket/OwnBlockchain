@@ -200,7 +200,7 @@ module Workflows =
         maxTxCountPerBlock
         addressFromPrivateKey
         validatorPrivateKey
-        previousBlockNumber
+        (previousBlockNumber : BlockNumber)
         : Result<BlockCreatedEventData, AppErrors> option
         =
 

@@ -48,7 +48,7 @@ module Workers =
                             let shouldProposeBlock =
                                 Composition.shouldProposeBlock
                                     validatorAddress
-                                    (lastAppliedBlockNumber + 1L)
+                                    lastAppliedBlockNumber
                                     lastBlockTimestamp
                                     (Utils.getUnixTimestamp () |> Timestamp)
                             if shouldProposeBlock then
