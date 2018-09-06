@@ -513,7 +513,7 @@ module SharedTests =
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
-    let setStakeTest engineType connectionString =
+    let delegateStakeTest engineType connectionString =
         // ARRANGE
         let client = testInit engineType connectionString
 

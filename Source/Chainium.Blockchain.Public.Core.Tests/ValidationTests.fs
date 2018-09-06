@@ -22,7 +22,7 @@ module ValidationTests =
     let setAssetControllerActionType = "SetAssetController"
     let setAssetCodeActionType = "SetAssetCode"
     let setValidatorNetworkAddressActionType = "SetValidatorNetworkAddress"
-    let setStakeActionType = "DelegateStake"
+    let delegateStakeActionType = "DelegateStake"
 
     [<Fact>]
     let ``Validation.validateTx BasicValidation single validation error`` () =
@@ -673,7 +673,7 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = setStakeActionType
+                        ActionType = delegateStakeActionType
                         ActionData = expected
                     }
                 ]
@@ -701,7 +701,7 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = setStakeActionType
+                        ActionType = delegateStakeActionType
                         ActionData = expected
                     }
                 ]
