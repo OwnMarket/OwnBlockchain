@@ -1,8 +1,9 @@
 ﻿namespace Chainium.Blockchain.Public.Net
 
+open System
 open System.Collections.Concurrent
+open System.Collections.Generic
 open Chainium.Common
-open Chainium.Blockchain.Common
 open Chainium.Blockchain.Public.Core
 open Chainium.Blockchain.Public.Core.Dtos
 open NetMQ
@@ -11,9 +12,9 @@ open Newtonsoft.Json
 
 module Transport =
 
-    let mutable private receiverSocket : PullSocket option = None
     let private poller = new NetMQPoller()
-    let private connectionPool = new ConcurrentDictionary<string, PushSocket>()
+    let mutable private receiverSocket : PullSocket option = None
+    let private connectionPool = new ConcurrentDictionary<string, DealerSocket * NetMQQueue<string>>()
 
     let private packMessage message =
         message |> Serialization.serializePeerMessage
@@ -23,29 +24,42 @@ module Transport =
 
     let private send (msg : string) targetAddress =
         match connectionPool.TryGetValue targetAddress with
-        | true, socket ->
-            socket.TrySendFrame msg |> ignore
+        | true, (_, queue) ->
+            queue.Enqueue msg
         | _ ->
-            let senderSocket = new PushSocket(">tcp://" + targetAddress)
-            connectionPool.AddOrUpdate (targetAddress, senderSocket, fun _ _ -> senderSocket) |> ignore
-            senderSocket.TrySendFrame msg |> ignore
+            let senderSocket = new DealerSocket(">tcp://" + targetAddress)
+            let messageQueue = new NetMQQueue<string>()
+            messageQueue.ReceiveReady |> Observable.subscribe (fun eventArgs ->
+                let msgList = new HashSet<string>()
+                let msg = ref ""
+                while eventArgs.Queue.TryDequeue(msg, TimeSpan.FromMilliseconds(100.)) do
+                    msgList.Add !msg |> ignore
 
-    let private sendAgent = Agent.start <| fun (message, targetAddress) ->
-        async {
-            send message targetAddress
-        }
+                for message in msgList do
+                    senderSocket.TrySendFrame message |> ignore
+            )
+            |> ignore
+
+            connectionPool.AddOrUpdate (
+                targetAddress,
+                (senderSocket, messageQueue),
+                fun _ _ -> (senderSocket, messageQueue))
+            |> ignore
+
+            poller.Add messageQueue
+            messageQueue.Enqueue msg
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
-        sendAgent.Post(msg, targetAddress)
+        send msg targetAddress
 
     let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
         let msg = packMessage gossipMessage
-        sendAgent.Post(msg, targetMember.NetworkAddress)
+        send msg targetMember.NetworkAddress
 
     let sendUnicastMessage unicastMessage targetAddress =
         let msg = packMessage unicastMessage
-        sendAgent.Post(msg, targetAddress)
+        send msg targetAddress
 
     let sendMulticastMessage senderAddress multicastMessage multicastAddresses =
         let multicastAddresses =
@@ -60,7 +74,7 @@ module Transport =
             |> Seq.toList
             |> List.iter (fun networkAddress ->
                 let msg = packMessage multicastMessage
-                sendAgent.Post(msg, networkAddress)
+                send msg networkAddress
             )
 
     let receiveMessage networkAddress receiveCallback =
@@ -83,7 +97,7 @@ module Transport =
 
     let closeConnection networkAddress =
         match connectionPool.TryGetValue networkAddress with
-        | true, socket ->
+        | true, (socket, _) ->
             connectionPool.TryRemove networkAddress |> ignore
             socket.Dispose()
         | _ -> ()
@@ -92,4 +106,7 @@ module Transport =
         poller.Dispose()
         connectionPool
         |> Map.ofDict
-        |> Seq.iter (fun x -> x.Value.Dispose())
+        |> Seq.iter (fun x ->
+            (fst x.Value).Dispose()
+            (snd x.Value).Dispose()
+        )
