@@ -55,6 +55,7 @@ module TransportMock =
                 match messageQueue.TryGetValue address with
                 | true, messages ->
                     messages
+                    |> List.distinct
                     |> List.iter(fun message ->
                         let peerMessage = unpackMessage message
                         callback peerMessage

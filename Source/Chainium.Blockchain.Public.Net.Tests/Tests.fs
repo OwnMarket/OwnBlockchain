@@ -189,7 +189,7 @@ module PeerTests =
         // ASSERT
         checkGossipDiscoveryConvergence nodeList
 
-    let testGossipMessagePassing nodeConfigList cycleCount =
+    let testGossipSingleMessage nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
 
@@ -200,14 +200,62 @@ module PeerTests =
 
         let txHash = TxHash "txHash"
         gossipTx nodeList.[0] txHash
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash) |> ignore
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
         // ASSERT
         checkMessageReceived nodeList (Tx txHash)
 
-    let testMulticastMessagePassing nodeConfigList cycleCount =
+    let testGossipMultipleDifferentMessageTypes nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter(fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        let txHash = TxHash "txHash"
+        let blockNr = BlockNumber 1L
+
+        gossipTx nodeList.[0] txHash
+        gossipBlock nodeList.[0] blockNr
+
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Block blockNr)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // ASSERT
+        checkMessageReceived nodeList (Tx txHash)
+        checkMessageReceived nodeList (Block blockNr)
+
+    let testGossipMultipleSameMessageTypes nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter(fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        let txHash1 = TxHash "txHash1"
+        let txHash2 = TxHash "txHash2"
+
+        gossipTx nodeList.[0] txHash1
+        gossipTx nodeList.[0] txHash2
+
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash1)
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash2)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // ASSERT
+        checkMessageReceived nodeList (Tx txHash1)
+        checkMessageReceived nodeList (Tx txHash2)
+
+    let testMulticastSingleMessage nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
 
@@ -218,14 +266,60 @@ module PeerTests =
 
         let txHash = TxHash "txHash"
         multicastTx nodeList.[0] txHash
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash) |> ignore
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
 
         System.Threading.Thread.Sleep (tCycle)
 
         // ASSERT
         checkMessageReceived nodeList (Tx txHash)
 
-    let testRequestResponse nodeConfigList cycleCount txExists =
+    let testMulticastMultipleDifferentMessageTypes nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter(fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        let txHash = TxHash "txHash"
+        let blockNr = BlockNumber 1L
+
+        multicastTx nodeList.[0] txHash
+        multicastBlock nodeList.[0] blockNr
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Block blockNr)
+
+        System.Threading.Thread.Sleep (tCycle)
+
+        // ASSERT
+        checkMessageReceived nodeList (Tx txHash)
+        checkMessageReceived nodeList (Block blockNr)
+
+    let testMulticastMultipleSameMessageTypes nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter(fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        let txHash1 = TxHash "txHash1"
+        let txHash2 = TxHash "txHash2"
+
+        multicastTx nodeList.[0] txHash1
+        multicastTx nodeList.[0] txHash2
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash1)
+        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash2)
+
+        System.Threading.Thread.Sleep (tCycle)
+
+        // ASSERT
+        checkMessageReceived nodeList (Tx txHash1)
+        checkMessageReceived nodeList (Tx txHash2)
+
+    let testRequestResponseSingleMessage nodeConfigList cycleCount txExists =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
 
@@ -240,13 +334,69 @@ module PeerTests =
         let nodeCount = nodeList.Length
         if (txExists) then
             // Last node contains the tx.
-            RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash) |> ignore
+            RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash)
 
         // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep ((nodeCount - 1) * tCycle)
 
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash) txExists
+
+    let testRequestResponseMultipleDifferentMessageTypes nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter(fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        let txHash = TxHash "txHash"
+        let blockNr = BlockNumber 1L
+        requestTx nodeList.[0] txHash
+        requestBlock nodeList.[0] blockNr
+
+        let nodeCount = nodeList.Length
+
+        // Last node contains the tx.
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash)
+        // Last node contains the block.
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Block blockNr)
+
+        // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
+        System.Threading.Thread.Sleep (2 * (nodeCount - 1) * tCycle)
+
+        // ASSERT
+        checkResponseReceived nodeList.[0] (Tx txHash) true
+        checkResponseReceived nodeList.[0] (Block blockNr) true
+
+    let testRequestResponseMultipleSameMessageTypes nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter(fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        let txHash1 = TxHash "txHash1"
+        let txHash2 = TxHash "txHash2"
+        requestTx nodeList.[0] txHash1
+        requestTx nodeList.[0] txHash2
+
+        let nodeCount = nodeList.Length
+
+        // Last node contains the tx.
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash1)
+        // Last node contains the tx.
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash2)
+
+        // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
+        System.Threading.Thread.Sleep (2 * (nodeCount - 1) * tCycle)
+
+        // ASSERT
+        checkResponseReceived nodeList.[0] (Tx txHash1) true
+        checkResponseReceived nodeList.[0] (Tx txHash2) true
 
     [<Fact>]
     let ``Network - GossipDiscovery 3 nodes same bootstrap node`` () =
@@ -294,7 +444,7 @@ module PeerTests =
 
         let nodeConfigList = create3NodesConfigSameBootstrapNode ()
 
-        testGossipMessagePassing nodeConfigList 5
+        testGossipSingleMessage nodeConfigList 5
 
     [<Fact>]
     let ``Network - GossipMessagePassing 3 nodes different bootstrap node`` () =
@@ -303,7 +453,25 @@ module PeerTests =
 
         let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
 
-        testGossipMessagePassing nodeConfigList 5
+        testGossipSingleMessage nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - GossipMessagePassing multiple different message types`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+
+        testGossipMultipleDifferentMessageTypes nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - GossipMessagePassing multiple same message types`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+
+        testGossipMultipleSameMessageTypes nodeConfigList 5
 
     [<Fact>]
     let ``Network - MulticastMessagePassing 3 nodes same bootstrap node`` () =
@@ -312,7 +480,7 @@ module PeerTests =
 
         let nodeConfigList = create3NodesConfigSameBootstrapNode ()
 
-        testMulticastMessagePassing nodeConfigList 5
+        testMulticastSingleMessage nodeConfigList 5
 
     [<Fact>]
     let ``Network - MulticastMessagePassing 3 nodes different bootstrap node`` () =
@@ -321,7 +489,25 @@ module PeerTests =
 
         let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
 
-        testMulticastMessagePassing nodeConfigList 5
+        testMulticastSingleMessage nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - MulticastMessagePassing multiple different message types`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
+
+        testMulticastMultipleDifferentMessageTypes nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - MulticastMessagePassing multiple same message types`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
+
+        testMulticastMultipleSameMessageTypes nodeConfigList 5
 
     [<Fact>]
     let ``Network - Request/Response Tx exists`` () =
@@ -330,7 +516,7 @@ module PeerTests =
 
         let nodeConfigList = create3NodesConfigSameBootstrapNode ()
 
-        testRequestResponse nodeConfigList 5 true
+        testRequestResponseSingleMessage nodeConfigList 5 true
 
     [<Fact>]
     let ``Network - Request/Response Tx doesn't exist`` () =
@@ -339,4 +525,22 @@ module PeerTests =
 
         let nodeConfigList = create3NodesConfigSameBootstrapNode ()
 
-        testRequestResponse nodeConfigList 5 false
+        testRequestResponseSingleMessage nodeConfigList 5 false
+
+    [<Fact>]
+    let ``Network - Request/Response multiple different message types`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+
+        testRequestResponseMultipleDifferentMessageTypes nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - Request/Response multiple same message types`` () =
+        // ARRANGE
+        testCleanup()
+
+        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+
+        testRequestResponseMultipleSameMessageTypes nodeConfigList 5
