@@ -16,6 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Base58Check" Version="0.2.0" />
-    <PackageReference Include="Secp256k1.Net" Version="0.1.45" />
+    <PackageReference Include="Secp256k1.Net" Version="0.1.48" />
   </ItemGroup>
 </Project>
