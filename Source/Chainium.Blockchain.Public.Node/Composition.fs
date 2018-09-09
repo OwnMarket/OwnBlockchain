@@ -174,12 +174,26 @@ module Composition =
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
 
+    let storeReceivedBlock =
+        Workflows.storeReceivedBlock
+            Hashing.isValidChainiumAddress
+            getAllValidators
+            Signing.verifySignature
+            saveBlock
+
     let persistTxResults =
         Workflows.persistTxResults
             saveTxResult
 
+    let isValidSuccessorBlock =
+        Blocks.isValidSuccessorBlock
+            Hashing.decode
+            Hashing.hash
+            Hashing.merkleTree
+
     let applyBlock =
         Workflows.applyBlock
+            isValidSuccessorBlock
             createBlock
             getBlock
             getAllValidators
@@ -257,7 +271,7 @@ module Composition =
             getBlock
             getLastAppliedBlockNumber
             submitTx
-            saveBlock
+            storeReceivedBlock
             Peers.respondToPeer
             peerMessage
 

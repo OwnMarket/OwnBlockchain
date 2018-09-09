@@ -272,7 +272,7 @@ module Blocks =
         }
 
     /// Checks if the block is a valid potential successor of a previous block identified by previousBlockHash argument.
-    let isValidBlock
+    let isValidSuccessorBlock
         decodeHash
         createHash
         createMerkleTree
@@ -372,19 +372,3 @@ module Blocks =
         |> Mapping.blockEnvelopeFromDto
         |> fun envelope -> Serialization.deserialize<BlockDto> envelope.RawBlock
         |> Result.map Mapping.blockFromDto
-
-    let getBlockDto verifySignature blockEnvelopeDto validatorAddress =
-        result {
-            let! blockEnvelope = Validation.validateBlockEnvelope blockEnvelopeDto
-            let! blockDto =
-                Validation.verifyBlockSignature verifySignature blockEnvelope
-                >>= fun signedAddress ->
-                    if signedAddress <> validatorAddress
-                    then Result.appError "Block signature and expected validator missmatch"
-                    else blockEnvelope.RawBlock |> Serialization.deserialize<Dtos.BlockDto>
-                    >>= fun blockDto ->
-                        if signedAddress <> (ChainiumAddress blockDto.Header.Validator)
-                        then Result.appError "Block signature and block header missmatch"
-                        else Ok blockDto
-            return blockDto
-        }

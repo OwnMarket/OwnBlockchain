@@ -519,7 +519,7 @@ module BlockTests =
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
     [<InlineData ("WRONG_PREVIOUS_BLOCK_HASH", false)>]
-    let ``Blocks.isValidBlock`` (previousBlockHashInTestedBlock, expectedSuccess) =
+    let ``Blocks.isValidSuccessorBlock`` (previousBlockHashInTestedBlock, expectedSuccess) =
         let wallet1 = Signing.generateWallet ()
         let wallet2 = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -651,7 +651,7 @@ module BlockTests =
 
         // ACT
         let isValid =
-            Blocks.isValidBlock
+            Blocks.isValidSuccessorBlock
                 Hashing.decode
                 Hashing.hash
                 Hashing.merkleTree

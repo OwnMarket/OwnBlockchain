@@ -173,7 +173,7 @@ module Peers =
                         let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
                         match selectedUnicastPeer with
                         | None ->
-                            Log.errorf "Cannot retrieve data for %A" id
+                            Log.errorf "Cannot retrieve data from peers for %A" id
                             pendingDataRequests.TryRemove id |> ignore
                         | Some networkAddress ->
                             pendingDataRequests.AddOrUpdate(
@@ -492,15 +492,10 @@ module Peers =
             )
 
         member private __.SelectNewUnicastPeer networkAddressPool =
-            let targetAddresses =
-                networkAddressPool
-                |> List.toSeq
-                |> Seq.shuffleG
-                |> List.ofSeq
-
-            match targetAddresses with
-            | [] -> None
-            | _ -> Some targetAddresses.Head
+            networkAddressPool
+            |> List.toSeq
+            |> Seq.shuffleG
+            |> Seq.tryHead
 
     let mutable private node : NetworkNode option = None
 

@@ -7,30 +7,21 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module Validation =
 
-    let validateSignature (signature : Signature) =
-        let signatureEncodedString = signature |> fun (Signature s) -> s
-        [
-            if signatureEncodedString.IsNullOrWhiteSpace() then
-                yield AppError "Signature is missing from the envelope."
-        ]
-
     let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
-        let signature = Signature txEnvelopeDto.Signature
         [
             if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
-                yield AppError "Tx is missing from the envelope."
-
-            yield! validateSignature signature
+                yield AppError "Tx is missing from the tx envelope."
+            if txEnvelopeDto.Signature.IsNullOrWhiteSpace() then
+                yield AppError "Signature is missing from the tx envelope."
         ]
         |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
 
     let validateBlockEnvelope (blockEnvelopeDto : BlockEnvelopeDto) : Result<BlockEnvelope, AppErrors> =
-        let signature = Signature blockEnvelopeDto.Signature
         [
             if blockEnvelopeDto.Block.IsNullOrWhiteSpace() then
-                yield AppError "Block is missing from the envelope."
-
-            yield! validateSignature signature
+                yield AppError "Block is missing from the block envelope."
+            if blockEnvelopeDto.Signature.IsNullOrWhiteSpace() then
+                yield AppError "Signature is missing from the block envelope."
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
 
@@ -39,14 +30,51 @@ module Validation =
         | Some chainiumAddress ->
             Ok chainiumAddress
         | None ->
-            Result.appError "Cannot verify signature"
+            Result.appError "Cannot verify tx signature."
 
     let verifyBlockSignature verifySignature (blockEnvelope : BlockEnvelope) : Result<ChainiumAddress, AppErrors> =
         match verifySignature blockEnvelope.Signature blockEnvelope.RawBlock with
         | Some chainiumAddress ->
             Ok chainiumAddress
         | None ->
-            Result.appError "Cannot verify signature"
+            Result.appError "Cannot verify block signature."
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Block validation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let validateBlock isValidAddress (blockDto : BlockDto) =
+        [
+            if blockDto.Header.Number < 0L then
+                yield AppError "Block.Header.Number cannot be negative."
+
+            if blockDto.Header.Hash.IsNullOrWhiteSpace() then
+                yield AppError "Block.Header.Hash is missing."
+
+            if blockDto.Header.PreviousHash.IsNullOrWhiteSpace() then
+                yield AppError "Block.Header.PreviousHash is missing."
+
+            if blockDto.Header.Timestamp < 0L then
+                yield AppError "Block.Header.Timestamp cannot be negative."
+
+            if blockDto.Header.Validator.IsNullOrWhiteSpace() then
+                yield AppError "Block.Header.Validator is missing."
+            elif blockDto.Header.Validator |> ChainiumAddress |> isValidAddress |> not then
+                yield AppError "Block.Header.Validator is not valid."
+
+            if blockDto.Header.TxSetRoot.IsNullOrWhiteSpace() then
+                yield AppError "Block.Header.TxSetRoot is missing."
+
+            if blockDto.Header.TxResultSetRoot.IsNullOrWhiteSpace() then
+                yield AppError "Block.Header.TxResultSetRoot is missing."
+
+            if blockDto.Header.StateRoot.IsNullOrWhiteSpace() then
+                yield AppError "Block.Header.StateRoot is missing."
+
+            if blockDto.TxSet |> Seq.isEmpty then
+                yield AppError "Block TxSet cannot be empty."
+        ]
+        |> Errors.orElseWith (fun _ -> Mapping.blockFromDto blockDto)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TxAction validation

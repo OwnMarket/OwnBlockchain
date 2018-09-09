@@ -224,7 +224,9 @@ module Workflows =
                     txSet
                     |> Processing.orderTxSet
 
-                let! previousBlock = getBlock previousBlockNumber >>= Blocks.extractBlockFromEnvelopeDto
+                let! previousBlock =
+                    getBlock previousBlockNumber
+                    >>= Blocks.extractBlockFromEnvelopeDto
 
                 let! block, output =
                     createBlock
@@ -255,6 +257,56 @@ module Workflows =
             }
             |> Some
 
+    let storeReceivedBlock
+        isValidAddress
+        (getValidators : unit -> ValidatorInfoDto list)
+        verifySignature
+        saveBlock
+        blockEnvelopeDto
+        =
+
+        result {
+            let! blockEnvelope = Validation.validateBlockEnvelope blockEnvelopeDto
+
+            let! blockDto =
+                blockEnvelope.RawBlock
+                |> Serialization.deserialize<Dtos.BlockDto>
+
+            let! block = Validation.validateBlock isValidAddress blockDto
+
+            let blockNumber = block.Header.Number
+
+            let expectedBlockProposer =
+                getValidators ()
+                |> List.map (fun v -> // TODO: Remove this once we start using validator snapshots
+                    {
+                        ValidatorSnapshot.ValidatorAddress = ChainiumAddress v.ValidatorAddress
+                        NetworkAddress = v.NetworkAddress
+                        TotalStake = ChxAmount 0m
+                    }
+                )
+                |> Consensus.getBlockProposer block.Header.Number
+                |> (fun v -> v.ValidatorAddress)
+
+            let! signerAddress = Validation.verifyBlockSignature verifySignature blockEnvelope
+
+            if signerAddress <> expectedBlockProposer then
+                do! blockNumber
+                    |> fun (BlockNumber n) -> n
+                    |> sprintf "Block %i not signed by proper validator."
+                    |> Result.appError
+
+            if block.Header.Validator <> expectedBlockProposer then
+                do! blockNumber
+                    |> fun (BlockNumber n) -> n
+                    |> sprintf "Block %i not proposed by proper validator."
+                    |> Result.appError
+
+            do! saveBlock blockNumber blockEnvelopeDto
+            Synchronization.setLastAvailableBlockNumber blockNumber
+            return {BlockCreatedEventData.BlockNumber = blockNumber}
+        }
+
     let persistTxResults saveTxResult txResults =
         result {
             do! txResults
@@ -266,6 +318,7 @@ module Workflows =
         }
 
     let applyBlock
+        isValidSuccessorBlock
         createBlock
         getBlock
         (getValidators : unit -> ValidatorInfoDto list)
@@ -278,26 +331,20 @@ module Workflows =
         =
 
         result {
-            let blockProposer =
-                getValidators ()
-                |> List.map (fun v -> // TODO: Remove this once we start using validator snapshots
-                    {
-                        ValidatorSnapshot.ValidatorAddress = ChainiumAddress v.ValidatorAddress
-                        NetworkAddress = v.NetworkAddress
-                        TotalStake = ChxAmount 0m
-                    }
-                )
-                |> Consensus.getBlockProposer blockNumber
-
             let! previousBlock =
-                getBlock (blockNumber - 1L) >>= Blocks.extractBlockFromEnvelopeDto
+                getBlock (blockNumber - 1L)
+                >>= Blocks.extractBlockFromEnvelopeDto
 
             let! block =
-                Blocks.getBlockDto
-                    verifySignature
-                    blockEnvelopeDto
-                    blockProposer.ValidatorAddress
-                |> Result.map Mapping.blockFromDto
+                getBlock blockNumber
+                >>= Blocks.extractBlockFromEnvelopeDto
+
+            if not (isValidSuccessorBlock previousBlock.Header.Hash block) then
+                return!
+                    blockNumber
+                    |> fun (BlockNumber n) ->
+                        sprintf "Block %i is not a valid successor of the previous block." n
+                    |> Result.appError
 
             let! createdBlock, output =
                 createBlock
@@ -307,11 +354,10 @@ module Workflows =
                     block.Header.Timestamp
                     block.TxSet
 
-            let outputDto = Mapping.outputToDto output
-            let createdBlockDto = Mapping.blockToDto createdBlock
-
             if block = createdBlock then
+                let createdBlockDto = Mapping.blockToDto createdBlock
                 let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto createdBlockDto.Header
+                let outputDto = Mapping.outputToDto output
                 do! persistTxResults outputDto.TxResults
                 do! applyNewState blockInfoDto outputDto
             else
@@ -363,32 +409,34 @@ module Workflows =
         getTx
         getBlock
         getLastAppliedBlockNumber
-        submitTx
-        saveBlock
+        handleReceivedTx
+        handleReceivedBlock
         respondToPeer
         peerMessage
         =
 
         let processTxFromPeer txHash data =
-            let txEnvelopeDto = Serialization.deserializeJObject data
             match getTx txHash with
-            | Ok _ -> None |> Ok
+            | Ok _ -> Ok None
             | _ ->
-                submitTx txEnvelopeDto
-                |> Result.map (fun _ ->
-                    {TxReceivedEventData.TxHash = txHash} |> TxReceived |> Some
-                )
+                data
+                |> Serialization.deserializeJObject
+                |> handleReceivedTx
+                |> Result.map (TxReceived >> Some)
 
         let processBlockFromPeer blockNr data =
-            match getBlock blockNr with
-            | Ok _ -> None |> Ok
+            let blockEnvelopeDto = data |> Serialization.deserializeJObject
+
+            let existingBlock =
+                Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+                >>= fun receivedBlock -> getBlock receivedBlock.Header.Number
+
+            match existingBlock with
+            | Ok _ -> Ok None
             | _ ->
-                let blockEnvelopeDto = Serialization.deserializeJObject data
-                match saveBlock blockNr blockEnvelopeDto with // TODO: Validate block
-                | Ok () ->
-                    Synchronization.setLastAvailableBlockNumber blockNr // TODO: Move into storeReceivedBlock workflow
-                    {BlockCreatedEventData.BlockNumber = blockNr} |> BlockReceived |> Some |> Ok
-                | _ -> Result.appError "Error saving received block"
+                blockEnvelopeDto
+                |> handleReceivedBlock
+                |> Result.map (BlockReceived >> Some)
 
         let processData messageId (data : obj) =
             match messageId with
@@ -406,7 +454,7 @@ module Workflows =
                     }
                     |> respondToPeer senderAddress
                     Ok None
-                | _ -> Result.appError (sprintf "Tx %A not found" txHash)
+                | _ -> Result.appError (sprintf "Requested tx %A not found" txHash)
 
             | Block blockNr ->
                 let blockNr =
@@ -419,12 +467,12 @@ module Workflows =
                     match getBlock blockNr with
                     | Ok blockEnvelopeDto ->
                         ResponseDataMessage {
-                            MessageId = NetworkMessageId.Block blockNr
+                            MessageId = messageId
                             Data = blockEnvelopeDto
                         }
                         |> respondToPeer senderAddress
                         Ok None
-                    | _ -> Result.appError (sprintf "Block %A not found" blockNr)
+                    | _ -> Result.appError (sprintf "Requested block %A not found" blockNr)
                 | None -> Result.appError "Error retrieving last block"
 
         match peerMessage with
