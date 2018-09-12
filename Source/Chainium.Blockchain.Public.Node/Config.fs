@@ -38,7 +38,7 @@ type Config () =
         with get () =
             let networkAddress = config.["NetworkAddress"]
             if networkAddress.IsNullOrWhiteSpace() then
-                "127.0.0.1:25718"
+                "*:25718"
             else
                 networkAddress
 
