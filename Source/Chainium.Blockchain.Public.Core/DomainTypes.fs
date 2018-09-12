@@ -225,6 +225,25 @@ type ProcessingOutput = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Consensus
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type ConsensusRound = ConsensusRound of int16
+type ConsensusMessageId = ConsensusMessageId of string
+
+type ConsensusMessage =
+    | Propose of Block
+    | Vote of BlockHash
+    | Commit of BlockHash
+
+type ConsensusMessageEnvelope = {
+    BlockNumber : BlockNumber
+    Round : ConsensusRound
+    ConsensusMessage : ConsensusMessage
+    Signature : Signature
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -233,6 +252,7 @@ type NetworkAddress = NetworkAddress of string
 type NetworkMessageId =
     | Tx of TxHash
     | Block of BlockNumber
+    | Consensus of ConsensusMessageId
 
 type NetworkNodeConfig = {
     NetworkAddress : NetworkAddress
