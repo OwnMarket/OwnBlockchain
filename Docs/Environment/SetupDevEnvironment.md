@@ -49,5 +49,5 @@
 - Setup development environment in VM by executing following command in VMs terminal:
 
 ```
-wget -O - https://raw.githubusercontent.com/Chainium/Chainium/master/Docs/Environment/SetupDevEnvironment.sh | bash
+wget -O - https://raw.githubusercontent.com/Chainium/Chainium/master/Docs/Environment/setup_dev_environment.sh | bash
 ```

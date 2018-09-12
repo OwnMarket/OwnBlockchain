@@ -162,6 +162,7 @@ Use `camelCase` for:
 
 Use `snake_case` for:
 - Database objects (tables, columns)
+- Shell scripts
 
 Use `ALL_CAPS` for:
 - Environment variables
