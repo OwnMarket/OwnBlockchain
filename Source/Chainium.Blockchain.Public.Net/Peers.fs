@@ -238,22 +238,9 @@ module Peers =
             printActiveMembers ()
 
         member private __.InitializeMemberList () =
-            let self = {
-                NetworkAddress = config.NetworkAddress
-                Heartbeat = 0L
-            }
-            __.AddMember self
-
-            getAllPeerNodes ()
-            |> List.filter (fun n -> n <> config.NetworkAddress)
-            |> List.append config.BootstrapNodes
-            |> List.distinct
-            |> List.map (fun n ->
-                {
-                    NetworkAddress = n
-                    Heartbeat = 0L
-                })
-            |> List.iter (fun m -> __.AddMember m)
+            getAllPeerNodes () @ (config.NetworkAddress :: config.BootstrapNodes)
+            |> Set.ofList          
+            |> Set.iter (fun n -> __.AddMember { NetworkAddress = n; Heartbeat = 0L })
 
         member private __.AddMember inputMember =
             let rec loop (mem : GossipMember) =
