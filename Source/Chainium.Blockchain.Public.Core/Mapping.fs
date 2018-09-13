@@ -441,9 +441,61 @@ module Mapping =
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let consensusMessageToIdTypeTuple (serialize : (obj -> string)) consensusMessage = 
+        match consensusMessage with 
+        | Propose block  -> "Propose", block |> blockToDto |> serialize
+        | Vote (BlockHash blockHash) -> "Vote", blockHash
+        | Commit (BlockHash blockHash) -> "Commit", blockHash
+
+    let consensusMessageTypeToConsensusMessage (deserialize : (string -> obj)) (messageType : string) (messageId : string) =
+        match messageType with 
+        | "Propose"  -> (messageId |> deserialize) :?> (BlockDto) |> blockFromDto |> Propose
+        | "Vote" -> Vote (BlockHash messageId)
+        | "Commit" -> Commit (BlockHash messageId)
+        | _ -> failwithf "Invalid consensus message type %s" messageType
+
+    let consensusMessageEnvelopeFromDto deserialize (dto : ConsensusMessageEnvelopeDto) = 
+        let consensusMessage 
+            = consensusMessageTypeToConsensusMessage deserialize dto.ConsensusMessageType dto.ConsensusMessage
+           
+        {
+            BlockNumber = BlockNumber dto.BlockNumber
+            Round = ConsensusRound dto.Round
+            ConsensusMessage = consensusMessage
+            Signature = Signature dto.Signature
+        }
+
+    let consensusMessageEnvelopeToDto serialize (consensusEnvelope : ConsensusMessageEnvelope) = 
+        let consensusMessageType, consensusMessageId 
+            = consensusMessageToIdTypeTuple serialize consensusEnvelope.ConsensusMessage          
+        {
+            BlockNumber = consensusEnvelope.BlockNumber |> fun (BlockNumber blockNr) -> blockNr
+            Round = consensusEnvelope.Round |> fun (ConsensusRound round) -> round
+            ConsensusMessageType = consensusMessageType
+            ConsensusMessage = consensusMessageId
+            Signature = consensusEnvelope.Signature |> fun (Signature s) -> s
+        }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let private networkMessageIdToIdTypeTuple networkMessageId  = 
+        match networkMessageId with
+        | Tx (TxHash txHash) -> "Tx", txHash
+        | Block (BlockNumber blockNr) -> "Block", blockNr |> Convert.ToString
+        | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId    
+
+    let private messageTypeToNetworkMessageId (messageType : string) (messageId : string) =
+        match messageType with
+        | "Tx" -> messageId |> TxHash |> Tx
+        | "Block" -> messageId |> Convert.ToInt64 |> BlockNumber |> Block
+        | "Consensus" -> messageId |> ConsensusMessageId |> Consensus
+        | _ -> failwithf "Invalid network message type %s" messageType        
+        
     let gossipMemberFromDto (dto: GossipMemberDto) : GossipMember =
         {
             NetworkAddress = NetworkAddress dto.NetworkAddress
@@ -467,11 +519,7 @@ module Mapping =
         }
 
     let gossipMessageFromDto (dto : GossipMessageDto) =
-        let gossipMessageId =
-            match dto.MessageType with
-            | "Tx" -> Tx (TxHash dto.MessageId)
-            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
-            | _ -> failwithf "Invalid gossip message type %s" dto.MessageType
+        let gossipMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId
 
         {
             MessageId = gossipMessageId
@@ -480,10 +528,7 @@ module Mapping =
         }
 
     let gossipMessageToDto (gossipMessage : GossipMessage) =
-        let messageType, messageId =
-            match gossipMessage.MessageId with
-            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
-            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+        let messageType, messageId = networkMessageIdToIdTypeTuple gossipMessage.MessageId
 
         {
             MessageId = messageId
@@ -493,11 +538,7 @@ module Mapping =
         }
 
     let multicastMessageFromDto (dto : MulticastMessageDto) : MulticastMessage =
-        let multicastMessageId =
-            match dto.MessageType with
-            | "Tx" -> Tx (TxHash dto.MessageId)
-            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
-            | _ -> failwithf "Invalid gossip message type %s" dto.MessageType
+        let multicastMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId        
 
         {
             MessageId = multicastMessageId
@@ -505,10 +546,7 @@ module Mapping =
         }
 
     let multicastMessageToDto (multicastMessage : MulticastMessage) =
-        let messageType, messageId =
-            match multicastMessage.MessageId with
-            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
-            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+        let messageType, messageId = networkMessageIdToIdTypeTuple multicastMessage.MessageId           
 
         {
             MessageId = messageId
@@ -517,11 +555,7 @@ module Mapping =
         }
 
     let requestDataMessageFromDto (dto : RequestDataMessageDto) : RequestDataMessage =
-        let requestDataMessageId =
-            match dto.MessageType with
-            | "Tx" -> Tx (TxHash dto.MessageId)
-            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
-            | _ -> failwithf "Invalid requestData message type %s" dto.MessageType
+        let requestDataMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId
 
         {
             MessageId = requestDataMessageId
@@ -529,10 +563,7 @@ module Mapping =
         }
 
     let requestDataMessageToDto (requestDataMessage : RequestDataMessage) =
-        let messageType, messageId =
-            match requestDataMessage.MessageId with
-            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
-            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+        let messageType, messageId = networkMessageIdToIdTypeTuple requestDataMessage.MessageId
 
         {
             MessageId = messageId
@@ -541,11 +572,7 @@ module Mapping =
         }
 
     let responseDataMessageFromDto (dto : ResponseDataMessageDto) : ResponseDataMessage =
-        let responseDataMessageId =
-            match dto.MessageType with
-            | "Tx" -> Tx (TxHash dto.MessageId)
-            | "Block" -> Block (dto.MessageId |> Convert.ToInt64 |> BlockNumber)
-            | _ -> failwithf "Invalid responseData message type %s" dto.MessageType
+        let responseDataMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId
 
         {
             MessageId = responseDataMessageId
@@ -553,10 +580,7 @@ module Mapping =
         }
 
     let responseDataMessageToDto (responseDataMessage : ResponseDataMessage) =
-        let messageType, messageId =
-            match responseDataMessage.MessageId with
-            | Tx txHash -> "Tx", txHash |> fun (TxHash tx) -> tx
-            | Block blockNr -> "Block", blockNr |> fun (BlockNumber b) -> b |> Convert.ToString
+        let messageType, messageId = networkMessageIdToIdTypeTuple responseDataMessage.MessageId
 
         {
             MessageId = messageId

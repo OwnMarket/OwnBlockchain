@@ -375,14 +375,12 @@ module Workflows =
     let propagateTx sendMessageToPeers networkAddress getTx (txHash : TxHash) =
         match getTx txHash with
         | Ok (txEnvelopeDto : TxEnvelopeDto) ->
-            let peerMessage = GossipMessage {
+            GossipMessage {
                 MessageId = Tx txHash
                 // TODO: move it into network code
                 SenderAddress = NetworkAddress networkAddress
                 Data = txEnvelopeDto
             }
-
-            peerMessage
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" (txHash |> fun (TxHash hash) -> hash)
 
@@ -395,13 +393,12 @@ module Workflows =
 
         match getBlock blockNumber with
         | Ok (blockEnvelopeDto : BlockEnvelopeDto) ->
-            let peerMessage = GossipMessage {
+            GossipMessage {
                 MessageId = Block blockNumber
                 // TODO: move it into network code
                 SenderAddress = NetworkAddress networkAddress
                 Data = blockEnvelopeDto
             }
-            peerMessage
             |> sendMessageToPeers
         | _ -> Log.errorf "Block %i does not exist." (blockNumber |> fun (BlockNumber b) -> b)
 
@@ -438,10 +435,15 @@ module Workflows =
                 |> handleReceivedBlock
                 |> Result.map (BlockReceived >> Some)
 
+        let processConsensusMessageFromPeer consensusMessageId data = 
+            // TODO
+            Ok None
+
         let processData messageId (data : obj) =
             match messageId with
             | Tx txHash -> processTxFromPeer txHash data
             | Block blockNr -> processBlockFromPeer blockNr data
+            | Consensus consensusMessageId -> processConsensusMessageFromPeer consensusMessageId data
 
         let processRequest messageId senderAddress =
             match messageId with
@@ -474,6 +476,7 @@ module Workflows =
                         Ok None
                     | _ -> Result.appError (sprintf "Requested block %A not found" blockNr)
                 | None -> Result.appError "Error retrieving last block"
+            | Consensus _ -> Result.appError ("Cannot request consensus message from Peer")
 
         match peerMessage with
         | GossipDiscoveryMessage _ -> None
