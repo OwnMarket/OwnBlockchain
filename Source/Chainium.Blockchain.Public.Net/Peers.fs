@@ -275,7 +275,7 @@ module Peers =
 
         member private __.MergeMember inputMember =
             if inputMember.NetworkAddress <> config.NetworkAddress then
-                Log.debugf "Receive member: %s ..." (inputMember.NetworkAddress |> networkAddressToString)
+                Log.debugf "Receive member: %s" (inputMember.NetworkAddress |> networkAddressToString)
                 match __.GetActiveMember inputMember.NetworkAddress with
                 | Some localMember ->
                     if localMember.Heartbeat < inputMember.Heartbeat then
