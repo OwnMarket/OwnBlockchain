@@ -328,11 +328,30 @@ type GetTxApiResponseDto = {
 // Consensus
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type ConsensusProposeMessageDto = {
+    ConsensusMessageId : string
+    Block : BlockDto
+}
+
+type ConsensusVoteMessageDto = {
+    ConsensusMessageId : string
+    BlockHash : string
+}
+
+type ConsensusCommitMessageDto = {
+    ConsensusMessageId : string
+    BlockHash : string
+}
+
+type ConsensusMessageDto = {
+    ConsensusMessageType : string
+    ConsensusMessage : obj
+}
+
 type ConsensusMessageEnvelopeDto = {
     BlockNumber : int64
     Round : int16
-    ConsensusMessageType : string
-    ConsensusMessage : string
+    ConsensusMessage : ConsensusMessageDto
     Signature : string
 }
 

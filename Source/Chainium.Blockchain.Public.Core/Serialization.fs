@@ -4,13 +4,18 @@ open System
 open Chainium.Common
 open Chainium.Blockchain.Common
 open Chainium.Blockchain.Common.Conversion
-open Chainium.Blockchain.Public.Core.DomainTypes
 open Chainium.Blockchain.Public.Core.Dtos
 open Newtonsoft.Json
 open Newtonsoft.Json.Converters
 open Newtonsoft.Json.Linq
 
 module Serialization =
+
+    let private tokenValue tokenName (jObject : JObject) =
+        let token = ref (JValue("") :> JToken)
+        let isValid = jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase, token)
+        if isValid then Some token.Value
+        else None
 
     let private tokenToAction<'T> actionType (token : JToken option) =
         match token with
@@ -23,7 +28,7 @@ module Serialization =
         | None ->
             token |> box
 
-    let private actionsBasedOnTransactionType =
+    let private actionTypeToObjectMapping =
         [
             "TransferChx", tokenToAction<TransferChxTxActionDto>
             "TransferAsset", tokenToAction<TransferAssetTxActionDto>
@@ -36,13 +41,6 @@ module Serialization =
             "SetValidatorNetworkAddress", tokenToAction<SetValidatorNetworkAddressTxActionDto>
             "DelegateStake", tokenToAction<DelegateStakeTxActionDto>
         ] |> Map.ofList
-
-    let private tokenValue tokenName (jObject : JObject) =
-        let token = ref (JValue("") :> JToken)
-        let isValid = jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase, token)
-        match isValid with
-        | true -> Some token.Value
-        | false -> None
 
     let private actionsConverter = {
         new CustomCreationConverter<TxActionDto>() with
@@ -62,7 +60,7 @@ module Serialization =
             | None -> jObject |> box
             | Some actionType ->
                 let txType = actionType.Value<string>()
-                match txType |> actionsBasedOnTransactionType.TryFind with
+                match txType |> actionTypeToObjectMapping.TryFind with
                 | Some create ->
                     actionData jObject
                     |> create txType
@@ -106,7 +104,7 @@ module Serialization =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private tokenToMessage<'T> messageType (token : JToken option) =
+    let private tokenToPeerMessage<'T> messageType (token : JToken option) =
         match token with
         | Some _ ->
             {
@@ -117,13 +115,13 @@ module Serialization =
         | None ->
             token |> box
 
-    let private messagesBasedOnMessageType =
+    let private peerMessageTypeToObjectMapping =
         [
-            "GossipDiscoveryMessage", tokenToMessage<GossipDiscoveryMessageDto>
-            "GossipMessage", tokenToMessage<GossipMessageDto>
-            "MulticastMessage", tokenToMessage<MulticastMessageDto>
-            "RequestDataMessage", tokenToMessage<RequestDataMessageDto>
-            "ResponseDataMessage", tokenToMessage<ResponseDataMessageDto>
+            "GossipDiscoveryMessage", tokenToPeerMessage<GossipDiscoveryMessageDto>
+            "GossipMessage", tokenToPeerMessage<GossipMessageDto>
+            "MulticastMessage", tokenToPeerMessage<MulticastMessageDto>
+            "RequestDataMessage", tokenToPeerMessage<RequestDataMessageDto>
+            "ResponseDataMessage", tokenToPeerMessage<ResponseDataMessageDto>
         ]
         |> Map.ofList
 
@@ -144,7 +142,7 @@ module Serialization =
             | None -> jObject |> box
             | Some messageType ->
                 let peerMessageType = messageType.Value<string>()
-                match peerMessageType |> messagesBasedOnMessageType.TryFind with
+                match peerMessageType |> peerMessageTypeToObjectMapping.TryFind with
                 | Some create ->
                     messageData jObject |> create peerMessageType
                 | None ->
@@ -161,11 +159,68 @@ module Serialization =
     let serializePeerMessage dto =
         JsonConvert.SerializeObject dto
 
-    let deserializeMessage<'TDto> message =
-        JsonConvert.DeserializeObject<'TDto> (message, peerMessageConverter)
-
     let deserializePeerMessage message =
-        deserializeMessage<PeerMessageDto> message
+        JsonConvert.DeserializeObject<PeerMessageDto> (message, peerMessageConverter)
 
     let deserializeJObject<'T> (data : obj) =
         (data :?> JObject).ToObject<'T>()
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let private tokenToConsensusMessage<'T> messageType (token : JToken option) =
+        match token with
+        | Some _ ->
+            {
+                ConsensusMessageType = messageType
+                ConsensusMessage = JsonConvert.DeserializeObject<'T> (token.Value.ToString())
+            }
+            |> box
+        | None ->
+            token |> box
+
+    let private consensusMessageTypeToObjectMapping =
+        [
+            "Propose", tokenToConsensusMessage<ConsensusProposeMessageDto>
+            "Vote", tokenToConsensusMessage<ConsensusVoteMessageDto>
+            "Commit", tokenToConsensusMessage<ConsensusCommitMessageDto>
+        ]
+        |> Map.ofList
+
+    let private consensusMessageConverter = {
+        new CustomCreationConverter<ConsensusMessageDto>() with
+
+        override __.Create objectType =
+            failwith "NotImplemented"
+
+        override __.ReadJson
+            (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
+            =
+
+            let jObject = JObject.Load(reader)
+            let messageData = tokenValue "ConsensusMessage"
+
+            match (tokenValue "ConsensusMessageType" jObject) with
+            | None -> jObject |> box
+            | Some messageType ->
+                let consensusMessageType = messageType.Value<string>()
+                match consensusMessageType |> consensusMessageTypeToObjectMapping.TryFind with
+                | Some create ->
+                    messageData jObject |> create consensusMessageType
+                | None ->
+                    {
+                        ConsensusMessageType = consensusMessageType
+                        ConsensusMessage =
+                            match messageData jObject with
+                            | None -> null
+                            | Some x -> x.ToString()
+                    }
+                    |> box
+    }
+
+    let serializeConsensusMessage dto =
+        JsonConvert.SerializeObject dto
+
+    let deserializeConsensusMessage message =
+        JsonConvert.DeserializeObject<ConsensusMessageDto> (message, consensusMessageConverter)

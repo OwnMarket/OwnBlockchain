@@ -444,41 +444,47 @@ module Mapping =
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let consensusMessageToIdTypeTuple (serialize : (obj -> string)) consensusMessage =
-        match consensusMessage with
-        | Propose block -> "Propose", block |> blockToDto |> serialize
-        | Vote (BlockHash blockHash) -> "Vote", blockHash
-        | Commit (BlockHash blockHash) -> "Commit", blockHash
+    let consensusMessageFromDto (dto : ConsensusMessageDto) =
+        match dto.ConsensusMessage with
+        | :? ConsensusProposeMessageDto as m -> m.Block |> blockFromDto |> Propose
+        | :? ConsensusVoteMessageDto as m -> m.BlockHash |> BlockHash |> Vote
+        | :? ConsensusCommitMessageDto as m -> m.BlockHash |> BlockHash |> Commit
+        | _ -> failwith "Invalid consensus message type to map."
 
-    let consensusMessageTypeToConsensusMessage
-        (deserialize : (string -> obj))
-        (messageType : string)
-        (messageId : string) =
-        match messageType with
-        | "Propose" -> (messageId |> deserialize) :?> (BlockDto) |> blockFromDto |> Propose
-        | "Vote" -> Vote (BlockHash messageId)
-        | "Commit" -> Commit (BlockHash messageId)
-        | _ -> failwithf "Invalid consensus message type %s" messageType
+    let consensusMessageToDto
+        (serialize : (obj -> string))
+        (consensusMessage : ConsensusMessage)
+        : ConsensusMessageDto
+        =
 
-    let consensusMessageEnvelopeFromDto deserialize (dto : ConsensusMessageEnvelopeDto) =
-        let consensusMessage
-            = consensusMessageTypeToConsensusMessage deserialize dto.ConsensusMessageType dto.ConsensusMessage
+        let consensusMessageType, message =
+            match consensusMessage with
+            | Propose m -> "Propose", { ConsensusMessageId = ""; Block = m |> blockToDto } |> serialize
+            | Vote (BlockHash blockHash) -> "Vote", { ConsensusMessageId = ""; BlockHash = blockHash } |> serialize
+            | Commit (BlockHash blockHash) -> "Commit", { ConsensusMessageId = ""; BlockHash = blockHash } |> serialize
+        {
+            ConsensusMessageType = consensusMessageType
+            ConsensusMessage = message
+        }
 
+    let consensusMessageEnvelopeFromDto (dto : ConsensusMessageEnvelopeDto) : ConsensusMessageEnvelope =
         {
             BlockNumber = BlockNumber dto.BlockNumber
             Round = ConsensusRound dto.Round
-            ConsensusMessage = consensusMessage
+            ConsensusMessage = consensusMessageFromDto dto.ConsensusMessage
             Signature = Signature dto.Signature
         }
 
-    let consensusMessageEnvelopeToDto serialize (consensusEnvelope : ConsensusMessageEnvelope) =
-        let consensusMessageType, consensusMessageId
-            = consensusMessageToIdTypeTuple serialize consensusEnvelope.ConsensusMessage
+    let consensusMessageEnvelopeToDto
+        serialize
+        (consensusEnvelope : ConsensusMessageEnvelope)
+        : ConsensusMessageEnvelopeDto
+        =
+
         {
             BlockNumber = consensusEnvelope.BlockNumber |> fun (BlockNumber blockNr) -> blockNr
             Round = consensusEnvelope.Round |> fun (ConsensusRound round) -> round
-            ConsensusMessageType = consensusMessageType
-            ConsensusMessage = consensusMessageId
+            ConsensusMessage = consensusMessageToDto serialize consensusEnvelope.ConsensusMessage
             Signature = consensusEnvelope.Signature |> fun (Signature s) -> s
         }
 
