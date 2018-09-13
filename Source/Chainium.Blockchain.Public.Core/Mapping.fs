@@ -444,23 +444,26 @@ module Mapping =
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let consensusMessageToIdTypeTuple (serialize : (obj -> string)) consensusMessage = 
-        match consensusMessage with 
-        | Propose block  -> "Propose", block |> blockToDto |> serialize
+    let consensusMessageToIdTypeTuple (serialize : (obj -> string)) consensusMessage =
+        match consensusMessage with
+        | Propose block -> "Propose", block |> blockToDto |> serialize
         | Vote (BlockHash blockHash) -> "Vote", blockHash
         | Commit (BlockHash blockHash) -> "Commit", blockHash
 
-    let consensusMessageTypeToConsensusMessage (deserialize : (string -> obj)) (messageType : string) (messageId : string) =
-        match messageType with 
-        | "Propose"  -> (messageId |> deserialize) :?> (BlockDto) |> blockFromDto |> Propose
+    let consensusMessageTypeToConsensusMessage
+        (deserialize : (string -> obj))
+        (messageType : string)
+        (messageId : string) =
+        match messageType with
+        | "Propose" -> (messageId |> deserialize) :?> (BlockDto) |> blockFromDto |> Propose
         | "Vote" -> Vote (BlockHash messageId)
         | "Commit" -> Commit (BlockHash messageId)
         | _ -> failwithf "Invalid consensus message type %s" messageType
 
-    let consensusMessageEnvelopeFromDto deserialize (dto : ConsensusMessageEnvelopeDto) = 
-        let consensusMessage 
+    let consensusMessageEnvelopeFromDto deserialize (dto : ConsensusMessageEnvelopeDto) =
+        let consensusMessage
             = consensusMessageTypeToConsensusMessage deserialize dto.ConsensusMessageType dto.ConsensusMessage
-           
+
         {
             BlockNumber = BlockNumber dto.BlockNumber
             Round = ConsensusRound dto.Round
@@ -468,9 +471,9 @@ module Mapping =
             Signature = Signature dto.Signature
         }
 
-    let consensusMessageEnvelopeToDto serialize (consensusEnvelope : ConsensusMessageEnvelope) = 
-        let consensusMessageType, consensusMessageId 
-            = consensusMessageToIdTypeTuple serialize consensusEnvelope.ConsensusMessage          
+    let consensusMessageEnvelopeToDto serialize (consensusEnvelope : ConsensusMessageEnvelope) =
+        let consensusMessageType, consensusMessageId
+            = consensusMessageToIdTypeTuple serialize consensusEnvelope.ConsensusMessage
         {
             BlockNumber = consensusEnvelope.BlockNumber |> fun (BlockNumber blockNr) -> blockNr
             Round = consensusEnvelope.Round |> fun (ConsensusRound round) -> round
@@ -483,19 +486,19 @@ module Mapping =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private networkMessageIdToIdTypeTuple networkMessageId  = 
+    let private networkMessageIdToIdTypeTuple networkMessageId =
         match networkMessageId with
         | Tx (TxHash txHash) -> "Tx", txHash
         | Block (BlockNumber blockNr) -> "Block", blockNr |> Convert.ToString
-        | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId    
+        | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId
 
     let private messageTypeToNetworkMessageId (messageType : string) (messageId : string) =
         match messageType with
         | "Tx" -> messageId |> TxHash |> Tx
         | "Block" -> messageId |> Convert.ToInt64 |> BlockNumber |> Block
         | "Consensus" -> messageId |> ConsensusMessageId |> Consensus
-        | _ -> failwithf "Invalid network message type %s" messageType        
-        
+        | _ -> failwithf "Invalid network message type %s" messageType
+
     let gossipMemberFromDto (dto: GossipMemberDto) : GossipMember =
         {
             NetworkAddress = NetworkAddress dto.NetworkAddress
@@ -538,7 +541,7 @@ module Mapping =
         }
 
     let multicastMessageFromDto (dto : MulticastMessageDto) : MulticastMessage =
-        let multicastMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId        
+        let multicastMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId
 
         {
             MessageId = multicastMessageId
@@ -546,7 +549,7 @@ module Mapping =
         }
 
     let multicastMessageToDto (multicastMessage : MulticastMessage) =
-        let messageType, messageId = networkMessageIdToIdTypeTuple multicastMessage.MessageId           
+        let messageType, messageId = networkMessageIdToIdTypeTuple multicastMessage.MessageId
 
         {
             MessageId = messageId

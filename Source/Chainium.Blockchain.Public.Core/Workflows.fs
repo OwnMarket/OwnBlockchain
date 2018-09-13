@@ -435,7 +435,7 @@ module Workflows =
                 |> handleReceivedBlock
                 |> Result.map (BlockReceived >> Some)
 
-        let processConsensusMessageFromPeer consensusMessageId data = 
+        let processConsensusMessageFromPeer consensusMessageId data =
             // TODO
             Ok None
 

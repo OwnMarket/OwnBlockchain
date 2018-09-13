@@ -239,7 +239,7 @@ module Peers =
 
         member private __.InitializeMemberList () =
             getAllPeerNodes () @ (config.NetworkAddress :: config.BootstrapNodes)
-            |> Set.ofList          
+            |> Set.ofList
             |> Set.iter (fun n -> __.AddMember { NetworkAddress = n; Heartbeat = 0L })
 
         member private __.AddMember inputMember =
