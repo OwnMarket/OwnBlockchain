@@ -192,11 +192,17 @@ module Peers =
                         sendUnicastMessage peerMessageDto (address |> networkAddressToString)
                     )
 
-                    do! Async.Sleep(2 * tCycle)
+                    do! Async.Sleep(4 * tCycle)
 
-                    // If no answer is received within 2 cycles, repeat (i.e choose another peer).
-                    if not (pendingDataRequests.IsEmpty) then
-                        return! loop id
+                    (*
+                        If no answer is received within 2 cycles (request - response i.e 4xtCycle),
+                        repeat (i.e choose another peer).
+                    *)
+                    match (pendingDataRequests.TryGetValue id) with
+                    | true, addresses ->
+                        if not (addresses.IsEmpty) then
+                            return! loop id
+                    | false, _ -> ()
                 }
             Async.Start(loop requestId, cts.Token)
 
