@@ -177,6 +177,21 @@ module PeerTests =
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
+    let create3NodesMeshedNetwork () =
+        let nodeConfig1 = {
+            BootstrapNodes = [NetworkAddress "127.0.0.1:5556"; NetworkAddress "127.0.0.1:5557"]
+            NetworkAddress = NetworkAddress "127.0.0.1:5555"
+        }
+        let nodeConfig2 = {
+            BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5557"]
+            NetworkAddress = NetworkAddress "127.0.0.1:5556"
+        }
+        let nodeConfig3 = {
+            BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5556"]
+            NetworkAddress = NetworkAddress "127.0.0.1:5557"
+        }
+        [nodeConfig1; nodeConfig2; nodeConfig3]
+
     let testGossipDiscovery nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
@@ -337,7 +352,7 @@ module PeerTests =
             RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash)
 
         // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
-        System.Threading.Thread.Sleep ((nodeCount - 1) * tCycle)
+        System.Threading.Thread.Sleep (4 * (nodeCount - 1) * tCycle)
 
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash) txExists
@@ -364,7 +379,7 @@ module PeerTests =
         RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Block blockNr)
 
         // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
-        System.Threading.Thread.Sleep (2 * (nodeCount - 1) * tCycle)
+        System.Threading.Thread.Sleep (2 * 4 * (nodeCount - 1) * tCycle)
 
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash) true
@@ -392,7 +407,7 @@ module PeerTests =
         RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash2)
 
         // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
-        System.Threading.Thread.Sleep (2 * (nodeCount - 1) * tCycle)
+        System.Threading.Thread.Sleep (2 * 4 * (nodeCount - 1) * tCycle)
 
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash1) true
@@ -438,20 +453,11 @@ module PeerTests =
         testGossipDiscovery (nodeConfig1 :: nodeConfigList) 20
 
     [<Fact>]
-    let ``Network - GossipMessagePassing 3 nodes same bootstrap node`` () =
+    let ``Network - GossipMessagePassing 3 nodes single message`` () =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
-
-        testGossipSingleMessage nodeConfigList 5
-
-    [<Fact>]
-    let ``Network - GossipMessagePassing 3 nodes different bootstrap node`` () =
-        // ARRANGE
-        testCleanup()
-
-        let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testGossipSingleMessage nodeConfigList 5
 
@@ -460,7 +466,7 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testGossipMultipleDifferentMessageTypes nodeConfigList 5
 
@@ -469,25 +475,16 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testGossipMultipleSameMessageTypes nodeConfigList 5
 
     [<Fact>]
-    let ``Network - MulticastMessagePassing 3 nodes same bootstrap node`` () =
+    let ``Network - MulticastMessagePassing 3 nodes single message`` () =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
-
-        testMulticastSingleMessage nodeConfigList 5
-
-    [<Fact>]
-    let ``Network - MulticastMessagePassing 3 nodes different bootstrap node`` () =
-        // ARRANGE
-        testCleanup()
-
-        let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testMulticastSingleMessage nodeConfigList 5
 
@@ -496,7 +493,7 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testMulticastMultipleDifferentMessageTypes nodeConfigList 5
 
@@ -505,7 +502,7 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testMulticastMultipleSameMessageTypes nodeConfigList 5
 
@@ -514,7 +511,7 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testRequestResponseSingleMessage nodeConfigList 5 true
 
@@ -523,7 +520,7 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testRequestResponseSingleMessage nodeConfigList 5 false
 
@@ -532,7 +529,7 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testRequestResponseMultipleDifferentMessageTypes nodeConfigList 5
 
@@ -541,6 +538,6 @@ module PeerTests =
         // ARRANGE
         testCleanup()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+        let nodeConfigList = create3NodesMeshedNetwork ()
 
         testRequestResponseMultipleSameMessageTypes nodeConfigList 5

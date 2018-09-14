@@ -7,7 +7,7 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module TransportMock =
 
-    let messageQueue = new ConcurrentDictionary<string, List<string>>()
+    let messageQueue = new ConcurrentDictionary<string, Set<string>>()
 
     let private packMessage message =
         message |> Serialization.serializePeerMessage
@@ -18,8 +18,9 @@ module TransportMock =
     let private send (msg : string) targetAddress =
         match messageQueue.TryGetValue targetAddress with
         | true, messages ->
-            messageQueue.AddOrUpdate (targetAddress, msg :: messages, fun _ _ -> msg :: messages) |> ignore
-        | _ -> messageQueue.AddOrUpdate (targetAddress, [msg], fun _ _ -> [msg]) |> ignore
+            let set = messages.Add(msg)
+            messageQueue.AddOrUpdate (targetAddress, messages.Add(msg), fun _ _ -> messages.Add(msg)) |> ignore
+        | _ -> messageQueue.AddOrUpdate (targetAddress, Set.empty.Add(msg), fun _ _ -> Set.empty.Add(msg)) |> ignore
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
@@ -55,13 +56,11 @@ module TransportMock =
                 match messageQueue.TryGetValue address with
                 | true, messages ->
                     messages
-                    |> List.distinct
-                    |> List.iter(fun message ->
+                    |> Set.iter(fun message ->
                         let peerMessage = unpackMessage message
                         callback peerMessage
                     )
                     messageQueue.TryRemove address |> ignore
-
                 | _ -> ()
                 do! Async.Sleep(100)
                 return! loop address callback
