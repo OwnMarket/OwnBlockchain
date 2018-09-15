@@ -47,4 +47,4 @@ If processing of any action belonging to a transaction fails, due to conditions 
 
 ## Applying new state
 
-After the transaction set is processed, new [block](DataStructures.md#block) is assembled and new state is atomically applied to the persistent storage.
+After the transaction set is processed, new [block](../Architecture/DataStructures.md#block) is assembled and new state is atomically applied to the persistent storage.

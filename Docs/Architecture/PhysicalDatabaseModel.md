@@ -77,7 +77,7 @@ A combination of an `account_id` and an `asset_hash` is unique and represents an
 
 ### `tx` table
 
-`tx` table stores all transactions submitted to the node, or received from the network peers. This table represents the transaction pool from which pending transactions are selected for inclusion into the block, based on the rules described in [Transaction Processing](TxProcessing.md) document.
+`tx` table stores all transactions submitted to the node, or received from the network peers. This table represents the transaction pool from which pending transactions are selected for inclusion into the block, based on the rules described in [Transaction Processing](../Transactions/TxProcessing.md) document.
 
 | Name | Data Type | Nullable | Key | Description |
 |------|-----------|----------|-----|-------------|
