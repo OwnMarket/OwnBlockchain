@@ -5,7 +5,9 @@ This document describes the concepts and interface enabling other systems to int
 
 ## Address vs Account
 
-While in most blockchain systems available today _address_ and _account_ are used interchangeably (and usually considered to be representing the same concept), in Own blockchain these are two distinct entities. _Address_ represents the authentication and control mechanism, while _account_ represents the ownership.
+In most blockchain systems available today, terms _address_ and _account_ are used interchangeably and are usually considered to be representing the same concept. In Own blockchains these are two distinct entities.
+
+_Address_ represents the authentication and control mechanism, while _account_ is related to the ownership.
 
 One address can control multiple accounts, which can belong to the same or different investors.
 
@@ -25,4 +27,4 @@ Own public blockchain exposes following mechanisms for managing assets:
 - [Transferring assets](../Transactions/TxActions.md#transferasset)
 - [Checking the account balance per asset](../Nodes/NodeApi.md#get-accountaccounthashassetassethash)
 
-These mechanisms are invoked by submitting the requests to the API exposed by the Own public blockchain network node.
+These mechanisms are invoked by submitting the [transactions](../Transactions/TxComposition.md) using the [API](../Nodes/NodeApi.md) exposed by the Own public blockchain network [node](../Nodes/Nodes.md).
