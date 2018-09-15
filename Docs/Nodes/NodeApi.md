@@ -1,4 +1,4 @@
-# API
+# Node API
 
 Own Public Blockchain Node exposes an HTTP API used for interaction with the node. The API has following endpoints:
 
