@@ -7,7 +7,7 @@ This document describes the concepts and interface enabling other systems to int
 
 In most blockchain systems available today, terms _address_ and _account_ are used interchangeably and are usually considered to be representing the same concept. In Own blockchains these are two distinct entities.
 
-_Address_ represents the authentication and control mechanism, while _account_ is related to the ownership.
+_Address_ represents the authentication and control mechanism, while _account_ is related to the ownership of the tokenized assets.
 
 One address can control multiple accounts, which can belong to the same or different investors.
 
