@@ -40,16 +40,16 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
 - `fee` is a decimal number representing the fee **per action**, expressed in CHX (e.g. if the `fee` is set to 0.001 and the transaction has three actions, total fee paid for transaction will be 0.003 CHX)
 - `actions` is an array of action objects, each representing one action that should be performed on the blockchain state.
 - `actionType` identifies the type of the action that should be performed against the blockchain state. There are following action types available:
-    - `TransferChx`
-    - `TransferAsset`
-    - `CreateAccount`
-    - `CreateAsset`
-    - `CreateAssetEmission`
-    - `SetAccountController`
-    - `SetAssetController`
-    - `SetAssetCode`
-    - `SetValidatorNetworkAddress`
-    - `DelegateStake`
+    - [`TransferChx`](TxActions.md#transferchx)
+    - [`DelegateStake`](TxActions.md#delegatestake)
+    - [`SetValidatorNetworkAddress`](TxActions.md#setvalidatornetworkaddress)
+    - [`TransferAsset`](TxActions.md#transferasset)
+    - [`CreateAssetEmission`](TxActions.md#createassetemission)
+    - [`CreateAsset`](TxActions.md#createasset)
+    - [`SetAssetCode`](TxActions.md#setassetcode)
+    - [`SetAssetController`](TxActions.md#setassetcontroller)
+    - [`CreateAccount`](TxActions.md#createaccount)
+    - [`SetAccountController`](TxActions.md#setaccountcontroller)
 - `actionData` contains the details required for the execution of the action and depends on the `actionType`.
 
 For more information about action types and related fields that must be specified in the `actionData` for specific action type, please refer to the [document about action types](TxActions.md).
