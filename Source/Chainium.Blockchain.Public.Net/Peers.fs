@@ -215,7 +215,7 @@ module Peers =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member private __.StartNode processPeerMessage publishEvent =
-            Log.debug "Start node .."
+            Log.debug "Start node..."
             __.InitializeMemberList()
             __.StartServer processPeerMessage publishEvent
 
@@ -250,7 +250,7 @@ module Peers =
 
         member private __.AddMember inputMember =
             let rec loop (mem : GossipMember) =
-                Log.debugf "Adding new member : %s" (mem.NetworkAddress |> networkAddressToString)
+                Log.debugf "Adding new member: %s" (mem.NetworkAddress |> networkAddressToString)
                 activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
                 match savePeerNode mem.NetworkAddress with
                 | Ok () -> ()
@@ -550,6 +550,7 @@ module Peers =
             // TODO: If number of nodes reaches some threshold, consider network discovery done and proceed.
         }
         |> Async.RunSynchronously
+        Log.info "Peer discovery finished"
 
     let sendMessage message =
         match node with
@@ -565,7 +566,6 @@ module Peers =
         requestFromPeer (NetworkMessageId.Block blockNumber)
 
     let requestLastBlockFromPeer () =
-        Log.info "Acquiring last available block from peers..."
         requestBlockFromPeer (BlockNumber -1L)
 
     let requestTxFromPeer txHash =
