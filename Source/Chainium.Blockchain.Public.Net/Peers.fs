@@ -544,6 +544,7 @@ module Peers =
         node |> Option.iter(fun n -> n.StopGossip())
 
     let discoverNetwork networkDiscoveryTime =
+        Log.info "Discovering peers..."
         async {
             do! Async.Sleep (networkDiscoveryTime * 1000) // Give gossip time to discover some of peers.
             // TODO: If number of nodes reaches some threshold, consider network discovery done and proceed.
@@ -564,6 +565,7 @@ module Peers =
         requestFromPeer (NetworkMessageId.Block blockNumber)
 
     let requestLastBlockFromPeer () =
+        Log.info "Acquiring last available block from peers..."
         requestBlockFromPeer (BlockNumber -1L)
 
     let requestTxFromPeer txHash =
