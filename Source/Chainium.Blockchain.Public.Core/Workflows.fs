@@ -255,7 +255,7 @@ module Workflows =
 
     let storeReceivedBlock
         isValidAddress
-        (getValidators : unit -> ValidatorInfoDto list)
+        (getValidators : unit -> ValidatorSnapshot list)
         verifySignature
         saveBlock
         blockEnvelopeDto
@@ -274,13 +274,6 @@ module Workflows =
 
             let expectedBlockProposer =
                 getValidators ()
-                |> List.map (fun v -> // TODO: Remove this once we start using validator snapshots
-                    {
-                        ValidatorSnapshot.ValidatorAddress = ChainiumAddress v.ValidatorAddress
-                        NetworkAddress = v.NetworkAddress
-                        TotalStake = ChxAmount 0m
-                    }
-                )
                 |> Consensus.getBlockProposer block.Header.Number
                 |> (fun v -> v.ValidatorAddress)
 
@@ -317,7 +310,7 @@ module Workflows =
         isValidSuccessorBlock
         createBlock
         getBlock
-        (getValidators : unit -> ValidatorInfoDto list)
+        (getValidators : unit -> ValidatorSnapshot list)
         verifySignature
         persistTxResults
         saveBlock

@@ -23,7 +23,7 @@ module Peers =
         receiveMessage,
         closeConnection,
         closeAllConnections,
-        getAllValidators : unit -> Dtos.ValidatorInfoDto list,
+        getCurrentValidators : unit -> ValidatorSnapshot list,
         config : NetworkNodeConfig,
         fanout,
         tCycle,
@@ -150,7 +150,7 @@ module Peers =
                 sendMulticastMessage
                     (config.NetworkAddress |> networkAddressToString)
                     peerMessageDto
-                    (getAllValidators() |> List.map(fun v -> v.NetworkAddress))
+                    (getCurrentValidators() |> List.map (fun v -> v.NetworkAddress))
 
             | GossipMessage m -> __.SendGossipMessage m
             | _ -> ()
@@ -505,7 +505,7 @@ module Peers =
         closeAllConnections
         networkAddress
         bootstrapNodes
-        getAllValidators
+        getCurrentValidators
         processPeerMessage
         publishEvent
         =
@@ -531,7 +531,7 @@ module Peers =
                 receiveMessage,
                 closeConnection,
                 closeAllConnections,
-                getAllValidators,
+                getCurrentValidators,
                 nodeConfig,
                 fanout,
                 tCycle,

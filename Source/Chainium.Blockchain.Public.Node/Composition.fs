@@ -61,8 +61,6 @@ module Composition =
 
     let getValidatorState = Db.getValidatorState Config.DbConnectionString
 
-    let getAllValidators () = Db.getAllValidators Config.DbConnectionString
-
     let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbConnectionString
 
     let getStakeState = Db.getStakeState Config.DbConnectionString
@@ -171,7 +169,7 @@ module Composition =
     let storeReceivedBlock =
         Workflows.storeReceivedBlock
             Hashing.isValidChainiumAddress
-            getAllValidators
+            getGenesisValidators
             Signing.verifySignature
             saveBlock
 
@@ -190,7 +188,7 @@ module Composition =
             isValidSuccessorBlock
             createBlock
             getBlock
-            getAllValidators
+            getGenesisValidators
             Signing.verifySignature
             persistTxResults
             saveBlock
@@ -283,7 +281,7 @@ module Composition =
             Transport.closeAllConnections
             Config.NetworkAddress
             Config.NetworkBootstrapNodes
-            getAllValidators
+            getGenesisValidators
             processPeerMessage
             publishEvent
 

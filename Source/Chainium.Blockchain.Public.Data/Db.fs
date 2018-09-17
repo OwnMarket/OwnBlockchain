@@ -324,16 +324,6 @@ module Db =
         | [validatorState] -> Some validatorState
         | _ -> failwithf "Multiple validators found for validator address %A" validatorAddress
 
-    let getAllValidators (dbConnectionString : string) : ValidatorInfoDto list =
-        let sql =
-            """
-            SELECT validator_address, network_address
-            FROM validator
-            ORDER BY validator_address
-            """
-
-        DbTools.query<ValidatorInfoDto> dbConnectionString sql []
-
     let getTopValidatorsByStake
         (dbConnectionString : string)
         (topCount : int)

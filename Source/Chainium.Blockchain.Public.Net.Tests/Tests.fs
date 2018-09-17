@@ -121,7 +121,7 @@ module PeerTests =
             let getAllPeerNodes = DbMock.getAllPeerNodes nodeConfig.NetworkAddress
             let savePeerNode = DbMock.savePeerNode nodeConfig.NetworkAddress
             let removePeerNode = DbMock.removePeerNode nodeConfig.NetworkAddress
-            let getAllValidators = DbMock.getAllValidators nodeConfig.NetworkAddress
+            let getValidators = DbMock.getValidators nodeConfig.NetworkAddress
 
             NetworkNode (
                 getAllPeerNodes,
@@ -134,7 +134,7 @@ module PeerTests =
                 TransportMock.receiveMessage,
                 TransportMock.closeConnection,
                 TransportMock.closeAllConnections,
-                getAllValidators,
+                getValidators,
                 nodeConfig,
                 fanout,
                 tCycle,

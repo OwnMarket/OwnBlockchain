@@ -29,12 +29,13 @@ module DbMock =
             peers.AddOrUpdate (localAddress, newPeerNodes, fun _ _ -> newPeerNodes) |> ignore
         }
 
-    let getAllValidators localAddress () =
+    let getValidators localAddress () =
         getAllPeerNodes localAddress ()
         |> List.map (fun (NetworkAddress n) ->
             {
-                ValidatorInfoDto.ValidatorAddress = "CH"
+                ValidatorSnapshot.ValidatorAddress = ChainiumAddress "CH"
                 NetworkAddress = n
+                TotalStake = ChxAmount 0m
             }
         )
 
