@@ -9,7 +9,7 @@ module Cli =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let handleShowVersionCommand () =
-        let assembly = System.Reflection.Assembly.GetExecutingAssembly()
+        let assembly = Assembly.GetExecutingAssembly()
         assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
         |> printfn "%s"
 
