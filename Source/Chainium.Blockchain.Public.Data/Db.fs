@@ -334,16 +334,6 @@ module Db =
 
         DbTools.query<ValidatorInfoDto> dbConnectionString sql []
 
-    let getValidatorSnapshots (dbConnectionString : string) : ValidatorSnapshotDto list =
-        let sql =
-            """
-            SELECT validator_address, network_address, total_stake
-            FROM validator_snapshot
-            ORDER BY validator_address
-            """
-
-        DbTools.query<ValidatorSnapshotDto> dbConnectionString sql []
-
     let getTopValidatorsByStake
         (dbConnectionString : string)
         (topCount : int)
@@ -976,71 +966,6 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
-    let private removeValidatorSnapshots
-        conn
-        transaction
-        : Result<unit, AppErrors>
-        =
-
-        let sql =
-            // TODO: Use TRUNCATE if all used DB engine types support transactional DDL.
-            """
-            DELETE FROM validator_snapshot
-            """
-
-        try
-            DbTools.executeWithinTransaction conn transaction sql [] |> ignore
-            Ok ()
-        with
-        | ex ->
-            Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to remove validator snapshots."
-
-    let private addValidatorSnapshot
-        conn
-        transaction
-        (validatorSnapshot : ValidatorSnapshotDto)
-        : Result<unit, AppErrors>
-        =
-
-        let sql =
-            """
-            INSERT INTO validator_snapshot (validator_address, network_address, total_stake)
-            VALUES (@validatorAddress, @networkAddress, @totalStake)
-            """
-
-        let sqlParams =
-            [
-                "@validatorAddress", validatorSnapshot.ValidatorAddress |> box
-                "@networkAddress", validatorSnapshot.NetworkAddress |> box
-                "@totalStake", validatorSnapshot.TotalStake |> box
-            ]
-
-        try
-            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert validator snapshot."
-        with
-        | ex ->
-            Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert validator snapshot."
-
-    let private updateValidatorSnapshots
-        conn
-        transaction
-        (validatorSnapshots : ValidatorSnapshotDto list)
-        : Result<unit, AppErrors>
-        =
-
-        let foldFn result validatorSnapshot =
-            result
-            >>= fun _ -> addValidatorSnapshot conn transaction validatorSnapshot
-
-        removeValidatorSnapshots conn transaction
-        >>= fun _ ->
-            validatorSnapshots
-            |> List.fold foldFn (Ok ())
-
     let private addStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
@@ -1134,7 +1059,6 @@ module Db =
                 do! updateAccounts conn transaction state.Accounts
                 do! updateAssets conn transaction state.Assets
                 do! updateValidators conn transaction state.Validators
-                do! updateValidatorSnapshots conn transaction state.ValidatorSnapshots
                 do! updateStakes conn transaction state.Stakes
                 do! updateBlock conn transaction blockInfoDto
             }

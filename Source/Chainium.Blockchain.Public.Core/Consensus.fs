@@ -16,8 +16,8 @@ module Consensus =
         |> ChxAmount
 
     let isValidator
-        (getValidatorSnapshots : unit -> ValidatorSnapshotDto list)
-        (ChainiumAddress validatorAddress)
+        (getValidatorSnapshots : unit -> ValidatorSnapshot list)
+        validatorAddress
         =
 
         getValidatorSnapshots ()

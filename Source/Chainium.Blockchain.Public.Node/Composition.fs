@@ -65,8 +65,6 @@ module Composition =
 
     let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbConnectionString
 
-    let getValidatorSnapshots () = Db.getValidatorSnapshots Config.DbConnectionString
-
     let getStakeState = Db.getStakeState Config.DbConnectionString
 
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbConnectionString
@@ -102,13 +100,9 @@ module Composition =
             Config.QuorumSupplyPercent
             Config.MaxValidatorCount
 
-    let getActiveValidators () =
-        Workflows.getActiveValidators
-            getValidatorSnapshots
-
     let isValidator =
         Consensus.isValidator
-            getValidatorSnapshots
+            getGenesisValidators
 
     let shouldProposeBlock =
         Consensus.shouldProposeBlock
@@ -152,7 +146,7 @@ module Composition =
             getStakeState
             getTotalChxStaked
             getTopValidators
-            getActiveValidators
+            getGenesisValidators
             getBlock
             Hashing.decode
             Hashing.hash

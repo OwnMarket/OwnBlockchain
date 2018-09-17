@@ -27,10 +27,6 @@ module Workflows =
         |> getTopValidatorsByStake maxValidatorCount
         |> List.map Mapping.validatorSnapshotFromDto
 
-    let getActiveValidators getValidatorSnapshots =
-        getValidatorSnapshots ()
-        |> List.map Mapping.validatorSnapshotFromDto
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +118,7 @@ module Workflows =
         getStakeStateFromStorage
         getTotalChxStakedFromStorage
         (getTopValidators : unit -> ValidatorSnapshot list)
-        (getActiveValidators : unit -> ValidatorSnapshot list)
+        (getConfigBlockValidators : unit -> ValidatorSnapshot list)
         getBlock
         decodeHash
         createHash
@@ -146,11 +142,11 @@ module Workflows =
 
         result {
             let shouldCreateSnapshot = blockNumber |> fun (BlockNumber n) -> n % (int64 checkpointBlockCount) = 0L
-            let activeValidators =
+            let validatorSnapshots =
                 if shouldCreateSnapshot then
                     getTopValidators ()
                 else
-                    getActiveValidators ()
+                    getConfigBlockValidators () // TODO: Call by config block number
 
             let output =
                 txSet
@@ -171,7 +167,7 @@ module Workflows =
                     validatorAddress
                     blockNumber
 
-            let output = { output with ValidatorSnapshots = activeValidators }
+            let output = { output with ValidatorSnapshots = validatorSnapshots }
 
             let block =
                 Blocks.assembleBlock

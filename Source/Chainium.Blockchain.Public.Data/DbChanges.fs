@@ -110,16 +110,6 @@ module DbChanges =
                         CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
                     );
 
-                    CREATE TABLE IF NOT EXISTS validator_snapshot (
-                        validator_snapshot_id INTEGER NOT NULL,
-                        validator_address TEXT NOT NULL,
-                        network_address TEXT NOT NULL,
-                        total_stake DECIMAL(30, 18) NOT NULL,
-
-                        CONSTRAINT validator_snapshot__pk PRIMARY KEY (validator_snapshot_id),
-                        CONSTRAINT validator_snapshot__uk__validator_address UNIQUE (validator_address)
-                    );
-
                     CREATE TABLE IF NOT EXISTS stake (
                         stake_id INTEGER NOT NULL,
                         stakeholder_address TEXT NOT NULL,
@@ -240,16 +230,6 @@ module DbChanges =
 
                         CONSTRAINT validator__pk PRIMARY KEY (validator_id),
                         CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
-                    );
-
-                    CREATE TABLE IF NOT EXISTS validator_snapshot (
-                        validator_snapshot_id BIGSERIAL NOT NULL,
-                        validator_address TEXT NOT NULL,
-                        network_address TEXT NOT NULL,
-                        total_stake DECIMAL(30, 18) NOT NULL,
-
-                        CONSTRAINT validator_snapshot__pk PRIMARY KEY (validator_snapshot_id),
-                        CONSTRAINT validator_snapshot__uk__validator_address UNIQUE (validator_address)
                     );
 
                     CREATE TABLE IF NOT EXISTS stake (
