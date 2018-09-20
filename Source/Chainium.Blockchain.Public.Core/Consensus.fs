@@ -15,6 +15,19 @@ module Consensus =
         Decimal.Round(quorumSupply / (decimal maxValidatorCount), 18, MidpointRounding.AwayFromZero)
         |> ChxAmount
 
+    let getTopValidators
+        getTopValidatorsByStake
+        totalSupply
+        quorumSupplyPercent
+        maxValidatorCount
+        =
+
+        totalSupply
+        |> calculateQuorumSupply quorumSupplyPercent
+        |> calculateValidatorThreshold maxValidatorCount
+        |> getTopValidatorsByStake maxValidatorCount
+        |> List.map Mapping.validatorSnapshotFromDto
+
     let isValidator
         (getValidators : unit -> ValidatorSnapshot list)
         validatorAddress

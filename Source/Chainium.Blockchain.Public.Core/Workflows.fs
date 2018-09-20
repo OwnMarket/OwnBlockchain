@@ -10,27 +10,6 @@ open Chainium.Blockchain.Public.Core.Events
 
 module Workflows =
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Consensus
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let getTopValidators
-        getTopValidatorsByStake
-        totalSupply
-        quorumSupplyPercent
-        maxValidatorCount
-        =
-
-        totalSupply
-        |> Consensus.calculateQuorumSupply quorumSupplyPercent
-        |> Consensus.calculateValidatorThreshold maxValidatorCount
-        |> getTopValidatorsByStake maxValidatorCount
-        |> List.map Mapping.validatorSnapshotFromDto
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Blockchain
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
     let getAvailableChxBalance getChxBalanceState getTotalChxStaked senderAddress : ChxAmount =
         let chxBalance =
             senderAddress
@@ -41,6 +20,10 @@ module Workflows =
         let chxStaked = getTotalChxStaked senderAddress
 
         chxBalance - chxStaked
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Blockchain
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let initBlockchainState
         (getLastAppliedBlockNumber : unit -> BlockNumber option)

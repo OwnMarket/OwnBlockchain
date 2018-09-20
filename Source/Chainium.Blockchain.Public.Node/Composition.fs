@@ -92,7 +92,7 @@ module Composition =
         )
 
     let getTopValidators () =
-        Workflows.getTopValidators
+        Consensus.getTopValidators
             getTopValidatorsByStake
             (ChxAmount Config.GenesisChxSupply)
             Config.QuorumSupplyPercent
