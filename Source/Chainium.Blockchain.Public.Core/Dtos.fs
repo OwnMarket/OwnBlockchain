@@ -266,12 +266,38 @@ type AccountHoldingDto = {
 // API
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type ErrorResponseDto = {
+    Errors : string list
+}
+
 type SubmitTxResponseDto = {
     TxHash : string
 }
 
-type ErrorResponseDto = {
-    Errors : string list
+type GetTxApiResponseDto = {
+    TxHash : string
+    SenderAddress : string
+    Nonce : int64
+    Fee : decimal
+    Actions : TxActionDto list
+    Status : string
+    ErrorCode : string
+    FailedActionNumber : Nullable<int16>
+    BlockNumber : Nullable<int64>
+}
+
+type GetBlockApiResponseDto = {
+    Number : int64
+    Hash : string
+    PreviousHash : string
+    ConfigurationBlockNumber : int64
+    Timestamp : int64
+    Validator : string
+    TxSetRoot : string
+    TxResultSetRoot : string
+    StateRoot : string
+    ConfigurationRoot : string
+    TxSet : string list
 }
 
 type GetAddressApiResponseDto = {
@@ -293,32 +319,6 @@ type GetAccountApiResponseDto = {
     AccountHash : string
     ControllerAddress : string
     Holdings : GetAccountApiHoldingDto list
-}
-
-type GetBlockApiResponseDto = {
-    Number : int64
-    Hash : string
-    PreviousHash : string
-    ConfigurationBlockNumber : int64
-    Timestamp : int64
-    Validator : string
-    TxSetRoot : string
-    TxResultSetRoot : string
-    StateRoot : string
-    ConfigurationRoot : string
-    TxSet : string list
-}
-
-type GetTxApiResponseDto = {
-    TxHash : string
-    SenderAddress : string
-    Nonce : int64
-    Fee : decimal
-    Actions : TxActionDto list
-    Status : string
-    ErrorCode : string
-    FailedActionNumber : Nullable<int16>
-    BlockNumber : Nullable<int64>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

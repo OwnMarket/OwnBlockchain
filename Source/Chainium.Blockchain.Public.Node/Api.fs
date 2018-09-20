@@ -42,6 +42,24 @@ module Api =
             return! response next ctx
         }
 
+    let getTxHandler txHash : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTxApi (TxHash txHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getBlockHandler blockNumber : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getBlockApi (BlockNumber blockNumber)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAddressHandler chxAddress : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -72,24 +90,6 @@ module Api =
             return! response next ctx
         }
 
-    let getTxHandler txHash : HttpHandler = fun next ctx ->
-        task {
-            let response =
-                Composition.getTxApi (TxHash txHash)
-                |> toApiResponse
-
-            return! response next ctx
-        }
-
-    let getBlockHandler blockNumber : HttpHandler = fun next ctx ->
-        task {
-            let response =
-                Composition.getBlockApi (BlockNumber blockNumber)
-                |> toApiResponse
-
-            return! response next ctx
-        }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,11 +98,11 @@ module Api =
         choose [
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
+                routef "/tx/%s" (fun txHash -> getTxHandler txHash)
+                routef "/block/%d" (fun blockNumber -> getBlockHandler blockNumber)
                 routef "/address/%s/accounts" (fun chainiumAddress -> getAddressAccountsHandler chainiumAddress)
                 routef "/address/%s" (fun chainiumAddress -> getAddressHandler chainiumAddress)
                 routef "/account/%s" (fun accountHash -> getAccountHandler accountHash)
-                routef "/tx/%s" (fun txHash -> getTxHandler txHash)
-                routef "/block/%d" (fun blockNumber -> getBlockHandler blockNumber)
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler
