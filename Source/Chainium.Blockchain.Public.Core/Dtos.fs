@@ -80,10 +80,8 @@ type TxDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type TxEnvelopeDto = {
-    [<Key(0)>]
-    Tx : string
-    [<Key(1)>]
-    Signature : string
+    [<Key(0)>] Tx : string
+    [<Key(1)>] Signature : string
 }
 
 [<CLIMutable>]
@@ -108,14 +106,10 @@ type PendingTxInfoDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type TxResultDto = {
-    [<Key(0)>]
-    Status : byte
-    [<Key(1)>]
-    ErrorCode : Nullable<int16>
-    [<Key(2)>]
-    FailedActionNumber : Nullable<int16>
-    [<Key(3)>]
-    BlockNumber : int64
+    [<Key(0)>] Status : byte
+    [<Key(1)>] ErrorCode : Nullable<int16>
+    [<Key(2)>] FailedActionNumber : Nullable<int16>
+    [<Key(3)>] BlockNumber : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -125,19 +119,15 @@ type TxResultDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type ValidatorSnapshotDto = {
-    [<Key(0)>]
-    ValidatorAddress : string
-    [<Key(1)>]
-    NetworkAddress : string
-    [<Key(2)>]
-    TotalStake : decimal
+    [<Key(0)>] ValidatorAddress : string
+    [<Key(1)>] NetworkAddress : string
+    [<Key(2)>] TotalStake : decimal
 }
 
 [<CLIMutable>]
 [<MessagePackObject>]
 type BlockchainConfigurationDto = {
-    [<Key(0)>]
-    Validators : ValidatorSnapshotDto list
+    [<Key(0)>] Validators : ValidatorSnapshotDto list
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,46 +137,31 @@ type BlockchainConfigurationDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type BlockHeaderDto = {
-    [<Key(0)>]
-    Number : int64
-    [<Key(1)>]
-    Hash : string
-    [<Key(2)>]
-    PreviousHash : string
-    [<Key(3)>]
-    ConfigurationBlockNumber : int64
-    [<Key(4)>]
-    Timestamp : int64
-    [<Key(5)>]
-    Validator : string
-    [<Key(6)>]
-    TxSetRoot : string
-    [<Key(7)>]
-    TxResultSetRoot : string
-    [<Key(8)>]
-    StateRoot : string
-    [<Key(9)>]
-    ConfigurationRoot : string
+    [<Key(0)>] Number : int64
+    [<Key(1)>] Hash : string
+    [<Key(2)>] PreviousHash : string
+    [<Key(3)>] ConfigurationBlockNumber : int64
+    [<Key(4)>] Timestamp : int64
+    [<Key(5)>] Validator : string
+    [<Key(6)>] TxSetRoot : string
+    [<Key(7)>] TxResultSetRoot : string
+    [<Key(8)>] StateRoot : string
+    [<Key(9)>] ConfigurationRoot : string
 }
 
 [<CLIMutable>]
 [<MessagePackObject>]
 type BlockDto = {
-    [<Key(0)>]
-    Header : BlockHeaderDto
-    [<Key(1)>]
-    TxSet : string list
-    [<Key(2)>]
-    Configuration : BlockchainConfigurationDto
+    [<Key(0)>] Header : BlockHeaderDto
+    [<Key(1)>] TxSet : string list
+    [<Key(2)>] Configuration : BlockchainConfigurationDto
 }
 
 [<CLIMutable>]
 [<MessagePackObject>]
 type BlockEnvelopeDto = {
-    [<Key(0)>]
-    Block : string
-    [<Key(1)>]
-    Signature : string
+    [<Key(0)>] Block : string
+    [<Key(1)>] Signature : string
 }
 
 [<CLIMutable>]
