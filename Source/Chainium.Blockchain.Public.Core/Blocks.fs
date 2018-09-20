@@ -9,6 +9,10 @@ open Chainium.Blockchain.Public.Core.Dtos
 
 module Blocks =
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Assembling the block
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let createTxResultHash decodeHash createHash (TxHash txHash, txResult : TxResult) =
         let txResult = Mapping.txResultToDto txResult
 
@@ -141,6 +145,7 @@ module Blocks =
         (MerkleTreeRoot txSetRoot)
         (MerkleTreeRoot txResultSetRoot)
         (MerkleTreeRoot stateRoot)
+        (MerkleTreeRoot configurationRoot)
         =
 
         [
@@ -151,6 +156,7 @@ module Blocks =
             txSetRoot |> decodeHash
             txResultSetRoot |> decodeHash
             stateRoot |> decodeHash
+            configurationRoot |> decodeHash
         ]
         |> Array.concat
         |> createHash
@@ -164,8 +170,10 @@ module Blocks =
         (blockNumber : BlockNumber)
         (timestamp : Timestamp)
         (previousBlockHash : BlockHash)
+        (configurationBlockNumber : BlockNumber)
         (txSet : TxHash list)
         (output : ProcessingOutput)
+        (blockchainConfiguration : BlockchainConfiguration option)
         : Block
         =
 
@@ -190,13 +198,13 @@ module Blocks =
         let chxBalanceHashes =
             output.ChxBalances
             |> Map.toList
-            |> List.sort // We need a predictable order
+            |> List.sort // Ensure a predictable order
             |> List.map (createChxBalanceStateHash decodeHash createHash)
 
         let holdingHashes =
             output.Holdings
             |> Map.toList
-            |> List.sort // We need a predictable order
+            |> List.sort // Ensure a predictable order
             |> List.map (fun ((accountHash, assetHash), state) ->
                 createHoldingStateHash decodeHash createHash (accountHash, assetHash, state)
             )
@@ -204,30 +212,25 @@ module Blocks =
         let accountHashes =
             output.Accounts
             |> Map.toList
-            |> List.sort // We need a predictable order
+            |> List.sort // Ensure a predictable order
             |> List.map (createAccountStateHash decodeHash createHash)
 
         let assetHashes =
             output.Assets
             |> Map.toList
-            |> List.sort // We need a predictable order
+            |> List.sort // Ensure a predictable order
             |> List.map (createAssetStateHash decodeHash createHash)
 
         let validatorHashes =
             output.Validators
             |> Map.toList
-            |> List.sort // We need a predictable order
+            |> List.sort // Ensure a predictable order
             |> List.map (createValidatorStateHash decodeHash createHash)
-
-        let validatorSnapshotHashes =
-            output.ValidatorSnapshots
-            |> List.sort // We need a predictable order
-            |> List.map (createValidatorSnapshotHash decodeHash createHash)
 
         let stakeHashes =
             output.Stakes
             |> Map.toList
-            |> List.sort // We need a predictable order
+            |> List.sort // Ensure a predictable order
             |> List.map (fun ((stakeholderAddress, validatorAddress), state) ->
                 createStakeStateHash decodeHash createHash (stakeholderAddress, validatorAddress, state)
             )
@@ -238,8 +241,18 @@ module Blocks =
             @ accountHashes
             @ assetHashes
             @ validatorHashes
-            @ validatorSnapshotHashes
             @ stakeHashes
+            |> createMerkleTree
+
+        let configurationRoot =
+            match blockchainConfiguration with
+            | None -> []
+            | Some c ->
+                let validatorSnapshotHashes =
+                    c.Validators
+                    |> List.sortBy (fun v -> v.ValidatorAddress) // Ensure a predictable order
+                    |> List.map (createValidatorSnapshotHash decodeHash createHash)
+                validatorSnapshotHashes
             |> createMerkleTree
 
         let blockHash =
@@ -253,23 +266,146 @@ module Blocks =
                 txSetRoot
                 txResultSetRoot
                 stateRoot
+                configurationRoot
 
         let blockHeader =
             {
                 BlockHeader.Number = blockNumber
                 Hash = blockHash
                 PreviousHash = previousBlockHash
+                ConfigurationBlockNumber = configurationBlockNumber
                 Timestamp = timestamp
                 Validator = validator
                 TxSetRoot = txSetRoot
                 TxResultSetRoot = txResultSetRoot
                 StateRoot = stateRoot
+                ConfigurationRoot = configurationRoot
             }
 
         {
             Header = blockHeader
             TxSet = txSet
+            Configuration = blockchainConfiguration
         }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Genesis block
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let createGenesisState
+        genesisChxSupply
+        genesisAddress
+        (genesisValidators : Map<ChainiumAddress, ValidatorState>)
+        : ProcessingOutput
+        =
+
+        let genesisChxBalanceState =
+            {
+                ChxBalanceState.Amount = genesisChxSupply
+                Nonce = Nonce 0L
+            }
+
+        let chxBalances =
+            [
+                genesisAddress, genesisChxBalanceState
+            ]
+            |> Map.ofList
+
+        {
+            TxResults = Map.empty
+            ChxBalances = chxBalances
+            Holdings = Map.empty
+            Accounts = Map.empty
+            Assets = Map.empty
+            Validators = genesisValidators
+            Stakes = Map.empty
+        }
+
+    let createGenesisBlock
+        (decodeHash : string -> byte[])
+        (createHash : byte[] -> string)
+        (createMerkleTree : string list -> MerkleTreeRoot)
+        zeroHash
+        zeroAddress
+        (output : ProcessingOutput)
+        : Block
+        =
+
+        let blockNumber = BlockNumber 0L
+        let timestamp = Timestamp 0L
+        let previousBlockHash = zeroHash |> BlockHash
+        let txSet = []
+
+        let validatorSnapshots =
+            output.Validators
+            |> Map.toList
+            |> List.map (fun (validatorAddress, state) ->
+                {
+                    ValidatorSnapshot.ValidatorAddress = validatorAddress
+                    NetworkAddress = state.NetworkAddress
+                    TotalStake = ChxAmount 0m
+                }
+            )
+
+        let blockchainConfiguration =
+            {
+                BlockchainConfiguration.Validators = validatorSnapshots
+            }
+            |> Some
+
+        assembleBlock
+            decodeHash
+            createHash
+            createMerkleTree
+            zeroAddress
+            blockNumber
+            timestamp
+            previousBlockHash
+            blockNumber
+            txSet
+            output
+            blockchainConfiguration
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Configuration blocks
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let calculateConfigurationBlockNumberForNewBlock configurationBlockOffset (BlockNumber blockNumber) =
+        let offset =
+            match blockNumber % configurationBlockOffset with
+            | 0L -> configurationBlockOffset
+            | o -> o
+
+        BlockNumber (blockNumber - offset)
+
+    let isConfigurationBlock configurationBlockOffset (BlockNumber blockNumber) =
+        blockNumber % configurationBlockOffset = 0L
+
+    let createNewBlockchainConfiguration
+        (getTopValidators : unit -> ValidatorSnapshot list)
+        (getFallbackValidators : unit -> ValidatorSnapshot list)
+        minValidatorCount
+        =
+
+        let validators =
+            match getTopValidators () with
+            | validators when validators.Length >= minValidatorCount -> validators
+            | _ -> getFallbackValidators ()
+
+        {
+            BlockchainConfiguration.Validators = validators
+        }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Helpers
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let extractBlockFromEnvelopeDto blockEnvelopeDto =
+        blockEnvelopeDto
+        |> Mapping.blockEnvelopeFromDto
+        |> fun envelope -> Serialization.deserialize<BlockDto> envelope.RawBlock
+        |> Result.map Mapping.blockFromDto
 
     /// Checks if the block is a valid potential successor of a previous block identified by previousBlockHash argument.
     let isValidSuccessorBlock
@@ -297,78 +433,6 @@ module Blocks =
                 txSetRoot
                 block.Header.TxResultSetRoot
                 block.Header.StateRoot
+                block.Header.ConfigurationRoot
 
         block.Header.Hash = blockHash
-
-    let createGenesisState
-        genesisChxSupply
-        genesisAddress
-        (genesisValidators : Map<ChainiumAddress, ValidatorState>)
-        : ProcessingOutput
-        =
-
-        let genesisChxBalanceState =
-            {
-                ChxBalanceState.Amount = genesisChxSupply
-                Nonce = Nonce 0L
-            }
-
-        let chxBalances =
-            [
-                genesisAddress, genesisChxBalanceState
-            ]
-            |> Map.ofList
-
-        let validatorSnapshots =
-            genesisValidators
-            |> Map.toList
-            |> List.map (fun (a, s) ->
-                {
-                    ValidatorSnapshot.ValidatorAddress = a
-                    NetworkAddress = s.NetworkAddress
-                    TotalStake = ChxAmount 0m
-                }
-            )
-
-        {
-            TxResults = Map.empty
-            ChxBalances = chxBalances
-            Holdings = Map.empty
-            Accounts = Map.empty
-            Assets = Map.empty
-            Validators = genesisValidators
-            ValidatorSnapshots = validatorSnapshots
-            Stakes = Map.empty
-        }
-
-    let createGenesisBlock
-        (decodeHash : string -> byte[])
-        (createHash : byte[] -> string)
-        (createMerkleTree : string list -> MerkleTreeRoot)
-        zeroHash
-        zeroAddress
-        (output : ProcessingOutput)
-        : Block
-        =
-
-        let blockNumber = BlockNumber 0L
-        let timestamp = Timestamp 0L
-        let previousBlockHash = zeroHash |> BlockHash
-        let txSet = []
-
-        assembleBlock
-            decodeHash
-            createHash
-            createMerkleTree
-            zeroAddress
-            blockNumber
-            timestamp
-            previousBlockHash
-            txSet
-            output
-
-    let extractBlockFromEnvelopeDto blockEnvelopeDto =
-        blockEnvelopeDto
-        |> Mapping.blockEnvelopeFromDto
-        |> fun envelope -> Serialization.deserialize<BlockDto> envelope.RawBlock
-        |> Result.map Mapping.blockFromDto

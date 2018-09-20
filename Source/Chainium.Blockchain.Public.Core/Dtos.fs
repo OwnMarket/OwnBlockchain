@@ -119,6 +119,28 @@ type TxResultDto = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Blockchain Configuration
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type ValidatorSnapshotDto = {
+    [<Key(0)>]
+    ValidatorAddress : string
+    [<Key(1)>]
+    NetworkAddress : string
+    [<Key(2)>]
+    TotalStake : decimal
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type BlockchainConfigurationDto = {
+    [<Key(0)>]
+    Validators : ValidatorSnapshotDto list
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Block
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -132,15 +154,19 @@ type BlockHeaderDto = {
     [<Key(2)>]
     PreviousHash : string
     [<Key(3)>]
-    Timestamp : int64
+    ConfigurationBlockNumber : int64
     [<Key(4)>]
-    Validator : string
+    Timestamp : int64
     [<Key(5)>]
-    TxSetRoot : string
+    Validator : string
     [<Key(6)>]
-    TxResultSetRoot : string
+    TxSetRoot : string
     [<Key(7)>]
+    TxResultSetRoot : string
+    [<Key(8)>]
     StateRoot : string
+    [<Key(9)>]
+    ConfigurationRoot : string
 }
 
 [<CLIMutable>]
@@ -150,13 +176,8 @@ type BlockDto = {
     Header : BlockHeaderDto
     [<Key(1)>]
     TxSet : string list
-}
-
-[<CLIMutable>]
-type BlockInfoDto = {
-    BlockNumber : int64
-    BlockHash : string
-    BlockTimestamp : int64
+    [<Key(2)>]
+    Configuration : BlockchainConfigurationDto
 }
 
 [<CLIMutable>]
@@ -166,6 +187,13 @@ type BlockEnvelopeDto = {
     Block : string
     [<Key(1)>]
     Signature : string
+}
+
+[<CLIMutable>]
+type BlockInfoDto = {
+    BlockNumber : int64
+    BlockHash : string
+    BlockTimestamp : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,13 +228,6 @@ type ValidatorStateDto = {
 }
 
 [<CLIMutable>]
-type ValidatorSnapshotDto = {
-    ValidatorAddress : string
-    NetworkAddress : string
-    TotalStake : decimal
-}
-
-[<CLIMutable>]
 type StakeStateDto = {
     Amount : decimal
 }
@@ -218,7 +239,6 @@ type ProcessingOutputDto = {
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto>
-    ValidatorSnapshots : ValidatorSnapshotDto list
     Stakes : Map<string * string, StakeStateDto>
 }
 
@@ -304,11 +324,13 @@ type GetBlockApiResponseDto = {
     Number : int64
     Hash : string
     PreviousHash : string
+    ConfigurationBlockNumber : int64
     Timestamp : int64
     Validator : string
     TxSetRoot : string
     TxResultSetRoot : string
     StateRoot : string
+    ConfigurationRoot : string
     TxSet : string list
 }
 

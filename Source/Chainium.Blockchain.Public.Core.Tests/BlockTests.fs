@@ -153,6 +153,7 @@ module BlockTests =
         let txSetRoot = MerkleTreeRoot "E"
         let txResultSetRoot = MerkleTreeRoot "F"
         let stateRoot = MerkleTreeRoot "G"
+        let configurationRoot = MerkleTreeRoot "H"
 
         // ACT
         let (BlockHash blockHash) =
@@ -166,14 +167,16 @@ module BlockTests =
                 txSetRoot
                 txResultSetRoot
                 stateRoot
+                configurationRoot
 
         // ASSERT
-        test <@ blockHash = ".......AB.......CDEFG" @>
+        test <@ blockHash = ".......AB.......CDEFGH" @>
 
     [<Fact>]
     let ``Blocks.assembleBlock`` () =
         let blockNumber = BlockNumber 1L
         let previousBlockHash = BlockHash "B"
+        let configurationBlockNumber = BlockNumber 0L
         let timestamp = Timestamp 3L
         let validator = ChainiumAddress "D"
 
@@ -237,20 +240,6 @@ module BlockTests =
             ]
             |> Map.ofList
 
-        let validatorSnapshots =
-            [
-                {
-                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAAAA"
-                    NetworkAddress = "WWW" // W = 87 = 7 = G
-                    TotalStake = ChxAmount 1m
-                }
-                {
-                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "BBBBB"
-                    NetworkAddress = "XXX" // X = 88 = 8 = H
-                    TotalStake = ChxAmount 2m
-                }
-            ]
-
         let stakes =
             [
                 (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
@@ -266,7 +255,6 @@ module BlockTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
-                ValidatorSnapshots = validatorSnapshots
                 Stakes = stakes
             }
 
@@ -293,8 +281,6 @@ module BlockTests =
                 "AAAAAGGG" // Validator 1
                 "BBBBBHHH" // Validator 2
                 "CCCCCIII" // Validator 3
-                "AAAAAGGG...A............" // Validator snapshot 1
-                "BBBBBHHH...B............" // Validator snapshot 2
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
             ]
@@ -322,8 +308,10 @@ module BlockTests =
                 blockNumber
                 timestamp
                 previousBlockHash
+                configurationBlockNumber
                 txSet
                 processingOutput
+                None
 
         // ASSERT
         test <@ block.Header.Number = blockNumber @>
@@ -342,6 +330,7 @@ module BlockTests =
         let wallet2 = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let blockNumber = BlockNumber 1L
+        let configurationBlockNumber = BlockNumber 0L
         let timestamp = Utils.getUnixTimestamp () |> Timestamp
 
         let previousBlockHash =
@@ -409,20 +398,6 @@ module BlockTests =
             ]
             |> Map.ofList
 
-        let validatorSnapshots =
-            [
-                {
-                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAAAA"
-                    NetworkAddress = "WWW" // W = 87 = 7 = G
-                    TotalStake = ChxAmount 1m
-                }
-                {
-                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "BBBBB"
-                    NetworkAddress = "XXX" // X = 88 = 8 = H
-                    TotalStake = ChxAmount 2m
-                }
-            ]
-
         let stakes =
             [
                 (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
@@ -438,7 +413,6 @@ module BlockTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
-                ValidatorSnapshots = validatorSnapshots
                 Stakes = stakes
             }
 
@@ -452,8 +426,10 @@ module BlockTests =
                 blockNumber
                 timestamp
                 previousBlockHash
+                configurationBlockNumber
                 txSet
                 processingOutput
+                None
 
         // ASSERT
         test <@ block.Header.Number = blockNumber @>
@@ -501,9 +477,6 @@ module BlockTests =
                 |> Map.toList
                 |> List.map (Blocks.createValidatorStateHash Hashing.decode Hashing.hash)
 
-                validatorSnapshots
-                |> List.map (Blocks.createValidatorSnapshotHash Hashing.decode Hashing.hash)
-
                 stakes
                 |> Map.toList
                 |> List.map (fun ((stakeholderAddress, validatorAddress), state) ->
@@ -514,7 +487,7 @@ module BlockTests =
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 15 true @>
+        test <@ stateMerkleProofs = List.replicate 13 true @>
 
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -524,6 +497,7 @@ module BlockTests =
         let wallet2 = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let blockNumber = BlockNumber 1L
+        let configurationBlockNumber = BlockNumber 0L
         let timestamp = Utils.getUnixTimestamp () |> Timestamp
 
         let previousBlockHash =
@@ -621,7 +595,6 @@ module BlockTests =
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
-                ValidatorSnapshots = validatorSnapshots
                 Stakes = stakes
             }
 
@@ -634,8 +607,10 @@ module BlockTests =
                 blockNumber
                 timestamp
                 previousBlockHash
+                configurationBlockNumber
                 txSet
                 processingOutput
+                None
 
         let testedBlock =
             Blocks.assembleBlock
@@ -646,8 +621,10 @@ module BlockTests =
                 blockNumber
                 timestamp
                 (previousBlockHashInTestedBlock |> Conversion.stringToBytes |> Hashing.hash |> BlockHash)
+                configurationBlockNumber
                 txSet
                 processingOutput
+                None
 
         // ACT
         let isValid =

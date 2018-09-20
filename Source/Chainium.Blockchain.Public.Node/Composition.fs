@@ -98,6 +98,9 @@ module Composition =
             Config.QuorumSupplyPercent
             Config.MaxValidatorCount
 
+    let getFallbackValidators () =
+        getGenesisValidators () // TODO: Remove the workaround once the fallback logic is implemented.
+
     let isValidator =
         Consensus.isValidator
             getGenesisValidators
@@ -108,13 +111,25 @@ module Composition =
             (int64 Config.BlockCreationInterval)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Blockchain
+    // Blockchain Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let getAvailableChxBalance =
-        Workflows.getAvailableChxBalance
-            getChxBalanceState
-            getTotalChxStaked
+    let isConfigurationBlock =
+        Config.ConfigurationBlockOffset
+        |> int64
+        |> Blocks.isConfigurationBlock
+
+    let calculateConfigurationBlockNumberForNewBlock =
+        Config.ConfigurationBlockOffset
+        |> int64
+        |> Blocks.calculateConfigurationBlockNumberForNewBlock
+
+    let createNewBlockchainConfiguration () =
+        Blocks.createNewBlockchainConfiguration getTopValidators getFallbackValidators Config.MinValidatorCount
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Blockchain
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let initBlockchainState () =
         Workflows.initBlockchainState
@@ -149,8 +164,15 @@ module Composition =
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
-            Config.CheckpointBlockCount
+            calculateConfigurationBlockNumberForNewBlock
+            isConfigurationBlock
+            createNewBlockchainConfiguration
             (ChxAmount Config.MinTxActionFee)
+
+    let getAvailableChxBalance =
+        Workflows.getAvailableChxBalance
+            getChxBalanceState
+            getTotalChxStaked
 
     let proposeBlock =
         Workflows.proposeBlock

@@ -78,15 +78,15 @@ module Workflows =
                 | _ ->
                     false
 
-            let genesisBlockDto = genesisBlock |> Mapping.blockToDto
-
-            let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto genesisBlockDto.Header
+            let blockInfoDto = Mapping.blockHeaderToBlockInfoDto genesisBlock.Header
 
             let result =
                 result {
                     if not genesisBlockExists then
                         let! blockEnvelopeDto =
-                            Serialization.serialize<BlockDto> genesisBlockDto
+                            genesisBlock
+                            |> Mapping.blockToDto
+                            |> Serialization.serialize<BlockDto>
                             >>= fun blockBytes ->
                                 {
                                     Block = blockBytes |> Convert.ToBase64String
@@ -118,12 +118,14 @@ module Workflows =
         getStakeStateFromStorage
         getTotalChxStakedFromStorage
         (getTopValidators : unit -> ValidatorSnapshot list)
-        (getConfigBlockValidators : unit -> ValidatorSnapshot list)
+        (getCurrentValidators : unit -> ValidatorSnapshot list)
         getBlock
         decodeHash
         createHash
         createMerkleTree
-        checkpointBlockCount
+        (calculateConfigurationBlockNumberForNewBlock : BlockNumber -> BlockNumber)
+        isConfigurationBlock
+        (createNewBlockchainConfiguration : unit -> BlockchainConfiguration)
         minTxActionFee
         validatorAddress
         (previousBlockHash : BlockHash)
@@ -140,49 +142,50 @@ module Workflows =
         let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
         let getTotalChxStaked = memoize getTotalChxStakedFromStorage
 
-        result {
-            let shouldCreateSnapshot = blockNumber |> fun (BlockNumber n) -> n % (int64 checkpointBlockCount) = 0L
-            let validatorSnapshots =
-                if shouldCreateSnapshot then
-                    getTopValidators ()
-                else
-                    getConfigBlockValidators () // TODO: Call by config block number
+        let output =
+            txSet
+            |> Processing.processTxSet
+                getTx
+                verifySignature
+                isValidAddress
+                decodeHash
+                createHash
+                getChxBalanceState
+                getHoldingState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                minTxActionFee
+                validatorAddress
+                blockNumber
 
-            let output =
+        let configurationBlockNumber =
+            calculateConfigurationBlockNumberForNewBlock blockNumber
+
+        let blockchainConfiguration =
+            if isConfigurationBlock blockNumber then
+                createNewBlockchainConfiguration ()
+                |> Some
+            else
+                None
+
+        let block =
+            Blocks.assembleBlock
+                decodeHash
+                createHash
+                createMerkleTree
+                validatorAddress
+                blockNumber
+                timestamp
+                previousBlockHash
+                configurationBlockNumber
                 txSet
-                |> Processing.processTxSet
-                    getTx
-                    verifySignature
-                    isValidAddress
-                    decodeHash
-                    createHash
-                    getChxBalanceState
-                    getHoldingState
-                    getAccountState
-                    getAssetState
-                    getValidatorState
-                    getStakeState
-                    getTotalChxStaked
-                    minTxActionFee
-                    validatorAddress
-                    blockNumber
+                output
+                blockchainConfiguration
 
-            let output = { output with ValidatorSnapshots = validatorSnapshots }
-
-            let block =
-                Blocks.assembleBlock
-                    decodeHash
-                    createHash
-                    createMerkleTree
-                    validatorAddress
-                    blockNumber
-                    timestamp
-                    previousBlockHash
-                    txSet
-                    output
-
-            return (block, output)
-        }
+        (block, output)
 
     let proposeBlock
         createBlock
@@ -224,7 +227,7 @@ module Workflows =
                     getBlock previousBlockNumber
                     >>= Blocks.extractBlockFromEnvelopeDto
 
-                let! block, output =
+                let block, output =
                     createBlock
                         validatorAddress
                         previousBlock.Header.Hash
@@ -232,22 +235,19 @@ module Workflows =
                         timestamp
                         txSet
 
-                let outputDto = Mapping.outputToDto output
-                let blockDto = Mapping.blockToDto block
-                let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto blockDto.Header
-
-                let! blockEnvelopeDto =
-                    Serialization.serialize<BlockDto> blockDto
-                    >>= fun blockBytes ->
+                do! block
+                    |> Mapping.blockToDto
+                    |> Serialization.serialize<BlockDto>
+                    |> Result.map (fun blockBytes ->
                         let signature : Signature = signBlock validatorPrivateKey blockBytes
                         {
                             Block = blockBytes |> Convert.ToBase64String
                             Signature = signature |> fun (Signature s) -> s
                         }
-                        |> Ok
+                    )
+                    >>= saveBlock block.Header.Number
 
-                do! saveBlock block.Header.Number blockEnvelopeDto
-                Synchronization.setLastAvailableBlockNumber block.Header.Number
+                Synchronization.setLastAvailableBlockNumber block.Header.Number // TODO: Do this on consensus COMMIT.
 
                 return { BlockCreatedEventData.BlockNumber = block.Header.Number }
             }
@@ -335,7 +335,7 @@ module Workflows =
                         sprintf "Block %i is not a valid successor of the previous block." n
                     |> Result.appError
 
-            let! createdBlock, output =
+            let createdBlock, output =
                 createBlock
                     block.Header.Validator
                     previousBlock.Header.Hash
@@ -344,8 +344,7 @@ module Workflows =
                     block.TxSet
 
             if block = createdBlock then
-                let createdBlockDto = Mapping.blockToDto createdBlock
-                let blockInfoDto = Mapping.blockInfoDtoFromBlockHeaderDto createdBlockDto.Header
+                let blockInfoDto = Mapping.blockHeaderToBlockInfoDto createdBlock.Header
                 let outputDto = Mapping.outputToDto output
                 do! persistTxResults outputDto.TxResults
                 do! applyNewState blockInfoDto outputDto

@@ -171,17 +171,13 @@ module Mapping =
             BlockHeader.Number = BlockNumber dto.Number
             Hash = BlockHash dto.Hash
             PreviousHash = BlockHash dto.PreviousHash
+            ConfigurationBlockNumber = BlockNumber dto.ConfigurationBlockNumber
             Timestamp = Timestamp dto.Timestamp
             Validator = ChainiumAddress dto.Validator
             TxSetRoot = MerkleTreeRoot dto.TxSetRoot
             TxResultSetRoot = MerkleTreeRoot dto.TxResultSetRoot
             StateRoot = MerkleTreeRoot dto.StateRoot
-        }
-
-    let blockFromDto (dto : BlockDto) : Block =
-        {
-            Header = blockHeaderFromDto dto.Header
-            TxSet = dto.TxSet |> List.map TxHash
+            ConfigurationRoot = MerkleTreeRoot dto.ConfigurationRoot
         }
 
     let blockHeaderToDto (block : BlockHeader) : BlockHeaderDto =
@@ -189,30 +185,76 @@ module Mapping =
             BlockHeaderDto.Number = block.Number |> fun (BlockNumber n) -> n
             Hash = block.Hash |> fun (BlockHash h) -> h
             PreviousHash = block.PreviousHash |> fun (BlockHash h) -> h
+            ConfigurationBlockNumber = block.ConfigurationBlockNumber |> fun (BlockNumber n) -> n
             Timestamp = block.Timestamp |> fun (Timestamp t) -> t
             Validator = block.Validator |> fun (ChainiumAddress a) -> a
             TxSetRoot = block.TxSetRoot |> fun (MerkleTreeRoot r) -> r
             TxResultSetRoot = block.TxResultSetRoot |> fun (MerkleTreeRoot r) -> r
             StateRoot = block.StateRoot |> fun (MerkleTreeRoot r) -> r
+            ConfigurationRoot = block.ConfigurationRoot |> fun (MerkleTreeRoot r) -> r
+        }
+
+    let validatorSnapshotFromDto (dto : ValidatorSnapshotDto) : ValidatorSnapshot =
+        {
+            ValidatorAddress = ChainiumAddress dto.ValidatorAddress
+            NetworkAddress = dto.NetworkAddress
+            TotalStake = ChxAmount dto.TotalStake
+        }
+
+    let validatorSnapshotToDto (snapshot : ValidatorSnapshot) : ValidatorSnapshotDto =
+        {
+            ValidatorAddress = snapshot.ValidatorAddress |> fun (ChainiumAddress a) -> a
+            NetworkAddress = snapshot.NetworkAddress
+            TotalStake = snapshot.TotalStake |> fun (ChxAmount a) -> a
+        }
+
+    let blockchainConfigurationFromDto (dto : BlockchainConfigurationDto) : BlockchainConfiguration =
+        {
+            BlockchainConfiguration.Validators = dto.Validators |> List.map validatorSnapshotFromDto
+        }
+
+    let blockchainConfigurationToDto (config : BlockchainConfiguration) : BlockchainConfigurationDto =
+        {
+            BlockchainConfigurationDto.Validators = config.Validators |> List.map validatorSnapshotToDto
+        }
+
+    let blockFromDto (dto : BlockDto) : Block =
+        let config =
+            if dto.Configuration.Validators.IsEmpty then // TODO: Avoid storing empty config in data blocks.
+                None
+            else
+                dto.Configuration |> blockchainConfigurationFromDto |> Some
+
+        {
+            Header = blockHeaderFromDto dto.Header
+            TxSet = dto.TxSet |> List.map TxHash
+            Configuration = config
         }
 
     let blockToDto (block : Block) : BlockDto =
         {
             Header = blockHeaderToDto block.Header
             TxSet = block.TxSet |> List.map (fun (TxHash h) -> h)
-        }
-
-    let blockInfoDtoFromBlockHeaderDto (blockHeaderDto : BlockHeaderDto) : BlockInfoDto =
-        {
-            BlockNumber = blockHeaderDto.Number
-            BlockHash = blockHeaderDto.Hash
-            BlockTimestamp = blockHeaderDto.Timestamp
+            Configuration =
+                match block.Configuration with
+                | Some c -> blockchainConfigurationToDto c
+                | None ->
+                    {
+                        Validators = [] // TODO: Avoid storing empty config in data blocks.
+                    }
         }
 
     let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
         {
             RawBlock = dto.Block |> Convert.FromBase64String
             Signature = Signature dto.Signature
+        }
+
+    let blockHeaderToBlockInfoDto (blockHeader : BlockHeader) : BlockInfoDto =
+        {
+            BlockNumber = blockHeader.Number |> fun (BlockNumber n) -> n
+            BlockHash = blockHeader.Hash |> fun (BlockHash h) -> h
+            BlockTimestamp = blockHeader.Timestamp |> fun (Timestamp t) -> t
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,20 +319,6 @@ module Mapping =
             NetworkAddress = state.NetworkAddress
         }
 
-    let validatorSnapshotFromDto (dto : ValidatorSnapshotDto) : ValidatorSnapshot =
-        {
-            ValidatorAddress = ChainiumAddress dto.ValidatorAddress
-            NetworkAddress = dto.NetworkAddress
-            TotalStake = ChxAmount dto.TotalStake
-        }
-
-    let validatorSnapshotToDto (state : ValidatorSnapshot) : ValidatorSnapshotDto =
-        {
-            ValidatorAddress = state.ValidatorAddress |> fun (ChainiumAddress a) -> a
-            NetworkAddress = state.NetworkAddress
-            TotalStake = state.TotalStake |> fun (ChxAmount a) -> a
-        }
-
     let stakeStateFromDto (dto : StakeStateDto) : StakeState =
         {
             Amount = ChxAmount dto.Amount
@@ -338,10 +366,6 @@ module Mapping =
             |> List.map (fun (ChainiumAddress a, s : ValidatorState) -> a, validatorStateToDto s)
             |> Map.ofList
 
-        let validatorSnapshots =
-            output.ValidatorSnapshots
-            |> List.map validatorSnapshotToDto
-
         let stakes =
             output.Stakes
             |> Map.toList
@@ -355,7 +379,6 @@ module Mapping =
             Accounts = accounts
             Assets = assets
             Validators = validators
-            ValidatorSnapshots = validatorSnapshots
             Stakes = stakes
         }
 
@@ -408,11 +431,13 @@ module Mapping =
             GetBlockApiResponseDto.Number = blockDto.Header.Number
             GetBlockApiResponseDto.Hash = blockDto.Header.Hash
             GetBlockApiResponseDto.PreviousHash = blockDto.Header.PreviousHash
+            GetBlockApiResponseDto.ConfigurationBlockNumber = blockDto.Header.ConfigurationBlockNumber
             GetBlockApiResponseDto.Timestamp = blockDto.Header.Timestamp
             GetBlockApiResponseDto.Validator = blockDto.Header.Validator
             GetBlockApiResponseDto.TxSetRoot = blockDto.Header.TxSetRoot
             GetBlockApiResponseDto.TxResultSetRoot = blockDto.Header.TxResultSetRoot
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
+            GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
             GetBlockApiResponseDto.TxSet = blockDto.TxSet
         }
 

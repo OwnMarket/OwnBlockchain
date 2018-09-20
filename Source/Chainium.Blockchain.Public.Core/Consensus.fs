@@ -16,11 +16,11 @@ module Consensus =
         |> ChxAmount
 
     let isValidator
-        (getValidatorSnapshots : unit -> ValidatorSnapshot list)
+        (getValidators : unit -> ValidatorSnapshot list)
         validatorAddress
         =
 
-        getValidatorSnapshots ()
+        getValidators ()
         |> List.exists (fun v -> v.ValidatorAddress = validatorAddress)
 
     let getBlockProposer (BlockNumber blockNumber) (validators : ValidatorSnapshot list) =
