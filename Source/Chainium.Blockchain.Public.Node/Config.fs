@@ -93,7 +93,7 @@ type Config () =
         with get () =
             config.["ValidatorPrivateKey"]
 
-    static member ConfigurationBlockOffset = 10
+    static member ConfigurationBlockDelta = 100
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization

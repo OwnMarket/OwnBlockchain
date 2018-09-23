@@ -63,6 +63,6 @@ module Consensus =
         (Timestamp currentTimestamp)
         =
 
-        lastAppliedBlockNumber = Synchronization.getLastAvailableBlockNumber ()
+        lastAppliedBlockNumber = Synchronization.getLastKnownBlockNumber ()
         && (lastBlockTimestamp + blockCreationInterval) <= currentTimestamp
         && isProposer getValidators (lastAppliedBlockNumber + 1L) validatorAddress

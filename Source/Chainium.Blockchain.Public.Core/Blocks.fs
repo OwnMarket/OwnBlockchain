@@ -371,16 +371,16 @@ module Blocks =
     // Configuration blocks
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let calculateConfigurationBlockNumberForNewBlock configurationBlockOffset (BlockNumber blockNumber) =
+    let calculateConfigurationBlockNumberForNewBlock configurationBlockDelta (BlockNumber blockNumber) =
         let offset =
-            match blockNumber % configurationBlockOffset with
-            | 0L -> configurationBlockOffset
+            match blockNumber % configurationBlockDelta with
+            | 0L -> configurationBlockDelta
             | o -> o
 
         BlockNumber (blockNumber - offset)
 
-    let isConfigurationBlock configurationBlockOffset (BlockNumber blockNumber) =
-        blockNumber % configurationBlockOffset = 0L
+    let isConfigurationBlock configurationBlockDelta (BlockNumber blockNumber) =
+        blockNumber % configurationBlockDelta = 0L
 
     let createNewBlockchainConfiguration
         (getTopValidators : unit -> ValidatorSnapshot list)

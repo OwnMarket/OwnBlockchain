@@ -115,12 +115,12 @@ module Composition =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let isConfigurationBlock =
-        Config.ConfigurationBlockOffset
+        Config.ConfigurationBlockDelta
         |> int64
         |> Blocks.isConfigurationBlock
 
     let calculateConfigurationBlockNumberForNewBlock =
-        Config.ConfigurationBlockOffset
+        Config.ConfigurationBlockDelta
         |> int64
         |> Blocks.calculateConfigurationBlockNumberForNewBlock
 
@@ -193,6 +193,7 @@ module Composition =
             Hashing.isValidChainiumAddress
             getGenesisValidators
             Signing.verifySignature
+            blockExists
             saveBlock
 
     let persistTxResults =
@@ -224,6 +225,7 @@ module Composition =
         Synchronization.initSynchronizationState
             getLastAppliedBlockNumber
             blockExists
+            getBlock
 
     let acquireAndApplyMissingBlocks () =
         Synchronization.acquireAndApplyMissingBlocks
@@ -234,7 +236,8 @@ module Composition =
             Peers.requestBlockFromPeer
             Peers.requestTxFromPeer
             applyBlock
-            (int64 Config.MaxNumberOfBlocksToFetchInParallel)
+            Config.ConfigurationBlockDelta
+            Config.MaxNumberOfBlocksToFetchInParallel
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API

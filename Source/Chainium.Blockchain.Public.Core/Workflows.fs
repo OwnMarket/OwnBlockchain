@@ -230,7 +230,9 @@ module Workflows =
                     )
                     >>= saveBlock block.Header.Number
 
-                Synchronization.setLastAvailableBlockNumber block.Header.Number // TODO: Do this on consensus COMMIT.
+                // TODO: Move this to consensus' COMMIT stage.
+                Synchronization.setLastStoredBlock block
+                Synchronization.resetLastKnownBlock ()
 
                 return { BlockCreatedEventData.BlockNumber = block.Header.Number }
             }
@@ -240,6 +242,7 @@ module Workflows =
         isValidAddress
         (getValidators : unit -> ValidatorSnapshot list)
         verifySignature
+        blockExists
         saveBlock
         blockEnvelopeDto
         =
@@ -253,7 +256,14 @@ module Workflows =
 
             let! block = Validation.validateBlock isValidAddress blockDto
 
-            let blockNumber = block.Header.Number
+            Synchronization.setLastKnownBlock block
+
+            if not (blockExists block.Header.ConfigurationBlockNumber) then
+                return!
+                    sprintf "Missing configuration block %i for block %i."
+                        (block.Header.ConfigurationBlockNumber |> fun (BlockNumber n) -> n)
+                        (block.Header.Number |> fun (BlockNumber n) -> n)
+                    |> Result.appError
 
             let expectedBlockProposer =
                 getValidators ()
@@ -263,20 +273,22 @@ module Workflows =
             let! signerAddress = Validation.verifyBlockSignature verifySignature blockEnvelope
 
             if signerAddress <> expectedBlockProposer then
-                do! blockNumber
+                do! block.Header.Number
                     |> fun (BlockNumber n) -> n
                     |> sprintf "Block %i not signed by proper validator."
                     |> Result.appError
 
             if block.Header.Validator <> expectedBlockProposer then
-                do! blockNumber
+                do! block.Header.Number
                     |> fun (BlockNumber n) -> n
                     |> sprintf "Block %i not proposed by proper validator."
                     |> Result.appError
 
-            do! saveBlock blockNumber blockEnvelopeDto
-            Synchronization.setLastAvailableBlockNumber blockNumber
-            return {BlockCreatedEventData.BlockNumber = blockNumber}
+            do! saveBlock block.Header.Number blockEnvelopeDto
+
+            Synchronization.setLastStoredBlock block
+
+            return {BlockCreatedEventData.BlockNumber = block.Header.Number}
         }
 
     let persistTxResults saveTxResult txResults =
