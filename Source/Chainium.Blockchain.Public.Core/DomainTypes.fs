@@ -319,10 +319,14 @@ type BlockNumber with
         BlockNumber (n1 + n2)
     static member (+) (BlockNumber n1, n2) =
         BlockNumber (n1 + n2)
+    static member (+) (BlockNumber n1, n2) =
+        BlockNumber (n1 + int64 n2)
     static member (-) (BlockNumber n1, BlockNumber n2) =
         BlockNumber (n1 - n2)
     static member (-) (BlockNumber n1, n2) =
         BlockNumber (n1 - n2)
+    static member (-) (BlockNumber n1, n2) =
+        BlockNumber (n1 - int64 n2)
 
 type Nonce with
     static member Zero =
@@ -333,10 +337,14 @@ type Nonce with
         Nonce (n1 + n2)
     static member (+) (Nonce n1, n2) =
         Nonce (n1 + n2)
+    static member (+) (Nonce n1, n2) =
+        Nonce (n1 + int64 n2)
     static member (-) (Nonce n1, Nonce n2) =
         Nonce (n1 - n2)
     static member (-) (Nonce n1, n2) =
         Nonce (n1 - n2)
+    static member (-) (Nonce n1, n2) =
+        Nonce (n1 - int64 n2)
 
 type ChxAmount with
     static member Zero =
