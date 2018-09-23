@@ -12,6 +12,10 @@ module Result =
         | Ok _ -> ()
         | Error e -> f e
 
+    let handle okHandler errorHandler = function
+        | Ok v -> okHandler v
+        | Error e -> errorHandler e
+
 [<AutoOpen>]
 module ResultOperators =
 
