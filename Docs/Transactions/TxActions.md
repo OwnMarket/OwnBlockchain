@@ -84,8 +84,8 @@ These high-level steps are conducted when executing this transaction type:
 
 Parameter | Data Type | Description
 --- | --- | ---
-`FromAccountHash` | string | Account hash of the account being transferred from.
-`ToAccountHash` | string | Account hash of the account being transferred to.
+`FromAccount` | string | Account hash of the account being transferred from.
+`ToAccount` | string | Account hash of the account being transferred to.
 `AssetHash` | string | Asset hash of the asset being transferred.
 `Amount` | decimal number | Asset amount being transferred.
 
