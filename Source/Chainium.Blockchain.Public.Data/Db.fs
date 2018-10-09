@@ -1045,11 +1045,11 @@ module Db =
             result {
                 do! removeProcessedTxs conn transaction state.TxResults
                 do! updateChxBalances conn transaction state.ChxBalances
-                do! updateHoldings conn transaction state.Holdings
-                do! updateAccounts conn transaction state.Accounts
-                do! updateAssets conn transaction state.Assets
                 do! updateValidators conn transaction state.Validators
                 do! updateStakes conn transaction state.Stakes
+                do! updateAssets conn transaction state.Assets
+                do! updateAccounts conn transaction state.Accounts
+                do! updateHoldings conn transaction state.Holdings
                 do! updateBlock conn transaction blockInfoDto
             }
 
