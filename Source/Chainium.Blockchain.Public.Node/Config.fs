@@ -59,7 +59,7 @@ type Config () =
             |> Seq.map (fun c -> c.Value)
             |> Seq.toList
 
-    static member NetworkDiscoveryTime = 30 // Seconds
+    static member NetworkDiscoveryTime = 3 // Seconds
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Genesis
@@ -93,12 +93,12 @@ type Config () =
         with get () =
             config.["ValidatorPrivateKey"]
 
-    static member ConfigurationBlockDelta = 100
+    static member ConfigurationBlockDelta = 3
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member MaxNumberOfBlocksToFetchInParallel = 10
+    static member MaxNumberOfBlocksToFetchInParallel = 5
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
