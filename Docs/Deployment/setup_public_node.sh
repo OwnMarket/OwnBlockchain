@@ -19,7 +19,7 @@ wget -q -O /tmp/packages-microsoft-prod.deb https://packages.microsoft.com/confi
 sudo dpkg -i /tmp/packages-microsoft-prod.deb
 sudo apt install -y apt-transport-https
 sudo apt update -y
-sudo apt install -y dotnet-sdk-2.1
+sudo apt install -y dotnet-runtime-2.1
 
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Node binaries'
