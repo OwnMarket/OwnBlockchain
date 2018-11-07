@@ -1,7 +1,7 @@
-namespace Chainium.Blockchain.Public.Faucet
+namespace Own.Blockchain.Public.Faucet
 
-open Chainium.Common
-open Chainium.Blockchain.Common
+open Own.Common
+open Own.Blockchain.Common
 
 module PaceMaker =
 

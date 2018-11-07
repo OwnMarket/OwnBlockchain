@@ -1,12 +1,12 @@
-namespace Chainium.Blockchain.Public.Data
+namespace Own.Blockchain.Public.Data
 
 open System.Linq
 open System.Data.Common
 open System.Collections.Generic
 open Microsoft.Data.Sqlite
-open Dapper
-open Chainium.Common
 open Npgsql
+open Dapper
+open Own.Common
 
 module DbTools =
 

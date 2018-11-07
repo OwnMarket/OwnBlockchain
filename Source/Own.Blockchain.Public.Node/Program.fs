@@ -1,13 +1,13 @@
 ﻿open System
 open System.Globalization
 open System.Threading
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Node
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Node
 
 [<EntryPoint>]
 let main argv =
-    printfn "Chainium Public Blockchain Node"
+    printfn "Own Public Blockchain Node"
 
     try
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture

@@ -1,14 +1,14 @@
-namespace Chainium.Blockchain.Public.Core.Tests
+namespace Own.Blockchain.Public.Core.Tests
 
 open System
 open Xunit
 open Swensen.Unquote
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Crypto
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Crypto
 
 module BlockTests =
 
@@ -59,7 +59,7 @@ module BlockTests =
 
     [<Fact>]
     let ``Blocks.createChxBalanceStateHash`` () =
-        let address = ChainiumAddress "ABC"
+        let address = BlockchainAddress "ABC"
         let state = {ChxBalanceState.Amount = ChxAmount 1m; Nonce = Nonce 2L}
 
         // ACT
@@ -83,7 +83,7 @@ module BlockTests =
     [<Fact>]
     let ``Blocks.createAccountStateHash`` () =
         let account = AccountHash "AAA"
-        let controllerAddress = ChainiumAddress "CC"
+        let controllerAddress = BlockchainAddress "CC"
         let state = {AccountState.ControllerAddress = controllerAddress}
 
         // ACT
@@ -96,7 +96,7 @@ module BlockTests =
     let ``Blocks.createAssetStateHash`` () =
         let asset = AssetHash "AAA"
         let assetCode = AssetCode "XXX" |> Some // X = 88 = 8 = H
-        let controllerAddress = ChainiumAddress "CC"
+        let controllerAddress = BlockchainAddress "CC"
         let state = {AssetState.AssetCode = assetCode; ControllerAddress = controllerAddress}
 
         // ACT
@@ -107,7 +107,7 @@ module BlockTests =
 
     [<Fact>]
     let ``Blocks.createValidatorStateHash`` () =
-        let validator = ChainiumAddress "AAA"
+        let validator = BlockchainAddress "AAA"
         let networkAddress = "XXX" // X = 88 = 8 = H
         let state = {ValidatorState.NetworkAddress = networkAddress}
 
@@ -121,7 +121,7 @@ module BlockTests =
     let ``Blocks.createValidatorSnapshotHash`` () =
         let validatorSnapshot =
             {
-                ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAA"
+                ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAA"
                 NetworkAddress = "XXX" // X = 88 = 8 = H
                 TotalStake = ChxAmount 5m
             }
@@ -134,8 +134,8 @@ module BlockTests =
 
     [<Fact>]
     let ``Blocks.createStakeStateHash`` () =
-        let stakeholder = ChainiumAddress "AAA"
-        let validator = ChainiumAddress "BBB"
+        let stakeholder = BlockchainAddress "AAA"
+        let validator = BlockchainAddress "BBB"
         let state = {StakeState.Amount = ChxAmount 5m}
 
         // ACT
@@ -149,7 +149,7 @@ module BlockTests =
         let blockNumber = BlockNumber 1L
         let previousBlockHash = BlockHash "B"
         let timestamp = Timestamp 3L
-        let validator = ChainiumAddress "D"
+        let validator = BlockchainAddress "D"
         let txSetRoot = MerkleTreeRoot "E"
         let txResultSetRoot = MerkleTreeRoot "F"
         let stateRoot = MerkleTreeRoot "G"
@@ -178,7 +178,7 @@ module BlockTests =
         let previousBlockHash = BlockHash "B"
         let configurationBlockNumber = BlockNumber 0L
         let timestamp = Timestamp 3L
-        let validator = ChainiumAddress "D"
+        let validator = BlockchainAddress "D"
 
         let txSet =
             ["AAA"; "BBB"; "CCC"]
@@ -206,8 +206,8 @@ module BlockTests =
 
         let chxBalances =
             [
-                ChainiumAddress "HH", {ChxBalanceState.Amount = ChxAmount 5m; Nonce = Nonce 7L}
-                ChainiumAddress "II", {ChxBalanceState.Amount = ChxAmount 6m; Nonce = Nonce 8L}
+                BlockchainAddress "HH", {ChxBalanceState.Amount = ChxAmount 5m; Nonce = Nonce 7L}
+                BlockchainAddress "II", {ChxBalanceState.Amount = ChxAmount 6m; Nonce = Nonce 8L}
             ]
             |> Map.ofList
 
@@ -220,30 +220,30 @@ module BlockTests =
 
         let accounts =
             [
-                AccountHash "AAAA", {AccountState.ControllerAddress = ChainiumAddress "BBBB"}
-                AccountHash "CCCC", {AccountState.ControllerAddress = ChainiumAddress "DDDD"}
+                AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
+                AccountHash "CCCC", {AccountState.ControllerAddress = BlockchainAddress "DDDD"}
             ]
             |> Map.ofList
 
         let assets =
             [
-                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "FFFF"}
-                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "HHHH"}
+                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"}
+                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"}
             ]
             |> Map.ofList
 
         let validators =
             [
-                ChainiumAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
-                ChainiumAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
-                ChainiumAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+                BlockchainAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
+                BlockchainAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
+                BlockchainAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
             ]
             |> Map.ofList
 
         let stakes =
             [
-                (ChainiumAddress "HH", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
-                (ChainiumAddress "II", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
+                (BlockchainAddress "HH", BlockchainAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
+                (BlockchainAddress "II", BlockchainAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
             ]
             |> Map.ofList
 
@@ -378,30 +378,30 @@ module BlockTests =
 
         let accounts =
             [
-                AccountHash "AAAA", {AccountState.ControllerAddress = ChainiumAddress "BBBB"}
-                AccountHash "CCCC", {AccountState.ControllerAddress = ChainiumAddress "DDDD"}
+                AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
+                AccountHash "CCCC", {AccountState.ControllerAddress = BlockchainAddress "DDDD"}
             ]
             |> Map.ofList
 
         let assets =
             [
-                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "FFFF"}
-                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "HHHH"}
+                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"}
+                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"}
             ]
             |> Map.ofList
 
         let validators =
             [
-                ChainiumAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
-                ChainiumAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
-                ChainiumAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+                BlockchainAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
+                BlockchainAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
+                BlockchainAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
             ]
             |> Map.ofList
 
         let stakes =
             [
-                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
-                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
+                (BlockchainAddress "CC", BlockchainAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
+                (BlockchainAddress "DD", BlockchainAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
             ]
             |> Map.ofList
 
@@ -546,35 +546,35 @@ module BlockTests =
 
         let accounts =
             [
-                AccountHash "AAAA", {AccountState.ControllerAddress = ChainiumAddress "BBBB"}
-                AccountHash "CCCC", {AccountState.ControllerAddress = ChainiumAddress "DDDD"}
+                AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
+                AccountHash "CCCC", {AccountState.ControllerAddress = BlockchainAddress "DDDD"}
             ]
             |> Map.ofList
 
         let assets =
             [
-                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "FFFF"}
-                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = ChainiumAddress "HHHH"}
+                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"}
+                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"}
             ]
             |> Map.ofList
 
         let validators =
             [
-                ChainiumAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
-                ChainiumAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
-                ChainiumAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+                BlockchainAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
+                BlockchainAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
+                BlockchainAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
             ]
             |> Map.ofList
 
         let validatorSnapshots =
             [
                 {
-                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "AAAAA"
+                    ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAAAA"
                     NetworkAddress = "WWW" // W = 87 = 7 = G
                     TotalStake = ChxAmount 1m
                 }
                 {
-                    ValidatorSnapshot.ValidatorAddress = ChainiumAddress "BBBBB"
+                    ValidatorSnapshot.ValidatorAddress = BlockchainAddress "BBBBB"
                     NetworkAddress = "XXX" // X = 88 = 8 = H
                     TotalStake = ChxAmount 2m
                 }
@@ -582,8 +582,8 @@ module BlockTests =
 
         let stakes =
             [
-                (ChainiumAddress "CC", ChainiumAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
-                (ChainiumAddress "DD", ChainiumAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
+                (BlockchainAddress "CC", BlockchainAddress "AAAAA"), {StakeState.Amount = ChxAmount 1m}
+                (BlockchainAddress "DD", BlockchainAddress "BBBBB"), {StakeState.Amount = ChxAmount 2m}
             ]
             |> Map.ofList
 

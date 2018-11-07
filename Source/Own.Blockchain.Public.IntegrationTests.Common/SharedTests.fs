@@ -1,28 +1,28 @@
-﻿namespace Chainium.Blockchain.Public.IntegrationTests.Common
+﻿namespace Own.Blockchain.Public.IntegrationTests.Common
 
 open System
 open System.IO
 open System.Threading
 open System.Net.Http
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Node
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Crypto
-open Chainium.Blockchain.Public.Data
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Node
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Crypto
+open Own.Blockchain.Public.Data
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
 open Newtonsoft.Json
 open MessagePack
 open Swensen.Unquote
 
 module SharedTests =
 
-    let addressToString (ChainiumAddress a) = a
+    let addressToString (BlockchainAddress a) = a
 
     let private addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
-    let newTxDto (ChainiumAddress senderAddress) nonce fee actions =
+    let newTxDto (BlockchainAddress senderAddress) nonce fee actions =
         {
             SenderAddress = senderAddress
             Nonce = nonce
@@ -102,8 +102,8 @@ module SharedTests =
 
     let transactionSubmitTest engineType connString isValidTransaction =
         let client = testInit engineType connString
-        let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
-        let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+        let senderWallet = Signing.generateWallet ()
+        let receiverWallet = Signing.generateWallet ()
 
         let action =
             {
@@ -140,8 +140,8 @@ module SharedTests =
         let submittedTxHashes =
             [
                 for i in [1 .. 4] do
-                    let senderWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
-                    let receiverWallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+                    let senderWallet = Signing.generateWallet ()
+                    let receiverWallet = Signing.generateWallet ()
 
                     Helper.addBalanceAndAccount connString (addressToString senderWallet.Address) 100m
                     Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0m
@@ -213,7 +213,7 @@ module SharedTests =
         // ASSERT
         let genesisAddressChxBalanceState =
             Config.GenesisAddress
-            |> ChainiumAddress
+            |> BlockchainAddress
             |> Db.getChxBalanceState connString
 
         let lastAppliedBlockNumber =
@@ -230,13 +230,13 @@ module SharedTests =
 
         let genesisValidators =
             Config.GenesisValidators
-            |> List.map (fun (ca, na) -> ChainiumAddress ca, {ValidatorState.NetworkAddress = na})
+            |> List.map (fun (ba, na) -> BlockchainAddress ba, {ValidatorState.NetworkAddress = na})
             |> Map.ofList
 
         let expectedBlockDto =
             Blocks.createGenesisState
                 (ChxAmount Config.GenesisChxSupply)
-                (ChainiumAddress Config.GenesisAddress)
+                (BlockchainAddress Config.GenesisAddress)
                 genesisValidators
             |> Blocks.createGenesisBlock
                 Hashing.decode Hashing.hash Hashing.merkleTree Hashing.zeroHash Hashing.zeroAddress
@@ -252,9 +252,9 @@ module SharedTests =
     let getAccountStateTest engineType connectionString =
         Helper.testCleanup engineType connectionString
         DbInit.init engineType connectionString
-        let wallet = Chainium.Blockchain.Public.Crypto.Signing.generateWallet ()
+        let wallet = Signing.generateWallet ()
 
-        let paramName = "@chainium_address"
+        let paramName = "@blockchain_address"
 
         let insertSql =
             String.Format
@@ -275,7 +275,7 @@ module SharedTests =
 
         match Db.getAccountState connectionString (AccountHash address) with // TODO: Use separate account hash.
         | None -> failwith "Unable to get account state."
-        | Some accountState -> test <@ ChainiumAddress accountState.ControllerAddress = wallet.Address @>
+        | Some accountState -> test <@ BlockchainAddress accountState.ControllerAddress = wallet.Address @>
 
     let setAccountControllerTest engineType connectionString =
         // ARRANGE
@@ -285,7 +285,7 @@ module SharedTests =
         let newController = Signing.generateWallet()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
-        let (ChainiumAddress validatorAddress) =
+        let (BlockchainAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
             |> addressFromPrivateKey
@@ -345,7 +345,7 @@ module SharedTests =
         let newController = Signing.generateWallet()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
-        let (ChainiumAddress validatorAddress) =
+        let (BlockchainAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
             |> addressFromPrivateKey
@@ -404,7 +404,7 @@ module SharedTests =
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
-        let (ChainiumAddress validatorAddress) =
+        let (BlockchainAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
             |> addressFromPrivateKey
@@ -464,7 +464,7 @@ module SharedTests =
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
-        let (ChainiumAddress validatorAddress) =
+        let (BlockchainAddress validatorAddress) =
             Config.ValidatorPrivateKey
             |> PrivateKey
             |> addressFromPrivateKey
@@ -524,7 +524,7 @@ module SharedTests =
         let initialValidatorChxBalance = 0m
 
         Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
-        let (ChainiumAddress validatorAddress) = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
+        let (BlockchainAddress validatorAddress) = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
@@ -536,7 +536,7 @@ module SharedTests =
                     ActionData =
                         {
                             DelegateStakeTxActionDto.ValidatorAddress =
-                                stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                                stakeValidatorAddress |> fun (BlockchainAddress a) -> a
                             Amount = stakeAmount
                         }
                 }

@@ -1,4 +1,4 @@
-﻿namespace Chainium.Blockchain.Public.Node
+﻿namespace Own.Blockchain.Public.Node
 
 open System
 open Microsoft.AspNetCore.Builder
@@ -6,12 +6,12 @@ open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Core.Events
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.Events
 
 module Api =
 
@@ -60,19 +60,19 @@ module Api =
             return! response next ctx
         }
 
-    let getAddressHandler chxAddress : HttpHandler = fun next ctx ->
+    let getAddressHandler blockchainAddress : HttpHandler = fun next ctx ->
         task {
             let response =
-                Composition.getAddressApi (ChainiumAddress chxAddress)
+                Composition.getAddressApi (BlockchainAddress blockchainAddress)
                 |> toApiResponse
 
             return! response next ctx
         }
 
-    let getAddressAccountsHandler chxAddress : HttpHandler = fun next ctx ->
+    let getAddressAccountsHandler blockchainAddress : HttpHandler = fun next ctx ->
         task {
             let response =
-                Composition.getAddressAccountsApi (ChainiumAddress chxAddress)
+                Composition.getAddressAccountsApi (BlockchainAddress blockchainAddress)
                 |> toApiResponse
 
             return! response next ctx
@@ -100,8 +100,8 @@ module Api =
                 route "/" >=> text "TODO: Show link to the help page"
                 routef "/tx/%s" (fun txHash -> getTxHandler txHash)
                 routef "/block/%d" (fun blockNumber -> getBlockHandler blockNumber)
-                routef "/address/%s/accounts" (fun chainiumAddress -> getAddressAccountsHandler chainiumAddress)
-                routef "/address/%s" (fun chainiumAddress -> getAddressHandler chainiumAddress)
+                routef "/address/%s/accounts" (fun blockchainAddress -> getAddressAccountsHandler blockchainAddress)
+                routef "/address/%s" (fun blockchainAddress -> getAddressHandler blockchainAddress)
                 routef "/account/%s" (fun accountHash -> getAccountHandler accountHash)
             ]
             POST >=> choose [

@@ -1,10 +1,10 @@
-namespace Chainium.Blockchain.Public.Faucet
+namespace Own.Blockchain.Public.Faucet
 
 open System
 open System.IO
 open System.Reflection
 open Microsoft.Extensions.Configuration
-open Chainium.Blockchain.Common
+open Own.Blockchain.Common
 
 type Config () =
 

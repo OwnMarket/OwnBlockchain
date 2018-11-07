@@ -1,10 +1,10 @@
-﻿namespace Chainium.Blockchain.Public.Crypto.Tests
+﻿namespace Own.Blockchain.Public.Crypto.Tests
 
 open System.Security.Cryptography
 open Xunit
 open Swensen.Unquote
-open Chainium.Blockchain.Public.Crypto
-open Chainium.Blockchain.Public.Crypto.MerkleTree
+open Own.Blockchain.Public.Crypto
+open Own.Blockchain.Public.Crypto.MerkleTree
 
 module MerkleTreeTests =
 

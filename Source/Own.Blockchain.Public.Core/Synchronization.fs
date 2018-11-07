@@ -1,11 +1,11 @@
-namespace Chainium.Blockchain.Public.Core
+namespace Own.Blockchain.Public.Core
 
 open System
 open System.Threading
 open System.Collections.Concurrent
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
 
 module Synchronization =
 

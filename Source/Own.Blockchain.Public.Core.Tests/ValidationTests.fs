@@ -1,17 +1,17 @@
-﻿namespace Chainium.Blockchain.Public.Core.Tests
+﻿namespace Own.Blockchain.Public.Core.Tests
 
 open System
 open Xunit
 open Swensen.Unquote
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Crypto
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Crypto
 
 module ValidationTests =
 
-    let chAddress = ChainiumAddress "CHaLUjmvaJs2Yn6dyrLpsjVzcpWg6GENkEw"
+    let chAddress = BlockchainAddress "CHaLUjmvaJs2Yn6dyrLpsjVzcpWg6GENkEw"
     let txHash = TxHash "SampleHash"
     let transferChxActionType = "TransferChx"
     let transferAssetActionType = "TransferAsset"
@@ -28,7 +28,7 @@ module ValidationTests =
     let ``Validation.validateTx BasicValidation single validation error`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = -10L
             Fee = 20m
             Actions =
@@ -38,7 +38,7 @@ module ValidationTests =
                         ActionData =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
                                 Amount = 20m
                             }
                     }
@@ -56,7 +56,7 @@ module ValidationTests =
         }
 
         let expMessage = AppError "Nonce must be positive."
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -78,7 +78,7 @@ module ValidationTests =
                         ActionData =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
                                 Amount = 20m
                             }
                     }
@@ -95,7 +95,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -105,7 +105,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx BasicValidation unknown action type`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -117,7 +117,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -128,7 +128,7 @@ module ValidationTests =
     let ``Validation.validateTx TransferChx invalid Amount`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -138,14 +138,14 @@ module ValidationTests =
                         ActionData =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
                                 Amount = 0m
                             }
                     }
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -155,7 +155,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferChx invalid RecipientAddress`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -171,7 +171,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -181,7 +181,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid FromAccount`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -199,7 +199,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -209,7 +209,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid ToAccount`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -227,7 +227,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -237,7 +237,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid Asset`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -255,7 +255,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -265,7 +265,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid Amount`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -283,7 +283,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -294,7 +294,7 @@ module ValidationTests =
     let ``Validation.validateTx validate action`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -304,7 +304,7 @@ module ValidationTests =
                         ActionData =
                             {
                                 TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
                                 Amount = 10m
                             }
                     }
@@ -321,7 +321,7 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidChainiumAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t ->
@@ -336,7 +336,7 @@ module ValidationTests =
             test <@ t.TxHash = txHash @>
             test <@ t.Sender = chAddress @>
             test <@ actualChx.Amount = ChxAmount expectedChx.Amount @>
-            test <@ actualChx.RecipientAddress = ChainiumAddress expectedChx.RecipientAddress @>
+            test <@ actualChx.RecipientAddress = BlockchainAddress expectedChx.RecipientAddress @>
             test <@ actualAsset.FromAccountHash = AccountHash expAsset.FromAccount @>
             test <@ actualAsset.ToAccountHash = AccountHash expAsset.ToAccount @>
             test <@ actualAsset.AssetHash = AssetHash expAsset.AssetHash @>
@@ -344,8 +344,8 @@ module ValidationTests =
         | Error errors ->
             failwithf "%A" errors
 
-    let private isValidAddressMock (address : ChainiumAddress) =
-        let item = address |> fun (ChainiumAddress a) -> a
+    let private isValidAddressMock (address : BlockchainAddress) =
+        let item = address |> fun (BlockchainAddress a) -> a
         String.IsNullOrWhiteSpace(item) |> not
 
     [<Fact>]
@@ -358,7 +358,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -388,7 +388,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -408,7 +408,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx CreateAccount valid action`` () =
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -428,7 +428,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx CreateAsset valid action`` () =
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -450,11 +450,11 @@ module ValidationTests =
         let expected =
             {
                 SetAccountControllerTxActionDto.AccountHash = "A"
-                ControllerAddress = chAddress |> fun (ChainiumAddress a) -> a
+                ControllerAddress = chAddress |> fun (BlockchainAddress a) -> a
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -470,7 +470,7 @@ module ValidationTests =
         | Ok t ->
             let actual = Helpers.extractActionData<SetAccountControllerTxAction> t.Actions.Head
             test <@ AccountHash expected.AccountHash = actual.AccountHash @>
-            test <@ ChainiumAddress expected.ControllerAddress = actual.ControllerAddress @>
+            test <@ BlockchainAddress expected.ControllerAddress = actual.ControllerAddress @>
         | Error e -> failwithf "%A" e
 
     [<Fact>]
@@ -482,7 +482,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -504,11 +504,11 @@ module ValidationTests =
         let expected =
             {
                 SetAssetControllerTxActionDto.AssetHash = "A"
-                ControllerAddress = chAddress |> fun (ChainiumAddress a) -> a
+                ControllerAddress = chAddress |> fun (BlockchainAddress a) -> a
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -524,7 +524,7 @@ module ValidationTests =
         | Ok t ->
             let actual = Helpers.extractActionData<SetAssetControllerTxAction> t.Actions.Head
             test <@ AssetHash expected.AssetHash = actual.AssetHash @>
-            test <@ ChainiumAddress expected.ControllerAddress = actual.ControllerAddress @>
+            test <@ BlockchainAddress expected.ControllerAddress = actual.ControllerAddress @>
         | Error e -> failwithf "%A" e
 
     [<Fact>]
@@ -536,7 +536,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -562,7 +562,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -590,7 +590,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -615,7 +615,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -641,7 +641,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -667,7 +667,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -682,7 +682,7 @@ module ValidationTests =
         match Validation.validateTx isValidAddressMock Helpers.minTxActionFee chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<DelegateStakeTxAction> t.Actions.Head
-            test <@ ChainiumAddress expected.ValidatorAddress = actual.ValidatorAddress @>
+            test <@ BlockchainAddress expected.ValidatorAddress = actual.ValidatorAddress @>
             test <@ ChxAmount expected.Amount = actual.Amount @>
         | Error e -> failwithf "%A" e
 
@@ -695,7 +695,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (ChainiumAddress a) -> a
+            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
             Nonce = 10L
             Fee = 1m
             Actions =

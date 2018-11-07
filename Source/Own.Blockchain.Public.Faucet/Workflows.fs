@@ -1,17 +1,17 @@
-namespace Chainium.Blockchain.Public.Faucet
+namespace Own.Blockchain.Public.Faucet
 
 open System
 open System.Collections.Concurrent
 open Giraffe
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Crypto
-open Chainium.Blockchain.Public.Faucet.Dtos
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Crypto
+open Own.Blockchain.Public.Faucet.Dtos
 
 module Workflows =
 
-    let private chxClaimQueue = new ConcurrentQueue<ChainiumAddress>()
+    let private chxClaimQueue = new ConcurrentQueue<BlockchainAddress>()
     let private assetClaimQueue = new ConcurrentQueue<AccountHash>()
 
     let private getEntriesFromQueue distributionBatchSize (queue : ConcurrentQueue<'T>) =
@@ -40,11 +40,11 @@ module Workflows =
             signature
 
     let private composeAndSubmitTx
-        (getAddressNonce : ChainiumAddress -> Nonce)
+        (getAddressNonce : BlockchainAddress -> Nonce)
         (submitTx : string -> string)
         (signTx : PrivateKey -> byte[] -> Signature)
         (faucetSupplyHolderPrivateKey : PrivateKey)
-        (faucetSupplyHolderAddress : ChainiumAddress)
+        (faucetSupplyHolderAddress : BlockchainAddress)
         (ChxAmount txFee)
         distributionBatchSize
         createAction
@@ -74,7 +74,7 @@ module Workflows =
             |> Some
 
     let claimChx (ChxAmount claimableAmount) (requestDto : ClaimChxRequestDto) : Result<string, AppErrors> =
-        let address = ChainiumAddress requestDto.ChainiumAddress
+        let address = BlockchainAddress requestDto.BlockchainAddress
 
         if chxClaimQueue |> Seq.contains address then
             Result.appError "Address is already in the queue."
@@ -108,7 +108,7 @@ module Workflows =
         (ChxAmount chxAmountPerAddress)
         =
 
-        let createAction (ChainiumAddress address) =
+        let createAction (BlockchainAddress address) =
             sprintf """{ActionType: "TransferChx", ActionData: {RecipientAddress: "%s", Amount: %s}}"""
                 address
                 (chxAmountPerAddress.ToString())

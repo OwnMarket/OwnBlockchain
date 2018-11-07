@@ -1,7 +1,7 @@
-namespace Chainium.Blockchain.Public.Faucet
+namespace Own.Blockchain.Public.Faucet
 
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Crypto
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Crypto
 
 module Composition =
 
@@ -19,7 +19,7 @@ module Composition =
             submitTx
             Signing.signMessage
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
-            (ChainiumAddress Config.FaucetSupplyHolderAddress)
+            (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)
             (int Config.DistributionBatchSize)
             (ChxAmount Config.MaxClaimableChxAmount)
@@ -30,7 +30,7 @@ module Composition =
             submitTx
             Signing.signMessage
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
-            (ChainiumAddress Config.FaucetSupplyHolderAddress)
+            (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)
             (int Config.DistributionBatchSize)
             (AssetAmount Config.MaxClaimableAssetAmount)

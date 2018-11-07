@@ -1,7 +1,7 @@
-namespace Chainium.Blockchain.Public.Data
+namespace Own.Blockchain.Public.Data
 
 open System
-open Chainium.Common
+open Own.Common
 
 type DbChange = {
     Number : int
@@ -44,12 +44,12 @@ module DbChanges =
 
                     CREATE TABLE IF NOT EXISTS chx_balance (
                         chx_balance_id INTEGER NOT NULL,
-                        chainium_address TEXT NOT NULL,
+                        blockchain_address TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
                         nonce BIGINT NOT NULL,
 
                         CONSTRAINT chx_balance__pk PRIMARY KEY (chx_balance_id),
-                        CONSTRAINT chx_balance__uk__chainium_address UNIQUE (chainium_address)
+                        CONSTRAINT chx_balance__uk__blockchain_address UNIQUE (blockchain_address)
                     );
 
                     CREATE TABLE IF NOT EXISTS account (
@@ -166,12 +166,12 @@ module DbChanges =
 
                     CREATE TABLE IF NOT EXISTS chx_balance (
                         chx_balance_id BIGSERIAL NOT NULL,
-                        chainium_address TEXT NOT NULL,
+                        blockchain_address TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
                         nonce BIGINT NOT NULL,
 
                         CONSTRAINT chx_balance__pk PRIMARY KEY (chx_balance_id),
-                        CONSTRAINT chx_balance__uk__chainium_address UNIQUE (chainium_address)
+                        CONSTRAINT chx_balance__uk__blockchain_address UNIQUE (blockchain_address)
                     );
 
                     CREATE TABLE IF NOT EXISTS account (

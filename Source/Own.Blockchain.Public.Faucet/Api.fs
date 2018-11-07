@@ -1,4 +1,4 @@
-namespace Chainium.Blockchain.Public.Faucet
+namespace Own.Blockchain.Public.Faucet
 
 open System
 open Microsoft.AspNetCore.Builder
@@ -6,10 +6,10 @@ open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Faucet.Dtos
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Faucet.Dtos
 
 module Api =
 

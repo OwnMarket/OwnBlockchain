@@ -1,9 +1,9 @@
-﻿namespace Chainium.Blockchain.Public.Core
+﻿namespace Own.Blockchain.Public.Core
 
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module Validation =
 
@@ -25,17 +25,17 @@ module Validation =
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
 
-    let verifyTxSignature verifySignature (txEnvelope : TxEnvelope) : Result<ChainiumAddress, AppErrors> =
+    let verifyTxSignature verifySignature (txEnvelope : TxEnvelope) : Result<BlockchainAddress, AppErrors> =
         match verifySignature txEnvelope.Signature txEnvelope.RawTx with
-        | Some chainiumAddress ->
-            Ok chainiumAddress
+        | Some blockchainAddress ->
+            Ok blockchainAddress
         | None ->
             Result.appError "Cannot verify tx signature."
 
-    let verifyBlockSignature verifySignature (blockEnvelope : BlockEnvelope) : Result<ChainiumAddress, AppErrors> =
+    let verifyBlockSignature verifySignature (blockEnvelope : BlockEnvelope) : Result<BlockchainAddress, AppErrors> =
         match verifySignature blockEnvelope.Signature blockEnvelope.RawBlock with
-        | Some chainiumAddress ->
-            Ok chainiumAddress
+        | Some blockchainAddress ->
+            Ok blockchainAddress
         | None ->
             Result.appError "Cannot verify block signature."
 
@@ -59,7 +59,7 @@ module Validation =
 
             if blockDto.Header.Validator.IsNullOrWhiteSpace() then
                 yield AppError "Block.Header.Validator is missing."
-            elif blockDto.Header.Validator |> ChainiumAddress |> isValidAddress |> not then
+            elif blockDto.Header.Validator |> BlockchainAddress |> isValidAddress |> not then
                 yield AppError "Block.Header.Validator is not valid."
 
             if blockDto.Header.TxSetRoot.IsNullOrWhiteSpace() then
@@ -84,7 +84,7 @@ module Validation =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
                 yield AppError "RecipientAddress is not provided."
-            elif action.RecipientAddress |> ChainiumAddress |> isValidAddress |> not then
+            elif action.RecipientAddress |> BlockchainAddress |> isValidAddress |> not then
                 yield AppError "RecipientAddress is not valid."
 
             if action.Amount <= 0m then
@@ -125,7 +125,7 @@ module Validation =
 
             if action.ControllerAddress.IsNullOrWhiteSpace() then
                 yield AppError "ControllerAddress is not provided."
-            elif action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+            elif action.ControllerAddress |> BlockchainAddress |> isValidAddress |> not then
                 yield AppError "ControllerAddress is not valid."
         ]
 
@@ -136,7 +136,7 @@ module Validation =
 
             if action.ControllerAddress.IsNullOrWhiteSpace() then
                 yield AppError "ControllerAddress is not provided."
-            elif action.ControllerAddress |> ChainiumAddress |> isValidAddress |> not then
+            elif action.ControllerAddress |> BlockchainAddress |> isValidAddress |> not then
                 yield AppError "ControllerAddress is not valid."
         ]
 
@@ -159,7 +159,7 @@ module Validation =
         [
             if action.ValidatorAddress.IsNullOrWhiteSpace() then
                 yield AppError "ValidatorAddress is not provided."
-            elif action.ValidatorAddress |> ChainiumAddress |> isValidAddress |> not then
+            elif action.ValidatorAddress |> BlockchainAddress |> isValidAddress |> not then
                 yield AppError "ValidatorAddress is not valid."
 
             if action.Amount < 0m then
@@ -170,7 +170,7 @@ module Validation =
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private validateTxFields (ChxAmount minTxActionFee) (ChainiumAddress signerAddress) (t : TxDto) =
+    let private validateTxFields (ChxAmount minTxActionFee) (BlockchainAddress signerAddress) (t : TxDto) =
         [
             if t.SenderAddress <> signerAddress then
                 yield AppError "Sender address doesn't match the signature."
@@ -220,7 +220,7 @@ module Validation =
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
 
     let checkIfBalanceCanCoverFees
-        (getAvailableBalance : ChainiumAddress -> ChxAmount)
+        (getAvailableBalance : BlockchainAddress -> ChxAmount)
         getTotalFeeForPendingTxs
         senderAddress
         txFee

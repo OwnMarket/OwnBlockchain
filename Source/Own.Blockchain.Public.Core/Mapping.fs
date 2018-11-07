@@ -1,10 +1,10 @@
-namespace Chainium.Blockchain.Public.Core
+namespace Own.Blockchain.Public.Core
 
 open System
-open Chainium.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Core.Events
+open Own.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.Events
 
 module Mapping =
 
@@ -39,7 +39,7 @@ module Mapping =
         match action.ActionData with
         | :? TransferChxTxActionDto as a ->
             {
-                TransferChxTxAction.RecipientAddress = ChainiumAddress a.RecipientAddress
+                TransferChxTxAction.RecipientAddress = BlockchainAddress a.RecipientAddress
                 Amount = ChxAmount a.Amount
             }
             |> TransferChx
@@ -65,13 +65,13 @@ module Mapping =
         | :? SetAccountControllerTxActionDto as a ->
             {
                 SetAccountControllerTxAction.AccountHash = AccountHash a.AccountHash
-                ControllerAddress = ChainiumAddress a.ControllerAddress
+                ControllerAddress = BlockchainAddress a.ControllerAddress
             }
             |> SetAccountController
         | :? SetAssetControllerTxActionDto as a ->
             {
                 SetAssetControllerTxAction.AssetHash = AssetHash a.AssetHash
-                ControllerAddress = ChainiumAddress a.ControllerAddress
+                ControllerAddress = BlockchainAddress a.ControllerAddress
             }
             |> SetAssetController
         | :? SetAssetCodeTxActionDto as a ->
@@ -87,7 +87,7 @@ module Mapping =
             |> SetValidatorNetworkAddress
         | :? DelegateStakeTxActionDto as a ->
             {
-                DelegateStakeTxAction.ValidatorAddress = ChainiumAddress a.ValidatorAddress
+                DelegateStakeTxAction.ValidatorAddress = BlockchainAddress a.ValidatorAddress
                 Amount = ChxAmount a.Amount
             }
             |> DelegateStake
@@ -106,7 +106,7 @@ module Mapping =
     let txToTxInfoDto (tx : Tx) : TxInfoDto =
         {
             TxHash = tx.TxHash |> (fun (TxHash h) -> h)
-            SenderAddress = tx.Sender |> (fun (ChainiumAddress a) -> a)
+            SenderAddress = tx.Sender |> (fun (BlockchainAddress a) -> a)
             Nonce = tx.Nonce |> (fun (Nonce n) -> n)
             Fee = tx.Fee |> (fun (ChxAmount a) -> a)
             ActionCount = Convert.ToInt16 tx.Actions.Length
@@ -115,7 +115,7 @@ module Mapping =
     let pendingTxInfoFromDto (dto : PendingTxInfoDto) : PendingTxInfo =
         {
             TxHash = TxHash dto.TxHash
-            Sender = ChainiumAddress dto.SenderAddress
+            Sender = BlockchainAddress dto.SenderAddress
             Nonce = Nonce dto.Nonce
             Fee = ChxAmount dto.Fee
             ActionCount = dto.ActionCount
@@ -173,7 +173,7 @@ module Mapping =
             PreviousHash = BlockHash dto.PreviousHash
             ConfigurationBlockNumber = BlockNumber dto.ConfigurationBlockNumber
             Timestamp = Timestamp dto.Timestamp
-            Validator = ChainiumAddress dto.Validator
+            Validator = BlockchainAddress dto.Validator
             TxSetRoot = MerkleTreeRoot dto.TxSetRoot
             TxResultSetRoot = MerkleTreeRoot dto.TxResultSetRoot
             StateRoot = MerkleTreeRoot dto.StateRoot
@@ -187,7 +187,7 @@ module Mapping =
             PreviousHash = block.PreviousHash |> fun (BlockHash h) -> h
             ConfigurationBlockNumber = block.ConfigurationBlockNumber |> fun (BlockNumber n) -> n
             Timestamp = block.Timestamp |> fun (Timestamp t) -> t
-            Validator = block.Validator |> fun (ChainiumAddress a) -> a
+            Validator = block.Validator |> fun (BlockchainAddress a) -> a
             TxSetRoot = block.TxSetRoot |> fun (MerkleTreeRoot r) -> r
             TxResultSetRoot = block.TxResultSetRoot |> fun (MerkleTreeRoot r) -> r
             StateRoot = block.StateRoot |> fun (MerkleTreeRoot r) -> r
@@ -196,14 +196,14 @@ module Mapping =
 
     let validatorSnapshotFromDto (dto : ValidatorSnapshotDto) : ValidatorSnapshot =
         {
-            ValidatorAddress = ChainiumAddress dto.ValidatorAddress
+            ValidatorAddress = BlockchainAddress dto.ValidatorAddress
             NetworkAddress = dto.NetworkAddress
             TotalStake = ChxAmount dto.TotalStake
         }
 
     let validatorSnapshotToDto (snapshot : ValidatorSnapshot) : ValidatorSnapshotDto =
         {
-            ValidatorAddress = snapshot.ValidatorAddress |> fun (ChainiumAddress a) -> a
+            ValidatorAddress = snapshot.ValidatorAddress |> fun (BlockchainAddress a) -> a
             NetworkAddress = snapshot.NetworkAddress
             TotalStake = snapshot.TotalStake |> fun (ChxAmount a) -> a
         }
@@ -285,12 +285,12 @@ module Mapping =
 
     let accountStateFromDto (dto : AccountStateDto) : AccountState =
         {
-            ControllerAddress = ChainiumAddress dto.ControllerAddress
+            ControllerAddress = BlockchainAddress dto.ControllerAddress
         }
 
     let accountStateToDto (state : AccountState) : AccountStateDto =
         {
-            ControllerAddress = state.ControllerAddress |> fun (ChainiumAddress a) -> a
+            ControllerAddress = state.ControllerAddress |> fun (BlockchainAddress a) -> a
         }
 
     let assetStateFromDto (dto : AssetStateDto) : AssetState =
@@ -300,13 +300,13 @@ module Mapping =
                     None
                 else
                     dto.AssetCode |> AssetCode |> Some
-            ControllerAddress = ChainiumAddress dto.ControllerAddress
+            ControllerAddress = BlockchainAddress dto.ControllerAddress
         }
 
     let assetStateToDto (state : AssetState) : AssetStateDto =
         {
             AssetCode = state.AssetCode |> Option.map (fun (AssetCode c) -> c) |> Option.toObj
-            ControllerAddress = state.ControllerAddress |> fun (ChainiumAddress a) -> a
+            ControllerAddress = state.ControllerAddress |> fun (BlockchainAddress a) -> a
         }
 
     let validatorStateFromDto (dto : ValidatorStateDto) : ValidatorState =
@@ -339,7 +339,7 @@ module Mapping =
         let chxBalances =
             output.ChxBalances
             |> Map.toList
-            |> List.map (fun (ChainiumAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
+            |> List.map (fun (BlockchainAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
             |> Map.ofList
 
         let holdings =
@@ -363,13 +363,13 @@ module Mapping =
         let validators =
             output.Validators
             |> Map.toList
-            |> List.map (fun (ChainiumAddress a, s : ValidatorState) -> a, validatorStateToDto s)
+            |> List.map (fun (BlockchainAddress a, s : ValidatorState) -> a, validatorStateToDto s)
             |> Map.ofList
 
         let stakes =
             output.Stakes
             |> Map.toList
-            |> List.map (fun ((ChainiumAddress sa, ChainiumAddress va), s : StakeState) -> (sa, va), stakeStateToDto s)
+            |> List.map (fun ((BlockchainAddress sa, BlockchainAddress va), s : StakeState) -> (sa, va), stakeStateToDto s)
             |> Map.ofList
 
         {
@@ -395,12 +395,12 @@ module Mapping =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let chxBalanceStateDtoToGetAddressApiResponseDto
-        (ChainiumAddress chainiumAddress)
+        (BlockchainAddress blockchainAddress)
         (chxBalanceState : ChxBalanceStateDto)
         =
 
         {
-            GetAddressApiResponseDto.ChainiumAddress = chainiumAddress
+            GetAddressApiResponseDto.BlockchainAddress = blockchainAddress
             GetAddressApiResponseDto.Balance = chxBalanceState.Amount
             GetAddressApiResponseDto.Nonce = chxBalanceState.Nonce
         }
@@ -443,7 +443,7 @@ module Mapping =
 
     let txToGetTxApiResponseDto
         (TxHash txHash)
-        (ChainiumAddress senderAddress)
+        (BlockchainAddress senderAddress)
         (txDto : TxDto)
         (txResult : TxResultDto option)
         =

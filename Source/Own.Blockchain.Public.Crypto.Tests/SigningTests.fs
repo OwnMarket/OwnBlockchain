@@ -1,13 +1,13 @@
-﻿namespace Chainium.Blockchain.Public.Crypto.Tests
+﻿namespace Own.Blockchain.Public.Crypto.Tests
 
 open System
 open System.Text
 open Xunit
 open Swensen.Unquote
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Crypto
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Crypto
+open Own.Blockchain.Public.Core.DomainTypes
 
 module SigningTests =
 
@@ -25,7 +25,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.generateWallet produces address starting with "CH"`` () =
         for _ in [1 .. 100] do
-            let (ChainiumAddress address) = (Signing.generateWallet ()).Address
+            let (BlockchainAddress address) = (Signing.generateWallet ()).Address
             test <@ address.StartsWith("CH") @>
 
     [<Fact>]
@@ -53,7 +53,7 @@ module SigningTests =
 
         let expected =
             keys
-            |> List.map (snd >> ChainiumAddress)
+            |> List.map (snd >> BlockchainAddress)
 
         let actual =
             keys
@@ -106,7 +106,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.signMessage same message for multiple users`` () =
         let numOfReps = 100
-        let messageToSign = Conversion.stringToBytes "Chainium"
+        let messageToSign = Conversion.stringToBytes "Own"
 
         let generateSignature () =
             let wallet = Signing.generateWallet ()
@@ -121,7 +121,7 @@ module SigningTests =
 
     [<Fact>]
     let ``Signing.verifyMessage sign, verify message and check if resulting adress is same`` () =
-        let messageToSign = Conversion.stringToBytes "Chainium"
+        let messageToSign = Conversion.stringToBytes "Own"
         let wallet = Signing.generateWallet ()
 
         let signature = Signing.signMessage wallet.PrivateKey messageToSign
@@ -131,7 +131,7 @@ module SigningTests =
 
     [<Fact>]
     let ``Signing.verifyMessage sign, verify mutiple messages and check if resulting adress is same`` () =
-        let messagePrefix = "Chainium"
+        let messagePrefix = "Own"
 
         let wallet = Signing.generateWallet ()
 
@@ -145,7 +145,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.verifyMessage sign, verify random generated longer messages`` () =
         let privateKey = PrivateKey "9DeKWSbveJnzgawry3SG6uby3xE1s26UR4X5uXwdG8WT"
-        let expectedAddress = Some (ChainiumAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG")
+        let expectedAddress = Some (BlockchainAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG")
 
         let generateRandomMessageAndTest messageSize =
             let message = Signing.generateRandomBytes messageSize

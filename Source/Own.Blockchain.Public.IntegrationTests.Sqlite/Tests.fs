@@ -1,9 +1,9 @@
-namespace Chainium.Blockchain.Public.IntegrationTests.Sqlite
+namespace Own.Blockchain.Public.IntegrationTests.Sqlite
 
 open System
 open Xunit
-open Chainium.Blockchain.Public.Node
-open Chainium.Blockchain.Public.IntegrationTests.Common
+open Own.Blockchain.Public.Node
+open Own.Blockchain.Public.IntegrationTests.Common
 
 module Tests =
 

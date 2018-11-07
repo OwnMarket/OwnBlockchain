@@ -1,12 +1,12 @@
-namespace Chainium.Blockchain.Public.Node
+namespace Own.Blockchain.Public.Node
 
 open System
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Events
-open Chainium.Blockchain.Public.Net
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Events
+open Own.Blockchain.Public.Net
 
 module Workers =
 

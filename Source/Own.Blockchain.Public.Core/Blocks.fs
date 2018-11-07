@@ -1,11 +1,11 @@
-namespace Chainium.Blockchain.Public.Core
+namespace Own.Blockchain.Public.Core
 
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Common.Conversion
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Common.Conversion
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module Blocks =
 
@@ -26,7 +26,7 @@ module Blocks =
         |> Array.concat
         |> createHash
 
-    let createChxBalanceStateHash decodeHash createHash (ChainiumAddress address, state : ChxBalanceState) =
+    let createChxBalanceStateHash decodeHash createHash (BlockchainAddress address, state : ChxBalanceState) =
         let (ChxAmount amount) = state.Amount
         let (Nonce nonce) = state.Nonce
 
@@ -60,7 +60,7 @@ module Blocks =
         (AccountHash accountHash, state : AccountState)
         =
 
-        let addressBytes = state.ControllerAddress |> fun (ChainiumAddress a) -> decodeHash a
+        let addressBytes = state.ControllerAddress |> fun (BlockchainAddress a) -> decodeHash a
 
         [
             decodeHash accountHash
@@ -75,7 +75,7 @@ module Blocks =
         (AssetHash assetHash, state : AssetState)
         =
 
-        let addressBytes = state.ControllerAddress |> fun (ChainiumAddress a) -> decodeHash a
+        let addressBytes = state.ControllerAddress |> fun (BlockchainAddress a) -> decodeHash a
         let assetCodeBytes =
             match state.AssetCode with
             | Some (AssetCode code) -> code |> stringToBytes |> createHash |> decodeHash
@@ -92,7 +92,7 @@ module Blocks =
     let createValidatorStateHash
         decodeHash
         createHash
-        (ChainiumAddress validatorAddress, state : ValidatorState)
+        (BlockchainAddress validatorAddress, state : ValidatorState)
         =
 
         [
@@ -108,7 +108,7 @@ module Blocks =
         (validatorSnapshot : ValidatorSnapshot)
         =
 
-        let (ChainiumAddress validatorAddress) = validatorSnapshot.ValidatorAddress
+        let (BlockchainAddress validatorAddress) = validatorSnapshot.ValidatorAddress
         let (ChxAmount totalStake) = validatorSnapshot.TotalStake
 
         [
@@ -122,7 +122,7 @@ module Blocks =
     let createStakeStateHash
         decodeHash
         createHash
-        (ChainiumAddress stakeholderAddress, ChainiumAddress validatorAddress, state : StakeState)
+        (BlockchainAddress stakeholderAddress, BlockchainAddress validatorAddress, state : StakeState)
         =
 
         let (ChxAmount amount) = state.Amount
@@ -141,7 +141,7 @@ module Blocks =
         (BlockNumber blockNumber)
         (BlockHash previousBlockHash)
         (Timestamp timestamp)
-        (ChainiumAddress validator)
+        (BlockchainAddress validator)
         (MerkleTreeRoot txSetRoot)
         (MerkleTreeRoot txResultSetRoot)
         (MerkleTreeRoot stateRoot)
@@ -166,7 +166,7 @@ module Blocks =
         (decodeHash : string -> byte[])
         (createHash : byte[] -> string)
         (createMerkleTree : string list -> MerkleTreeRoot)
-        (validator : ChainiumAddress)
+        (validator : BlockchainAddress)
         (blockNumber : BlockNumber)
         (timestamp : Timestamp)
         (previousBlockHash : BlockHash)
@@ -295,7 +295,7 @@ module Blocks =
     let createGenesisState
         genesisChxSupply
         genesisAddress
-        (genesisValidators : Map<ChainiumAddress, ValidatorState>)
+        (genesisValidators : Map<BlockchainAddress, ValidatorState>)
         : ProcessingOutput
         =
 

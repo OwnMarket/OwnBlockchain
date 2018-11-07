@@ -1,9 +1,9 @@
-namespace Chainium.Blockchain.Public.Faucet.Dtos
+namespace Own.Blockchain.Public.Faucet.Dtos
 
 open System
 
 type ClaimChxRequestDto = {
-    ChainiumAddress : string
+    BlockchainAddress : string
 }
 
 type ClaimAssetRequestDto = {

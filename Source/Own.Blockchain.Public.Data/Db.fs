@@ -1,11 +1,11 @@
-namespace Chainium.Blockchain.Public.Data
+namespace Own.Blockchain.Public.Data
 
 open System
 open System.Data.Common
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module Db =
 
@@ -107,7 +107,7 @@ module Db =
         | [tx] -> Some tx
         | _ -> failwithf "Multiple Txs found for hash %A" txHash
 
-    let getTotalFeeForPendingTxs (dbConnectionString : string) (ChainiumAddress senderAddress) : ChxAmount =
+    let getTotalFeeForPendingTxs (dbConnectionString : string) (BlockchainAddress senderAddress) : ChxAmount =
         let sql =
             """
             SELECT SUM(fee * action_count)
@@ -150,12 +150,12 @@ module Db =
         |> List.tryHead
         |> Option.map (fun item -> Timestamp item.BlockTimestamp)
 
-    let getChxBalanceState (dbConnectionString : string) (ChainiumAddress address) : ChxBalanceStateDto option =
+    let getChxBalanceState (dbConnectionString : string) (BlockchainAddress address) : ChxBalanceStateDto option =
         let sql =
             """
             SELECT amount, nonce
             FROM chx_balance
-            WHERE chainium_address = @address
+            WHERE blockchain_address = @address
             """
 
         let sqlParams =
@@ -165,12 +165,12 @@ module Db =
 
         match DbTools.query<ChxBalanceStateDto> dbConnectionString sql sqlParams with
         | [] -> None
-        | [chxAddressDetails] -> Some chxAddressDetails
+        | [state] -> Some state
         | _ -> failwithf "Multiple CHX balance entries found for address %A" address
 
     let getAddressAccounts
         (dbConnectionString : string)
-        (ChainiumAddress address)
+        (BlockchainAddress address)
         : AccountHash list
         =
 
@@ -306,7 +306,7 @@ module Db =
         | [assetHash] -> assetHash |> AssetHash |> Some
         | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
 
-    let getValidatorState (dbConnectionString : string) (ChainiumAddress validatorAddress) : ValidatorStateDto option =
+    let getValidatorState (dbConnectionString : string) (BlockchainAddress validatorAddress) : ValidatorStateDto option =
         let sql =
             """
             SELECT network_address
@@ -354,7 +354,7 @@ module Db =
 
     let getStakeState
         (dbConnectionString : string)
-        (ChainiumAddress stakeholderAddress, ChainiumAddress validatorAddress)
+        (BlockchainAddress stakeholderAddress, BlockchainAddress validatorAddress)
         : StakeStateDto option
         =
 
@@ -377,7 +377,7 @@ module Db =
         | [stakeState] -> Some stakeState
         | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakeholderAddress validatorAddress
 
-    let getTotalChxStaked (dbConnectionString : string) (ChainiumAddress stakeholderAddress) : ChxAmount =
+    let getTotalChxStaked (dbConnectionString : string) (BlockchainAddress stakeholderAddress) : ChxAmount =
         let sql =
             """
             SELECT sum(amount)
@@ -559,13 +559,13 @@ module Db =
     let private addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO chx_balance (chainium_address, amount, nonce)
-            VALUES (@chainiumAddress, @amount, @nonce)
+            INSERT INTO chx_balance (blockchain_address, amount, nonce)
+            VALUES (@blockchainAddress, @amount, @nonce)
             """
 
         let sqlParams =
             [
-                "@chainiumAddress", chxBalanceInfo.ChainiumAddress |> box
+                "@blockchainAddress", chxBalanceInfo.BlockchainAddress |> box
                 "@amount", chxBalanceInfo.ChxBalanceState.Amount |> box
                 "@nonce", chxBalanceInfo.ChxBalanceState.Nonce |> box
             ]
@@ -584,12 +584,12 @@ module Db =
             """
             UPDATE chx_balance
             SET amount = @amount, nonce = @nonce
-            WHERE chainium_address = @chainiumAddress
+            WHERE blockchain_address = @blockchainAddress
             """
 
         let sqlParams =
             [
-                "@chainiumAddress", chxBalanceInfo.ChainiumAddress |> box
+                "@blockchainAddress", chxBalanceInfo.BlockchainAddress |> box
                 "@amount", chxBalanceInfo.ChxBalanceState.Amount |> box
                 "@nonce", chxBalanceInfo.ChxBalanceState.Nonce |> box
             ]
@@ -611,11 +611,11 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (chainiumAddress, chxBalanceState : ChxBalanceStateDto) =
+        let foldFn result (blockchainAddress, chxBalanceState : ChxBalanceStateDto) =
             result
             >>= fun _ ->
                 {
-                    ChainiumAddress = chainiumAddress
+                    BlockchainAddress = blockchainAddress
                     ChxBalanceState =
                         {
                             Amount = chxBalanceState.Amount

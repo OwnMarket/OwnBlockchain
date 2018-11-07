@@ -1,4 +1,4 @@
-﻿namespace Chainium.Blockchain.Public.Crypto
+﻿namespace Own.Blockchain.Public.Crypto
 
 module MerkleTree =
 

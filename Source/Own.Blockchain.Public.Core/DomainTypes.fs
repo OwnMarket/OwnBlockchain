@@ -1,4 +1,4 @@
-namespace Chainium.Blockchain.Public.Core.DomainTypes
+namespace Own.Blockchain.Public.Core.DomainTypes
 
 open System
 
@@ -7,11 +7,11 @@ open System
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type PrivateKey = PrivateKey of string
-type ChainiumAddress = ChainiumAddress of string
+type BlockchainAddress = BlockchainAddress of string
 
 type WalletInfo = {
     PrivateKey : PrivateKey
-    Address : ChainiumAddress
+    Address : BlockchainAddress
 }
 
 type Signature = Signature of string
@@ -35,7 +35,7 @@ type AssetAmount = AssetAmount of decimal
 type TxHash = TxHash of string
 
 type TransferChxTxAction = {
-    RecipientAddress : ChainiumAddress
+    RecipientAddress : BlockchainAddress
     Amount : ChxAmount
 }
 
@@ -54,12 +54,12 @@ type CreateAssetEmissionTxAction = {
 
 type SetAccountControllerTxAction = {
     AccountHash : AccountHash
-    ControllerAddress : ChainiumAddress
+    ControllerAddress : BlockchainAddress
 }
 
 type SetAssetControllerTxAction = {
     AssetHash : AssetHash
-    ControllerAddress : ChainiumAddress
+    ControllerAddress : BlockchainAddress
 }
 
 type SetAssetCodeTxAction = {
@@ -72,7 +72,7 @@ type SetValidatorNetworkAddressTxAction = {
 }
 
 type DelegateStakeTxAction = {
-    ValidatorAddress : ChainiumAddress
+    ValidatorAddress : BlockchainAddress
     Amount : ChxAmount
 }
 
@@ -90,7 +90,7 @@ type TxAction =
 
 type Tx = {
     TxHash : TxHash
-    Sender : ChainiumAddress
+    Sender : BlockchainAddress
     Nonce : Nonce
     Fee : ChxAmount
     Actions : TxAction list
@@ -106,7 +106,7 @@ type TxEnvelope = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type ValidatorSnapshot = {
-    ValidatorAddress : ChainiumAddress
+    ValidatorAddress : BlockchainAddress
     NetworkAddress : string
     TotalStake : ChxAmount
 }
@@ -130,7 +130,7 @@ type BlockHeader = {
     PreviousHash : BlockHash
     ConfigurationBlockNumber : BlockNumber
     Timestamp : Timestamp
-    Validator : ChainiumAddress // Fee beneficiary
+    Validator : BlockchainAddress // Fee beneficiary
     TxSetRoot : MerkleTreeRoot
     TxResultSetRoot : MerkleTreeRoot
     StateRoot : MerkleTreeRoot
@@ -191,7 +191,7 @@ type TxResult = {
 
 type PendingTxInfo = {
     TxHash : TxHash
-    Sender : ChainiumAddress
+    Sender : BlockchainAddress
     Nonce : Nonce
     Fee : ChxAmount
     ActionCount : int16
@@ -208,12 +208,12 @@ type HoldingState = {
 }
 
 type AccountState = {
-    ControllerAddress : ChainiumAddress
+    ControllerAddress : BlockchainAddress
 }
 
 type AssetState = {
     AssetCode : AssetCode option
-    ControllerAddress : ChainiumAddress
+    ControllerAddress : BlockchainAddress
 }
 
 type ValidatorState = {
@@ -226,12 +226,12 @@ type StakeState = {
 
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
-    ChxBalances : Map<ChainiumAddress, ChxBalanceState>
+    ChxBalances : Map<BlockchainAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
-    Validators : Map<ChainiumAddress, ValidatorState>
-    Stakes : Map<ChainiumAddress * ChainiumAddress, StakeState>
+    Validators : Map<BlockchainAddress, ValidatorState>
+    Stakes : Map<BlockchainAddress * BlockchainAddress, StakeState>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

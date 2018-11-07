@@ -1,9 +1,9 @@
 ﻿open System
 open System.Globalization
 open System.Threading
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Wallet
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Wallet
 
 [<EntryPoint>]
 let main argv =

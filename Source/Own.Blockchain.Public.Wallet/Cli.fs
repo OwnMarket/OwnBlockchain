@@ -1,11 +1,11 @@
-namespace Chainium.Blockchain.Public.Wallet
+namespace Own.Blockchain.Public.Wallet
 
 open System
 open System.Text
 open System.Reflection
-open Chainium.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Crypto
+open Own.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Crypto
 
 module Cli =
 
@@ -21,14 +21,14 @@ module Cli =
     let handleGenerateWalletCommand () =
         let wallet = Signing.generateWallet ()
         let (PrivateKey pk) = wallet.PrivateKey
-        let (ChainiumAddress address) = wallet.Address
+        let (BlockchainAddress address) = wallet.Address
         printfn "Private Key: %s\nAddress: %s" pk address
 
     let handleDeriveAddressCommand privateKey =
         privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
         |> PrivateKey
         |> Signing.addressFromPrivateKey
-        |> (fun (ChainiumAddress a) -> printfn "Address: %s" a)
+        |> (fun (BlockchainAddress a) -> printfn "Address: %s" a)
 
     let handleSignMessageCommand privateKey message =
         let privateKey = PrivateKey privateKey

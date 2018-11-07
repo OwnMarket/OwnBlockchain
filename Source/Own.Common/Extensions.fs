@@ -1,4 +1,4 @@
-﻿namespace Chainium.Common
+﻿namespace Own.Common
 
 open System
 open System.Security.Cryptography

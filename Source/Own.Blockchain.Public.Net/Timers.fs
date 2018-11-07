@@ -1,7 +1,7 @@
-﻿namespace Chainium.Blockchain.Public.Net
+﻿namespace Own.Blockchain.Public.Net
 
 open System.Collections.Concurrent
-open Chainium.Common
+open Own.Common
 
 module Timers =
 

@@ -1,9 +1,9 @@
-﻿namespace Chainium.Blockchain.Public.Net.Tests
+﻿namespace Own.Blockchain.Public.Net.Tests
 
 open System.Collections.Concurrent
-open Chainium.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.Dtos
 
 module TransportMock =
 

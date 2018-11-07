@@ -1,11 +1,11 @@
-﻿namespace Chainium.Blockchain.Public.Core.Tests
+﻿namespace Own.Blockchain.Public.Core.Tests
 
 open Xunit
 open Swensen.Unquote
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module SerializationTests =
 
@@ -218,7 +218,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -236,7 +236,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -255,7 +255,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -278,7 +278,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -300,7 +300,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -322,7 +322,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -343,7 +343,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->
@@ -365,7 +365,7 @@ module SerializationTests =
 
         let serializedTx =
             [ expectedTxAction |> box ]
-            |> Helpers.newRawTxDto (ChainiumAddress "SomeAddress") 10L 20m
+            |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 20m
 
         match Serialization.deserializeTx serializedTx with
         | Ok txDto ->

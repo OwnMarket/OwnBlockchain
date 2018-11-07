@@ -1,14 +1,14 @@
-namespace Chainium.Blockchain.Public.Core.Tests
+namespace Own.Blockchain.Public.Core.Tests
 
 open System
 open System.Text
 open Newtonsoft.Json
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Crypto
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Crypto
 
 module DummyHash =
 

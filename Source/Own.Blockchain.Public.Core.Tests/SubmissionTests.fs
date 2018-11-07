@@ -1,15 +1,15 @@
-namespace Chainium.Blockchain.Public.Core.Tests
+namespace Own.Blockchain.Public.Core.Tests
 
 open System
 open Xunit
 open Swensen.Unquote
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Core.Events
-open Chainium.Blockchain.Public.Crypto
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.Events
+open Own.Blockchain.Public.Crypto
 
 module SubmissionTests =
 
@@ -32,7 +32,7 @@ module SubmissionTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
                             Amount = 10m
                         }
                 } :> obj
@@ -40,7 +40,7 @@ module SubmissionTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
                             Amount = 10m
                         }
                 } :> obj
@@ -57,7 +57,7 @@ module SubmissionTests =
                 ]
                 |> Map.ofSeq
 
-            fun (address : ChainiumAddress) ->
+            fun (address : BlockchainAddress) ->
                 data.[address]
 
         let getTotalFeeForPendingTxs _ =
@@ -73,7 +73,7 @@ module SubmissionTests =
         let result =
             Workflows.submitTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.hash
                 getAvailableChxBalance
                 getTotalFeeForPendingTxs

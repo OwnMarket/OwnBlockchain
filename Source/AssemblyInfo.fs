@@ -1,4 +1,4 @@
-namespace Chainium.Blockchain.Public
+namespace Own.Blockchain.Public
 
 open System.Reflection
 

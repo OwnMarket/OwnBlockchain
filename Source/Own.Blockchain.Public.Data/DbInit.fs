@@ -1,4 +1,4 @@
-namespace Chainium.Blockchain.Public.Data
+namespace Own.Blockchain.Public.Data
 
 open System
 open System.Data
@@ -6,8 +6,8 @@ open System.Data.Common
 open System.IO
 open Microsoft.Data.Sqlite
 open Dapper
-open Chainium.Common
-open Chainium.Blockchain.Common
+open Own.Common
+open Own.Blockchain.Common
 
 module DbInit =
 

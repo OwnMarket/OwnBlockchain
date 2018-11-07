@@ -1,8 +1,8 @@
-namespace Chainium.Blockchain.Common
+namespace Own.Blockchain.Common
 
 open System
-open Chainium.Common
-open Chainium.Blockchain.Common
+open Own.Common
+open Own.Blockchain.Common
 
 module Agent =
 

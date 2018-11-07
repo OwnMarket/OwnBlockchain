@@ -1,10 +1,10 @@
-﻿namespace Chainium.Blockchain.Public.Crypto
+﻿namespace Own.Blockchain.Public.Crypto
 
 open System
 open System.Security.Cryptography
 open Base58Check
-open Chainium.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Common
+open Own.Blockchain.Public.Core.DomainTypes
 
 module Hashing =
 
@@ -32,14 +32,14 @@ module Hashing =
         Array.zeroCreate<byte> 32 |> encode
 
     let zeroAddress =
-        Array.zeroCreate<byte> 26 |> encode |> ChainiumAddress
+        Array.zeroCreate<byte> 26 |> encode |> BlockchainAddress
 
     let hash (data : byte[]) =
         data
         |> hashBytes
         |> encode
 
-    let chainiumAddress (publicKey : byte[]) =
+    let blockchainAddress (publicKey : byte[]) =
         let prefix = [| 6uy; 90uy |] // "CH"
 
         let hash =
@@ -56,9 +56,9 @@ module Hashing =
         [prefix; hash; checksum]
         |> Array.concat
         |> encode
-        |> ChainiumAddress
+        |> BlockchainAddress
 
-    let isValidChainiumAddress (ChainiumAddress address) =
+    let isValidBlockchainAddress (BlockchainAddress address) =
         if address.IsNullOrWhiteSpace() || not (address.StartsWith("CH")) then
             false
         else

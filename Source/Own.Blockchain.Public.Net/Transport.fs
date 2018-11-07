@@ -1,11 +1,11 @@
-﻿namespace Chainium.Blockchain.Public.Net
+﻿namespace Own.Blockchain.Public.Net
 
 open System
 open System.Collections.Concurrent
 open System.Collections.Generic
-open Chainium.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.Dtos
 open NetMQ
 open NetMQ.Sockets
 open Newtonsoft.Json

@@ -1,13 +1,13 @@
 ﻿open System
 open System.Globalization
 open System.Threading
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Faucet
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Faucet
 
 [<EntryPoint>]
 let main argv =
-    printfn "Chainium Public Blockchain Faucet"
+    printfn "Own Public Blockchain Faucet"
 
     try
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture

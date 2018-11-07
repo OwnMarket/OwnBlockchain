@@ -1,13 +1,13 @@
-namespace Chainium.Blockchain.Public.Core.Tests
+namespace Own.Blockchain.Public.Core.Tests
 
 open Xunit
 open Swensen.Unquote
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Crypto
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Crypto
 
 module ProcessingTests =
 
@@ -28,7 +28,7 @@ module ProcessingTests =
                 ]
                 |> Map.ofSeq
 
-            fun (address : ChainiumAddress) -> data |> Map.tryFind address
+            fun (address : BlockchainAddress) -> data |> Map.tryFind address
 
         let getAvailableChxBalance address =
             (getChxBalanceState address).Value.Amount
@@ -74,7 +74,7 @@ module ProcessingTests =
                 ]
                 |> Map.ofSeq
 
-            fun (address : ChainiumAddress) -> data |> Map.tryFind address
+            fun (address : BlockchainAddress) -> data |> Map.tryFind address
 
         let getAvailableChxBalance =
             let data =
@@ -84,7 +84,7 @@ module ProcessingTests =
                 ]
                 |> Map.ofSeq
 
-            fun (address : ChainiumAddress) -> data.[address]
+            fun (address : BlockchainAddress) -> data.[address]
 
         let txSet =
             [
@@ -116,7 +116,7 @@ module ProcessingTests =
                 ]
                 |> Map.ofSeq
 
-            fun (address : ChainiumAddress) -> data.[address]
+            fun (address : BlockchainAddress) -> data.[address]
 
         let txSet =
             [
@@ -165,7 +165,7 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
                             Amount = amountToTransfer |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -204,7 +204,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -259,7 +259,7 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
                             Amount = amountToTransfer |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -298,7 +298,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -354,7 +354,7 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
                             Amount = amountToTransfer |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -393,7 +393,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -449,7 +449,7 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
                             Amount = amountToTransfer |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -487,7 +487,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -533,7 +533,7 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (ChainiumAddress a) -> a
+                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
                             Amount = amountToTransfer |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -576,7 +576,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -685,7 +685,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -790,7 +790,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -901,7 +901,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1009,7 +1009,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1110,7 +1110,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1210,7 +1210,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1306,7 +1306,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1404,7 +1404,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1501,7 +1501,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1566,7 +1566,7 @@ module ProcessingTests =
 
         let accountHash =
             [
-                senderWallet.Address |> fun (ChainiumAddress a) -> Hashing.decode a
+                senderWallet.Address |> fun (BlockchainAddress a) -> Hashing.decode a
                 nonce |> fun (Nonce n) -> Conversion.int64ToBytes n
                 1s |> Conversion.int16ToBytes
             ]
@@ -1603,7 +1603,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1666,7 +1666,7 @@ module ProcessingTests =
 
         let assetHash =
             [
-                senderWallet.Address |> fun (ChainiumAddress a) -> Hashing.decode a
+                senderWallet.Address |> fun (BlockchainAddress a) -> Hashing.decode a
                 nonce |> fun (Nonce n) -> Conversion.int64ToBytes n
                 1s |> Conversion.int16ToBytes
             ]
@@ -1703,7 +1703,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1761,7 +1761,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AccountHash = accountHash |> fun (AccountHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
                         }
                 } :> obj
             ]
@@ -1799,7 +1799,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1852,7 +1852,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AccountHash = accountHash |> fun (AccountHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
                         }
                 } :> obj
             ]
@@ -1890,7 +1890,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -1948,7 +1948,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AccountHash = accountHash |> fun (AccountHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
                         }
                 } :> obj
             ]
@@ -1986,7 +1986,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2048,7 +2048,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash |> fun (AssetHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
                         }
                 } :> obj
             ]
@@ -2086,7 +2086,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2139,7 +2139,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash |> fun (AssetHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
                         }
                 } :> obj
             ]
@@ -2177,7 +2177,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2235,7 +2235,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash |> fun (AssetHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (ChainiumAddress a) -> a
+                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
                         }
                 } :> obj
             ]
@@ -2273,7 +2273,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2373,7 +2373,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2464,7 +2464,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2560,7 +2560,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2657,7 +2657,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2746,7 +2746,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2803,7 +2803,7 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
                             Amount = stakeAmount |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -2842,7 +2842,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2894,7 +2894,7 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
                             Amount = stakeAmount |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -2933,7 +2933,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -2985,7 +2985,7 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
                             Amount = stakeAmount |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -3024,7 +3024,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState
@@ -3081,7 +3081,7 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (ChainiumAddress a) -> a
+                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
                             Amount = stakeAmount |> fun (ChxAmount a) -> a
                         }
                 } :> obj
@@ -3120,7 +3120,7 @@ module ProcessingTests =
             Processing.processTxSet
                 getTx
                 Signing.verifySignature
-                Hashing.isValidChainiumAddress
+                Hashing.isValidBlockchainAddress
                 Hashing.decode
                 Hashing.hash
                 getChxBalanceState

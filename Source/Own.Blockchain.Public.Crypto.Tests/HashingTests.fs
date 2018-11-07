@@ -1,12 +1,12 @@
-namespace Chainium.Blockchain.Public.Crypto.Tests
+namespace Own.Blockchain.Public.Crypto.Tests
 
 open System
 open System.Text
 open Xunit
 open Swensen.Unquote
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Crypto
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Crypto
 
 module HashingTests =
 
@@ -23,10 +23,10 @@ module HashingTests =
 
     [<Fact>]
     let ``Hashing.zeroAddress`` () =
-        let randomAddress = Signing.generateWallet().Address |> fun (ChainiumAddress a) -> a
+        let randomAddress = Signing.generateWallet().Address |> fun (BlockchainAddress a) -> a
         let randomAddressBytes = randomAddress |> Hashing.decode
 
-        let zeroAddress = Hashing.zeroAddress |> (fun (ChainiumAddress a) -> a)
+        let zeroAddress = Hashing.zeroAddress |> (fun (BlockchainAddress a) -> a)
         let zeroAddressBytes = zeroAddress |> Hashing.decode
 
         test <@ zeroAddressBytes.Length = randomAddressBytes.Length @>
@@ -34,7 +34,7 @@ module HashingTests =
 
     [<Fact>]
     let ``Hashing.hash calculates same hash when executed multiple times for same input`` () =
-        let message = Conversion.stringToBytes "Chainium"
+        let message = Conversion.stringToBytes "Own"
 
         let hashes =
             [1 .. 1000]
@@ -45,7 +45,7 @@ module HashingTests =
 
     [<Fact>]
     let ``Hashing.hash calculates different hash for different input`` () =
-        let message = "Chainium"
+        let message = "Own"
         let hashCount = 1000
 
         let allHashes =
@@ -60,14 +60,14 @@ module HashingTests =
         test <@ distinctHashes.Length = allHashes.Length @>
 
     [<Fact>]
-    let ``Hashing.createChainiumAddress calculates same hash not longer than 26 bytes for same input`` () =
-        let message = Conversion.stringToBytes "Chainium"
+    let ``Hashing.createBlockchainAddress calculates same hash not longer than 26 bytes for same input`` () =
+        let message = Conversion.stringToBytes "Own"
         let hashCount = 1000
         let hashes =
             [1 .. hashCount]
             |> List.map (fun _ ->
-                Hashing.chainiumAddress message
-                |> fun (ChainiumAddress a) -> Hashing.decode a
+                Hashing.blockchainAddress message
+                |> fun (BlockchainAddress a) -> Hashing.decode a
             )
             |> List.distinct
         test <@ hashes.Length = 1 @>
@@ -78,15 +78,15 @@ module HashingTests =
         test <@ longerThan26Bytes.Length = 0 @>
 
     [<Fact>]
-    let ``Hashing.createChainiumAddress calculates different hash not longer than 26 bytes for different input`` () =
+    let ``Hashing.createBlockchainAddress calculates different hash not longer than 26 bytes for different input`` () =
         let hashCount = 1000
         let hashes =
             [1 .. hashCount]
             |> List.map (fun i ->
-                sprintf "Chainium %i" i
+                sprintf "Own %i" i
                 |> Conversion.stringToBytes
-                |> Hashing.chainiumAddress
-                |> fun (ChainiumAddress a) -> Hashing.decode a
+                |> Hashing.blockchainAddress
+                |> fun (BlockchainAddress a) -> Hashing.decode a
             )
             |> List.distinct
         test <@ hashes.Length = hashCount @>
@@ -101,20 +101,20 @@ module HashingTests =
     [<InlineData ("XRPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG", false)>]
     [<InlineData ("CHPvS1Hxs4oLcgKccYmubSBjurjUHmRMG", false)>]
     [<InlineData ("CHPvS1Hxs4oLcrbgKccYmubSBjurjUHmRMG", false)>]
-    let ``Hashing.isValidChainiumAddress validate various ChainiumAddress`` (chainiumAddress, expectedValid) =
+    let ``Hashing.isValidBlockchainAddress validate various BlockchainAddress`` (blockchainAddress, expectedValid) =
         // ARRANGE
-        let address = ChainiumAddress chainiumAddress;
+        let address = BlockchainAddress blockchainAddress;
 
         // ACT
-        let isValid = Hashing.isValidChainiumAddress address
+        let isValid = Hashing.isValidBlockchainAddress address
 
         // ASSERT
         test <@ isValid = expectedValid @>
 
     [<Fact>]
-    let ``Hashing.isValidChainiumAddress valid address created with createChainiumAddress`` () =
+    let ``Hashing.isValidBlockchainAddress valid address created with createBlockchainAddress`` () =
         // ARRANGE
-        let isAlwaysValid = Hashing.chainiumAddress >> Hashing.isValidChainiumAddress
+        let isAlwaysValid = Hashing.blockchainAddress >> Hashing.isValidBlockchainAddress
         let bytes = Signing.generateRandomBytes 100
 
         // ACT

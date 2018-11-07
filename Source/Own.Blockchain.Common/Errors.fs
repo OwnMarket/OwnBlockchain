@@ -1,4 +1,4 @@
-namespace Chainium.Blockchain.Common
+namespace Own.Blockchain.Common
 
 type AppError = AppError of string
 

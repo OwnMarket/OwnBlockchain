@@ -1,12 +1,12 @@
-﻿namespace Chainium.Blockchain.Public.Core
+﻿namespace Own.Blockchain.Public.Core
 
 open System
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Core.Events
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.Events
 
 module Workflows =
 
@@ -43,7 +43,7 @@ module Workflows =
         if getLastAppliedBlockNumber () = None then
             let genesisValidators =
                 genesisValidators
-                |> List.map (fun (ca, na) -> ChainiumAddress ca, {ValidatorState.NetworkAddress = na})
+                |> List.map (fun (ba, na) -> BlockchainAddress ba, {ValidatorState.NetworkAddress = na})
                 |> Map.ofList
 
             let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress genesisValidators
@@ -549,26 +549,26 @@ module Workflows =
 
     let getAddressApi
         getChxBalanceState
-        (chainiumAddress : ChainiumAddress)
+        (blockchainAddress : BlockchainAddress)
         : Result<GetAddressApiResponseDto, AppErrors>
         =
 
-        match getChxBalanceState chainiumAddress with
+        match getChxBalanceState blockchainAddress with
         | Some addressState ->
             addressState
-            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress
+            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto blockchainAddress
             |> Ok
         | None ->
             {
                 ChxBalanceStateDto.Amount = 0m
                 Nonce = 0L
             }
-            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto chainiumAddress
+            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto blockchainAddress
             |> Ok
 
     let getAddressAccountsApi
-        (getAddressAccounts : ChainiumAddress -> AccountHash list)
-        (address : ChainiumAddress)
+        (getAddressAccounts : BlockchainAddress -> AccountHash list)
+        (address : BlockchainAddress)
         : Result<GetAddressAccountsApiResponseDto, AppErrors>
         =
 

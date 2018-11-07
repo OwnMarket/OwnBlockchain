@@ -1,4 +1,4 @@
-﻿namespace Chainium.Blockchain.Public.IntegrationTests.Common
+﻿namespace Own.Blockchain.Public.IntegrationTests.Common
 
 open System
 open System.IO
@@ -8,11 +8,11 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.Configuration
 open Microsoft.Data.Sqlite
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Crypto
-open Chainium.Blockchain.Public.Data
-open Chainium.Blockchain.Public.Node
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Crypto
+open Own.Blockchain.Public.Data
+open Own.Blockchain.Public.Node
 
 module internal Helper =
 
@@ -79,7 +79,7 @@ module internal Helper =
         Signing.generateRandomBytes 64
         |> Hashing.hash
 
-    let createNewHashForSender (ChainiumAddress address) (Nonce nonce) (TxActionNumber actionNumber) =
+    let createNewHashForSender (BlockchainAddress address) (Nonce nonce) (TxActionNumber actionNumber) =
         [
             address |> Hashing.decode
             nonce |> Conversion.int64ToBytes
@@ -91,12 +91,12 @@ module internal Helper =
     let addChxBalance connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """
-            INSERT INTO chx_balance (chainium_address, amount, nonce)
-            VALUES (@chainium_address, @amount, 0);
+            INSERT INTO chx_balance (blockchain_address, amount, nonce)
+            VALUES (@blockchain_address, @amount, 0);
             """
         [
             "@amount", amount |> box
-            "@chainium_address", address |> box
+            "@blockchain_address", address |> box
         ]
         |> DbTools.execute connectionString insertStatement
         |> ignore
@@ -104,12 +104,12 @@ module internal Helper =
     let addBalanceAndAccount connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """
-            INSERT INTO chx_balance (chainium_address, amount, nonce) VALUES (@chainium_address, @amount, 0);
-            INSERT INTO account (account_hash, controller_address) VALUES (@chainium_address, @chainium_address);
+            INSERT INTO chx_balance (blockchain_address, amount, nonce) VALUES (@blockchain_address, @amount, 0);
+            INSERT INTO account (account_hash, controller_address) VALUES (@blockchain_address, @blockchain_address);
             """
         [
             "@amount", amount |> box
-            "@chainium_address", address |> box
+            "@blockchain_address", address |> box
         ]
         |> DbTools.execute connectionString insertStatement
         |> ignore

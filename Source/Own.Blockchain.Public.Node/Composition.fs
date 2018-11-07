@@ -1,11 +1,11 @@
-﻿namespace Chainium.Blockchain.Public.Node
+﻿namespace Own.Blockchain.Public.Node
 
-open Chainium.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Crypto
-open Chainium.Blockchain.Public.Data
-open Chainium.Blockchain.Public.Net
+open Own.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Crypto
+open Own.Blockchain.Public.Data
+open Own.Blockchain.Public.Net
 
 module Composition =
 
@@ -85,7 +85,7 @@ module Composition =
         Config.GenesisValidators
         |> List.map (fun (validatorAddress, networkAddress) ->
             {
-                ValidatorSnapshot.ValidatorAddress = ChainiumAddress validatorAddress
+                ValidatorSnapshot.ValidatorAddress = BlockchainAddress validatorAddress
                 NetworkAddress = networkAddress
                 TotalStake = ChxAmount 0m
             }
@@ -143,14 +143,14 @@ module Composition =
             Hashing.zeroHash
             Hashing.zeroAddress
             (ChxAmount Config.GenesisChxSupply)
-            (ChainiumAddress Config.GenesisAddress)
+            (BlockchainAddress Config.GenesisAddress)
             Config.GenesisValidators
 
     let createBlock =
         Workflows.createBlock
             getTx
             Signing.verifySignature
-            Hashing.isValidChainiumAddress
+            Hashing.isValidBlockchainAddress
             getChxBalanceState
             getHoldingState
             getAccountState
@@ -190,7 +190,7 @@ module Composition =
 
     let storeReceivedBlock =
         Workflows.storeReceivedBlock
-            Hashing.isValidChainiumAddress
+            Hashing.isValidBlockchainAddress
             getGenesisValidators
             Signing.verifySignature
             blockExists
@@ -246,7 +246,7 @@ module Composition =
     let submitTx =
         Workflows.submitTx
             Signing.verifySignature
-            Hashing.isValidChainiumAddress
+            Hashing.isValidBlockchainAddress
             Hashing.hash
             getAvailableChxBalance
             getTotalFeeForPendingTxs

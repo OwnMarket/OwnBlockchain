@@ -1,10 +1,10 @@
-namespace Chainium.Blockchain.Public.Core.Tests
+namespace Own.Blockchain.Public.Core.Tests
 
 open System
 open Xunit
 open Swensen.Unquote
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
 
 module DomainTypesTests =
 
@@ -16,17 +16,17 @@ module DomainTypesTests =
         let tx =
             {
                 Tx.TxHash = TxHash ""
-                Sender = ChainiumAddress ""
+                Sender = BlockchainAddress ""
                 Nonce = Nonce 0L
                 Fee = ChxAmount 2m
                 Actions =
                     [
                         TransferChx {
-                            TransferChxTxAction.RecipientAddress = ChainiumAddress ""
+                            TransferChxTxAction.RecipientAddress = BlockchainAddress ""
                             Amount = ChxAmount 0m
                         }
                         TransferChx {
-                            TransferChxTxAction.RecipientAddress = ChainiumAddress ""
+                            TransferChxTxAction.RecipientAddress = BlockchainAddress ""
                             Amount = ChxAmount 0m
                         }
                     ]

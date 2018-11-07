@@ -1,9 +1,9 @@
-﻿namespace Chainium.Blockchain.Public.Node
+﻿namespace Own.Blockchain.Public.Node
 
 open System
 open System.IO
 open Microsoft.Extensions.Configuration
-open Chainium.Common
+open Own.Common
 
 type Config () =
 

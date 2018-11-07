@@ -1,9 +1,9 @@
-﻿namespace Chainium.Blockchain.Public.Crypto
+﻿namespace Own.Blockchain.Public.Crypto
 
 open System
 open System.Security.Cryptography
-open Chainium.Common
 open Secp256k1Net
+open Own.Common
 
 module internal Secp256k1 =
 

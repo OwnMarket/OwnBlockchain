@@ -1,4 +1,4 @@
-﻿namespace Chainium.Blockchain.Public.Core.Dtos
+﻿namespace Own.Blockchain.Public.Core.Dtos
 
 open System
 open MessagePack
@@ -219,7 +219,7 @@ type ProcessingOutputDto = {
 
 [<CLIMutable>]
 type ChxBalanceInfoDto = {
-    ChainiumAddress : string
+    BlockchainAddress : string
     ChxBalanceState : ChxBalanceStateDto
 }
 
@@ -301,7 +301,7 @@ type GetBlockApiResponseDto = {
 }
 
 type GetAddressApiResponseDto = {
-    ChainiumAddress : string
+    BlockchainAddress : string
     Balance : decimal
     Nonce : int64
 }

@@ -1,7 +1,7 @@
-namespace Chainium.Blockchain.Public.Core.Events
+namespace Own.Blockchain.Public.Core.Events
 
 open System
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.DomainTypes
 
 type TxReceivedEventData = {
     TxHash : TxHash

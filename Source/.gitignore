@@ -5,7 +5,7 @@
 
 # SQLite and Raw data
 *.db
-Chainium.Blockchain.Public.Node/Data
+Own.Blockchain.Public.Node/Data
 
 # Binaries
 package

@@ -1,9 +1,9 @@
-﻿namespace Chainium.Blockchain.Public.Net.Tests
+﻿namespace Own.Blockchain.Public.Net.Tests
 
 open System.Collections.Concurrent
-open Chainium.Common
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Common
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.DomainTypes
 
 module DbMock =
 
@@ -33,7 +33,7 @@ module DbMock =
         getAllPeerNodes localAddress ()
         |> List.map (fun (NetworkAddress n) ->
             {
-                ValidatorSnapshot.ValidatorAddress = ChainiumAddress "CH"
+                ValidatorSnapshot.ValidatorAddress = BlockchainAddress "CH"
                 NetworkAddress = n
                 TotalStake = ChxAmount 0m
             }

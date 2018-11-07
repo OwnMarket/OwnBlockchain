@@ -1,16 +1,16 @@
-namespace Chainium.Blockchain.Public.Faucet
+namespace Own.Blockchain.Public.Faucet
 
 open System.Text
 open Hopac
 open HttpFs.Client
 open Newtonsoft.Json
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module NodeClient =
 
-    let getAddressNonce nodeApiUrl (ChainiumAddress address) =
+    let getAddressNonce nodeApiUrl (BlockchainAddress address) =
         sprintf "%s/address/%s" nodeApiUrl address
         |> Request.createUrl Get
         |> Request.responseAsString

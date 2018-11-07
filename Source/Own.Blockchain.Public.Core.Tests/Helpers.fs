@@ -1,20 +1,20 @@
-namespace Chainium.Blockchain.Public.Core.Tests
+namespace Own.Blockchain.Public.Core.Tests
 
 open System
 open System.Text
 open Newtonsoft.Json
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
-open Chainium.Blockchain.Public.Crypto
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Crypto
 
 module Helpers =
 
     let minTxActionFee = ChxAmount 0.001m
 
-    let addressToString (ChainiumAddress a) = a
+    let addressToString (BlockchainAddress a) = a
 
     let extractActionData<'T> = function
         | TransferChx action -> box action :?> 'T
@@ -30,7 +30,7 @@ module Helpers =
 
     let newPendingTxInfo
         (txHash : TxHash)
-        (senderAddress : ChainiumAddress)
+        (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (fee : ChxAmount)
         (actionCount : int16)
@@ -47,7 +47,7 @@ module Helpers =
         }
 
     let newRawTxDto
-        (ChainiumAddress senderAddress)
+        (BlockchainAddress senderAddress)
         (nonce : int64)
         (fee : decimal)
         (actions : obj list)

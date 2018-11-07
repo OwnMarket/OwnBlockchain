@@ -1,8 +1,8 @@
-﻿namespace Chainium.Blockchain.Public.Crypto
+﻿namespace Own.Blockchain.Public.Crypto
 
 open System
 open System.Security.Cryptography
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.DomainTypes
 
 module Signing =
 
@@ -24,7 +24,7 @@ module Signing =
             Address =
                 keyPair
                 |> snd
-                |> Hashing.chainiumAddress
+                |> Hashing.blockchainAddress
         }
 
     let addressFromPrivateKey (PrivateKey privateKey) =
@@ -32,7 +32,7 @@ module Signing =
             privateKey
             |> Hashing.decode
             |> Secp256k1.calculatePublicKey
-            |> Hashing.chainiumAddress
+            |> Hashing.blockchainAddress
 
         publicKey
 
@@ -52,7 +52,7 @@ module Signing =
         |> Hashing.encode
         |> Signature
 
-    let verifySignature (Signature signature) (message : byte[]) : ChainiumAddress option =
+    let verifySignature (Signature signature) (message : byte[]) : BlockchainAddress option =
         let signatureBytes = signature |> Hashing.decode
 
         let recoveryId = signatureBytes.[64] |> int
@@ -70,7 +70,7 @@ module Signing =
 
         if Secp256k1.verifySignature signature messageHash publicKey then
             Secp256k1.serializePublicKey publicKey
-            |> Hashing.chainiumAddress
+            |> Hashing.blockchainAddress
             |> Some
         else
             None

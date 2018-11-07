@@ -1,7 +1,7 @@
-namespace Chainium.Blockchain.Public.Node
+namespace Own.Blockchain.Public.Node
 
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.Events
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.Events
 
 module Agents =
 

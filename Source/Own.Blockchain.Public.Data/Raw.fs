@@ -1,11 +1,11 @@
-namespace Chainium.Blockchain.Public.Data
+namespace Own.Blockchain.Public.Data
 
 open System.IO
 open MessagePack
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module Raw =
 

@@ -1,10 +1,10 @@
-﻿namespace Chainium.Blockchain.Public.Core
+﻿namespace Own.Blockchain.Public.Core
 
 open System
-open Chainium.Common
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Common.Conversion
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Common.Conversion
+open Own.Blockchain.Public.Core.Dtos
 open Newtonsoft.Json
 open Newtonsoft.Json.Converters
 open Newtonsoft.Json.Linq

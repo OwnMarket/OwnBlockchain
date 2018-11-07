@@ -1,7 +1,7 @@
-﻿namespace Chainium.Blockchain.Public.Net.Tests
+﻿namespace Own.Blockchain.Public.Net.Tests
 
 open System.Collections.Concurrent
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.DomainTypes
 
 module RawMock =
 

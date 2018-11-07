@@ -1,9 +1,9 @@
-namespace Chainium.Blockchain.Public.Net.Tests
+namespace Own.Blockchain.Public.Net.Tests
 
 open System.Threading
-open Chainium.Blockchain.Public.Net.Peers
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Events
+open Own.Blockchain.Public.Net.Peers
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Events
 open Xunit
 open Swensen.Unquote
 

@@ -1,8 +1,8 @@
-﻿namespace Chainium.Blockchain.Public.Net.Tests
+﻿namespace Own.Blockchain.Public.Net.Tests
 
-open Chainium.Blockchain.Common
-open Chainium.Blockchain.Public.Core.Events
-open Chainium.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.Events
+open Own.Blockchain.Public.Core.DomainTypes
 
 module WorkflowsMock =
 

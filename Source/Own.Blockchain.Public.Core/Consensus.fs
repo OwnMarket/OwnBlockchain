@@ -1,9 +1,9 @@
-namespace Chainium.Blockchain.Public.Core
+namespace Own.Blockchain.Public.Core
 
 open System
-open Chainium.Common
-open Chainium.Blockchain.Public.Core.DomainTypes
-open Chainium.Blockchain.Public.Core.Dtos
+open Own.Common
+open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module Consensus =
 
