@@ -439,6 +439,11 @@ module Mapping =
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
             GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
             GetBlockApiResponseDto.TxSet = blockDto.TxSet
+            GetBlockApiResponseDto.Configuration =
+                if blockDto.Configuration.Validators.IsEmpty then
+                    Unchecked.defaultof<BlockchainConfigurationDto> // Not proud of this, but it's just for pretty JSON.
+                else
+                    blockDto.Configuration
         }
 
     let txToGetTxApiResponseDto

@@ -298,6 +298,7 @@ type GetBlockApiResponseDto = {
     StateRoot : string
     ConfigurationRoot : string
     TxSet : string list
+    Configuration : BlockchainConfigurationDto
 }
 
 type GetAddressApiResponseDto = {
