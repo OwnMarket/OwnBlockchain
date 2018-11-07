@@ -1,6 +1,6 @@
-# Chainium
+# OwnBlockchain
 
-Chainium blockchain implementation
+Own blockchain implementation
 
 
 ## Quick Start
@@ -10,7 +10,7 @@ Chainium blockchain implementation
     especially the [architecture](Docs/Architecture/Architecture.md) and [coding conventions](Docs/Codebase/CodingConventions.md).
 - Clone the repository and build it:
     ```
-    $ git clone https://github.com/Chainium/Chainium.git ChainiumBlockchain
-    $ cd ChainiumBlockchain/Source
+    $ git clone https://github.com/OwnMarket/OwnBlockchain.git OwnBlockchain
+    $ cd OwnBlockchain/Source
     $ dotnet build
     ```

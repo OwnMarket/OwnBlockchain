@@ -44,7 +44,7 @@ pipeline {
       environment {
         RESULTS_OUTPUT_PATH = 'integrationtestresults'
         FULL_RESULTS_PATH ="$WORKSPACE/$RESULTS_OUTPUT_PATH"
-		APP_SETTINGS_TO_REPLACE="$SOLUTION_PATH/Chainium.Blockchain.Public.IntegrationTests.Postgres/$PROJECT_OUTPUT_FOLDER/AppSettings.json"
+		APP_SETTINGS_TO_REPLACE="$SOLUTION_PATH/Own.Blockchain.Public.IntegrationTests.Postgres/$PROJECT_OUTPUT_FOLDER/AppSettings.json"
       }
       steps {
         
@@ -70,7 +70,7 @@ pipeline {
     }
     stage('Publish'){
         environment {
-            PROJECTS ='Chainium.Blockchain.Public.Node;Chainium.Blockchain.Public.Wallet;'
+            PROJECTS ='Own.Blockchain.Public.Node;Own.Blockchain.Public.Wallet;'
             PACKAGE_NAME="${SOLUTION_NAME}-${MAJOR_NUMBER}.${MINOR_NUMBER}.${BUILD}.${BUILD_NUMBER}"
         }
         steps {
@@ -86,7 +86,7 @@ pipeline {
     BUILD_CONFIG='Release'
     PROJECT_OUTPUT_FOLDER='Release'
     PUBLISH_DIR='publish'
-    SOLUTION_NAME ='Chainium'
+    SOLUTION_NAME ='OwnBlockchain'
   }
   
   post {

@@ -114,7 +114,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
-    "chainiumAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
+    "blockchainAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "balance": 899.999,
     "nonce": 1
 }

@@ -11,7 +11,7 @@ Transactions must be cryptographically signed, using a private key of the sender
 
 Please refer to the SDK docs for more information:
 
-- [JavaScript SDK](https://github.com/Chainium/ChainiumSdkJS)
+- [JavaScript SDK](https://github.com/OwnMarket/OwnBlockchainSdkJS)
 
 
 ## Signing transactions using the CLI

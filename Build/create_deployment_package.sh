@@ -17,7 +17,7 @@ rm -rf "$OUTPUT_DIR"
 mkdir -p -m 777 "$OUTPUT_DIR"
 
 # Build the Node
-pushd ../Source/Chainium.Blockchain.Public.Node
+pushd ../Source/Own.Blockchain.Public.Node
 mkdir -p "$TEMP_DIR/Node"
 dotnet publish -c Release -o "$TEMP_DIR/Node"
 popd
@@ -32,7 +32,7 @@ tar czf "$OUTPUT_DIR/Node.tar.gz" *
 popd
 
 # Build the Faucet
-pushd ../Source/Chainium.Blockchain.Public.Faucet
+pushd ../Source/Own.Blockchain.Public.Faucet
 mkdir -p "$TEMP_DIR/Faucet"
 dotnet publish -c Release -o "$TEMP_DIR/Faucet"
 popd

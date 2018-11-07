@@ -128,14 +128,14 @@ Node is started by executing following command:
 
 ```bash
 $ cd /path/to/the/node/directory
-$ dotnet Chainium.Blockchain.Public.Node.dll
+$ dotnet Own.Blockchain.Public.Node.dll
 ```
 
 This will run the node by using the configuration file from the node directory and will create the `Data` directory as the subdirectory of the node directory. If, however, data and the configuration should be placed in different directory paths (which is a common case in Unix/Linux systems), a node can be started by relying on the current working directory and invoking the executable using from a different path.
 
 ```bash
 $ cd /var/lib/own/blockchain/public/node/instance1
-$ dotnet /opt/own/blockchain/public/node/Chainium.Blockchain.Public.Node.dll
+$ dotnet /opt/own/blockchain/public/node/Own.Blockchain.Public.Node.dll
 ```
 
 In this case the node will be using the configuration file from the `/var/lib/own/blockchain/public/node/instance1` directory, and `Data` directory will be created there as well.

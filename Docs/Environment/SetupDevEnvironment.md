@@ -6,7 +6,7 @@
 - Install [VirtualBox](https://www.virtualbox.org)
 
 - Create new virtual machine with following settings:
-    - Name: `Chainium_DEV` (or any other)
+    - Name: `Own_DEV` (or any other)
     - Type: `Linux`
     - Version: `Ubuntu (64 bit)`
     - At least `2048 MB` RAM
@@ -26,7 +26,7 @@
 
 - Install [Ubuntu 16.04.x LTS](https://www.ubuntu.com/download/desktop) on the virtual machine. If you experience performance issues, you can install [Xubuntu](https://xubuntu.org) instead, which is less resource intensive.
     - Username: `developer`
-    - Machine name: `chainium`
+    - Machine name: `own`
 
 - Shut down the VM
 - Create a VM snapshot and name it `OS installed`.
@@ -49,5 +49,5 @@
 - Setup development environment in VM by executing following command in VMs terminal:
 
 ```
-wget -O - https://raw.githubusercontent.com/Chainium/Chainium/master/Docs/Environment/setup_dev_environment.sh | bash
+wget -O - https://raw.githubusercontent.com/OwnMarket/OwnBlockchain/master/Docs/Environment/setup_dev_environment.sh | bash
 ```

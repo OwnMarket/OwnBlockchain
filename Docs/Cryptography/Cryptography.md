@@ -2,25 +2,25 @@
 
 ## Private/Public Keys
 
-Private/public key pairs are generated using Elliptic Curve Cryptography. Similar to other major blockchain projects, Chainium blockchain uses a specific Koblitz curve [secp256k1](https://en.bitcoin.it/wiki/Secp256k1).
+Private/public key pairs are generated using Elliptic Curve Cryptography. Similar to other major blockchain projects, Own blockchain uses a specific Koblitz curve [secp256k1](https://en.bitcoin.it/wiki/Secp256k1).
 
-Concrete implementation of algorithm used in Chainium blockchain, comes from [secp256k1 library](https://github.com/bitcoin-core/secp256k1).
+Concrete implementation of algorithm used in Own blockchain, comes from [secp256k1 library](https://github.com/bitcoin-core/secp256k1).
 
 ## Hashing
 
-Chainium blockchain uses [SHA256](https://en.wikipedia.org/wiki/SHA-256) as the main hashing algorithm. Implementation of SHA256 is part of .NET standard library.
+Own blockchain uses [SHA256](https://en.wikipedia.org/wiki/SHA-256) as the main hashing algorithm. Implementation of SHA256 is part of .NET standard library.
 
 ## Encoding
 
 All cryptographic artifacts (private/public keys, hashes, etc.) are encoded as [Base58](https://en.wikipedia.org/wiki/Base58) strings and used as such throughout the application and external interfaces. Base58 dictionary used is the same as the one used in Bitcoin implementation.
 
-Chainium blockchain uses the implementation of Base58 encoding from [Multiformats project](https://multiformats.io).
+Own blockchain uses the implementation of Base58 encoding from [Multiformats project](https://multiformats.io).
 
-## Chainium Address
+## Own Blockchain Address
 
-Chainium address is created using following algorithm:
+Own blockchain address is created using following algorithm:
 
-![Chainium Address Algorithm](ChainiumAddress.png)
+![Own Blockchain Address Algorithm](OwnBlockchainAddress.png)
 
 Here is a sample address generated from a private key using this algorithm:
 

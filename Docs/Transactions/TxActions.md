@@ -1,6 +1,6 @@
 # Transaction Actions
 
-In the Chainium blockchain network, a transaction is a command that consists out of one or more action. A transaction is an atomic executable, which means that either all actions within the transaction are executed or they all get rolled back.
+In the Own blockchain network, a transaction is a command that consists out of one or more action. A transaction is an atomic executable, which means that either all actions within the transaction are executed or they all get rolled back.
 
 An action is a single command that changes the state. The action types supported on the public blockchain can be divided in two categories:
 
@@ -92,7 +92,7 @@ Parameter | Data Type | Description
 
 ### `CreateAssetEmission`
 
-Asset Emission creates the tokenized equity and creates the offer. When a business owner issues equity on Chainium blockchain the following set of operations are executed:
+Asset Emission creates the tokenized equity and creates the offer. When a business owner issues equity on Own blockchain the following set of operations are executed:
 
 Private Blockchain | Public Blockchain
 --- | ---

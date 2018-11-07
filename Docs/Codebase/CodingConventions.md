@@ -205,5 +205,5 @@ Use `ALL_CAPS` for:
     1. `System`
     2. `System.*`
     3. Any 3rd party namespaces
-    4. `Chainium.Common`
-    5. `Chainium.*`
+    4. `Own.Common`
+    5. `Own.*`

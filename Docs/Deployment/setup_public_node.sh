@@ -40,7 +40,7 @@ After=network.target postgresql.service
 
 [Service]
 WorkingDirectory=$DATA_DIR/%i
-ExecStart=/usr/bin/dotnet "$NODE_DIR/Chainium.Blockchain.Public.Node.dll"
+ExecStart=/usr/bin/dotnet "$NODE_DIR/Own.Blockchain.Public.Node.dll"
 Restart=always
 RestartSec=10
 

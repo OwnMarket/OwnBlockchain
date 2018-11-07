@@ -1,6 +1,6 @@
 # Public Node - Physical Database Model
 
-The purpose of this document is to describe physical database model of a node in a chainium public blockchain.
+The purpose of this document is to describe physical database model of a node in Own public blockchain.
 In order to validate transactions, a node needs to be able to store the data. A node stores data in a raw file storage and a relational database. The nodes on our blockchain can select following database engines to store relational data:
 * SQLite for a lightweight node
 * PostgreSQL for a full-scale node
@@ -26,27 +26,27 @@ Following tables will be described in this chapter:
 
 ### `chx_balance` table
 
-`chx_balance` table stores CHX balance for a Chainium address. Each direct user of the system needs to have at least one Chainium address, with CHX tokens on it, in order to submit the transaction. However, the act of creating a Chainium address (e.g. using the wallet software) will not create the entry in this table. An entry will be stored here once the address receives CHX Tokens for the first time.
+`chx_balance` table stores CHX balance for a blockchain address. Each direct user of the system needs to have at least one blockchain address, with CHX tokens on it, in order to submit the transaction. However, the act of creating a blockchain address (e.g. using the wallet software) will not create the entry in this table. An entry will be stored here once the address receives CHX Tokens for the first time.
 
-Chainium address is used to "control" the investor account which holds the equity. This basically means that an investment account can hold an equity only through the existing Chainium address. One Chainium address can control multiple investor accounts.
+Blockchain address is used to "control" the investor account which holds the equity. This basically means that an investment account can hold an equity only through the existing blockchain address. One blockchain address can control multiple investor accounts.
 
 | Name | Data Type | Nullable | Key | Description |
 |------|-----------|----------|-----|-------------|
 | `chx_balance_id` | INTEGER | NOT NULL | PK | A unique ID and surrogate primary key.
-| `chainium_address` | TEXT | NOT NULL | AK | Chainium address which controls the account. It is unique per record and represents an alternate key.
-| `amount` | DECIMAL (30,18) | NOT NULL | | Amount in CHX tokens held by the `chainium_address`.
-| `nonce` | BIGINT | NOT NULL | | Nonce represents number of processed transactions sent from `chainium_address`. It makes sure that the record is consistently updated and prevents double-spending.
+| `blockchain_address` | TEXT | NOT NULL | AK | Blockchain address which controls the account. It is unique per record and represents an alternate key.
+| `amount` | DECIMAL (30,18) | NOT NULL | | Amount in CHX tokens held by the `blockchain_address`.
+| `nonce` | BIGINT | NOT NULL | | Nonce represents number of processed transactions sent from `blockchain_address`. It makes sure that the record is consistently updated and prevents double-spending.
 
 
 ### `account` table
 
-`account` table represents a "link" to a detailed investor account entry on the private blockchain. The `account` table stores the Chainium address which "controls" this investor account.
+`account` table represents a "link" to a detailed investor account entry on the private blockchain. The `account` table stores the blockchain address which "controls" this investor account.
 
 | Name | Data Type | Nullable | Key | Description |
 |------|-----------|----------|-----|-------------|
 | `account_id` | INTEGER | NOT NULL | PK | A unique account ID and surrogate primary key.
 | `account_hash` | TEXT | NOT NULL | AK | Alternate key, representing the hash value of the account created in the private blockchain.
-| `controller_address` | TEXT | NOT NULL | | Chainium address which controls the account.
+| `controller_address` | TEXT | NOT NULL | | Blockchain address which controls the account.
 
 
 ### `holding` table
@@ -83,7 +83,7 @@ A combination of an `account_id` and an `asset_hash` is unique and represents an
 |------|-----------|----------|-----|-------------|
 | `tx_id` | INTEGER | NOT NULL | PK | A surrogate primary key.
 | `tx_hash` | TEXT | NOT NULL | AK | Unique hash value of the transaction.
-| `sender_address` | TEXT | NOT NULL | | Chainium address of the transaction sender.
+| `sender_address` | TEXT | NOT NULL | | Blockchain address of the transaction sender.
 | `nonce` | BIGINT | NOT NULL | | Nonce prevents double-spending because Nonce<sub>tx</sub> must be equal to (Nonce<sub>sender_address</sub> + 1) for the transaction to succeed.
 | `fee` | DECIMAL (30,18) | NOT NULL | | Fee is the price offered for processing of each action included in the transaction. It is expressed in CHX and serves as a primary transaction priority criteria, as well as the incentive for the nodes to validate transactions.
 | `action_count` | SMALLINT | NOT NULL | | Number of actions included in the transaction.

@@ -1,6 +1,6 @@
 # Architecture
 
-The implementation of Chainium blockchain software follows the architecture approach originally named [Ports and Adapters](http://alistair.cockburn.us/Hexagonal+architecture). This approach has later had many reincarnations (e.g. [Onion Architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1), [Clean Architecture](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html)), which vary in details, but are all based on the same concepts and rely heavily on the [Dependency Inversion Principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle). This architecture approach is very well established in software industry, and can be applied to object oriented (OO), as well as functional programming (FP) paradigm, albeit concrete implementation techniques are different.
+The implementation of Own blockchain software follows the architecture approach originally named [Ports and Adapters](http://alistair.cockburn.us/Hexagonal+architecture). This approach has later had many reincarnations (e.g. [Onion Architecture](http://jeffreypalermo.com/blog/the-onion-architecture-part-1), [Clean Architecture](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html)), which vary in details, but are all based on the same concepts and rely heavily on the [Dependency Inversion Principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle). This architecture approach is very well established in software industry, and can be applied to object oriented (OO), as well as functional programming (FP) paradigm, albeit concrete implementation techniques are different.
 
 More info about applying Ports and Adapters architecture in F# can be found in [this article by Mark Seemann](http://blog.ploeh.dk/2016/03/18/functional-architecture-is-ports-and-adapters).
 
@@ -58,11 +58,11 @@ The code in the infrastructure layer of the application (upper part of the diagr
 
 Project | Description | Layer
 --- | --- | ---
-`Chainium.Common` | Common generally reusable code | Cross-cutting
-`Chainium.Blockchain.Common` | Common project-specific code | Cross-cutting
-`Chainium.Blockchain.Public.Core` | Types, code contracts, logic, consensus | Core
-`Chainium.Blockchain.Public.Crypto` | Cryptography | Core
-`Chainium.Blockchain.Public.Data` | Data persistance | Infrastructure
-`Chainium.Blockchain.Public.Net` | Network communication between nodes | Infrastructure
-`Chainium.Blockchain.Public.Node` | Application host / composition root / API | Infrastructure
-`Chainium.Blockchain.Public.Wallet` | Application host / composition root / CLI | Infrastructure
+`Own.Common` | Common generally reusable code | Cross-cutting
+`Own.Blockchain.Common` | Common project-specific code | Cross-cutting
+`Own.Blockchain.Public.Core` | Types, code contracts, logic, consensus | Core
+`Own.Blockchain.Public.Crypto` | Cryptography | Core
+`Own.Blockchain.Public.Data` | Data persistance | Infrastructure
+`Own.Blockchain.Public.Net` | Network communication between nodes | Infrastructure
+`Own.Blockchain.Public.Node` | Application host / composition root / API | Infrastructure
+`Own.Blockchain.Public.Wallet` | Application host / composition root / CLI | Infrastructure
