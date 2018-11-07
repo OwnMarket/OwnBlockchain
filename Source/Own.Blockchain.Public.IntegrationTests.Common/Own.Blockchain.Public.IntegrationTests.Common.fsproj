@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AssemblyName>Chainium.Blockchain.IntegrationTests.Common</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Node\Chainium.Blockchain.Public.Node.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Wallet\Chainium.Blockchain.Public.Wallet.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.Node\Own.Blockchain.Public.Node.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.Wallet\Own.Blockchain.Public.Wallet.fsproj" />
   </ItemGroup>
 
 </Project>

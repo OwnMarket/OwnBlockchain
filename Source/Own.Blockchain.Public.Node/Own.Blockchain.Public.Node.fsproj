@@ -15,12 +15,12 @@
     <None Include="AppSettings.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Core\Chainium.Blockchain.Public.Core.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Crypto\Chainium.Blockchain.Public.Crypto.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Data\Chainium.Blockchain.Public.Data.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Net\Chainium.Blockchain.Public.Net.fsproj" />
+    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.Data\Own.Blockchain.Public.Data.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.Net\Own.Blockchain.Public.Net.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.2" />

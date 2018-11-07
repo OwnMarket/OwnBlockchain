@@ -13,8 +13,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Public.Core\Chainium.Blockchain.Public.Core.fsproj" />
+    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
   </ItemGroup>
 </Project>

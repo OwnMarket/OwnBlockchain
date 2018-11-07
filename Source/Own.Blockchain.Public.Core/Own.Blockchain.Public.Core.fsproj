@@ -3,8 +3,8 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Chainium.Common\Chainium.Common.fsproj" />
-    <ProjectReference Include="..\Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj" />
+    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyInfo.fs" />

@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Chainium.Blockchain.Public.IntegrationTests.Common\Chainium.Blockchain.Public.IntegrationTests.Common.fsproj" />
+    <ProjectReference Include="..\Own.Blockchain.Public.IntegrationTests.Common\Own.Blockchain.Public.IntegrationTests.Common.fsproj" />
   </ItemGroup>
 
 </Project>

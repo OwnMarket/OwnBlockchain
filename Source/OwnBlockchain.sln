@@ -3,43 +3,43 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{B21B8E5B-35AE-4845-9CF8-9432222B025A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Common", "Chainium.Common\Chainium.Common.fsproj", "{7863EFF6-7271-467E-AC0B-39F1FEFB4252}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Common", "Own.Common\Own.Common.fsproj", "{7863EFF6-7271-467E-AC0B-39F1FEFB4252}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Common", "Chainium.Blockchain.Common\Chainium.Blockchain.Common.fsproj", "{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Common", "Own.Blockchain.Common\Own.Blockchain.Common.fsproj", "{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{AD45BC5B-CADC-46B6-B505-765A59BDF476}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Core", "Chainium.Blockchain.Public.Core\Chainium.Blockchain.Public.Core.fsproj", "{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Core", "Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj", "{34AEFE17-BDAD-48E0-9F8E-DC4C8FAF4381}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Crypto", "Chainium.Blockchain.Public.Crypto\Chainium.Blockchain.Public.Crypto.fsproj", "{43959247-679F-459D-AD6D-D96B1128EF4A}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Crypto", "Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj", "{43959247-679F-459D-AD6D-D96B1128EF4A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{8326E566-95AA-4A26-AB4D-E648A9C7351D}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Data", "Chainium.Blockchain.Public.Data\Chainium.Blockchain.Public.Data.fsproj", "{81928E31-134E-4823-AC9E-8B7C773EE001}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Data", "Own.Blockchain.Public.Data\Own.Blockchain.Public.Data.fsproj", "{81928E31-134E-4823-AC9E-8B7C773EE001}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Net", "Chainium.Blockchain.Public.Net\Chainium.Blockchain.Public.Net.fsproj", "{3961873E-9489-46C3-B7EC-72D62A3E577A}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Net", "Own.Blockchain.Public.Net\Own.Blockchain.Public.Net.fsproj", "{3961873E-9489-46C3-B7EC-72D62A3E577A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{BC5EB361-3612-4183-A6EA-38F1B68D810C}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Node", "Chainium.Blockchain.Public.Node\Chainium.Blockchain.Public.Node.fsproj", "{FD2A5722-643D-4232-A507-474B965E78B2}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Node", "Own.Blockchain.Public.Node\Own.Blockchain.Public.Node.fsproj", "{FD2A5722-643D-4232-A507-474B965E78B2}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Wallet", "Chainium.Blockchain.Public.Wallet\Chainium.Blockchain.Public.Wallet.fsproj", "{6016F6E7-7760-422B-8AED-3E346B38DAA0}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Wallet", "Own.Blockchain.Public.Wallet\Own.Blockchain.Public.Wallet.fsproj", "{6016F6E7-7760-422B-8AED-3E346B38DAA0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{214B2395-B936-4A78-8D95-0A96DF46B4C5}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Core.Tests", "Chainium.Blockchain.Public.Core.Tests\Chainium.Blockchain.Public.Core.Tests.fsproj", "{390F1174-A42A-439A-8EF3-9B50C9E46B1D}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Core.Tests", "Own.Blockchain.Public.Core.Tests\Own.Blockchain.Public.Core.Tests.fsproj", "{390F1174-A42A-439A-8EF3-9B50C9E46B1D}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Crypto.Tests", "Chainium.Blockchain.Public.Crypto.Tests\Chainium.Blockchain.Public.Crypto.Tests.fsproj", "{C4E8E947-93AD-40BA-A08E-DB281212146A}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Crypto.Tests", "Own.Blockchain.Public.Crypto.Tests\Own.Blockchain.Public.Crypto.Tests.fsproj", "{C4E8E947-93AD-40BA-A08E-DB281212146A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.IntegrationTests.Common", "Chainium.Blockchain.Public.IntegrationTests.Common\Chainium.Blockchain.Public.IntegrationTests.Common.fsproj", "{A086B9CC-BE0D-4727-BA7B-A8D1EAFD71AE}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.IntegrationTests.Common", "Own.Blockchain.Public.IntegrationTests.Common\Own.Blockchain.Public.IntegrationTests.Common.fsproj", "{A086B9CC-BE0D-4727-BA7B-A8D1EAFD71AE}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.IntegrationTests.Sqlite", "Chainium.Blockchain.Public.IntegrationTests.Sqlite\Chainium.Blockchain.Public.IntegrationTests.Sqlite.fsproj", "{346AC764-5D7B-4697-8EB3-875C293A4426}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.IntegrationTests.Sqlite", "Own.Blockchain.Public.IntegrationTests.Sqlite\Own.Blockchain.Public.IntegrationTests.Sqlite.fsproj", "{346AC764-5D7B-4697-8EB3-875C293A4426}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.IntegrationTests.Postgres", "Chainium.Blockchain.Public.IntegrationTests.Postgres\Chainium.Blockchain.Public.IntegrationTests.Postgres.fsproj", "{71647845-4ABE-4D72-89B1-D59BB02D5FED}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.IntegrationTests.Postgres", "Own.Blockchain.Public.IntegrationTests.Postgres\Own.Blockchain.Public.IntegrationTests.Postgres.fsproj", "{71647845-4ABE-4D72-89B1-D59BB02D5FED}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Faucet", "Chainium.Blockchain.Public.Faucet\Chainium.Blockchain.Public.Faucet.fsproj", "{01BC9F97-DC7B-4CD6-BFD5-EB5E758CB6BB}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Faucet", "Own.Blockchain.Public.Faucet\Own.Blockchain.Public.Faucet.fsproj", "{01BC9F97-DC7B-4CD6-BFD5-EB5E758CB6BB}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chainium.Blockchain.Public.Net.Tests", "Chainium.Blockchain.Public.Net.Tests\Chainium.Blockchain.Public.Net.Tests.fsproj", "{C7554501-9580-45D4-B1F7-D6BD435CE631}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Net.Tests", "Own.Blockchain.Public.Net.Tests\Own.Blockchain.Public.Net.Tests.fsproj", "{C7554501-9580-45D4-B1F7-D6BD435CE631}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
