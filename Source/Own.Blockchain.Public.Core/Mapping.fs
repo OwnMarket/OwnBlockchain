@@ -220,7 +220,7 @@ module Mapping =
 
     let blockFromDto (dto : BlockDto) : Block =
         let config =
-            if dto.Configuration.Validators.IsEmpty then // TODO: Avoid storing empty config in data blocks.
+            if isNull (box dto.Configuration) then
                 None
             else
                 dto.Configuration |> blockchainConfigurationFromDto |> Some
@@ -237,11 +237,8 @@ module Mapping =
             TxSet = block.TxSet |> List.map (fun (TxHash h) -> h)
             Configuration =
                 match block.Configuration with
+                | None -> Unchecked.defaultof<_>
                 | Some c -> blockchainConfigurationToDto c
-                | None ->
-                    {
-                        Validators = [] // TODO: Avoid storing empty config in data blocks.
-                    }
         }
 
     let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
@@ -439,11 +436,7 @@ module Mapping =
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
             GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
             GetBlockApiResponseDto.TxSet = blockDto.TxSet
-            GetBlockApiResponseDto.Configuration =
-                if blockDto.Configuration.Validators.IsEmpty then
-                    Unchecked.defaultof<BlockchainConfigurationDto> // Not proud of this, but it's just for pretty JSON.
-                else
-                    blockDto.Configuration
+            GetBlockApiResponseDto.Configuration = blockDto.Configuration
         }
 
     let txToGetTxApiResponseDto
