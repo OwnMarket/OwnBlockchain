@@ -240,7 +240,7 @@ module Workflows =
 
     let storeReceivedBlock
         isValidAddress
-        (getValidators : unit -> ValidatorSnapshot list)
+        getBlock
         verifySignature
         blockExists
         saveBlock
@@ -265,8 +265,24 @@ module Workflows =
                         (block.Header.Number |> fun (BlockNumber n) -> n)
                     |> Result.appError
 
+            let! configBlock =
+                getBlock block.Header.ConfigurationBlockNumber
+                >>= Blocks.extractBlockFromEnvelopeDto
+
+            let validators =
+                configBlock.Configuration
+                |> Option.map (fun c -> c.Validators)
+                |? []
+
+            if validators.IsEmpty then
+                return!
+                    sprintf "No validators found in configuration block %i to validate block %i."
+                        (block.Header.ConfigurationBlockNumber |> fun (BlockNumber n) -> n)
+                        (block.Header.Number |> fun (BlockNumber n) -> n)
+                    |> Result.appError
+
             let expectedBlockProposer =
-                getValidators ()
+                validators
                 |> Consensus.getBlockProposer block.Header.Number
                 |> (fun v -> v.ValidatorAddress)
 
@@ -305,7 +321,6 @@ module Workflows =
         isValidSuccessorBlock
         createBlock
         getBlock
-        (getValidators : unit -> ValidatorSnapshot list)
         verifySignature
         persistTxResults
         saveBlock

@@ -101,13 +101,16 @@ module Composition =
     let getFallbackValidators () =
         getGenesisValidators () // TODO: Remove the workaround once the fallback logic is implemented.
 
+    let getCurrentValidators () =
+        getGenesisValidators () // TODO: Remove the workaround.
+
     let isValidator =
         Consensus.isValidator
-            getGenesisValidators
+            getCurrentValidators
 
     let shouldProposeBlock =
         Consensus.shouldProposeBlock
-            getGenesisValidators
+            getCurrentValidators
             (int64 Config.BlockCreationInterval)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,7 +162,7 @@ module Composition =
             getStakeState
             getTotalChxStaked
             getTopValidators
-            getGenesisValidators
+            getCurrentValidators
             getBlock
             Hashing.decode
             Hashing.hash
@@ -191,7 +194,7 @@ module Composition =
     let storeReceivedBlock =
         Workflows.storeReceivedBlock
             Hashing.isValidBlockchainAddress
-            getGenesisValidators
+            getBlock
             Signing.verifySignature
             blockExists
             saveBlock
@@ -211,7 +214,6 @@ module Composition =
             isValidSuccessorBlock
             createBlock
             getBlock
-            getGenesisValidators
             Signing.verifySignature
             persistTxResults
             saveBlock
@@ -306,7 +308,7 @@ module Composition =
             Transport.closeAllConnections
             Config.NetworkAddress
             Config.NetworkBootstrapNodes
-            getGenesisValidators
+            getCurrentValidators
             processPeerMessage
             publishEvent
 
