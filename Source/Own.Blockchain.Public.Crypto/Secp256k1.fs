@@ -69,14 +69,14 @@ module internal Secp256k1 =
         let signature = signRecoverable messageHash privateKey
         serializeSignature signature
 
-    let parseSignature recoveryId serializedSignature =
+    let parseSignature recoveryId serializedSignature = retry 1 <| fun _ ->
         let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE
         if secp256k1.RecoverableSignatureParseCompact(Span signature, Span serializedSignature, recoveryId) then
             signature
         else
             failwith "[Secp256k1] Error parsing signature"
 
-    let recoverPublicKeyFromSignature signature messageHash =
+    let recoverPublicKeyFromSignature signature messageHash = retry 1 <| fun _ ->
         let publicKey = Array.zeroCreate<byte> (Secp256k1.PUBKEY_LENGTH)
         if secp256k1.Recover(Span publicKey, Span signature, Span messageHash) then
             publicKey
