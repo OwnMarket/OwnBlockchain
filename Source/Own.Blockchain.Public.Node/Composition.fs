@@ -102,7 +102,9 @@ module Composition =
         getGenesisValidators () // TODO: Remove the workaround once the fallback logic is implemented.
 
     let getCurrentValidators () =
-        getGenesisValidators () // TODO: Remove the workaround.
+        Consensus.getCurrentValidators
+            getLastAppliedBlockNumber
+            getBlock
 
     let isValidator =
         Consensus.isValidator

@@ -28,6 +28,26 @@ module Consensus =
         |> getTopValidatorsByStake maxValidatorCount
         |> List.map Mapping.validatorSnapshotFromDto
 
+    let getCurrentValidators getLastAppliedBlockNumber getBlock =
+        let configBlock =
+            match getLastAppliedBlockNumber () with
+            | None -> failwith "Cannot get last applied block number."
+            | Some blockNumber ->
+                getBlock blockNumber
+                >>= Blocks.extractBlockFromEnvelopeDto
+                >>= (fun b -> getBlock b.Header.ConfigurationBlockNumber)
+                >>= Blocks.extractBlockFromEnvelopeDto
+
+        match configBlock with
+        | Error e -> failwith "Cannot get last applied configuration block."
+        | Ok block ->
+            match block.Configuration with
+            | None -> failwith "Cannot find configuration in last applied configuration block."
+            | Some config ->
+                match config.Validators with
+                | [] -> failwith "Cannot find validators in last applied configuration block."
+                | validators -> validators
+
     let isValidator
         (getValidators : unit -> ValidatorSnapshot list)
         validatorAddress
