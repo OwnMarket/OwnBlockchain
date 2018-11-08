@@ -23,27 +23,20 @@ module internal Secp256k1 =
             rngCsp.GetBytes(privateKey)
         privateKey
 
-    let rec serializePublicKey publicKey =
-        try
-            let serializedPublicKey = Array.zeroCreate<byte> Secp256k1.SERIALIZED_UNCOMPRESSED_PUBKEY_LENGTH
-            if secp256k1.PublicKeySerialize(Span serializedPublicKey, Span publicKey) then
-                Some serializedPublicKey
-            else
-                None
-        with
-        | _ -> None
-        |?> (fun _ -> serializePublicKey publicKey)
+    let serializePublicKey publicKey = retry 1 <| fun _ ->
+        let serializedPublicKey = Array.zeroCreate<byte> Secp256k1.SERIALIZED_UNCOMPRESSED_PUBKEY_LENGTH
+        if secp256k1.PublicKeySerialize(Span serializedPublicKey, Span publicKey) then
+            serializedPublicKey
+        else
+            failwith "[Secp256k1] Error serializing public key"
 
-    let rec calculatePublicKey privateKey =
-        try
-            let publicKey = Array.zeroCreate<byte> Secp256k1.PUBKEY_LENGTH
-            if secp256k1.PublicKeyCreate(Span publicKey, Span privateKey) then
-                Some (serializePublicKey publicKey)
-            else
-                None
-        with
-        | _ -> None
-        |?> (fun _ -> calculatePublicKey privateKey)
+    let calculatePublicKey privateKey = retry 1 <| fun _ ->
+        let publicKey = Array.zeroCreate<byte> Secp256k1.PUBKEY_LENGTH
+        if secp256k1.PublicKeyCreate(Span publicKey, Span privateKey) then
+            serializePublicKey publicKey
+        else
+            failwith "[Secp256k1] Error calculating public key"
+
 
     let rec generateKeyPair () =
         let privateKey = generatePrivateKey ()
