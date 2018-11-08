@@ -81,16 +81,6 @@ module Composition =
 
     let addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
-    let getGenesisValidators () =
-        Config.GenesisValidators
-        |> List.map (fun (validatorAddress, networkAddress) ->
-            {
-                ValidatorSnapshot.ValidatorAddress = BlockchainAddress validatorAddress
-                NetworkAddress = networkAddress
-                TotalStake = ChxAmount 0m
-            }
-        )
-
     let getTopValidators () =
         Consensus.getTopValidators
             getTopValidatorsByStake
@@ -99,7 +89,15 @@ module Composition =
             Config.MaxValidatorCount
 
     let getFallbackValidators () =
-        getGenesisValidators () // TODO: Remove the workaround once the fallback logic is implemented.
+        // TODO: Remove the workaround once the fallback logic is implemented.
+        Config.GenesisValidators
+        |> List.map (fun (validatorAddress, networkAddress) ->
+            {
+                ValidatorSnapshot.ValidatorAddress = BlockchainAddress validatorAddress
+                NetworkAddress = networkAddress
+                TotalStake = ChxAmount 0m
+            }
+        )
 
     let getCurrentValidators () =
         Consensus.getCurrentValidators
