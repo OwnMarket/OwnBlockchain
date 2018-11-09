@@ -291,13 +291,21 @@ module Workflows =
             if signerAddress <> expectedBlockProposer then
                 do! block.Header.Number
                     |> fun (BlockNumber n) -> n
-                    |> sprintf "Block %i not signed by proper validator."
+                    |> fun n ->
+                        sprintf "Block %i not signed by proper validator. Expected: %s / Actual: %s"
+                            n
+                            (expectedBlockProposer |> fun (BlockchainAddress a) -> a)
+                            (signerAddress |> fun (BlockchainAddress a) -> a)
                     |> Result.appError
 
             if block.Header.Validator <> expectedBlockProposer then
                 do! block.Header.Number
                     |> fun (BlockNumber n) -> n
-                    |> sprintf "Block %i not proposed by proper validator."
+                    |> fun n ->
+                        sprintf "Block %i not proposed by proper validator. Expected: %s / Actual: %s"
+                            n
+                            (expectedBlockProposer |> fun (BlockchainAddress a) -> a)
+                            (block.Header.Validator |> fun (BlockchainAddress a) -> a)
                     |> Result.appError
 
             do! saveBlock block.Header.Number blockEnvelopeDto
@@ -359,6 +367,8 @@ module Workflows =
                 do! persistTxResults outputDto.TxResults
                 do! applyNewState blockInfoDto outputDto
             else
+                Log.debugf "RECEIVED BLOCK:\n%A" block
+                Log.debugf "CREATED BLOCK:\n%A" createdBlock
                 return!
                     blockNumber
                     |> fun (BlockNumber n) ->
