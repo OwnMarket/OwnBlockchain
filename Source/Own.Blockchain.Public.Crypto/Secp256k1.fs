@@ -23,14 +23,14 @@ module internal Secp256k1 =
             rngCsp.GetBytes(privateKey)
         privateKey
 
-    let serializePublicKey publicKey = retry 1 <| fun _ ->
+    let serializePublicKey publicKey = retry 3 <| fun _ ->
         let serializedPublicKey = Array.zeroCreate<byte> Secp256k1.SERIALIZED_UNCOMPRESSED_PUBKEY_LENGTH
         if secp256k1.PublicKeySerialize(Span serializedPublicKey, Span publicKey) then
             serializedPublicKey
         else
             failwith "[Secp256k1] Error serializing public key"
 
-    let calculatePublicKey privateKey = retry 1 <| fun _ ->
+    let calculatePublicKey privateKey = retry 3 <| fun _ ->
         let publicKey = Array.zeroCreate<byte> Secp256k1.PUBKEY_LENGTH
         if secp256k1.PublicKeyCreate(Span publicKey, Span privateKey) then
             serializePublicKey publicKey
@@ -62,14 +62,14 @@ module internal Secp256k1 =
         let signature = signRecoverable messageHash privateKey
         serializeSignature signature
 
-    let parseSignature recoveryId serializedSignature = retry 1 <| fun _ ->
+    let parseSignature recoveryId serializedSignature = retry 3 <| fun _ ->
         let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE
         if secp256k1.RecoverableSignatureParseCompact(Span signature, Span serializedSignature, recoveryId) then
             signature
         else
             failwith "[Secp256k1] Error parsing signature"
 
-    let recoverPublicKeyFromSignature signature messageHash = retry 1 <| fun _ ->
+    let recoverPublicKeyFromSignature signature messageHash = retry 3 <| fun _ ->
         let publicKey = Array.zeroCreate<byte> (Secp256k1.PUBKEY_LENGTH)
         if secp256k1.Recover(Span publicKey, Span signature, Span messageHash) then
             publicKey
