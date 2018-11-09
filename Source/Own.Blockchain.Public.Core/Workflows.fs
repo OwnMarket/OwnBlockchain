@@ -234,6 +234,14 @@ module Workflows =
                 Synchronization.setLastStoredBlock block
                 Synchronization.resetLastKnownBlock ()
 
+                #if DEBUG
+                let outputFileName =
+                    block.Header.Number
+                    |> fun (BlockNumber n) -> n
+                    |> sprintf "Data/Block_%i_output_propose"
+                System.IO.File.WriteAllText(outputFileName, Newtonsoft.Json.JsonConvert.SerializeObject(output))
+                #endif
+
                 return { BlockCreatedEventData.BlockNumber = block.Header.Number }
             }
             |> Some
@@ -358,6 +366,14 @@ module Workflows =
                     block.Header.Timestamp
                     block.TxSet
                     block.Configuration
+
+            #if DEBUG
+            let outputFileName =
+                block.Header.Number
+                |> fun (BlockNumber n) -> n
+                |> sprintf "Data/Block_%i_output_apply"
+            System.IO.File.WriteAllText(outputFileName, Newtonsoft.Json.JsonConvert.SerializeObject(output))
+            #endif
 
             if block = createdBlock then
                 let blockInfoDto = Mapping.blockHeaderToBlockInfoDto createdBlock.Header
