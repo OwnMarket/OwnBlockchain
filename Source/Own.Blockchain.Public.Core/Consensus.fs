@@ -35,8 +35,13 @@ module Consensus =
             | Some blockNumber ->
                 getBlock blockNumber
                 >>= Blocks.extractBlockFromEnvelopeDto
-                >>= (fun b -> getBlock b.Header.ConfigurationBlockNumber)
-                >>= Blocks.extractBlockFromEnvelopeDto
+                >>= (fun b ->
+                    if b.Configuration.IsSome then
+                        Ok b // Last block is the configuration block
+                    else
+                        getBlock b.Header.ConfigurationBlockNumber
+                        >>= Blocks.extractBlockFromEnvelopeDto
+                )
 
         match configBlock with
         | Error e -> failwith "Cannot get last applied configuration block."
