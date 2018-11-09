@@ -183,7 +183,6 @@ module Composition =
             getAvailableChxBalance
             Signing.signMessage
             saveBlock
-            applyNewState
             Config.MaxTxCountPerBlock
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
@@ -211,9 +210,7 @@ module Composition =
             isValidSuccessorBlock
             createBlock
             getBlock
-            Signing.verifySignature
             persistTxResults
-            saveBlock
             applyNewState
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

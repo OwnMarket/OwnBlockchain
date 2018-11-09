@@ -142,8 +142,9 @@ module Synchronization =
                         requestBlockFromPeer blockNumber
                 else
                     result {
-                        let! blockEnvelopeDto = getBlock blockNumber
-                        let! block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+                        let! block =
+                            getBlock blockNumber
+                            >>= Blocks.extractBlockFromEnvelopeDto
                         let missingTxs =
                             [
                                 for txHash in block.TxSet do
@@ -152,7 +153,7 @@ module Synchronization =
                                         yield txHash
                             ]
                         if missingTxs.IsEmpty && blockNumber = (lastAppliedBlockNumber + 1) then
-                            do! applyBlock blockNumber blockEnvelopeDto
+                            do! applyBlock blockNumber
                             lastAppliedBlockNumber <- lastAppliedBlockNumber + 1
                         return ()
                     }

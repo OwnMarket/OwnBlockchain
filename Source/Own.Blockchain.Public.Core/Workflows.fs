@@ -175,7 +175,6 @@ module Workflows =
         getAvailableChxBalanceFromStorage
         signBlock
         saveBlock
-        applyNewState
         maxTxCountPerBlock
         addressFromPrivateKey
         validatorPrivateKey
@@ -326,12 +325,9 @@ module Workflows =
         isValidSuccessorBlock
         createBlock
         getBlock
-        verifySignature
         persistTxResults
-        saveBlock
         applyNewState
         blockNumber
-        blockEnvelopeDto
         =
 
         result {
