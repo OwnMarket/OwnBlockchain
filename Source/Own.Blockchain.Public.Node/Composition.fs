@@ -165,8 +165,6 @@ module Composition =
             Hashing.hash
             Hashing.merkleTree
             calculateConfigurationBlockNumberForNewBlock
-            isConfigurationBlock
-            createNewBlockchainConfiguration
             (ChxAmount Config.MinTxActionFee)
 
     let getAvailableChxBalance =
@@ -177,6 +175,8 @@ module Composition =
     let proposeBlock =
         Workflows.proposeBlock
             createBlock
+            isConfigurationBlock
+            createNewBlockchainConfiguration
             getBlock
             getPendingTxs
             getChxBalanceState

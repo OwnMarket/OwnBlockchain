@@ -104,14 +104,13 @@ module Workflows =
         createHash
         createMerkleTree
         (calculateConfigurationBlockNumberForNewBlock : BlockNumber -> BlockNumber)
-        isConfigurationBlock
-        (createNewBlockchainConfiguration : unit -> BlockchainConfiguration)
         minTxActionFee
         validatorAddress
         (previousBlockHash : BlockHash)
         blockNumber
         timestamp
         txSet
+        blockchainConfiguration
         =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
@@ -144,13 +143,6 @@ module Workflows =
         let configurationBlockNumber =
             calculateConfigurationBlockNumberForNewBlock blockNumber
 
-        let blockchainConfiguration =
-            if isConfigurationBlock blockNumber then
-                createNewBlockchainConfiguration ()
-                |> Some
-            else
-                None
-
         let block =
             Blocks.assembleBlock
                 decodeHash
@@ -169,6 +161,8 @@ module Workflows =
 
     let proposeBlock
         createBlock
+        isConfigurationBlock
+        (createNewBlockchainConfiguration : unit -> BlockchainConfiguration)
         getBlock
         getPendingTxs
         getChxBalanceStateFromStorage
@@ -206,13 +200,23 @@ module Workflows =
                     getBlock previousBlockNumber
                     >>= Blocks.extractBlockFromEnvelopeDto
 
+                let blockNumber = (previousBlock.Header.Number + 1)
+
+                let blockchainConfiguration =
+                    if isConfigurationBlock blockNumber then
+                        createNewBlockchainConfiguration ()
+                        |> Some
+                    else
+                        None
+
                 let block, output =
                     createBlock
                         validatorAddress
                         previousBlock.Header.Hash
-                        (previousBlock.Header.Number + 1L)
+                        blockNumber
                         timestamp
                         txSet
+                        blockchainConfiguration
 
                 do! block
                     |> Mapping.blockToDto
@@ -288,7 +292,7 @@ module Workflows =
                 do! block.Header.Number
                     |> fun (BlockNumber n) -> n
                     |> fun n ->
-                        sprintf "Block %i not signed by proper validator. Expected: %s / Actual: %s"
+                        sprintf "Block %i not signed by expected validator. Expected: %s / Actual: %s"
                             n
                             (expectedBlockProposer |> fun (BlockchainAddress a) -> a)
                             (signerAddress |> fun (BlockchainAddress a) -> a)
@@ -298,7 +302,7 @@ module Workflows =
                 do! block.Header.Number
                     |> fun (BlockNumber n) -> n
                     |> fun n ->
-                        sprintf "Block %i not proposed by proper validator. Expected: %s / Actual: %s"
+                        sprintf "Block %i not proposed by expected validator. Expected: %s / Actual: %s"
                             n
                             (expectedBlockProposer |> fun (BlockchainAddress a) -> a)
                             (block.Header.Validator |> fun (BlockchainAddress a) -> a)
@@ -353,6 +357,7 @@ module Workflows =
                     block.Header.Number
                     block.Header.Timestamp
                     block.TxSet
+                    block.Configuration
 
             if block = createdBlock then
                 let blockInfoDto = Mapping.blockHeaderToBlockInfoDto createdBlock.Header
