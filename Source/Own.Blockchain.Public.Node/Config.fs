@@ -107,4 +107,4 @@ type Config () =
 
     static member MaxValidatorCount = 100
 
-    static member QuorumSupplyPercent = 0m // TODO: Set proper value
+    static member QuorumSupplyPercent = 25m
