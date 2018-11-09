@@ -46,11 +46,11 @@ module Peers =
 
         let printActiveMembers () =
             #if DEBUG
-                printfn "\n ========= ACTIVE CONNECTIONS [%s] ========="
+                printfn "\n========= ACTIVE CONNECTIONS [%s] ========="
                     (DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"))
                 for m in activeMembers do
-                    printfn " %s Heartbeat:%i" (m.Key |> networkAddressToString) m.Value.Heartbeat
-                printfn " ================================================================\n"
+                    printfn "%s Heartbeat:%i" (m.Key |> networkAddressToString) m.Value.Heartbeat
+                printfn "================================================================\n"
             #else
                 ()
             #endif
