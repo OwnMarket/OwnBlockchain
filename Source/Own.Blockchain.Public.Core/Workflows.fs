@@ -100,9 +100,6 @@ module Workflows =
         getValidatorStateFromStorage
         getStakeStateFromStorage
         getTotalChxStakedFromStorage
-        (getTopValidators : unit -> ValidatorSnapshot list)
-        (getCurrentValidators : unit -> ValidatorSnapshot list)
-        getBlock
         decodeHash
         createHash
         createMerkleTree
