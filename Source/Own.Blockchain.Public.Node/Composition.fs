@@ -82,7 +82,7 @@ module Composition =
     let addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
     let getTopValidators () =
-        Consensus.getTopValidators
+        Validators.getTopValidators
             getTopValidatorsByStake
             (ChxAmount Config.GenesisChxSupply)
             Config.QuorumSupplyPercent
@@ -100,16 +100,16 @@ module Composition =
         )
 
     let getCurrentValidators () =
-        Consensus.getCurrentValidators
+        Validators.getCurrentValidators
             getLastAppliedBlockNumber
             getBlock
 
     let isValidator =
-        Consensus.isValidator
+        Validators.isValidator
             getCurrentValidators
 
     let shouldProposeBlock =
-        Consensus.shouldProposeBlock
+        Validators.shouldProposeBlock
             getCurrentValidators
             (int64 Config.BlockCreationInterval)
 

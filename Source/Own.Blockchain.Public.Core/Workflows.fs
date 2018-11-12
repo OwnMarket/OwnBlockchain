@@ -291,7 +291,7 @@ module Workflows =
 
             let expectedBlockProposer =
                 validators
-                |> Consensus.getBlockProposer block.Header.Number
+                |> Validators.getBlockProposer block.Header.Number
                 |> (fun v -> v.ValidatorAddress)
 
             let! signerAddress = Validation.verifyBlockSignature verifySignature blockEnvelope
