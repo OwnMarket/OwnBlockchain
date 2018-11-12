@@ -2,6 +2,7 @@ namespace Own.Common
 
 open System
 open System.Collections.Concurrent
+open System.Threading
 open Microsoft.FSharp.Reflection
 
 [<AutoOpen>]
@@ -16,6 +17,10 @@ module Common =
     let memoize (f : 'TIn -> 'TOut) =
         let cache = ConcurrentDictionary<'TIn, 'TOut>()
         fun x -> cache.GetOrAdd(x, f)
+
+    let memoizePerThread (f : 'TIn -> 'TOut) =
+        let cache = ConcurrentDictionary<int * 'TIn, 'TOut>()
+        fun x -> cache.GetOrAdd((Thread.CurrentThread.ManagedThreadId, x), fun _ -> f x)
 
     let retry timesToRetry f =
         if timesToRetry < 1 then
