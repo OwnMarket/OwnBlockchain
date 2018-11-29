@@ -11,11 +11,10 @@ type Config () =
     static let appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
     static let config =
-        (
-            ConfigurationBuilder()
-                .SetBasePath(appDir)
-                .AddJsonFile("AppSettings.json")
-        ).Build()
+        ConfigurationBuilder()
+            .SetBasePath(appDir)
+            .AddJsonFile("AppSettings.json")
+            .Build()
 
     static member NodeApiUrl
         with get () =
