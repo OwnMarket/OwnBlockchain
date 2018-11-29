@@ -7,14 +7,14 @@ module Log =
     // TODO: Implement logging using an instance of a MailboxProcessor, to avoid corrupted output when multi-threading.
 
     let private log logType o =
-        sprintf "%s |%s| %s" (DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz")) logType (o.ToString())
+        sprintf "%s %s | %s" (DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz")) logType (o.ToString())
 
-    let info o = log "I" o |> printfn "%s"
-    let warning o = log "W" o |> printfn "%s"
-    let error o = log "E" o |> printfn "%s"
+    let info o = log "INF" o |> printfn "%s"
+    let warning o = log "WRN" o |> printfn "%s"
+    let error o = log "ERR" o |> printfn "%s"
     let debug o =
         #if DEBUG
-            log "D" o |> printfn "%s"
+            log "DBG" o |> printfn "%s"
         #else
             ()
         #endif
