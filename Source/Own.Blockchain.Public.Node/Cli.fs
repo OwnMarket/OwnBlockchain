@@ -21,7 +21,7 @@ module Cli =
         Composition.discoverNetwork ()
         Composition.requestLastBlockFromPeer ()
         Workers.startApplier ()
-        Workers.startProposer ()
+        Agents.startValidator ()
         Api.start ()
         Composition.stopGossip ()
 

@@ -129,18 +129,18 @@ module Serialization =
         new CustomCreationConverter<PeerMessageDto>() with
 
         override __.Create objectType =
-            failwith "NotImplemented"
+            failwith "Not implemented"
 
         override __.ReadJson
             (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
             =
 
             let jObject = JObject.Load(reader)
-            let messageData = tokenValue "MessageData"
 
             match (tokenValue "MessageType" jObject) with
             | None -> jObject |> box
             | Some messageType ->
+                let messageData = tokenValue "MessageData"
                 let peerMessageType = messageType.Value<string>()
                 match peerMessageType |> peerMessageTypeToObjectMapping.TryFind with
                 | Some create ->
@@ -164,63 +164,3 @@ module Serialization =
 
     let deserializeJObject<'T> (data : obj) =
         (data :?> JObject).ToObject<'T>()
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Consensus
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let private tokenToConsensusMessage<'T> messageType (token : JToken option) =
-        match token with
-        | Some _ ->
-            {
-                ConsensusMessageType = messageType
-                ConsensusMessage = JsonConvert.DeserializeObject<'T> (token.Value.ToString())
-            }
-            |> box
-        | None ->
-            token |> box
-
-    let private consensusMessageTypeToObjectMapping =
-        [
-            "Propose", tokenToConsensusMessage<ConsensusProposeMessageDto>
-            "Vote", tokenToConsensusMessage<ConsensusVoteMessageDto>
-            "Commit", tokenToConsensusMessage<ConsensusCommitMessageDto>
-        ]
-        |> Map.ofList
-
-    let private consensusMessageConverter = {
-        new CustomCreationConverter<ConsensusMessageDto>() with
-
-        override __.Create objectType =
-            failwith "NotImplemented"
-
-        override __.ReadJson
-            (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
-            =
-
-            let jObject = JObject.Load(reader)
-            let messageData = tokenValue "ConsensusMessage"
-
-            match (tokenValue "ConsensusMessageType" jObject) with
-            | None -> jObject |> box
-            | Some messageType ->
-                let consensusMessageType = messageType.Value<string>()
-                match consensusMessageType |> consensusMessageTypeToObjectMapping.TryFind with
-                | Some create ->
-                    messageData jObject |> create consensusMessageType
-                | None ->
-                    {
-                        ConsensusMessageType = consensusMessageType
-                        ConsensusMessage =
-                            match messageData jObject with
-                            | None -> null
-                            | Some x -> x.ToString()
-                    }
-                    |> box
-    }
-
-    let serializeConsensusMessage dto =
-        JsonConvert.SerializeObject dto
-
-    let deserializeConsensusMessage message =
-        JsonConvert.DeserializeObject<ConsensusMessageDto> (message, consensusMessageConverter)

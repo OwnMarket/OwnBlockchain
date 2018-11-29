@@ -123,7 +123,6 @@ module SharedTests =
 
     let processTransactions expectedBlockPath =
         Workers.startApplier ()
-        Workers.startProposer ()
 
         let mutable iter = 0
         let sleepTime = 2

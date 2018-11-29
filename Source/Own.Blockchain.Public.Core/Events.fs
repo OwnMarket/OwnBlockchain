@@ -16,3 +16,5 @@ type AppEvent =
     | TxReceived of TxReceivedEventData
     | BlockCreated of BlockCreatedEventData
     | BlockReceived of BlockCreatedEventData
+    | ConsensusMessageReceived of ConsensusCommand
+    | ConsensusCommandInvoked of ConsensusCommand

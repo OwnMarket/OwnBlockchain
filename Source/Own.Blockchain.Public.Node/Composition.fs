@@ -73,7 +73,7 @@ module Composition =
 
     let removePeerNode = Db.removePeerNode Config.DbConnectionString
 
-    let applyNewState = Db.applyNewState Config.DbConnectionString
+    let persistStateChanges = Db.persistStateChanges Config.DbConnectionString
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Validators
@@ -108,11 +108,6 @@ module Composition =
         Validators.isValidator
             getCurrentValidators
 
-    let shouldProposeBlock =
-        Validators.shouldProposeBlock
-            getCurrentValidators
-            (int64 Config.BlockCreationInterval)
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +134,7 @@ module Composition =
             getLastAppliedBlockNumber
             getBlock
             saveBlock
-            applyNewState
+            persistStateChanges
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
@@ -174,6 +169,7 @@ module Composition =
 
     let proposeBlock =
         Workflows.proposeBlock
+            getLastAppliedBlockNumber
             createBlock
             isConfigurationBlock
             createNewBlockchainConfiguration
@@ -194,6 +190,7 @@ module Composition =
             Signing.verifySignature
             blockExists
             saveBlock
+            Config.MinValidatorCount
 
     let persistTxResults =
         Workflows.persistTxResults
@@ -205,13 +202,18 @@ module Composition =
             Hashing.hash
             Hashing.merkleTree
 
-    let applyBlock =
-        Workflows.applyBlock
+    let applyBlockToCurrentState =
+        Workflows.applyBlockToCurrentState
+            getBlock
             isValidSuccessorBlock
             createBlock
+
+    let applyBlock =
+        Workflows.applyBlock
             getBlock
+            applyBlockToCurrentState
             persistTxResults
-            applyNewState
+            persistStateChanges
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
@@ -234,6 +236,38 @@ module Composition =
             applyBlock
             Config.ConfigurationBlockDelta
             Config.MaxNumberOfBlocksToFetchInParallel
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let createConsensusStateInstance publishEvent =
+        Consensus.createConsensusStateInstance
+            getLastAppliedBlockNumber
+            getCurrentValidators
+            proposeBlock
+            applyBlockToCurrentState
+            saveBlock
+            applyBlock
+            Hashing.decode
+            Hashing.hash
+            Hashing.zeroHash
+            Signing.signMessage
+            Peers.sendMessage
+            publishEvent
+            addressFromPrivateKey
+            (PrivateKey Config.ValidatorPrivateKey)
+            Config.ConsensusTimeoutPropose
+            Config.ConsensusTimeoutVote
+            Config.ConsensusTimeoutCommit
+
+    let handleReceivedConsensusMessage =
+        Workflows.handleReceivedConsensusMessage
+            Hashing.decode
+            Hashing.hash
+            Hashing.zeroHash
+            getCurrentValidators
+            Signing.verifySignature
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API
@@ -285,6 +319,7 @@ module Composition =
             getLastAppliedBlockNumber
             submitTx
             storeReceivedBlock
+            handleReceivedConsensusMessage
             Peers.respondToPeer
             peerMessage
 

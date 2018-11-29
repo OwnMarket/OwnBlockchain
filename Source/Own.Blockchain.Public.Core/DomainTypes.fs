@@ -145,7 +145,7 @@ type Block = {
 
 type BlockEnvelope = {
     RawBlock : byte[]
-    Signature : Signature
+    Signatures : Signature list
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -238,13 +238,17 @@ type ProcessingOutput = {
 // Consensus
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type ConsensusRound = ConsensusRound of int16
-type ConsensusMessageId = ConsensusMessageId of string
+type ConsensusRound = ConsensusRound of int
+
+type ConsensusStep =
+    | Propose
+    | Vote
+    | Commit
 
 type ConsensusMessage =
-    | Propose of Block
-    | Vote of BlockHash
-    | Commit of BlockHash
+    | Propose of Block * ConsensusRound
+    | Vote of BlockHash option
+    | Commit of BlockHash option
 
 type ConsensusMessageEnvelope = {
     BlockNumber : BlockNumber
@@ -252,6 +256,13 @@ type ConsensusMessageEnvelope = {
     ConsensusMessage : ConsensusMessage
     Signature : Signature
 }
+
+type ConsensusCommand =
+    | Synchronize
+    | Message of BlockchainAddress * ConsensusMessageEnvelope
+    | Timeout of BlockNumber * ConsensusRound * ConsensusStep
+
+type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
@@ -327,6 +338,20 @@ type BlockNumber with
         BlockNumber (n1 - n2)
     static member (-) (BlockNumber n1, n2) =
         BlockNumber (n1 - int64 n2)
+
+type ConsensusRound with
+    static member Zero =
+        ConsensusRound 0
+    static member One =
+        ConsensusRound 1
+    static member (+) (ConsensusRound n1, ConsensusRound n2) =
+        ConsensusRound (n1 + n2)
+    static member (+) (ConsensusRound n1, n2) =
+        ConsensusRound (n1 + n2)
+    static member (-) (ConsensusRound n1, ConsensusRound n2) =
+        ConsensusRound (n1 - n2)
+    static member (-) (ConsensusRound n1, n2) =
+        ConsensusRound (n1 - n2)
 
 type Nonce with
     static member Zero =

@@ -7,6 +7,20 @@ open Own.Blockchain.Public.Core.Dtos
 
 module Validators =
 
+    /// 2f + 1
+    let calculateQualifiedMajority validatorCount =
+        decimal validatorCount / 3m * 2m
+        |> Math.Floor
+        |> Convert.ToInt32
+        |> (+) 1
+
+    /// f + 1
+    let calculateValidQuorum validatorCount =
+        decimal validatorCount / 3m
+        |> Math.Floor
+        |> Convert.ToInt32
+        |> (+) 1
+
     let calculateQuorumSupply quorumSupplyPercent (ChxAmount totalSupply) =
         Decimal.Round(totalSupply * quorumSupplyPercent / 100m, 18, MidpointRounding.AwayFromZero)
         |> ChxAmount
@@ -61,33 +75,21 @@ module Validators =
         getValidators ()
         |> List.exists (fun v -> v.ValidatorAddress = validatorAddress)
 
-    let getBlockProposer (BlockNumber blockNumber) (validators : ValidatorSnapshot list) =
-        let validatorIndex = blockNumber % (int64 validators.Length) |> Convert.ToInt32
+    let getProposer
+        (BlockNumber blockNumber)
+        (ConsensusRound consensusRound)
+        (validators : ValidatorSnapshot list)
+        =
+
+        let validatorIndex = (blockNumber + int64 consensusRound) % (int64 validators.Length) |> Convert.ToInt32
         validators
         |> List.sortBy (fun v -> v.ValidatorAddress)
         |> List.item validatorIndex
 
-    let isProposer
-        (getValidators : unit -> ValidatorSnapshot list)
+    let getProposerAddress
         blockNumber
-        validatorAddress
+        consensusRound
+        validators
         =
 
-        let blockProposer =
-            getValidators ()
-            |> getBlockProposer blockNumber
-
-        blockProposer.ValidatorAddress = validatorAddress
-
-    let shouldProposeBlock
-        getValidators
-        blockCreationInterval
-        validatorAddress
-        lastAppliedBlockNumber
-        (Timestamp lastBlockTimestamp)
-        (Timestamp currentTimestamp)
-        =
-
-        lastAppliedBlockNumber = Synchronization.getLastKnownBlockNumber ()
-        && (lastBlockTimestamp + blockCreationInterval) <= currentTimestamp
-        && isProposer getValidators (lastAppliedBlockNumber + 1L) validatorAddress
+        (getProposer blockNumber consensusRound validators).ValidatorAddress

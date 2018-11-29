@@ -32,19 +32,12 @@ module Extensions =
                 |> (fun stackTraces -> String.Join("\n--- Inner Exception ---\n", stackTraces))
                 |> sprintf "%s\n%s" this.AllMessages
 
-module Map =
-
-    let inline ofDict dictionary =
-        dictionary
-        |> Seq.map (|KeyValue|)
-        |> Map.ofSeq
-
 module Seq =
 
-    let inline shuffleR (r : Random) xs =
+    let inline shuffleWithRandom (r : Random) xs =
         xs |> Seq.sortBy (fun _ -> r.Next())
 
-    let inline shuffleG xs =
+    let inline shuffle xs =
         xs |> Seq.sortBy (fun _ -> Guid.NewGuid())
 
     let shuffleCrypto xs =
@@ -54,4 +47,22 @@ module Seq =
         let bytes = Array.zeroCreate a.Length
         rng.GetBytes bytes
 
-        Array.zip bytes a |> Array.sortBy fst |> Array.map snd
+        Array.zip bytes a |> Array.sortBy fst |> Array.map snd |> Array.toSeq
+
+    let inline ofDict dictionary =
+        dictionary
+        |> Seq.map (|KeyValue|)
+
+module List =
+
+    let inline ofDict dictionary =
+        dictionary
+        |> Seq.ofDict
+        |> List.ofSeq
+
+module Map =
+
+    let inline ofDict dictionary =
+        dictionary
+        |> Seq.ofDict
+        |> Map.ofSeq

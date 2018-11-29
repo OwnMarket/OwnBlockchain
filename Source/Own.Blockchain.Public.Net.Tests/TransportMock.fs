@@ -43,7 +43,7 @@ module TransportMock =
         | [] -> ()
         | _ ->
             multicastAddresses
-            |> Seq.shuffleG
+            |> Seq.shuffle
             |> Seq.toList
             |> List.iter (fun networkAddress ->
                 let msg = packMessage multicastMessage

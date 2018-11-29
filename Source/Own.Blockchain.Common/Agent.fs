@@ -21,7 +21,7 @@ module Agent =
 
         agent
 
-    let startStateful messageHandler initialState =
+    let startStateful initialState messageHandler =
         let agent = MailboxProcessor.Start <| fun inbox ->
             let rec messageLoop oldState =
                 async {

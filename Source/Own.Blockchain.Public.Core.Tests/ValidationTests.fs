@@ -56,7 +56,8 @@ module ValidationTests =
         }
 
         let expMessage = AppError "Nonce must be positive."
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -95,7 +96,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -117,7 +119,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -145,7 +148,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -171,7 +175,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -199,7 +204,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -227,7 +233,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -255,7 +262,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -283,7 +291,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -321,7 +330,8 @@ module ValidationTests =
                 ]
         }
 
-        let result = Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.minTxActionFee chAddress txHash testTx
 
         match result with
         | Ok t ->

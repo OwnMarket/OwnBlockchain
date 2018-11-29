@@ -118,28 +118,28 @@ module Processing =
             stakes.GetOrAdd((stakeholderAddress, validatorAddress), getStakeStateFromStorage)
 
         // Not part of the blockchain state
-        member __.GetTotalChxStaked (address : BlockchainAddress) =
+        member __.GetTotalChxStaked (address) =
             totalChxStaked.GetOrAdd(address, getTotalChxStakedFromStorage)
 
-        member __.SetChxBalance (address : BlockchainAddress, state : ChxBalanceState) =
+        member __.SetChxBalance (address, state : ChxBalanceState) =
             chxBalances.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
 
-        member __.SetHolding (accountHash : AccountHash, assetHash : AssetHash, state : HoldingState) =
+        member __.SetHolding (accountHash, assetHash, state : HoldingState) =
             holdings.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
-        member __.SetAccount (accountHash : AccountHash, state : AccountState) =
+        member __.SetAccount (accountHash, state : AccountState) =
             let state = Some state
             accounts.AddOrUpdate (accountHash, state, fun _ _ -> state) |> ignore
 
-        member __.SetAsset (assetHash : AssetHash, state : AssetState) =
+        member __.SetAsset (assetHash, state : AssetState) =
             let state = Some state
             assets.AddOrUpdate (assetHash, state, fun _ _ -> state) |> ignore
 
-        member __.SetValidator (address : BlockchainAddress, state : ValidatorState) =
+        member __.SetValidator (address, state : ValidatorState) =
             let state = Some state
             validators.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
 
-        member __.SetStake (stakeholderAddr : BlockchainAddress, validatorAddr : BlockchainAddress, state : StakeState) =
+        member __.SetStake (stakeholderAddr, validatorAddr, state : StakeState) =
             let state = Some state
             stakes.AddOrUpdate((stakeholderAddr, validatorAddr), state, fun _ _ -> state) |> ignore
 

@@ -46,11 +46,11 @@ module Peers =
 
         let printActiveMembers () =
             #if DEBUG
-                printfn "\n========= ACTIVE CONNECTIONS [%s] ========="
+                printfn "========= ACTIVE CONNECTIONS [%s] ========="
                     (DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"))
                 for m in activeMembers do
                     printfn "%s Heartbeat:%i" (m.Key |> networkAddressToString) m.Value.Heartbeat
-                printfn "================================================================\n"
+                printfn "================================================================"
             #else
                 ()
             #endif
@@ -183,7 +183,7 @@ module Peers =
                             |> ignore
                         selectedUnicastPeer
 
-                    targetAddress |> Option.iter(fun address ->
+                    targetAddress |> Option.iter (fun address ->
                         let unicastMessage = RequestDataMessage {
                             MessageId = id
                             SenderAddress = config.NetworkAddress
@@ -320,7 +320,7 @@ module Peers =
             | [] -> None
             | _ ->
                 connectedMembers
-                |> Seq.shuffleG
+                |> Seq.shuffle
                 |> Seq.chunkBySize fanout
                 |> Seq.head
                 |> extractValuesFromKeyValuePairs
@@ -367,7 +367,7 @@ module Peers =
             | _ ->
                 let fanoutRecipientAddresses =
                     recipientAddresses
-                    |> Seq.shuffleG
+                    |> Seq.shuffle
                     |> Seq.chunkBySize fanout
                     |> Seq.head
                     |> Seq.toList
@@ -423,9 +423,9 @@ module Peers =
                     fun _ _ -> []) |> ignore
 
                 processPeerMessage (GossipMessage gossipMessage)
-                |> Option.iter(fun result ->
+                |> Option.iter (fun result ->
                     match result with
-                    | Ok appEvent -> appEvent |> Option.iter(fun e -> e |> publishEvent)
+                    | Ok appEvent -> appEvent |> Option.iter publishEvent
                     | Error errors -> Log.appErrors errors
                 )
 
@@ -443,7 +443,7 @@ module Peers =
             match peerMessage with
             | GossipDiscoveryMessage m -> __.ReceiveMembers m
             | GossipMessage m -> __.ReceiveGossipMessage processPeerMessage publishEvent m
-            | MulticastMessage m -> __.ReceiveMulticastMessage processPeerMessage m
+            | MulticastMessage m -> __.ReceiveMulticastMessage processPeerMessage publishEvent m
             | RequestDataMessage m -> __.ReceiveRequestMessage processPeerMessage m
             | ResponseDataMessage m -> __.ReceiveResponseMessage processPeerMessage m
 
@@ -451,13 +451,11 @@ module Peers =
         // Multicast Message Passing
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member private __.ReceiveMulticastMessage processPeerMessage multicastMessage =
+        member private __.ReceiveMulticastMessage processPeerMessage publishEvent multicastMessage =
             processPeerMessage (MulticastMessage multicastMessage)
-            |> Option.iter(fun result ->
+            |> Option.iter (fun result ->
                 match result with
-                | Ok appEvent ->
-                    // Do not propagate on multicast.
-                    appEvent |> Option.iter(fun e -> Log.infof "EVENT: %A" e)
+                | Ok appEvent -> appEvent |> Option.iter publishEvent
                 | Error errors -> Log.appErrors errors
             )
 
@@ -467,27 +465,27 @@ module Peers =
 
         member private __.ReceiveRequestMessage processPeerMessage (requestDataMessage : RequestDataMessage) =
             processPeerMessage (RequestDataMessage requestDataMessage)
-            |> Option.iter(fun result ->
+            |> Option.iter (fun result ->
                 match result with
                 | Ok appEvent ->
-                    appEvent |> Option.iter(fun e -> Log.infof "EVENT: %A" e)
+                    appEvent |> Option.iter (fun e -> Log.debugf "IGNORED EVENT: %A" e)
                 | Error errors -> Log.appErrors errors
             )
 
         member private __.ReceiveResponseMessage processPeerMessage (requestDataMessage : ResponseDataMessage) =
             processPeerMessage (ResponseDataMessage requestDataMessage)
-            |> Option.iter(fun result ->
+            |> Option.iter (fun result ->
                 match result with
                 | Ok appEvent ->
                     pendingDataRequests.TryRemove requestDataMessage.MessageId |> ignore
-                    appEvent |> Option.iter(fun e -> Log.infof "EVENT: %A" e)
+                    appEvent |> Option.iter (fun e -> Log.debugf "IGNORED EVENT: %A" e)
                 | Error errors -> Log.appErrors errors
             )
 
         member private __.SelectNewUnicastPeer networkAddressPool =
             networkAddressPool
             |> List.toSeq
-            |> Seq.shuffleG
+            |> Seq.shuffle
             |> Seq.tryHead
 
     let mutable private node : NetworkNode option = None
@@ -541,7 +539,7 @@ module Peers =
         node <- Some n
 
     let stopGossip () =
-        node |> Option.iter(fun n -> n.StopGossip())
+        node |> Option.iter (fun n -> n.StopGossip())
 
     let discoverNetwork networkDiscoveryTime =
         Log.info "Discovering peers..."
@@ -560,7 +558,7 @@ module Peers =
     let requestFromPeer requestId =
         match node with
         | Some n -> n.SendRequestDataMessage requestId
-        | None -> failwith "Please start the node first"
+        | None -> failwith "Please start gossip first"
 
     let requestBlockFromPeer blockNumber =
         requestFromPeer (NetworkMessageId.Block blockNumber)
@@ -574,4 +572,4 @@ module Peers =
     let respondToPeer targetAddress peerMessage =
         match node with
         | Some n -> n.SendResponseDataMessage targetAddress peerMessage
-        | None -> failwith "Please start the node first"
+        | None -> failwith "Please start gossip first"

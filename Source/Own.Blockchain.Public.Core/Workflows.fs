@@ -29,7 +29,7 @@ module Workflows =
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
         saveBlock
-        applyNewState
+        persistStateChanges
         decodeHash
         createHash
         createMerkleTree
@@ -66,20 +66,19 @@ module Workflows =
             let result =
                 result {
                     if not genesisBlockExists then
-                        let! blockEnvelopeDto =
-                            genesisBlock
+                        do! genesisBlock
                             |> Mapping.blockToDto
                             |> Serialization.serialize<BlockDto>
-                            >>= fun blockBytes ->
+                            |> Result.map (fun blockBytes ->
                                 {
                                     Block = blockBytes |> Convert.ToBase64String
-                                    Signature = "" // TODO: Genesis block should be signed by genesis validators.
+                                    Signatures = [| "" |] // TODO: Genesis block should be signed by genesis validators.
                                 }
-                                |> Ok
-                        do! saveBlock genesisBlock.Header.Number blockEnvelopeDto
+                            )
+                            >>= saveBlock genesisBlock.Header.Number
                     do! genesisState
                         |> Mapping.outputToDto
-                        |> applyNewState blockInfoDto
+                        |> persistStateChanges blockInfoDto
                 }
 
             match result with
@@ -160,6 +159,7 @@ module Workflows =
         (block, output)
 
     let proposeBlock
+        (getLastAppliedBlockNumber : unit -> BlockNumber option)
         createBlock
         isConfigurationBlock
         (createNewBlockchainConfiguration : unit -> BlockchainConfiguration)
@@ -172,8 +172,8 @@ module Workflows =
         maxTxCountPerBlock
         addressFromPrivateKey
         validatorPrivateKey
-        (previousBlockNumber : BlockNumber)
-        : Result<BlockCreatedEventData, AppErrors> option
+        (blockNumber : BlockNumber)
+        : Result<Block, AppErrors> option
         =
 
         let timestamp = Utils.getUnixTimestamp () |> Timestamp
@@ -189,18 +189,26 @@ module Workflows =
                 getAvailableChxBalance
                 maxTxCountPerBlock
             with
-        | [] -> None // Nothing to process.
+        | [] -> None // Nothing to propose.
         | txSet ->
             result {
+                let lastAppliedBlockNumber =
+                    getLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
+
+                if blockNumber <> lastAppliedBlockNumber + 1 then
+                    return!
+                        sprintf "Cannot propose block %i due to block %i being last applied block."
+                            (blockNumber |> fun (BlockNumber n) -> n)
+                            (lastAppliedBlockNumber |> fun (BlockNumber n) -> n)
+                        |> Result.appError
+
+                let! lastAppliedBlock =
+                    getBlock lastAppliedBlockNumber
+                    >>= Blocks.extractBlockFromEnvelopeDto
+
                 let txSet =
                     txSet
                     |> Processing.orderTxSet
-
-                let! previousBlock =
-                    getBlock previousBlockNumber
-                    >>= Blocks.extractBlockFromEnvelopeDto
-
-                let blockNumber = (previousBlock.Header.Number + 1)
 
                 let blockchainConfiguration =
                     if isConfigurationBlock blockNumber then
@@ -209,40 +217,16 @@ module Workflows =
                     else
                         None
 
-                let block, output =
+                let block, _ =
                     createBlock
                         validatorAddress
-                        previousBlock.Header.Hash
+                        lastAppliedBlock.Header.Hash
                         blockNumber
                         timestamp
                         txSet
                         blockchainConfiguration
 
-                do! block
-                    |> Mapping.blockToDto
-                    |> Serialization.serialize<BlockDto>
-                    |> Result.map (fun blockBytes ->
-                        let signature : Signature = signBlock validatorPrivateKey blockBytes
-                        {
-                            Block = blockBytes |> Convert.ToBase64String
-                            Signature = signature |> fun (Signature s) -> s
-                        }
-                    )
-                    >>= saveBlock block.Header.Number
-
-                // TODO: Move this to consensus' COMMIT stage.
-                Synchronization.setLastStoredBlock block
-                Synchronization.resetLastKnownBlock ()
-
-                #if DEBUG
-                let outputFileName =
-                    block.Header.Number
-                    |> fun (BlockNumber n) -> n
-                    |> sprintf "Data/Block_%i_output_propose"
-                System.IO.File.WriteAllText(outputFileName, Newtonsoft.Json.JsonConvert.SerializeObject(output))
-                #endif
-
-                return { BlockCreatedEventData.BlockNumber = block.Header.Number }
+                return block
             }
             |> Some
 
@@ -252,6 +236,7 @@ module Workflows =
         verifySignature
         blockExists
         saveBlock
+        minValidatorCount
         blockEnvelopeDto
         =
 
@@ -279,8 +264,8 @@ module Workflows =
 
             let validators =
                 configBlock.Configuration
-                |> Option.map (fun c -> c.Validators)
-                |? []
+                |> Option.map (fun c -> c.Validators |> List.map (fun v -> v.ValidatorAddress) |> Set.ofList)
+                |? Set.empty
 
             if validators.IsEmpty then
                 return!
@@ -289,31 +274,24 @@ module Workflows =
                         (block.Header.Number |> fun (BlockNumber n) -> n)
                     |> Result.appError
 
-            let expectedBlockProposer =
-                validators
-                |> Validators.getBlockProposer block.Header.Number
-                |> (fun v -> v.ValidatorAddress)
-
-            let! signerAddress = Validation.verifyBlockSignature verifySignature blockEnvelope
-
-            if signerAddress <> expectedBlockProposer then
-                do! block.Header.Number
-                    |> fun (BlockNumber n) -> n
-                    |> fun n ->
-                        sprintf "Block %i not signed by expected validator. Expected: %s / Actual: %s"
-                            n
-                            (expectedBlockProposer |> fun (BlockchainAddress a) -> a)
-                            (signerAddress |> fun (BlockchainAddress a) -> a)
+            if validators.Count < minValidatorCount then
+                return!
+                    sprintf "Configuration block %i must have at least %i validators in the configuration."
+                        (block.Header.ConfigurationBlockNumber |> fun (BlockNumber n) -> n)
+                        minValidatorCount
                     |> Result.appError
 
-            if block.Header.Validator <> expectedBlockProposer then
-                do! block.Header.Number
-                    |> fun (BlockNumber n) -> n
-                    |> fun n ->
-                        sprintf "Block %i not proposed by expected validator. Expected: %s / Actual: %s"
-                            n
-                            (expectedBlockProposer |> fun (BlockchainAddress a) -> a)
-                            (block.Header.Validator |> fun (BlockchainAddress a) -> a)
+            let! blockSigners =
+                Validation.verifyBlockSignatures verifySignature blockEnvelope
+                |> Result.map (Set.ofList >> Set.intersect validators)
+
+            let qualifiedMajority = Validators.calculateQualifiedMajority validators.Count
+            if blockSigners.Count < qualifiedMajority then
+                return!
+                    sprintf "Block %i is not signed by qualified majority. Expected (min): %i / Actual: %i"
+                        (block.Header.Number |> fun (BlockNumber n) -> n)
+                        qualifiedMajority
+                        blockSigners.Count
                     |> Result.appError
 
             do! saveBlock block.Header.Number blockEnvelopeDto
@@ -324,36 +302,28 @@ module Workflows =
         }
 
     let persistTxResults saveTxResult txResults =
-        result {
-            do! txResults
-                |> Map.toList
-                |> List.fold (fun result (txHash, txResult) ->
-                    result
-                    >>= fun _ -> saveTxResult (TxHash txHash) txResult
-                ) (Ok ())
-        }
+        txResults
+        |> Map.toList
+        |> List.fold (fun result (txHash, txResult) ->
+            result
+            >>= fun _ -> saveTxResult (TxHash txHash) txResult
+        ) (Ok ())
 
-    let applyBlock
+    let applyBlockToCurrentState
+        getBlock
         isValidSuccessorBlock
         createBlock
-        getBlock
-        persistTxResults
-        applyNewState
-        blockNumber
+        (block : Block)
         =
 
         result {
             let! previousBlock =
-                getBlock (blockNumber - 1L)
-                >>= Blocks.extractBlockFromEnvelopeDto
-
-            let! block =
-                getBlock blockNumber
+                getBlock (block.Header.Number - 1L)
                 >>= Blocks.extractBlockFromEnvelopeDto
 
             if not (isValidSuccessorBlock previousBlock.Header.Hash block) then
                 return!
-                    blockNumber
+                    block.Header.Number
                     |> fun (BlockNumber n) ->
                         sprintf "Block %i is not a valid successor of the previous block." n
                     |> Result.appError
@@ -367,27 +337,89 @@ module Workflows =
                     block.TxSet
                     block.Configuration
 
+            if block <> createdBlock then
+                Log.debugf "RECEIVED BLOCK:\n%A" block
+                Log.debugf "CREATED BLOCK:\n%A" createdBlock
+                return!
+                    block.Header.Number
+                    |> fun (BlockNumber n) ->
+                        sprintf "Applying of block %i didn't result in expected blockchain state." n
+                    |> Result.appError
+
+            return output
+        }
+
+    let applyBlock
+        getBlock
+        applyBlockToCurrentState
+        persistTxResults
+        persistStateChanges
+        blockNumber
+        =
+
+        result {
+            let! block =
+                getBlock blockNumber
+                >>= Blocks.extractBlockFromEnvelopeDto
+
+            let! output = applyBlockToCurrentState block
+
             #if DEBUG
             let outputFileName =
                 block.Header.Number
                 |> fun (BlockNumber n) -> n
                 |> sprintf "Data/Block_%i_output_apply"
-            System.IO.File.WriteAllText(outputFileName, Newtonsoft.Json.JsonConvert.SerializeObject(output))
+            System.IO.File.WriteAllText(outputFileName, sprintf "%A" output)
             #endif
 
-            if block = createdBlock then
-                let blockInfoDto = Mapping.blockHeaderToBlockInfoDto createdBlock.Header
-                let outputDto = Mapping.outputToDto output
-                do! persistTxResults outputDto.TxResults
-                do! applyNewState blockInfoDto outputDto
-            else
-                Log.debugf "RECEIVED BLOCK:\n%A" block
-                Log.debugf "CREATED BLOCK:\n%A" createdBlock
-                return!
-                    blockNumber
-                    |> fun (BlockNumber n) ->
-                        sprintf "Applying of block %i didn't result in expected blockchain state." n
+            let blockInfoDto = Mapping.blockHeaderToBlockInfoDto block.Header
+            let outputDto = Mapping.outputToDto output
+            do! persistTxResults outputDto.TxResults
+            do! persistStateChanges blockInfoDto outputDto
+        }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let handleReceivedConsensusMessage
+        decodeHash
+        createHash
+        zeroHash
+        (getValidators : unit -> ValidatorSnapshot list)
+        (verifySignature : Signature -> byte[] -> BlockchainAddress option)
+        (envelopeDto : ConsensusMessageEnvelopeDto)
+        =
+
+        let envelope = Mapping.consensusMessageEnvelopeFromDto envelopeDto
+
+        let messageHash =
+            Consensus.createConsensusMessageHash
+                decodeHash
+                createHash
+                zeroHash
+                envelope.BlockNumber
+                envelope.Round
+                envelope.ConsensusMessage
+
+        result {
+            let! senderAddress =
+                match verifySignature (Signature envelopeDto.Signature) (decodeHash messageHash) with
+                | Some a -> Ok a
+                | None ->
+                    sprintf "Cannot verify signature for consensus message: %A" envelope
                     |> Result.appError
+
+            let isSenderValidator =
+                getValidators ()
+                |> Seq.exists (fun v -> v.ValidatorAddress = senderAddress)
+
+            if not isSenderValidator then
+                return!
+                    sprintf "%A is not a validator. Consensus message ignored: %A" senderAddress envelope
+                    |> Result.appError
+
+            return ConsensusCommand.Message (senderAddress, envelope)
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -430,6 +462,7 @@ module Workflows =
         getLastAppliedBlockNumber
         handleReceivedTx
         handleReceivedBlock
+        handleReceivedConsensusMessage
         respondToPeer
         peerMessage
         =
@@ -458,8 +491,10 @@ module Workflows =
                 |> Result.map (BlockReceived >> Some)
 
         let processConsensusMessageFromPeer consensusMessageId data =
-            // TODO
-            Ok None
+            data
+            |> Serialization.deserializeJObject
+            |> handleReceivedConsensusMessage
+            |> Result.map (ConsensusMessageReceived >> Some)
 
         let processData messageId (data : obj) =
             match messageId with
@@ -578,13 +613,17 @@ module Workflows =
         : Result<GetBlockApiResponseDto, AppErrors>
         =
 
-        match getBlock blockNumber >>= Blocks.extractBlockFromEnvelopeDto with
-        | Ok block ->
-            block
-            |> Mapping.blockToDto
-            |> Mapping.blockTxsToGetBlockApiResponseDto
-            |> Ok
-        | _ -> Result.appError (sprintf "Block %i does not exist" (blockNumber |> fun (BlockNumber b) -> b))
+        match getBlock blockNumber with
+        | Ok blockEnvelopeDto ->
+            Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+            >>= fun block ->
+                block
+                |> Mapping.blockToDto
+                |> Mapping.blockDtosToGetBlockApiResponseDto blockEnvelopeDto
+                |> Ok
+        | _ ->
+            sprintf "Block %i does not exist" (blockNumber |> fun (BlockNumber b) -> b)
+            |> Result.appError
 
     let getAddressApi
         getChxBalanceState

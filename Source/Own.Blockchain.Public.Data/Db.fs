@@ -306,7 +306,12 @@ module Db =
         | [assetHash] -> assetHash |> AssetHash |> Some
         | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
 
-    let getValidatorState (dbConnectionString : string) (BlockchainAddress validatorAddress) : ValidatorStateDto option =
+    let getValidatorState
+        (dbConnectionString : string)
+        (BlockchainAddress validatorAddress)
+        : ValidatorStateDto option
+        =
+
         let sql =
             """
             SELECT network_address
@@ -1029,7 +1034,7 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
-    let applyNewState
+    let persistStateChanges
         (dbConnectionString : string)
         (blockInfoDto : BlockInfoDto)
         (state : ProcessingOutputDto)
@@ -1062,4 +1067,4 @@ module Db =
             transaction.Rollback()
             conn.Close()
             Log.appErrors errors
-            Result.appError "Failed to apply new state."
+            Result.appError "Failed to persist state changes."

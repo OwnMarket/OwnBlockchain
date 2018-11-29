@@ -161,7 +161,7 @@ type BlockDto = {
 [<MessagePackObject>]
 type BlockEnvelopeDto = {
     [<Key(0)>] Block : string
-    [<Key(1)>] Signature : string
+    [<Key(1)>] Signatures : string[]
 }
 
 [<CLIMutable>]
@@ -263,92 +263,20 @@ type AccountHoldingDto = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// API
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type ErrorResponseDto = {
-    Errors : string list
-}
-
-type SubmitTxResponseDto = {
-    TxHash : string
-}
-
-type GetTxApiResponseDto = {
-    TxHash : string
-    SenderAddress : string
-    Nonce : int64
-    Fee : decimal
-    Actions : TxActionDto list
-    Status : string
-    ErrorCode : string
-    FailedActionNumber : Nullable<int16>
-    BlockNumber : Nullable<int64>
-}
-
-type GetBlockApiResponseDto = {
-    Number : int64
-    Hash : string
-    PreviousHash : string
-    ConfigurationBlockNumber : int64
-    Timestamp : int64
-    Validator : string
-    TxSetRoot : string
-    TxResultSetRoot : string
-    StateRoot : string
-    ConfigurationRoot : string
-    TxSet : string list
-    Configuration : BlockchainConfigurationDto
-}
-
-type GetAddressApiResponseDto = {
-    BlockchainAddress : string
-    Balance : decimal
-    Nonce : int64
-}
-
-type GetAddressAccountsApiResponseDto = {
-    Accounts : string list
-}
-
-type GetAccountApiHoldingDto = {
-    AssetHash : string
-    Balance : decimal
-}
-
-type GetAccountApiResponseDto = {
-    AccountHash : string
-    ControllerAddress : string
-    Holdings : GetAccountApiHoldingDto list
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // Consensus
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type ConsensusProposeMessageDto = {
-    ConsensusMessageId : string
-    Block : BlockDto
-}
-
-type ConsensusVoteMessageDto = {
-    ConsensusMessageId : string
-    BlockHash : string
-}
-
-type ConsensusCommitMessageDto = {
-    ConsensusMessageId : string
-    BlockHash : string
-}
-
+// TODO: Find a cleaner way to do this.
 type ConsensusMessageDto = {
     ConsensusMessageType : string
-    ConsensusMessage : obj
+    BlockHash : string
+    Block : BlockDto
+    ValidRound : Nullable<int>
 }
 
 type ConsensusMessageEnvelopeDto = {
     BlockNumber : int64
-    Round : int16
+    Round : int
     ConsensusMessage : ConsensusMessageDto
     Signature : string
 }
@@ -401,4 +329,65 @@ type ResponseDataMessageDto = {
 type PeerMessageDto = {
     MessageType : string
     MessageData : obj
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// API
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type ErrorResponseDto = {
+    Errors : string list
+}
+
+type SubmitTxResponseDto = {
+    TxHash : string
+}
+
+type GetTxApiResponseDto = {
+    TxHash : string
+    SenderAddress : string
+    Nonce : int64
+    Fee : decimal
+    Actions : TxActionDto list
+    Status : string
+    ErrorCode : string
+    FailedActionNumber : Nullable<int16>
+    BlockNumber : Nullable<int64>
+}
+
+type GetBlockApiResponseDto = {
+    Number : int64
+    Hash : string
+    PreviousHash : string
+    ConfigurationBlockNumber : int64
+    Timestamp : int64
+    Validator : string
+    TxSetRoot : string
+    TxResultSetRoot : string
+    StateRoot : string
+    ConfigurationRoot : string
+    TxSet : string list
+    Signatures : string list
+    Configuration : BlockchainConfigurationDto
+}
+
+type GetAddressApiResponseDto = {
+    BlockchainAddress : string
+    Balance : decimal
+    Nonce : int64
+}
+
+type GetAddressAccountsApiResponseDto = {
+    Accounts : string list
+}
+
+type GetAccountApiHoldingDto = {
+    AssetHash : string
+    Balance : decimal
+}
+
+type GetAccountApiResponseDto = {
+    AccountHash : string
+    ControllerAddress : string
+    Holdings : GetAccountApiHoldingDto list
 }

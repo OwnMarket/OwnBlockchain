@@ -244,7 +244,7 @@ module Mapping =
     let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
         {
             RawBlock = dto.Block |> Convert.FromBase64String
-            Signature = Signature dto.Signature
+            Signatures = dto.Signatures |> Array.map Signature |> Array.toList
         }
 
     let blockHeaderToBlockInfoDto (blockHeader : BlockHeader) : BlockInfoDto =
@@ -366,7 +366,9 @@ module Mapping =
         let stakes =
             output.Stakes
             |> Map.toList
-            |> List.map (fun ((BlockchainAddress sa, BlockchainAddress va), s : StakeState) -> (sa, va), stakeStateToDto s)
+            |> List.map (fun ((BlockchainAddress sa, BlockchainAddress va), s : StakeState) ->
+                (sa, va), stakeStateToDto s
+            )
             |> Map.ofList
 
         {
@@ -420,7 +422,8 @@ module Mapping =
             GetAccountApiResponseDto.Holdings = List.map mapFn holdings
         }
 
-    let blockTxsToGetBlockApiResponseDto
+    let blockDtosToGetBlockApiResponseDto
+        (blockEnvelopeDto : BlockEnvelopeDto)
         (blockDto : BlockDto)
         =
 
@@ -436,6 +439,7 @@ module Mapping =
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
             GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
             GetBlockApiResponseDto.TxSet = blockDto.TxSet
+            GetBlockApiResponseDto.Signatures = blockEnvelopeDto.Signatures |> Array.toList
             GetBlockApiResponseDto.Configuration = blockDto.Configuration
         }
 
@@ -467,28 +471,58 @@ module Mapping =
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let consensusMessageFromDto (dto : ConsensusMessageDto) =
-        match dto.ConsensusMessage with
-        | :? ConsensusProposeMessageDto as m -> m.Block |> blockFromDto |> Propose
-        | :? ConsensusVoteMessageDto as m -> m.BlockHash |> BlockHash |> Vote
-        | :? ConsensusCommitMessageDto as m -> m.BlockHash |> BlockHash |> Commit
-        | _ -> failwith "Invalid consensus message type to map."
+    let consensusMessageFromDto (dto : ConsensusMessageDto) : ConsensusMessage =
+        match dto.ConsensusMessageType with
+        | "Propose" ->
+            let block = dto.Block |> blockFromDto
+            let validRound = dto.ValidRound.Value |> ConsensusRound
+            Propose (block, validRound)
+        | "Vote" ->
+            if dto.BlockHash = (None |> unionCaseName) then
+                None
+            else
+                dto.BlockHash |> BlockHash |> Some
+            |> Vote
+        | "Commit" ->
+            if dto.BlockHash = (None |> unionCaseName) then
+                None
+            else
+                dto.BlockHash |> BlockHash |> Some
+            |> Commit
+        | mt ->
+            failwithf "Unknown consensus message type: %s" mt
 
-    let consensusMessageToDto
-        (serialize : (obj -> string))
-        (consensusMessage : ConsensusMessage)
-        : ConsensusMessageDto
-        =
-
-        let consensusMessageType, message =
-            match consensusMessage with
-            | Propose m -> "Propose", { ConsensusMessageId = ""; Block = m |> blockToDto } |> serialize
-            | Vote (BlockHash blockHash) -> "Vote", { ConsensusMessageId = ""; BlockHash = blockHash } |> serialize
-            | Commit (BlockHash blockHash) -> "Commit", { ConsensusMessageId = ""; BlockHash = blockHash } |> serialize
-        {
-            ConsensusMessageType = consensusMessageType
-            ConsensusMessage = message
-        }
+    let consensusMessageToDto (consensusMessage : ConsensusMessage) : ConsensusMessageDto =
+        match consensusMessage with
+        | Propose (block, validRound) ->
+            {
+                ConsensusMessageType = "Propose"
+                Block = block |> blockToDto
+                ValidRound = validRound |> fun (ConsensusRound r) -> Nullable(r)
+                BlockHash = Unchecked.defaultof<_>
+            }
+        | Vote blockHash ->
+            let blockHash =
+                match blockHash with
+                | Some (BlockHash h) -> h
+                | None -> None |> unionCaseName
+            {
+                ConsensusMessageType = "Vote"
+                Block = Unchecked.defaultof<_>
+                ValidRound = Unchecked.defaultof<_>
+                BlockHash = blockHash
+            }
+        | Commit blockHash ->
+            let blockHash =
+                match blockHash with
+                | Some (BlockHash h) -> h
+                | None -> None |> unionCaseName
+            {
+                ConsensusMessageType = "Commit"
+                Block = Unchecked.defaultof<_>
+                ValidRound = Unchecked.defaultof<_>
+                BlockHash = blockHash
+            }
 
     let consensusMessageEnvelopeFromDto (dto : ConsensusMessageEnvelopeDto) : ConsensusMessageEnvelope =
         {
@@ -498,17 +532,12 @@ module Mapping =
             Signature = Signature dto.Signature
         }
 
-    let consensusMessageEnvelopeToDto
-        serialize
-        (consensusEnvelope : ConsensusMessageEnvelope)
-        : ConsensusMessageEnvelopeDto
-        =
-
+    let consensusMessageEnvelopeToDto (envelope : ConsensusMessageEnvelope) : ConsensusMessageEnvelopeDto =
         {
-            BlockNumber = consensusEnvelope.BlockNumber |> fun (BlockNumber blockNr) -> blockNr
-            Round = consensusEnvelope.Round |> fun (ConsensusRound round) -> round
-            ConsensusMessage = consensusMessageToDto serialize consensusEnvelope.ConsensusMessage
-            Signature = consensusEnvelope.Signature |> fun (Signature s) -> s
+            BlockNumber = envelope.BlockNumber |> fun (BlockNumber blockNr) -> blockNr
+            Round = envelope.Round |> fun (ConsensusRound round) -> round
+            ConsensusMessage = consensusMessageToDto envelope.ConsensusMessage
+            Signature = envelope.Signature |> fun (Signature s) -> s
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

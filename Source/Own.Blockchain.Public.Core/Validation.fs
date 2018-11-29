@@ -20,8 +20,8 @@ module Validation =
         [
             if blockEnvelopeDto.Block.IsNullOrWhiteSpace() then
                 yield AppError "Block is missing from the block envelope."
-            if blockEnvelopeDto.Signature.IsNullOrWhiteSpace() then
-                yield AppError "Signature is missing from the block envelope."
+            if blockEnvelopeDto.Signatures |> Array.isEmpty then
+                yield AppError "Signatures are missing from the block envelope."
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
 
@@ -32,12 +32,31 @@ module Validation =
         | None ->
             Result.appError "Cannot verify tx signature."
 
-    let verifyBlockSignature verifySignature (blockEnvelope : BlockEnvelope) : Result<BlockchainAddress, AppErrors> =
-        match verifySignature blockEnvelope.Signature blockEnvelope.RawBlock with
-        | Some blockchainAddress ->
-            Ok blockchainAddress
-        | None ->
-            Result.appError "Cannot verify block signature."
+    let verifyBlockSignatures
+        verifySignature
+        (blockEnvelope : BlockEnvelope)
+        : Result<BlockchainAddress list, AppErrors>
+        =
+
+        let values, errors =
+            blockEnvelope.Signatures
+            |> List.map (fun s ->
+                match verifySignature s blockEnvelope.RawBlock with
+                | Some blockchainAddress ->
+                    Ok blockchainAddress
+                | None ->
+                    Result.appError "Cannot verify block signature."
+            )
+            |> List.partition (function | Ok _ -> true | _ -> false)
+
+        if errors.IsEmpty then
+            values
+            |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't hapen")
+            |> Ok
+        else
+            errors
+            |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't hapen")
+            |> Error
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block validation

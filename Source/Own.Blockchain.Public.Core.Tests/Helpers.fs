@@ -12,6 +12,8 @@ open Own.Blockchain.Public.Crypto
 
 module Helpers =
 
+    let randomString () = Guid.NewGuid().ToString("N")
+
     let minTxActionFee = ChxAmount 0.001m
 
     let addressToString (BlockchainAddress a) = a
