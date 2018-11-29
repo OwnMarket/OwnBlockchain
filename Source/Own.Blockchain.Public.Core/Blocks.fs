@@ -321,7 +321,7 @@ module Blocks =
             Stakes = Map.empty
         }
 
-    let createGenesisBlock
+    let assembleGenesisBlock
         (decodeHash : string -> byte[])
         (createHash : byte[] -> string)
         (createMerkleTree : string list -> MerkleTreeRoot)

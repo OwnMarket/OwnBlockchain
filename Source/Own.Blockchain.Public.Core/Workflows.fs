@@ -25,11 +25,7 @@ module Workflows =
     // Blockchain
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let initBlockchainState
-        (getLastAppliedBlockNumber : unit -> BlockNumber option)
-        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
-        saveBlock
-        persistStateChanges
+    let createGenesisBlock
         decodeHash
         createHash
         createMerkleTree
@@ -40,17 +36,41 @@ module Workflows =
         genesisValidators
         =
 
+        let genesisValidators =
+            genesisValidators
+            |> List.map (fun (ba, na) -> BlockchainAddress ba, {ValidatorState.NetworkAddress = na})
+            |> Map.ofList
+
+        let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress genesisValidators
+
+        let genesisBlock =
+            Blocks.assembleGenesisBlock
+                decodeHash createHash createMerkleTree zeroHash zeroAddress genesisState
+
+        genesisBlock, genesisState
+
+    let signGenesisBlock
+        (createGenesisBlock : unit -> Block * ProcessingOutput)
+        decodeHash
+        signBlock
+        privateKey
+        : Signature
+        =
+
+        createGenesisBlock ()
+        |> fun (b, _) -> b.Header.Hash |> (fun (BlockHash h) -> h) |> decodeHash
+        |> signBlock privateKey
+
+    let initBlockchainState
+        (getLastAppliedBlockNumber : unit -> BlockNumber option)
+        (createGenesisBlock : unit -> Block * ProcessingOutput)
+        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
+        saveBlock
+        persistStateChanges
+        =
+
         if getLastAppliedBlockNumber () = None then
-            let genesisValidators =
-                genesisValidators
-                |> List.map (fun (ba, na) -> BlockchainAddress ba, {ValidatorState.NetworkAddress = na})
-                |> Map.ofList
-
-            let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress genesisValidators
-
-            let genesisBlock =
-                Blocks.createGenesisBlock
-                    decodeHash createHash createMerkleTree zeroHash zeroAddress genesisState
+            let genesisBlock, genesisState = createGenesisBlock ()
 
             let genesisBlockExists =
                 match getBlock genesisBlock.Header.Number >>= Blocks.extractBlockFromEnvelopeDto with

@@ -28,7 +28,7 @@ module Cli =
         privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
         |> PrivateKey
         |> Signing.addressFromPrivateKey
-        |> (fun (BlockchainAddress a) -> printfn "Address: %s" a)
+        |> fun (BlockchainAddress a) -> printfn "Address: %s" a
 
     let handleSignMessageCommand privateKey message =
         let privateKey = PrivateKey privateKey
@@ -36,7 +36,7 @@ module Cli =
         message
         |> Convert.FromBase64String // TODO: Provide input as a file path, so the raw data can be read.
         |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
-        |> (fun (Signature signature) -> printfn "Signature: %s" signature)
+        |> fun (Signature signature) -> printfn "Signature: %s" signature
 
     let handleHelpCommand args =
         printfn "TODO: Print short command reference"

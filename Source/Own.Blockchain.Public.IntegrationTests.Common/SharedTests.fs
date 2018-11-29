@@ -237,7 +237,7 @@ module SharedTests =
                 (ChxAmount Config.GenesisChxSupply)
                 (BlockchainAddress Config.GenesisAddress)
                 genesisValidators
-            |> Blocks.createGenesisBlock
+            |> Blocks.assembleGenesisBlock
                 Hashing.decode Hashing.hash Hashing.merkleTree Hashing.zeroHash Hashing.zeroAddress
 
         // ACT

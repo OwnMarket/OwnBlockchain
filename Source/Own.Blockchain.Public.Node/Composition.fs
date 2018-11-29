@@ -129,12 +129,8 @@ module Composition =
     // Blockchain
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let initBlockchainState () =
-        Workflows.initBlockchainState
-            getLastAppliedBlockNumber
-            getBlock
-            saveBlock
-            persistStateChanges
+    let createGenesisBlock () =
+        Workflows.createGenesisBlock
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree
@@ -143,6 +139,20 @@ module Composition =
             (ChxAmount Config.GenesisChxSupply)
             (BlockchainAddress Config.GenesisAddress)
             Config.GenesisValidators
+
+    let signGenesisBlock =
+        Workflows.signGenesisBlock
+            createGenesisBlock
+            Hashing.decode
+            Signing.signMessage
+
+    let initBlockchainState () =
+        Workflows.initBlockchainState
+            getLastAppliedBlockNumber
+            createGenesisBlock
+            getBlock
+            saveBlock
+            persistStateChanges
 
     let createBlock =
         Workflows.createBlock
