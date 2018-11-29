@@ -80,6 +80,12 @@ type Config () =
             )
             |> Seq.toList
 
+    static member GenesisSignatures
+        with get () =
+            config.GetSection("GenesisSignatures").GetChildren()
+            |> Seq.map (fun e -> e.Value)
+            |> Seq.toList
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////

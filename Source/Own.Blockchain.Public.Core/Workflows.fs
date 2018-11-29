@@ -67,6 +67,8 @@ module Workflows =
         (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
         saveBlock
         persistStateChanges
+        verifySignature
+        genesisSignatures
         =
 
         if getLastAppliedBlockNumber () = None then
@@ -85,17 +87,31 @@ module Workflows =
 
             let result =
                 result {
+                    let! blockEnvelopeDto =
+                        genesisBlock
+                        |> Mapping.blockToDto
+                        |> Serialization.serialize<BlockDto>
+                        |> Result.map (fun blockBytes ->
+                            {
+                                Block = blockBytes |> Convert.ToBase64String
+                                Signatures = genesisSignatures |> List.toArray
+                            }
+                        )
+
+                    let! genesisSigners =
+                        blockEnvelopeDto
+                        |> Mapping.blockEnvelopeFromDto
+                        |> Validation.verifyBlockSignatures verifySignature
+
+                    match genesisBlock.Configuration with
+                    | None -> return! Result.appError "Genesis block must have configuration."
+                    | Some c ->
+                        let validators = c.Validators |> List.map (fun v -> v.ValidatorAddress)
+                        if (set validators) <> (set genesisSigners) then
+                            return! Result.appError "Genesis signatures don't match genesis validators."
+
                     if not genesisBlockExists then
-                        do! genesisBlock
-                            |> Mapping.blockToDto
-                            |> Serialization.serialize<BlockDto>
-                            |> Result.map (fun blockBytes ->
-                                {
-                                    Block = blockBytes |> Convert.ToBase64String
-                                    Signatures = [| "" |] // TODO: Genesis block should be signed by genesis validators.
-                                }
-                            )
-                            >>= saveBlock genesisBlock.Header.Number
+                        do! saveBlock genesisBlock.Header.Number blockEnvelopeDto
                     do! genesisState
                         |> Mapping.outputToDto
                         |> persistStateChanges blockInfoDto

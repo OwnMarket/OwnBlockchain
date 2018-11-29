@@ -153,6 +153,8 @@ module Composition =
             getBlock
             saveBlock
             persistStateChanges
+            Signing.verifySignature
+            Config.GenesisSignatures
 
     let createBlock =
         Workflows.createBlock
