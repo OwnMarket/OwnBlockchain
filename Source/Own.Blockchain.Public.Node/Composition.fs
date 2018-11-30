@@ -296,7 +296,7 @@ module Composition =
             saveTxToDb
             (ChxAmount Config.MinTxActionFee)
 
-    let getTxApi = Workflows.getTxApi getTx Signing.verifySignature getTxResult
+    let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Signing.verifySignature
 
     let getBlockApi = Workflows.getBlockApi getBlock
 

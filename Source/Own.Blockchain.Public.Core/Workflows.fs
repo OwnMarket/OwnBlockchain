@@ -620,8 +620,9 @@ module Workflows =
 
     let getTxApi
         getTx
-        verifySignature
+        getTxInfo
         getTxResult
+        verifySignature
         (txHash : TxHash)
         : Result<GetTxApiResponseDto, AppErrors>
         =
@@ -631,14 +632,16 @@ module Workflows =
                 getTx txHash
                 |> Result.map Mapping.txEnvelopeFromDto
 
-            let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-
             let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
 
-            let txResult =
-                match getTxResult txHash with
-                | Ok result -> Some result
-                | _ -> None
+            let! txDto = Serialization.deserializeTx txEnvelope.RawTx
+
+            let! txResult =
+                // If the Tx is still in the pool (DB), we respond with Pending status and ignore the TxResult file.
+                // This avoids the lag in the state changes (when TxResult file is persisted, but DB not yet updated).
+                match getTxInfo txHash with
+                | Some _ -> Ok None
+                | None -> getTxResult txHash |> Result.map Some
 
             return Mapping.txToGetTxApiResponseDto txHash senderAddress txDto txResult
         }
