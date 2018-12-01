@@ -35,6 +35,7 @@
 - Install _VirtualBox Guest Additions_
     - On running VM window go to _Devices > Insert Guest Additions CD Image_
         - if the installation doesn't start automatically, you can start it manually by running `sudo /media/developer/VBOXADDITIONS_X.X.XX_XXXXXX/autorun.sh` (replace X.X.XX_XXXXXX with real version number of your VirtualBox installation)
+        - if CD installation does not work, alternatively you can install it by running `sudo apt-get install virtualbox-guest-utils`
     - Follow the instructions inside the VM
     - Restart the VM
     - Eject the Guest Additions CD Image after restart
