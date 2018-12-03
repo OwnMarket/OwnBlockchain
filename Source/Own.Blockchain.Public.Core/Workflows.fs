@@ -354,7 +354,7 @@ module Workflows =
 
         result {
             let! previousBlock =
-                getBlock (block.Header.Number - 1L)
+                getBlock (block.Header.Number - 1)
                 >>= Blocks.extractBlockFromEnvelopeDto
 
             if not (isValidSuccessorBlock previousBlock.Header.Hash block) then

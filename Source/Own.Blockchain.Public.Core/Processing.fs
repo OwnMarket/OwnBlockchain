@@ -531,7 +531,7 @@ module Processing =
 
         if txNonce <= senderState.Nonce then
             Error (TxError TxErrorCode.NonceTooLow)
-        elif txNonce = (senderState.Nonce + 1L) then
+        elif txNonce = (senderState.Nonce + 1) then
             state.SetChxBalance (senderAddress, {senderState with Nonce = txNonce})
             Ok state
         else
