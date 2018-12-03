@@ -168,6 +168,7 @@ module Composition =
             getValidatorState
             getStakeState
             getTotalChxStaked
+            Hashing.deriveHash
             Hashing.decode
             Hashing.hash
             Hashing.merkleTree

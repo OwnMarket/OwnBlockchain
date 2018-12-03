@@ -259,23 +259,16 @@ module Processing =
             Error TxErrorCode.SenderIsNotAssetController
 
     let processCreateAccountTxAction
-        decodeHash
-        createHash
+        deriveHash
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
-        (Nonce nonce)
-        (TxActionNumber actionNumber)
+        (nonce : Nonce)
+        (actionNumber : TxActionNumber)
         : Result<ProcessingState, TxErrorCode>
         =
 
         let accountHash =
-            [
-                decodeHash senderAddress.Value
-                nonce |> Conversion.int64ToBytes
-                actionNumber |> Conversion.int16ToBytes
-            ]
-            |> Array.concat
-            |> createHash
+            deriveHash senderAddress nonce actionNumber
             |> AccountHash
 
         match state.GetAccount(accountHash) with
@@ -286,23 +279,16 @@ module Processing =
             Error TxErrorCode.AccountAlreadyExists // Hash collision.
 
     let processCreateAssetTxAction
-        decodeHash
-        createHash
+        deriveHash
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
-        (Nonce nonce)
-        (TxActionNumber actionNumber)
+        (nonce : Nonce)
+        (actionNumber : TxActionNumber)
         : Result<ProcessingState, TxErrorCode>
         =
 
         let assetHash =
-            [
-                decodeHash senderAddress.Value
-                nonce |> Conversion.int64ToBytes
-                actionNumber |> Conversion.int16ToBytes
-            ]
-            |> Array.concat
-            |> createHash
+            deriveHash senderAddress nonce actionNumber
             |> AssetHash
 
         match state.GetAsset(assetHash) with
@@ -547,8 +533,7 @@ module Processing =
         |> Result.mapError TxError
 
     let processTxAction
-        decodeHash
-        createHash
+        deriveHash
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actionNumber : TxActionNumber)
@@ -560,8 +545,8 @@ module Processing =
         | TransferChx action -> processTransferChxTxAction state senderAddress action
         | TransferAsset action -> processTransferAssetTxAction state senderAddress action
         | CreateAssetEmission action -> processCreateAssetEmissionTxAction state senderAddress action
-        | CreateAccount -> processCreateAccountTxAction decodeHash createHash state senderAddress nonce actionNumber
-        | CreateAsset -> processCreateAssetTxAction decodeHash createHash state senderAddress nonce actionNumber
+        | CreateAccount -> processCreateAccountTxAction deriveHash state senderAddress nonce actionNumber
+        | CreateAsset -> processCreateAssetTxAction deriveHash state senderAddress nonce actionNumber
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
@@ -569,8 +554,7 @@ module Processing =
         | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
 
     let processTxActions
-        decodeHash
-        createHash
+        deriveHash
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actions : TxAction list)
@@ -583,7 +567,7 @@ module Processing =
             result
             >>= fun state ->
                 let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
-                processTxAction decodeHash createHash senderAddress nonce actionNumber action state
+                processTxAction deriveHash senderAddress nonce actionNumber action state
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
@@ -591,7 +575,7 @@ module Processing =
         getTx
         verifySignature
         isValidAddress
-        decodeHash
+        deriveHash
         createHash
         (getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option)
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
@@ -625,7 +609,7 @@ module Processing =
                     state
                 | Ok oldState ->
                     let newState = oldState.Clone()
-                    match processTxActions decodeHash createHash tx.Sender tx.Nonce tx.Actions newState with
+                    match processTxActions deriveHash tx.Sender tx.Nonce tx.Actions newState with
                     | Error e ->
                         oldState.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
                         oldState.MergeStateAfterFailedTx(newState)

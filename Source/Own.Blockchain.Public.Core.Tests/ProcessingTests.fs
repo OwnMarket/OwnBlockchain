@@ -205,7 +205,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -299,7 +299,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -394,7 +394,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -488,7 +488,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -577,7 +577,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -686,7 +686,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -791,7 +791,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -902,7 +902,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1010,7 +1010,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1111,7 +1111,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1211,7 +1211,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1307,7 +1307,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1405,7 +1405,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1502,7 +1502,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1604,7 +1604,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1704,7 +1704,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1800,7 +1800,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1891,7 +1891,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -1987,7 +1987,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2087,7 +2087,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2178,7 +2178,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2274,7 +2274,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2374,7 +2374,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2465,7 +2465,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2561,7 +2561,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2658,7 +2658,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2747,7 +2747,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2843,7 +2843,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -2934,7 +2934,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -3025,7 +3025,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
@@ -3121,7 +3121,7 @@ module ProcessingTests =
                 getTx
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
-                Hashing.decode
+                Hashing.deriveHash
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState

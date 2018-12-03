@@ -295,7 +295,7 @@ module SharedTests =
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
-        let accountHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
+        let accountHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
 
         let txActions =
             [
@@ -355,7 +355,7 @@ module SharedTests =
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
-        let assetHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
+        let assetHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
 
         let txActions =
             [
@@ -414,7 +414,7 @@ module SharedTests =
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
-        let assetHash = Helper.createNewHashForSender sender.Address (Nonce nonce) (TxActionNumber 1s)
+        let assetHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
 
         let txActions =
             [

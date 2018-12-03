@@ -79,15 +79,6 @@ module internal Helper =
         Signing.generateRandomBytes 64
         |> Hashing.hash
 
-    let createNewHashForSender (BlockchainAddress address) (Nonce nonce) (TxActionNumber actionNumber) =
-        [
-            address |> Hashing.decode
-            nonce |> Conversion.int64ToBytes
-            actionNumber |> Conversion.int16ToBytes
-        ]
-        |> Array.concat
-        |> Hashing.hash
-
     let addChxBalance connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """

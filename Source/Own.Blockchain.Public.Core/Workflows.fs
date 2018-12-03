@@ -135,6 +135,7 @@ module Workflows =
         getValidatorStateFromStorage
         getStakeStateFromStorage
         getTotalChxStakedFromStorage
+        deriveHash
         decodeHash
         createHash
         createMerkleTree
@@ -162,7 +163,7 @@ module Workflows =
                 getTx
                 verifySignature
                 isValidAddress
-                decodeHash
+                deriveHash
                 createHash
                 getChxBalanceState
                 getHoldingState

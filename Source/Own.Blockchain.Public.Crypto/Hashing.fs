@@ -4,6 +4,7 @@ open System
 open System.Security.Cryptography
 open Base58Check
 open Own.Common
+open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 
 module Hashing =
@@ -38,6 +39,15 @@ module Hashing =
         data
         |> hashBytes
         |> encode
+
+    let deriveHash (BlockchainAddress address) (Nonce nonce) (TxActionNumber actionNumber) =
+        [
+            decode address
+            nonce |> Conversion.int64ToBytes
+            actionNumber |> Conversion.int16ToBytes
+        ]
+        |> Array.concat
+        |> hash
 
     let blockchainAddress (publicKey : byte[]) =
         let prefix = [| 6uy; 90uy |] // "CH"
