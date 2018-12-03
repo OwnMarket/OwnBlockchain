@@ -168,7 +168,7 @@ module ConsensusTestHelpers =
                 ConsensusMessageEnvelope.BlockNumber = blockNumber
                 Round = consensusRound
                 ConsensusMessage = consensusMessage
-                Signature = Signature (validatorAddress |> fun (BlockchainAddress a) -> a) // Just testing convenience.
+                Signature = Signature validatorAddress.Value // Just testing convenience.
             }
             |> _messages.Add
 
@@ -188,8 +188,7 @@ module ConsensusTestHelpers =
             seq {
                 for m in messages do
                     let senderAddress =
-                        m.Signature // Just testing convenience.
-                        |> fun (Signature s) -> s
+                        m.Signature.Value // Just testing convenience.
                         |> BlockchainAddress
 
                     for address, state in states do

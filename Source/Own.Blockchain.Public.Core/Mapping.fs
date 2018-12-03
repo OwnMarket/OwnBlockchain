@@ -105,10 +105,10 @@ module Mapping =
 
     let txToTxInfoDto (tx : Tx) : TxInfoDto =
         {
-            TxHash = tx.TxHash |> (fun (TxHash h) -> h)
-            SenderAddress = tx.Sender |> (fun (BlockchainAddress a) -> a)
-            Nonce = tx.Nonce |> (fun (Nonce n) -> n)
-            Fee = tx.Fee |> (fun (ChxAmount a) -> a)
+            TxHash = tx.TxHash.Value
+            SenderAddress = tx.Sender.Value
+            Nonce = tx.Nonce.Value
+            Fee = tx.Fee.Value
             ActionCount = Convert.ToInt16 tx.Actions.Length
         }
 
@@ -140,7 +140,7 @@ module Mapping =
             Status = status
             ErrorCode = errorCode
             FailedActionNumber = failedActionNumber
-            BlockNumber = txResult.BlockNumber |> (fun (BlockNumber b) -> b)
+            BlockNumber = txResult.BlockNumber.Value
         }
 
     let txResultFromDto (dto : TxResultDto) : TxResult =
@@ -182,16 +182,16 @@ module Mapping =
 
     let blockHeaderToDto (block : BlockHeader) : BlockHeaderDto =
         {
-            BlockHeaderDto.Number = block.Number |> fun (BlockNumber n) -> n
-            Hash = block.Hash |> fun (BlockHash h) -> h
-            PreviousHash = block.PreviousHash |> fun (BlockHash h) -> h
-            ConfigurationBlockNumber = block.ConfigurationBlockNumber |> fun (BlockNumber n) -> n
-            Timestamp = block.Timestamp |> fun (Timestamp t) -> t
-            Validator = block.Validator |> fun (BlockchainAddress a) -> a
-            TxSetRoot = block.TxSetRoot |> fun (MerkleTreeRoot r) -> r
-            TxResultSetRoot = block.TxResultSetRoot |> fun (MerkleTreeRoot r) -> r
-            StateRoot = block.StateRoot |> fun (MerkleTreeRoot r) -> r
-            ConfigurationRoot = block.ConfigurationRoot |> fun (MerkleTreeRoot r) -> r
+            BlockHeaderDto.Number = block.Number.Value
+            Hash = block.Hash.Value
+            PreviousHash = block.PreviousHash.Value
+            ConfigurationBlockNumber = block.ConfigurationBlockNumber.Value
+            Timestamp = block.Timestamp.Value
+            Validator = block.Validator.Value
+            TxSetRoot = block.TxSetRoot.Value
+            TxResultSetRoot = block.TxResultSetRoot.Value
+            StateRoot = block.StateRoot.Value
+            ConfigurationRoot = block.ConfigurationRoot.Value
         }
 
     let validatorSnapshotFromDto (dto : ValidatorSnapshotDto) : ValidatorSnapshot =
@@ -203,9 +203,9 @@ module Mapping =
 
     let validatorSnapshotToDto (snapshot : ValidatorSnapshot) : ValidatorSnapshotDto =
         {
-            ValidatorAddress = snapshot.ValidatorAddress |> fun (BlockchainAddress a) -> a
+            ValidatorAddress = snapshot.ValidatorAddress.Value
             NetworkAddress = snapshot.NetworkAddress
-            TotalStake = snapshot.TotalStake |> fun (ChxAmount a) -> a
+            TotalStake = snapshot.TotalStake.Value
         }
 
     let blockchainConfigurationFromDto (dto : BlockchainConfigurationDto) : BlockchainConfiguration =
@@ -249,9 +249,9 @@ module Mapping =
 
     let blockHeaderToBlockInfoDto (blockHeader : BlockHeader) : BlockInfoDto =
         {
-            BlockNumber = blockHeader.Number |> fun (BlockNumber n) -> n
-            BlockHash = blockHeader.Hash |> fun (BlockHash h) -> h
-            BlockTimestamp = blockHeader.Timestamp |> fun (Timestamp t) -> t
+            BlockNumber = blockHeader.Number.Value
+            BlockHash = blockHeader.Hash.Value
+            BlockTimestamp = blockHeader.Timestamp.Value
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,8 +266,8 @@ module Mapping =
 
     let chxBalanceStateToDto (state : ChxBalanceState) : ChxBalanceStateDto =
         {
-            Amount = state.Amount |> fun (ChxAmount a) -> a
-            Nonce = state.Nonce |> fun (Nonce n) -> n
+            Amount = state.Amount.Value
+            Nonce = state.Nonce.Value
         }
 
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
@@ -277,7 +277,7 @@ module Mapping =
 
     let holdingStateToDto (state : HoldingState) : HoldingStateDto =
         {
-            Amount = state.Amount |> fun (AssetAmount a) -> a
+            Amount = state.Amount.Value
         }
 
     let accountStateFromDto (dto : AccountStateDto) : AccountState =
@@ -287,7 +287,7 @@ module Mapping =
 
     let accountStateToDto (state : AccountState) : AccountStateDto =
         {
-            ControllerAddress = state.ControllerAddress |> fun (BlockchainAddress a) -> a
+            ControllerAddress = state.ControllerAddress.Value
         }
 
     let assetStateFromDto (dto : AssetStateDto) : AssetState =
@@ -303,7 +303,7 @@ module Mapping =
     let assetStateToDto (state : AssetState) : AssetStateDto =
         {
             AssetCode = state.AssetCode |> Option.map (fun (AssetCode c) -> c) |> Option.toObj
-            ControllerAddress = state.ControllerAddress |> fun (BlockchainAddress a) -> a
+            ControllerAddress = state.ControllerAddress.Value
         }
 
     let validatorStateFromDto (dto : ValidatorStateDto) : ValidatorState =
@@ -323,7 +323,7 @@ module Mapping =
 
     let stakeStateToDto (state : StakeState) : StakeStateDto =
         {
-            Amount = state.Amount |> fun (ChxAmount a) -> a
+            Amount = state.Amount.Value
         }
 
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
@@ -498,7 +498,7 @@ module Mapping =
             {
                 ConsensusMessageType = "Propose"
                 Block = block |> blockToDto
-                ValidRound = validRound |> fun (ConsensusRound r) -> Nullable(r)
+                ValidRound = Nullable(validRound.Value)
                 BlockHash = Unchecked.defaultof<_>
             }
         | Vote blockHash ->
@@ -534,10 +534,10 @@ module Mapping =
 
     let consensusMessageEnvelopeToDto (envelope : ConsensusMessageEnvelope) : ConsensusMessageEnvelopeDto =
         {
-            BlockNumber = envelope.BlockNumber |> fun (BlockNumber blockNr) -> blockNr
-            Round = envelope.Round |> fun (ConsensusRound round) -> round
+            BlockNumber = envelope.BlockNumber.Value
+            Round = envelope.Round.Value
             ConsensusMessage = consensusMessageToDto envelope.ConsensusMessage
-            Signature = envelope.Signature |> fun (Signature s) -> s
+            Signature = envelope.Signature.Value
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -565,7 +565,7 @@ module Mapping =
 
     let gossipMemberToDto (gossipMember : GossipMember) : GossipMemberDto =
         {
-            NetworkAddress = gossipMember.NetworkAddress |> fun (NetworkAddress a) -> a
+            NetworkAddress = gossipMember.NetworkAddress.Value
             Heartbeat = gossipMember.Heartbeat
         }
 
@@ -594,7 +594,7 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
-            SenderAddress = gossipMessage.SenderAddress |> fun (NetworkAddress a) -> a
+            SenderAddress = gossipMessage.SenderAddress.Value
             Data = gossipMessage.Data
         }
 
@@ -629,7 +629,7 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
-            SenderAddress = requestDataMessage.SenderAddress |> fun (NetworkAddress a) -> a
+            SenderAddress = requestDataMessage.SenderAddress.Value
         }
 
     let responseDataMessageFromDto (dto : ResponseDataMessageDto) : ResponseDataMessage =

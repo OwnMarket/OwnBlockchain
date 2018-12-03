@@ -24,23 +24,23 @@ module Agents =
     let logEvent event =
         match event with
         | AppEvent.TxSubmitted e
-        | TxReceived e -> e.TxHash |> fun (TxHash h) -> h
+        | TxReceived e -> e.TxHash.Value
         | BlockCreated e
-        | BlockReceived e -> e.BlockNumber |> fun (BlockNumber n) -> string n
+        | BlockReceived e -> e.BlockNumber.Value |> string
         | ConsensusMessageReceived e
         | ConsensusCommandInvoked e ->
             match e with
             | Synchronize -> "Synchronize"
             | Message (sender, consensusMessageEnvelope) ->
                 sprintf "Message from %s: %i / %i / %A"
-                    (sender |> fun (BlockchainAddress a) -> a)
-                    (consensusMessageEnvelope.BlockNumber |> fun (BlockNumber n) -> n)
-                    (consensusMessageEnvelope.Round |> fun (ConsensusRound r) -> r)
+                    sender.Value
+                    consensusMessageEnvelope.BlockNumber.Value
+                    consensusMessageEnvelope.Round.Value
                     (consensusMessageEnvelope.ConsensusMessage |> Consensus.consensusMessageDisplayFormat)
             | Timeout (blockNumber, consensusRound, consensusStep) ->
                 sprintf "Timeout %i / %i / %s"
-                    (blockNumber |> fun (BlockNumber n) -> n)
-                    (consensusRound |> fun (ConsensusRound r) -> r)
+                    blockNumber.Value
+                    consensusRound.Value
                     (unionCaseName consensusStep)
         |> Log.infof "EVENT: %s: %s" (unionCaseName event)
 
@@ -73,9 +73,7 @@ module Agents =
                     Log.error "Configured validator address is not a valid blockchain address."
                     None
                 else
-                    validatorAddress
-                    |> fun (BlockchainAddress a) -> a
-                    |> Log.infof "Configured as validator with address %s."
+                    Log.infof "Configured as validator with address %s." validatorAddress.Value
 
                     Composition.createConsensusStateInstance publishEvent
                     |> Some

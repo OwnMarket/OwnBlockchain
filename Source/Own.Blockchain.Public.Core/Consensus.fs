@@ -307,7 +307,7 @@ module Consensus =
 
             if signatures.Length < _qualifiedMajority then
                 failwithf "Consensus state doesn't contain enough commits for block %i. Expected (min): %i, Actual: %i"
-                    (block.Header.Number |> fun (BlockNumber n) -> n)
+                    block.Header.Number.Value
                     _qualifiedMajority
                     signatures.Length
 
@@ -333,8 +333,8 @@ module Consensus =
                 (fun errors ->
                     Log.appErrors errors
                     failwithf "Cannot store the block %i created in consensus round %i."
-                        (block.Header.Number |> fun (BlockNumber n) -> n)
-                        (consensusRound |> fun (ConsensusRound r) -> r)
+                        block.Header.Number.Value
+                        consensusRound.Value
                 )
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -370,9 +370,7 @@ module Consensus =
     let consensusMessageDisplayFormat consensusMessage =
         match consensusMessage with
         | Propose (block, validRound) ->
-            sprintf "%s, %i"
-                (block.Header.Hash |> fun (BlockHash h) -> h)
-                (validRound |> fun (ConsensusRound r) -> r)
+            sprintf "%s, %i" block.Header.Hash.Value validRound.Value
         | Vote blockHash
         | Commit blockHash ->
             blockHash
@@ -393,18 +391,18 @@ module Consensus =
         | Propose (block, ConsensusRound validConsensusRound) ->
             [
                 [| 0uy |]
-                block.Header.Hash |> fun (BlockHash h) -> h |> decodeHash
+                block.Header.Hash.Value |> decodeHash
                 validConsensusRound |> Conversion.int32ToBytes
             ]
         | Vote blockHash ->
             [
                 [| 1uy |]
-                blockHash |? BlockHash zeroHash |> fun (BlockHash h) -> h |> decodeHash
+                (blockHash |? BlockHash zeroHash).Value |> decodeHash
             ]
         | Commit blockHash ->
             [
                 [| 2uy |]
-                blockHash |? BlockHash zeroHash |> fun (BlockHash h) -> h |> decodeHash
+                (blockHash |? BlockHash zeroHash).Value |> decodeHash
             ]
         |> List.append
             [
@@ -488,22 +486,22 @@ module Consensus =
             |> sendPeerMessage
 
             Log.debugf "Consensus message sent: %i / %i / %s"
-                (consensusMessageEnvelope.BlockNumber |> fun (BlockNumber n) -> n)
-                (consensusMessageEnvelope.Round |> fun (ConsensusRound r) -> r)
+                consensusMessageEnvelope.BlockNumber.Value
+                consensusMessageEnvelope.Round.Value
                 (consensusMessageEnvelope.ConsensusMessage |> consensusMessageDisplayFormat)
 
-        let startTimer timeout (blockNumber, consensusRound, consensusStep) =
+        let startTimer timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
             async {
                 Log.debugf "Timeout scheduled: %i / %i / %s"
-                    (blockNumber |> fun (BlockNumber n) -> n)
-                    (consensusRound |> fun (ConsensusRound r) -> r)
+                    blockNumber.Value
+                    consensusRound.Value
                     (unionCaseName consensusStep)
 
                 do! Async.Sleep timeout
 
                 Log.debugf "Timeout elapsed: %i / %i / %s"
-                    (blockNumber |> fun (BlockNumber n) -> n)
-                    (consensusRound |> fun (ConsensusRound r) -> r)
+                    blockNumber.Value
+                    consensusRound.Value
                     (unionCaseName consensusStep)
 
                 ConsensusCommand.Timeout (blockNumber, consensusRound, consensusStep)

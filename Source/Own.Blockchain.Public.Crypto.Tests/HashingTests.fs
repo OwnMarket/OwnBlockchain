@@ -23,10 +23,10 @@ module HashingTests =
 
     [<Fact>]
     let ``Hashing.zeroAddress`` () =
-        let randomAddress = Signing.generateWallet().Address |> fun (BlockchainAddress a) -> a
+        let randomAddress = Signing.generateWallet().Address.Value
         let randomAddressBytes = randomAddress |> Hashing.decode
 
-        let zeroAddress = Hashing.zeroAddress |> (fun (BlockchainAddress a) -> a)
+        let zeroAddress = Hashing.zeroAddress.Value
         let zeroAddressBytes = zeroAddress |> Hashing.decode
 
         test <@ zeroAddressBytes.Length = randomAddressBytes.Length @>
@@ -137,14 +137,13 @@ module HashingTests =
             [
                 for _ in 1 .. 100 ->
                     Hashing.merkleTree transactionMocks
-                    |> fun (MerkleTreeRoot r) -> r
             ]
             |> List.distinct
 
         test <@ roots.Length = 1 @>
 
         let bytes =
-            roots.Head
+            roots.Head.Value
             |> Hashing.decode
 
         test <@ bytes.Length = 32 @>

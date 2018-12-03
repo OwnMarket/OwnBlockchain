@@ -58,7 +58,7 @@ module Workflows =
         =
 
         createGenesisBlock ()
-        |> fun (b, _) -> b.Header.Hash |> (fun (BlockHash h) -> h) |> decodeHash
+        |> fun (b, _) -> b.Header.Hash.Value |> decodeHash
         |> signBlock privateKey
 
     let initBlockchainState
@@ -234,8 +234,8 @@ module Workflows =
                 if blockNumber <> lastAppliedBlockNumber + 1 then
                     return!
                         sprintf "Cannot propose block %i due to block %i being last applied block."
-                            (blockNumber |> fun (BlockNumber n) -> n)
-                            (lastAppliedBlockNumber |> fun (BlockNumber n) -> n)
+                            blockNumber.Value
+                            lastAppliedBlockNumber.Value
                         |> Result.appError
 
                 let! lastAppliedBlock =
@@ -290,8 +290,8 @@ module Workflows =
             if not (blockExists block.Header.ConfigurationBlockNumber) then
                 return!
                     sprintf "Missing configuration block %i for block %i."
-                        (block.Header.ConfigurationBlockNumber |> fun (BlockNumber n) -> n)
-                        (block.Header.Number |> fun (BlockNumber n) -> n)
+                        block.Header.ConfigurationBlockNumber.Value
+                        block.Header.Number.Value
                     |> Result.appError
 
             let! configBlock =
@@ -306,14 +306,14 @@ module Workflows =
             if validators.IsEmpty then
                 return!
                     sprintf "No validators found in configuration block %i to validate block %i."
-                        (block.Header.ConfigurationBlockNumber |> fun (BlockNumber n) -> n)
-                        (block.Header.Number |> fun (BlockNumber n) -> n)
+                        block.Header.ConfigurationBlockNumber.Value
+                        block.Header.Number.Value
                     |> Result.appError
 
             if validators.Count < minValidatorCount then
                 return!
                     sprintf "Configuration block %i must have at least %i validators in the configuration."
-                        (block.Header.ConfigurationBlockNumber |> fun (BlockNumber n) -> n)
+                        block.Header.ConfigurationBlockNumber.Value
                         minValidatorCount
                     |> Result.appError
 
@@ -325,7 +325,7 @@ module Workflows =
             if blockSigners.Count < qualifiedMajority then
                 return!
                     sprintf "Block %i is not signed by qualified majority. Expected (min): %i / Actual: %i"
-                        (block.Header.Number |> fun (BlockNumber n) -> n)
+                        block.Header.Number.Value
                         qualifiedMajority
                         blockSigners.Count
                     |> Result.appError
@@ -359,9 +359,7 @@ module Workflows =
 
             if not (isValidSuccessorBlock previousBlock.Header.Hash block) then
                 return!
-                    block.Header.Number
-                    |> fun (BlockNumber n) ->
-                        sprintf "Block %i is not a valid successor of the previous block." n
+                    sprintf "Block %i is not a valid successor of the previous block." block.Header.Number.Value
                     |> Result.appError
 
             let createdBlock, output =
@@ -377,9 +375,7 @@ module Workflows =
                 Log.debugf "RECEIVED BLOCK:\n%A" block
                 Log.debugf "CREATED BLOCK:\n%A" createdBlock
                 return!
-                    block.Header.Number
-                    |> fun (BlockNumber n) ->
-                        sprintf "Applying of block %i didn't result in expected blockchain state." n
+                    sprintf "Applying of block %i didn't result in expected blockchain state." block.Header.Number.Value
                     |> Result.appError
 
             return output
@@ -401,10 +397,7 @@ module Workflows =
             let! output = applyBlockToCurrentState block
 
             #if DEBUG
-            let outputFileName =
-                block.Header.Number
-                |> fun (BlockNumber n) -> n
-                |> sprintf "Data/Block_%i_output_apply"
+            let outputFileName = sprintf "Data/Block_%i_output_apply" block.Header.Number.Value
             System.IO.File.WriteAllText(outputFileName, sprintf "%A" output)
             #endif
 
@@ -472,7 +465,7 @@ module Workflows =
                 Data = txEnvelopeDto
             }
             |> sendMessageToPeers
-        | _ -> Log.errorf "Tx %s does not exist" (txHash |> fun (TxHash hash) -> hash)
+        | _ -> Log.errorf "Tx %s does not exist" txHash.Value
 
     let propagateBlock
         sendMessageToPeers
@@ -490,7 +483,7 @@ module Workflows =
                 Data = blockEnvelopeDto
             }
             |> sendMessageToPeers
-        | _ -> Log.errorf "Block %i does not exist." (blockNumber |> fun (BlockNumber b) -> b)
+        | _ -> Log.errorf "Block %i does not exist." blockNumber.Value
 
     let processPeerMessage
         getTx
@@ -661,7 +654,7 @@ module Workflows =
                 |> Mapping.blockDtosToGetBlockApiResponseDto blockEnvelopeDto
                 |> Ok
         | _ ->
-            sprintf "Block %i does not exist" (blockNumber |> fun (BlockNumber b) -> b)
+            sprintf "Block %i does not exist" blockNumber.Value
             |> Result.appError
 
     let getAddressApi
@@ -705,8 +698,7 @@ module Workflows =
 
         match getAccountState accountHash with
         | None ->
-            accountHash
-            |> fun (AccountHash h) -> sprintf "Account %s does not exist." h
+            sprintf "Account %s does not exist." accountHash.Value
             |> Result.appError
         | Some accountState ->
             getAccountHoldings accountHash assetHash

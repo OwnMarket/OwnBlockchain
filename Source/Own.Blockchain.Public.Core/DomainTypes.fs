@@ -321,7 +321,57 @@ type PeerMessage =
 // Domain Type Logic
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type NetworkAddress with
+    member __.Value =
+        __ |> fun (NetworkAddress v) -> v
+
+type PrivateKey with
+    member __.Value =
+        __ |> fun (PrivateKey v) -> v
+
+type BlockchainAddress with
+    member __.Value =
+        __ |> fun (BlockchainAddress v) -> v
+
+type Signature with
+    member __.Value =
+        __ |> fun (Signature v) -> v
+
+type AccountHash with
+    member __.Value =
+        __ |> fun (AccountHash v) -> v
+
+type AssetHash with
+    member __.Value =
+        __ |> fun (AssetHash v) -> v
+
+type AssetCode with
+    member __.Value =
+        __ |> fun (AssetCode v) -> v
+
+type TxHash with
+    member __.Value =
+        __ |> fun (TxHash v) -> v
+
+type TxActionNumber with
+    member __.Value =
+        __ |> fun (TxActionNumber v) -> v
+
+type Timestamp with
+    member __.Value =
+        __ |> fun (Timestamp v) -> v
+
+type BlockHash with
+    member __.Value =
+        __ |> fun (BlockHash v) -> v
+
+type MerkleTreeRoot with
+    member __.Value =
+        __ |> fun (MerkleTreeRoot v) -> v
+
 type BlockNumber with
+    member __.Value =
+        __ |> fun (BlockNumber v) -> v
     static member Zero =
         BlockNumber 0L
     static member One =
@@ -340,6 +390,8 @@ type BlockNumber with
         BlockNumber (n1 - int64 n2)
 
 type ConsensusRound with
+    member __.Value =
+        __ |> fun (ConsensusRound v) -> v
     static member Zero =
         ConsensusRound 0
     static member One =
@@ -354,6 +406,8 @@ type ConsensusRound with
         ConsensusRound (n1 - n2)
 
 type Nonce with
+    member __.Value =
+        __ |> fun (Nonce v) -> v
     static member Zero =
         Nonce 0L
     static member One =
@@ -372,6 +426,8 @@ type Nonce with
         Nonce (n1 - int64 n2)
 
 type ChxAmount with
+    member __.Value =
+        __ |> fun (ChxAmount v) -> v
     static member Zero =
         ChxAmount 0m
     static member (+) (ChxAmount a1, ChxAmount a2) =
@@ -392,6 +448,8 @@ type ChxAmount with
         ChxAmount (Decimal.Round(a1 / a2, 18))
 
 type AssetAmount with
+    member __.Value =
+        __ |> fun (AssetAmount v) -> v
     static member Zero =
         AssetAmount 0m
     static member (+) (AssetAmount a1, AssetAmount a2) =

@@ -60,7 +60,7 @@ module Blocks =
         (AccountHash accountHash, state : AccountState)
         =
 
-        let addressBytes = state.ControllerAddress |> fun (BlockchainAddress a) -> decodeHash a
+        let addressBytes = decodeHash state.ControllerAddress.Value
 
         [
             decodeHash accountHash
@@ -75,7 +75,7 @@ module Blocks =
         (AssetHash assetHash, state : AssetState)
         =
 
-        let addressBytes = state.ControllerAddress |> fun (BlockchainAddress a) -> decodeHash a
+        let addressBytes = decodeHash state.ControllerAddress.Value
         let assetCodeBytes =
             match state.AssetCode with
             | Some (AssetCode code) -> code |> stringToBytes |> createHash |> decodeHash

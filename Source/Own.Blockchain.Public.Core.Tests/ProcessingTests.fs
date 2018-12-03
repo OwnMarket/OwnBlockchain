@@ -46,7 +46,7 @@ module ProcessingTests =
         let txHashes =
             txSet
             |> Processing.excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance
-            |> List.map (fun tx -> tx.TxHash |> fun (TxHash hash) -> hash)
+            |> List.map (fun tx -> tx.TxHash.Value)
 
         test <@ txHashes = ["Tx1"; "Tx2"; "Tx3"; "Tx5"] @>
 
@@ -99,7 +99,7 @@ module ProcessingTests =
         let txHashes =
             txSet
             |> Processing.excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance
-            |> List.map (fun tx -> tx.TxHash |> fun (TxHash hash) -> hash)
+            |> List.map (fun tx -> tx.TxHash.Value)
 
         test <@ txHashes = expectedHashes @>
 
@@ -165,8 +165,8 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
-                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -259,8 +259,8 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
-                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -354,8 +354,8 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
-                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -449,8 +449,8 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
-                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -533,8 +533,8 @@ module ProcessingTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
-                            Amount = amountToTransfer |> fun (ChxAmount a) -> a
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -644,10 +644,10 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
-                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = amountToTransfer |> fun (AssetAmount a) -> a
+                            FromAccount = senderAccountHash.Value
+                            ToAccount = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -749,10 +749,10 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
-                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = amountToTransfer |> fun (AssetAmount a) -> a
+                            FromAccount = senderAccountHash.Value
+                            ToAccount = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -857,10 +857,10 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
-                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = amountToTransfer |> fun (AssetAmount a) -> a
+                            FromAccount = senderAccountHash.Value
+                            ToAccount = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -965,10 +965,10 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash |> fun (AccountHash h) -> h
-                            ToAccount = recipientAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = amountToTransfer |> fun (AssetAmount a) -> a
+                            FromAccount = senderAccountHash.Value
+                            ToAccount = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
                         }
                 } :> obj
             ]
@@ -1070,9 +1070,9 @@ module ProcessingTests =
                     ActionType = "CreateAssetEmission"
                     ActionData =
                         {
-                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                            EmissionAccountHash = emissionAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = emissionAmount.Value
                         }
                 } :> obj
             ]
@@ -1170,9 +1170,9 @@ module ProcessingTests =
                     ActionType = "CreateAssetEmission"
                     ActionData =
                         {
-                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                            EmissionAccountHash = emissionAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = emissionAmount.Value
                         }
                 } :> obj
             ]
@@ -1266,9 +1266,9 @@ module ProcessingTests =
                     ActionType = "CreateAssetEmission"
                     ActionData =
                         {
-                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                            EmissionAccountHash = emissionAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = emissionAmount.Value
                         }
                 } :> obj
             ]
@@ -1364,9 +1364,9 @@ module ProcessingTests =
                     ActionType = "CreateAssetEmission"
                     ActionData =
                         {
-                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                            EmissionAccountHash = emissionAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = emissionAmount.Value
                         }
                 } :> obj
             ]
@@ -1461,9 +1461,9 @@ module ProcessingTests =
                     ActionType = "CreateAssetEmission"
                     ActionData =
                         {
-                            EmissionAccountHash = emissionAccountHash |> fun (AccountHash h) -> h
-                            AssetHash = assetHash |> fun (AssetHash c) -> c
-                            Amount = emissionAmount |> fun (AssetAmount a) -> a
+                            EmissionAccountHash = emissionAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = emissionAmount.Value
                         }
                 } :> obj
             ]
@@ -1566,8 +1566,8 @@ module ProcessingTests =
 
         let accountHash =
             [
-                senderWallet.Address |> fun (BlockchainAddress a) -> Hashing.decode a
-                nonce |> fun (Nonce n) -> Conversion.int64ToBytes n
+                Hashing.decode senderWallet.Address.Value
+                nonce.Value |> Conversion.int64ToBytes
                 1s |> Conversion.int16ToBytes
             ]
             |> Array.concat
@@ -1666,8 +1666,8 @@ module ProcessingTests =
 
         let assetHash =
             [
-                senderWallet.Address |> fun (BlockchainAddress a) -> Hashing.decode a
-                nonce |> fun (Nonce n) -> Conversion.int64ToBytes n
+                Hashing.decode senderWallet.Address.Value
+                nonce.Value |> Conversion.int64ToBytes
                 1s |> Conversion.int16ToBytes
             ]
             |> Array.concat
@@ -1760,8 +1760,8 @@ module ProcessingTests =
                     ActionType = "SetAccountController"
                     ActionData =
                         {
-                            AccountHash = accountHash |> fun (AccountHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
+                            AccountHash = accountHash.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -1851,8 +1851,8 @@ module ProcessingTests =
                     ActionType = "SetAccountController"
                     ActionData =
                         {
-                            AccountHash = accountHash |> fun (AccountHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
+                            AccountHash = accountHash.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -1947,8 +1947,8 @@ module ProcessingTests =
                     ActionType = "SetAccountController"
                     ActionData =
                         {
-                            AccountHash = accountHash |> fun (AccountHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
+                            AccountHash = accountHash.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -2047,8 +2047,8 @@ module ProcessingTests =
                     ActionType = "SetAssetController"
                     ActionData =
                         {
-                            AssetHash = assetHash |> fun (AssetHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
+                            AssetHash = assetHash.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -2138,8 +2138,8 @@ module ProcessingTests =
                     ActionType = "SetAssetController"
                     ActionData =
                         {
-                            AssetHash = assetHash |> fun (AssetHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
+                            AssetHash = assetHash.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -2234,8 +2234,8 @@ module ProcessingTests =
                     ActionType = "SetAssetController"
                     ActionData =
                         {
-                            AssetHash = assetHash |> fun (AssetHash h) -> h
-                            ControllerAddress = newControllerWallet.Address |> fun (BlockchainAddress a) -> a
+                            AssetHash = assetHash.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -2334,8 +2334,8 @@ module ProcessingTests =
                     ActionType = "SetAssetCode"
                     ActionData =
                         {
-                            AssetHash = assetHash |> fun (AssetHash h) -> h
-                            AssetCode = assetCode |> fun (AssetCode c) -> c
+                            AssetHash = assetHash.Value
+                            AssetCode = assetCode.Value
                         }
                 } :> obj
             ]
@@ -2425,8 +2425,8 @@ module ProcessingTests =
                     ActionType = "SetAssetCode"
                     ActionData =
                         {
-                            AssetHash = assetHash |> fun (AssetHash h) -> h
-                            AssetCode = assetCode |> fun (AssetCode c) -> c
+                            AssetHash = assetHash.Value
+                            AssetCode = assetCode.Value
                         }
                 } :> obj
             ]
@@ -2521,8 +2521,8 @@ module ProcessingTests =
                     ActionType = "SetAssetCode"
                     ActionData =
                         {
-                            AssetHash = assetHash |> fun (AssetHash h) -> h
-                            AssetCode = assetCode |> fun (AssetCode c) -> c
+                            AssetHash = assetHash.Value
+                            AssetCode = assetCode.Value
                         }
                 } :> obj
             ]
@@ -2803,8 +2803,8 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
-                            Amount = stakeAmount |> fun (ChxAmount a) -> a
+                            ValidatorAddress = stakeValidatorAddress.Value
+                            Amount = stakeAmount.Value
                         }
                 } :> obj
             ]
@@ -2894,8 +2894,8 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
-                            Amount = stakeAmount |> fun (ChxAmount a) -> a
+                            ValidatorAddress = stakeValidatorAddress.Value
+                            Amount = stakeAmount.Value
                         }
                 } :> obj
             ]
@@ -2985,8 +2985,8 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
-                            Amount = stakeAmount |> fun (ChxAmount a) -> a
+                            ValidatorAddress = stakeValidatorAddress.Value
+                            Amount = stakeAmount.Value
                         }
                 } :> obj
             ]
@@ -3081,8 +3081,8 @@ module ProcessingTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            ValidatorAddress = stakeValidatorAddress |> fun (BlockchainAddress a) -> a
-                            Amount = stakeAmount |> fun (ChxAmount a) -> a
+                            ValidatorAddress = stakeValidatorAddress.Value
+                            Amount = stakeAmount.Value
                         }
                 } :> obj
             ]

@@ -32,7 +32,7 @@ module SubmissionTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
+                            RecipientAddress = recipientWallet.Address.Value
                             Amount = 10m
                         }
                 } :> obj
@@ -40,7 +40,7 @@ module SubmissionTests =
                     ActionType = "TransferChx"
                     ActionData =
                         {
-                            RecipientAddress = recipientWallet.Address |> fun (BlockchainAddress a) -> a
+                            RecipientAddress = recipientWallet.Address.Value
                             Amount = 10m
                         }
                 } :> obj

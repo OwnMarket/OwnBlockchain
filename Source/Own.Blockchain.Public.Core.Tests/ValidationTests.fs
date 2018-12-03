@@ -28,7 +28,7 @@ module ValidationTests =
     let ``Validation.validateTx BasicValidation single validation error`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = -10L
             Fee = 20m
             Actions =
@@ -37,8 +37,7 @@ module ValidationTests =
                         ActionType = transferChxActionType
                         ActionData =
                             {
-                                TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
+                                TransferChxTxActionDto.RecipientAddress = recipientWallet.Address.Value
                                 Amount = 20m
                             }
                     }
@@ -78,8 +77,7 @@ module ValidationTests =
                         ActionType = transferChxActionType
                         ActionData =
                             {
-                                TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
+                                TransferChxTxActionDto.RecipientAddress = recipientWallet.Address.Value
                                 Amount = 20m
                             }
                     }
@@ -107,7 +105,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx BasicValidation unknown action type`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -131,7 +129,7 @@ module ValidationTests =
     let ``Validation.validateTx TransferChx invalid Amount`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -140,8 +138,7 @@ module ValidationTests =
                         ActionType = transferChxActionType
                         ActionData =
                             {
-                                TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
+                                TransferChxTxActionDto.RecipientAddress = recipientWallet.Address.Value
                                 Amount = 0m
                             }
                     }
@@ -159,7 +156,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferChx invalid RecipientAddress`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -186,7 +183,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid FromAccount`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -215,7 +212,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid ToAccount`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -244,7 +241,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid Asset`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -273,7 +270,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx TransferAsset invalid Amount`` () =
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -303,7 +300,7 @@ module ValidationTests =
     let ``Validation.validateTx validate action`` () =
         let recipientWallet = Signing.generateWallet ()
         let testTx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -312,8 +309,7 @@ module ValidationTests =
                         ActionType = transferChxActionType
                         ActionData =
                             {
-                                TransferChxTxActionDto.RecipientAddress =
-                                    recipientWallet.Address |> fun (BlockchainAddress a) -> a
+                                TransferChxTxActionDto.RecipientAddress = recipientWallet.Address.Value
                                 Amount = 10m
                             }
                     }
@@ -355,7 +351,7 @@ module ValidationTests =
             failwithf "%A" errors
 
     let private isValidAddressMock (address : BlockchainAddress) =
-        let item = address |> fun (BlockchainAddress a) -> a
+        let item = address.Value
         String.IsNullOrWhiteSpace(item) |> not
 
     [<Fact>]
@@ -368,7 +364,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -398,7 +394,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -418,7 +414,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx CreateAccount valid action`` () =
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -438,7 +434,7 @@ module ValidationTests =
     [<Fact>]
     let ``Validation.validateTx CreateAsset valid action`` () =
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -460,11 +456,11 @@ module ValidationTests =
         let expected =
             {
                 SetAccountControllerTxActionDto.AccountHash = "A"
-                ControllerAddress = chAddress |> fun (BlockchainAddress a) -> a
+                ControllerAddress = chAddress.Value
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -492,7 +488,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -514,11 +510,11 @@ module ValidationTests =
         let expected =
             {
                 SetAssetControllerTxActionDto.AssetHash = "A"
-                ControllerAddress = chAddress |> fun (BlockchainAddress a) -> a
+                ControllerAddress = chAddress.Value
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -546,7 +542,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -572,7 +568,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -600,7 +596,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -625,7 +621,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -651,7 +647,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -677,7 +673,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =
@@ -705,7 +701,7 @@ module ValidationTests =
             }
 
         let tx = {
-            SenderAddress = chAddress |> fun (BlockchainAddress a) -> a
+            SenderAddress = chAddress.Value
             Nonce = 10L
             Fee = 1m
             Actions =

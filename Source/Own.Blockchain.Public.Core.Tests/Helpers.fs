@@ -16,8 +16,6 @@ module Helpers =
 
     let minTxActionFee = ChxAmount 0.001m
 
-    let addressToString (BlockchainAddress a) = a
-
     let extractActionData<'T> = function
         | TransferChx action -> box action :?> 'T
         | TransferAsset action -> box action :?> 'T

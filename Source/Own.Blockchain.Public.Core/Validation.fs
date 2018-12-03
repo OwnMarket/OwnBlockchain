@@ -45,8 +45,7 @@ module Validation =
                 | Some blockchainAddress ->
                     Ok blockchainAddress
                 | None ->
-                    s
-                    |> fun (Signature s) -> sprintf "Cannot verify block signature %s." s
+                    sprintf "Cannot verify block signature %s." s.Value
                     |> Result.appError
             )
             |> List.partition (function | Ok _ -> true | _ -> false)

@@ -18,8 +18,6 @@ open Swensen.Unquote
 
 module SharedTests =
 
-    let addressToString (BlockchainAddress a) = a
-
     let private addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
     let newTxDto (BlockchainAddress senderAddress) nonce fee actions =
@@ -98,7 +96,7 @@ module SharedTests =
             test <@ responseDto.TxHash = txInfo.TxHash @>
             test <@ dto.Fee = txInfo.Fee @>
             test <@ dto.Nonce = txInfo.Nonce @>
-            test <@ txInfo.SenderAddress = (addressToString senderWallet.Address) @>
+            test <@ txInfo.SenderAddress = senderWallet.Address.Value @>
 
     let transactionSubmitTest engineType connString isValidTransaction =
         let client = testInit engineType connString
@@ -110,7 +108,7 @@ module SharedTests =
                 ActionType = "TransferChx"
                 ActionData =
                     {
-                        RecipientAddress = receiverWallet.Address |> addressToString
+                        RecipientAddress = receiverWallet.Address.Value
                         TransferChxTxActionDto.Amount = 10m
                     }
             }
@@ -142,8 +140,8 @@ module SharedTests =
                     let senderWallet = Signing.generateWallet ()
                     let receiverWallet = Signing.generateWallet ()
 
-                    Helper.addBalanceAndAccount connString (addressToString senderWallet.Address) 100m
-                    Helper.addBalanceAndAccount connString (addressToString receiverWallet.Address) 0m
+                    Helper.addBalanceAndAccount connString senderWallet.Address.Value 100m
+                    Helper.addBalanceAndAccount connString receiverWallet.Address.Value 0m
 
                     let isValid = i % 2 = 0
                     let amt = if isValid then 10m else -10m
@@ -153,7 +151,7 @@ module SharedTests =
                             ActionType = "TransferChx"
                             ActionData =
                                 {
-                                    RecipientAddress = receiverWallet.Address |> addressToString
+                                    RecipientAddress = receiverWallet.Address.Value
                                     TransferChxTxActionDto.Amount = amt
                                 }
                         }
@@ -265,7 +263,7 @@ module SharedTests =
                     paramName
                 )
 
-        let address = addressToString wallet.Address
+        let address = wallet.Address.Value
 
         [paramName, address |> box]
         |> Seq.ofList
@@ -289,7 +287,7 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
@@ -306,7 +304,7 @@ module SharedTests =
                     ActionData =
                         {
                             SetAccountControllerTxActionDto.AccountHash = accountHash
-                            ControllerAddress = newController.Address |> addressToString
+                            ControllerAddress = newController.Address.Value
                         }
                 }
             ]
@@ -349,7 +347,7 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString (sender.Address.Value) initialSenderChxBalance
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
@@ -366,7 +364,7 @@ module SharedTests =
                     ActionData =
                         {
                             SetAssetControllerTxActionDto.AssetHash = assetHash
-                            ControllerAddress = newController.Address |> addressToString
+                            ControllerAddress = newController.Address.Value
                         }
                 }
             ]
@@ -408,7 +406,7 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
@@ -468,7 +466,7 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
@@ -522,7 +520,7 @@ module SharedTests =
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
 
-        Helper.addChxBalance connectionString (sender.Address |> addressToString) initialSenderChxBalance
+        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
         let (BlockchainAddress validatorAddress) = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
         Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
 
@@ -534,8 +532,7 @@ module SharedTests =
                     ActionType = "DelegateStake"
                     ActionData =
                         {
-                            DelegateStakeTxActionDto.ValidatorAddress =
-                                stakeValidatorAddress |> fun (BlockchainAddress a) -> a
+                            DelegateStakeTxActionDto.ValidatorAddress = stakeValidatorAddress.Value
                             Amount = stakeAmount
                         }
                 }

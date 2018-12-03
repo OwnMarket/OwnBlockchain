@@ -270,7 +270,7 @@ module Processing =
 
         let accountHash =
             [
-                senderAddress |> fun (BlockchainAddress a) -> decodeHash a
+                decodeHash senderAddress.Value
                 nonce |> Conversion.int64ToBytes
                 actionNumber |> Conversion.int16ToBytes
             ]
@@ -297,7 +297,7 @@ module Processing =
 
         let assetHash =
             [
-                senderAddress |> fun (BlockchainAddress a) -> decodeHash a
+                decodeHash senderAddress.Value
                 nonce |> Conversion.int64ToBytes
                 actionNumber |> Conversion.int16ToBytes
             ]
@@ -500,7 +500,7 @@ module Processing =
                     )
                 let precedingTxsForSameSender =
                     precedingTxsForSameSender
-                    |> List.sortBy (fun tx -> tx.Nonce, tx.Fee |> fun (ChxAmount a) -> -a)
+                    |> List.sortBy (fun tx -> tx.Nonce, -tx.Fee.Value)
                 let orderedSet =
                     orderedSet
                     @ precedingTxsForSameSender
@@ -607,21 +607,17 @@ module Processing =
         =
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
-            let rawTxHash = txHash |> fun (TxHash h) -> h
-
             let tx =
                 match getTxBody getTx verifySignature isValidAddress minTxActionFee txHash with
                 | Ok tx -> tx
                 | Error err ->
                     Log.appErrors err
-                    txHash
-                    |> fun (TxHash h) -> h
-                    |> failwithf "Cannot load tx %s" rawTxHash // TODO: Remove invalid tx from the pool?
+                    failwithf "Cannot load tx %s" txHash.Value // TODO: Remove invalid tx from the pool?
 
             match processValidatorReward tx validator state with
             | Error e ->
                 // Logic in excludeTxsIfBalanceCannotCoverFees is supposed to prevent this.
-                failwithf "Cannot process validator reward for tx %s (Error: %A)" rawTxHash e
+                failwithf "Cannot process validator reward for tx %s (Error: %A)" txHash.Value e
             | Ok state ->
                 match updateChxBalanceNonce tx.Sender tx.Nonce state with
                 | Error e ->
