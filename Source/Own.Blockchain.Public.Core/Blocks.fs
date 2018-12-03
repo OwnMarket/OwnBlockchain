@@ -435,3 +435,39 @@ module Blocks =
                 block.Header.ConfigurationRoot
 
         block.Header.Hash = blockHash
+
+    let verifyBlockSignatures
+        verifySignature
+        (blockEnvelope : BlockEnvelope)
+        : Result<BlockchainAddress list, AppErrors>
+        =
+
+        result {
+            let! block =
+                blockEnvelope.RawBlock
+                |> Serialization.deserialize<BlockDto>
+                |> Result.map Mapping.blockFromDto
+
+            let values, errors =
+                blockEnvelope.Signatures
+                |> List.map (fun s ->
+                    match verifySignature s block.Header.Hash.Value with
+                    | Some blockchainAddress ->
+                        Ok blockchainAddress
+                    | None ->
+                        sprintf "Cannot verify block signature %s." s.Value
+                        |> Result.appError
+                )
+                |> List.partition (function | Ok _ -> true | _ -> false)
+
+            return!
+                if errors.IsEmpty then
+                    values
+                    |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't hapen")
+                    |> Ok
+                else
+                    errors
+                    |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't hapen")
+                    |> Error
+        }
+

@@ -17,7 +17,8 @@ module Composition =
         Workflows.distributeChx
             getAddressNonce
             submitTx
-            Signing.signMessage
+            Hashing.hash
+            Signing.signHash
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)
@@ -28,7 +29,8 @@ module Composition =
         Workflows.distributeAsset
             getAddressNonce
             submitTx
-            Signing.signMessage
+            Hashing.hash
+            Signing.signHash
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)

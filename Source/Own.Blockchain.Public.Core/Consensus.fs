@@ -422,7 +422,7 @@ module Consensus =
         decodeHash
         createHash
         zeroHash
-        signMessage
+        signHash
         sendPeerMessage
         publishEvent
         addressFromPrivateKey
@@ -461,7 +461,7 @@ module Consensus =
                     consensusRound
                     consensusMessage
 
-            let signature = signMessage validatorPrivateKey (decodeHash consensusMessageHash)
+            let signature = signHash validatorPrivateKey consensusMessageHash
 
             let consensusMessageEnvelope =
                 {

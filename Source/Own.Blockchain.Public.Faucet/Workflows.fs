@@ -42,7 +42,8 @@ module Workflows =
     let private composeAndSubmitTx
         (getAddressNonce : BlockchainAddress -> Nonce)
         (submitTx : string -> string)
-        (signTx : PrivateKey -> byte[] -> Signature)
+        (createHash : byte[] -> string)
+        (signHash : PrivateKey -> string -> Signature)
         (faucetSupplyHolderPrivateKey : PrivateKey)
         (faucetSupplyHolderAddress : BlockchainAddress)
         (ChxAmount txFee)
@@ -67,7 +68,9 @@ module Workflows =
                     (String.Join(", ", actions))
                 |> Conversion.stringToBytes
 
-            let signature = signTx faucetSupplyHolderPrivateKey rawTx
+            let txHash = createHash rawTx
+
+            let signature = signHash faucetSupplyHolderPrivateKey txHash
 
             createTxEnvelopeJson rawTx signature
             |> submitTx
@@ -100,7 +103,8 @@ module Workflows =
     let distributeChx
         getAddressNonce
         submitTx
-        signTx
+        createHash
+        signHash
         faucetSupplyHolderPrivateKey
         faucetSupplyHolderAddress
         txFee
@@ -116,7 +120,8 @@ module Workflows =
         composeAndSubmitTx
             getAddressNonce
             submitTx
-            signTx
+            createHash
+            signHash
             faucetSupplyHolderPrivateKey
             faucetSupplyHolderAddress
             txFee
@@ -127,7 +132,8 @@ module Workflows =
     let distributeAsset
         getAddressNonce
         submitTx
-        signTx
+        createHash
+        signHash
         faucetSupplyHolderPrivateKey
         faucetSupplyHolderAddress
         txFee
@@ -158,7 +164,8 @@ module Workflows =
         composeAndSubmitTx
             getAddressNonce
             submitTx
-            signTx
+            createHash
+            signHash
             faucetSupplyHolderPrivateKey
             faucetSupplyHolderAddress
             txFee

@@ -34,7 +34,11 @@ module SharedTests =
             |> JsonConvert.SerializeObject
             |> Conversion.stringToBytes
 
-        let (Signature signature) = Signing.signMessage sender.PrivateKey txBytes
+        let (Signature signature) =
+            txBytes
+            |> Hashing.hash
+            |> Signing.signHash sender.PrivateKey
+
         {
             Tx = System.Convert.ToBase64String(txBytes)
             Signature = signature

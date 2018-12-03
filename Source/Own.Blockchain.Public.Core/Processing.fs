@@ -512,11 +512,11 @@ module Processing =
         |> orderSet []
         |> List.map (fun tx -> tx.TxHash)
 
-    let getTxBody getTx verifySignature isValidAddress minTxActionFee txHash =
+    let getTxBody getTx createHash verifySignature isValidAddress minTxActionFee txHash =
         result {
             let! txEnvelopeDto = getTx txHash
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
-            let! sender = Validation.verifyTxSignature verifySignature txEnvelope
+            let! sender = Validation.verifyTxSignature createHash verifySignature txEnvelope
 
             let! tx =
                 txEnvelope.RawTx
@@ -608,7 +608,7 @@ module Processing =
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
             let tx =
-                match getTxBody getTx verifySignature isValidAddress minTxActionFee txHash with
+                match getTxBody getTx createHash verifySignature isValidAddress minTxActionFee txHash with
                 | Ok tx -> tx
                 | Error err ->
                     Log.appErrors err

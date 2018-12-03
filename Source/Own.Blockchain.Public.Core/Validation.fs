@@ -25,39 +25,13 @@ module Validation =
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
 
-    let verifyTxSignature verifySignature (txEnvelope : TxEnvelope) : Result<BlockchainAddress, AppErrors> =
-        match verifySignature txEnvelope.Signature txEnvelope.RawTx with
+    let verifyTxSignature createHash verifySignature (txEnvelope : TxEnvelope) : Result<BlockchainAddress, AppErrors> =
+        let txHash = createHash txEnvelope.RawTx
+        match verifySignature txEnvelope.Signature txHash with
         | Some blockchainAddress ->
             Ok blockchainAddress
         | None ->
             Result.appError "Cannot verify tx signature."
-
-    let verifyBlockSignatures
-        verifySignature
-        (blockEnvelope : BlockEnvelope)
-        : Result<BlockchainAddress list, AppErrors>
-        =
-
-        let values, errors =
-            blockEnvelope.Signatures
-            |> List.map (fun s ->
-                match verifySignature s blockEnvelope.RawBlock with
-                | Some blockchainAddress ->
-                    Ok blockchainAddress
-                | None ->
-                    sprintf "Cannot verify block signature %s." s.Value
-                    |> Result.appError
-            )
-            |> List.partition (function | Ok _ -> true | _ -> false)
-
-        if errors.IsEmpty then
-            values
-            |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't hapen")
-            |> Ok
-        else
-            errors
-            |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't hapen")
-            |> Error
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block validation

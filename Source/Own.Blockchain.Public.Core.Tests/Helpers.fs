@@ -82,7 +82,7 @@ module Helpers =
         let txHash =
             rawTx |> Hashing.hash |> TxHash
 
-        let (Signature signature) = Signing.signMessage sender.PrivateKey rawTx
+        let (Signature signature) = Signing.signHash sender.PrivateKey txHash.Value
 
         let txEnvelopeDto =
             {

@@ -144,7 +144,7 @@ module Composition =
         Workflows.signGenesisBlock
             createGenesisBlock
             Hashing.decode
-            Signing.signMessage
+            Signing.signHash
 
     let initBlockchainState () =
         Workflows.initBlockchainState
@@ -189,8 +189,6 @@ module Composition =
             getPendingTxs
             getChxBalanceState
             getAvailableChxBalance
-            Signing.signMessage
-            saveBlock
             Config.MaxTxCountPerBlock
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
@@ -264,7 +262,7 @@ module Composition =
             Hashing.decode
             Hashing.hash
             Hashing.zeroHash
-            Signing.signMessage
+            Signing.signHash
             Peers.sendMessage
             publishEvent
             addressFromPrivateKey
@@ -296,7 +294,7 @@ module Composition =
             saveTxToDb
             (ChxAmount Config.MinTxActionFee)
 
-    let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Signing.verifySignature
+    let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Hashing.hash Signing.verifySignature
 
     let getBlockApi = Workflows.getBlockApi getBlock
 

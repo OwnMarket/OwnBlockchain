@@ -62,8 +62,8 @@ module SigningTests =
         test <@ actual = expected @>
 
     [<Fact>]
-    let ``Signing.signMessage`` () =
-        let messageBytes = Conversion.stringToBytes "Chainium"
+    let ``Signing.signHash`` () =
+        let messageHash = Conversion.stringToBytes "Chainium" |> Hashing.hash
 
         let expectedSignatures =
             [
@@ -92,7 +92,7 @@ module SigningTests =
 
         let actualSignatures =
             expectedSignatures
-            |> List.map (fun (pk, _) -> pk, Signing.signMessage (PrivateKey pk) messageBytes)
+            |> List.map (fun (pk, _) -> pk, Signing.signHash (PrivateKey pk) messageHash)
 
         let matches =
             List.zip actualSignatures expectedSignatures
@@ -104,13 +104,13 @@ module SigningTests =
             test <@ actual = expected @>
 
     [<Fact>]
-    let ``Signing.signMessage same message for multiple users`` () =
+    let ``Signing.signHash same message for multiple users`` () =
         let numOfReps = 100
-        let messageToSign = Conversion.stringToBytes "Own"
+        let messageHash = Conversion.stringToBytes "Own" |> Hashing.hash
 
         let generateSignature () =
             let wallet = Signing.generateWallet ()
-            Signing.signMessage wallet.PrivateKey messageToSign
+            Signing.signHash wallet.PrivateKey messageHash
 
         let distinctMessages =
             [1 .. numOfReps]
@@ -121,11 +121,11 @@ module SigningTests =
 
     [<Fact>]
     let ``Signing.verifyMessage sign, verify message and check if resulting adress is same`` () =
-        let messageToSign = Conversion.stringToBytes "Own"
+        let messageHash = Conversion.stringToBytes "Own" |> Hashing.hash
         let wallet = Signing.generateWallet ()
 
-        let signature = Signing.signMessage wallet.PrivateKey messageToSign
-        let address = Signing.verifySignature signature messageToSign
+        let signature = Signing.signHash wallet.PrivateKey messageHash
+        let address = Signing.verifySignature signature messageHash
 
         test <@ address = Some wallet.Address @>
 
@@ -136,9 +136,9 @@ module SigningTests =
         let wallet = Signing.generateWallet ()
 
         for i in [1 .. 100] do
-            let message = sprintf "%s %i" messagePrefix i |> Conversion.stringToBytes
-            let signature = Signing.signMessage wallet.PrivateKey message
-            let address = Signing.verifySignature signature message
+            let messageHash = sprintf "%s %i" messagePrefix i |> Conversion.stringToBytes |> Hashing.hash
+            let signature = Signing.signHash wallet.PrivateKey messageHash
+            let address = Signing.verifySignature signature messageHash
 
             test <@ address = Some wallet.Address @>
 
@@ -148,10 +148,10 @@ module SigningTests =
         let expectedAddress = Some (BlockchainAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG")
 
         let generateRandomMessageAndTest messageSize =
-            let message = Signing.generateRandomBytes messageSize
+            let messageHash = Signing.generateRandomBytes messageSize |> Hashing.hash
 
-            let signature = Signing.signMessage privateKey message
-            let address = Signing.verifySignature signature message
+            let signature = Signing.signHash privateKey messageHash
+            let address = Signing.verifySignature signature messageHash
 
             test <@ address = expectedAddress @>
 

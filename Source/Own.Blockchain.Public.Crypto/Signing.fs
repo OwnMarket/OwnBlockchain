@@ -36,13 +36,15 @@ module Signing =
 
         publicKey
 
-    let signMessage (PrivateKey privateKey) (message : byte[]) : Signature =
+    let private signHashBytes (PrivateKey privateKey) (hashBytes : byte[]) : Signature =
+        if hashBytes.Length <> 32 then
+            failwithf "Data to sign is expected to be 32 bytes long (256-bit hash). Actual length: %i" hashBytes.Length
+
         let privateKey =
             privateKey
             |> Hashing.decode
 
-        let messageHash = Hashing.hashBytes message
-        let (recoveryId, signatureSerialized) = Secp256k1.sign messageHash privateKey
+        let (recoveryId, signatureSerialized) = Secp256k1.sign hashBytes privateKey
 
         [
             signatureSerialized
@@ -52,8 +54,20 @@ module Signing =
         |> Hashing.encode
         |> Signature
 
-    let verifySignature (Signature signature) (message : byte[]) : BlockchainAddress option =
+    let signHash privateKey hash =
+        hash
+        |> Hashing.decode
+        |> signHashBytes privateKey
+
+    /// Creates a hash of the message and signs it.
+    let signMessage privateKey (message : byte[]) =
+        message
+        |> Hashing.hashBytes
+        |> signHashBytes privateKey
+
+    let verifySignature (Signature signature) messageHash : BlockchainAddress option =
         let signatureBytes = signature |> Hashing.decode
+        let messageHashBytes = messageHash |> Hashing.decode
 
         let recoveryId = signatureBytes.[64] |> int
 
@@ -65,10 +79,9 @@ module Signing =
             |> Array.concat
             |> Secp256k1.parseSignature recoveryId
 
-        let messageHash = message |> Hashing.hashBytes
-        let publicKey = Secp256k1.recoverPublicKeyFromSignature signature messageHash
+        let publicKey = Secp256k1.recoverPublicKeyFromSignature signature messageHashBytes
 
-        if Secp256k1.verifySignature signature messageHash publicKey then
+        if Secp256k1.verifySignature signature messageHashBytes publicKey then
             Secp256k1.serializePublicKey publicKey
             |> Hashing.blockchainAddress
             |> Some

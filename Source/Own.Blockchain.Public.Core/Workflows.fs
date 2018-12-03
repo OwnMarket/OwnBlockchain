@@ -52,14 +52,14 @@ module Workflows =
     let signGenesisBlock
         (createGenesisBlock : unit -> Block * ProcessingOutput)
         decodeHash
-        signBlock
+        signHash
         privateKey
         : Signature
         =
 
         createGenesisBlock ()
-        |> fun (b, _) -> b.Header.Hash.Value |> decodeHash
-        |> signBlock privateKey
+        |> fun (b, _) -> b.Header.Hash.Value
+        |> signHash privateKey
 
     let initBlockchainState
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
@@ -101,7 +101,7 @@ module Workflows =
                     let! genesisSigners =
                         blockEnvelopeDto
                         |> Mapping.blockEnvelopeFromDto
-                        |> Validation.verifyBlockSignatures verifySignature
+                        |> Blocks.verifyBlockSignatures verifySignature
 
                     match genesisBlock.Configuration with
                     | None -> return! Result.appError "Genesis block must have configuration."
@@ -203,8 +203,6 @@ module Workflows =
         getPendingTxs
         getChxBalanceStateFromStorage
         getAvailableChxBalanceFromStorage
-        signBlock
-        saveBlock
         maxTxCountPerBlock
         addressFromPrivateKey
         validatorPrivateKey
@@ -318,7 +316,7 @@ module Workflows =
                     |> Result.appError
 
             let! blockSigners =
-                Validation.verifyBlockSignatures verifySignature blockEnvelope
+                Blocks.verifyBlockSignatures verifySignature blockEnvelope
                 |> Result.map (Set.ofList >> Set.intersect validators)
 
             let qualifiedMajority = Validators.calculateQualifiedMajority validators.Count
@@ -416,7 +414,7 @@ module Workflows =
         createHash
         zeroHash
         (getValidators : unit -> ValidatorSnapshot list)
-        (verifySignature : Signature -> byte[] -> BlockchainAddress option)
+        (verifySignature : Signature -> string -> BlockchainAddress option)
         (envelopeDto : ConsensusMessageEnvelopeDto)
         =
 
@@ -433,7 +431,7 @@ module Workflows =
 
         result {
             let! senderAddress =
-                match verifySignature (Signature envelopeDto.Signature) (decodeHash messageHash) with
+                match verifySignature (Signature envelopeDto.Signature) messageHash with
                 | Some a -> Ok a
                 | None ->
                     sprintf "Cannot verify signature for consensus message: %A" envelope
@@ -590,7 +588,7 @@ module Workflows =
 
         result {
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
-            let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
+            let! senderAddress = Validation.verifyTxSignature createHash verifySignature txEnvelope
             let txHash = txEnvelope.RawTx |> createHash |> TxHash
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
@@ -615,6 +613,7 @@ module Workflows =
         getTx
         getTxInfo
         getTxResult
+        createHash
         verifySignature
         (txHash : TxHash)
         : Result<GetTxApiResponseDto, AppErrors>
@@ -625,7 +624,7 @@ module Workflows =
                 getTx txHash
                 |> Result.map Mapping.txEnvelopeFromDto
 
-            let! senderAddress = Validation.verifyTxSignature verifySignature txEnvelope
+            let! senderAddress = Validation.verifyTxSignature createHash verifySignature txEnvelope
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
 
