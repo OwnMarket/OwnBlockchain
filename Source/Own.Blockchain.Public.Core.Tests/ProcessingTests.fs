@@ -644,8 +644,8 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash.Value
-                            ToAccount = recipientAccountHash.Value
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
@@ -749,8 +749,8 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash.Value
-                            ToAccount = recipientAccountHash.Value
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
@@ -857,8 +857,8 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash.Value
-                            ToAccount = recipientAccountHash.Value
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
@@ -965,8 +965,8 @@ module ProcessingTests =
                     ActionType = "TransferAsset"
                     ActionData =
                         {
-                            FromAccount = senderAccountHash.Value
-                            ToAccount = recipientAccountHash.Value
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }

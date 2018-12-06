@@ -30,8 +30,8 @@ module SerializationTests =
                             ActionType = "TransferAsset"
                             ActionData =
                                 {
-                                    FromAccount = "A"
-                                    ToAccount = "B"
+                                    FromAccountHash = "A"
+                                    ToAccountHash = "B"
                                     AssetHash = "asset"
                                     Amount = 12m
                                 }

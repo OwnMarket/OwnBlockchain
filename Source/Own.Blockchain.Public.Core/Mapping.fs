@@ -45,8 +45,8 @@ module Mapping =
             |> TransferChx
         | :? TransferAssetTxActionDto as a ->
             {
-                FromAccountHash = AccountHash a.FromAccount
-                ToAccountHash = AccountHash a.ToAccount
+                TransferAssetTxAction.FromAccountHash = AccountHash a.FromAccountHash
+                ToAccountHash = AccountHash a.ToAccountHash
                 AssetHash = AssetHash a.AssetHash
                 Amount = AssetAmount a.Amount
             }

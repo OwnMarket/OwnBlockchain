@@ -45,8 +45,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                FromAccount = "A"
-                                ToAccount = "B"
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = "B"
                                 AssetHash = "asset"
                                 Amount = 12m
                             }
@@ -85,8 +85,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                FromAccount = "A"
-                                ToAccount = "B"
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = "B"
                                 AssetHash = "asset"
                                 Amount = 12m
                             }
@@ -192,8 +192,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                FromAccount = ""
-                                ToAccount = "B"
+                                TransferAssetTxActionDto.FromAccountHash = ""
+                                ToAccountHash = "B"
                                 AssetHash = "asset"
                                 Amount = 12m
                             }
@@ -221,8 +221,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                FromAccount = "A"
-                                ToAccount = ""
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = ""
                                 AssetHash = "asset"
                                 Amount = 12m
                             }
@@ -250,8 +250,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                FromAccount = "A"
-                                ToAccount = "B"
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = "B"
                                 AssetHash = ""
                                 Amount = 12m
                             }
@@ -279,8 +279,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                FromAccount = "A"
-                                ToAccount = "B"
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = "B"
                                 AssetHash = "asset"
                                 Amount = 0m
                             }
@@ -317,8 +317,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                FromAccount = "A"
-                                ToAccount = "B"
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = "B"
                                 AssetHash = "asset"
                                 Amount = 1m
                             }
@@ -343,8 +343,8 @@ module ValidationTests =
             test <@ t.Sender = chAddress @>
             test <@ actualChx.Amount = ChxAmount expectedChx.Amount @>
             test <@ actualChx.RecipientAddress = BlockchainAddress expectedChx.RecipientAddress @>
-            test <@ actualAsset.FromAccountHash = AccountHash expAsset.FromAccount @>
-            test <@ actualAsset.ToAccountHash = AccountHash expAsset.ToAccount @>
+            test <@ actualAsset.FromAccountHash = AccountHash expAsset.FromAccountHash @>
+            test <@ actualAsset.ToAccountHash = AccountHash expAsset.ToAccountHash @>
             test <@ actualAsset.AssetHash = AssetHash expAsset.AssetHash @>
             test <@ actualAsset.Amount = AssetAmount expAsset.Amount @>
         | Error errors ->

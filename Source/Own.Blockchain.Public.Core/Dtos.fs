@@ -15,8 +15,8 @@ type TransferChxTxActionDto = {
 
 [<CLIMutable>]
 type TransferAssetTxActionDto = {
-    FromAccount : string
-    ToAccount : string
+    FromAccountHash : string
+    ToAccountHash : string
     AssetHash : string
     Amount : decimal
 }
