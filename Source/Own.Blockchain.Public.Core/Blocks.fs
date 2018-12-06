@@ -463,10 +463,10 @@ module Blocks =
             return!
                 if errors.IsEmpty then
                     values
-                    |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't hapen")
+                    |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't happen")
                     |> Ok
                 else
                     errors
-                    |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't hapen")
+                    |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't happen")
                     |> Error
         }
