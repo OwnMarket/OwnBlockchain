@@ -142,7 +142,7 @@ type BlockHeaderDto = {
     [<Key(2)>] PreviousHash : string
     [<Key(3)>] ConfigurationBlockNumber : int64
     [<Key(4)>] Timestamp : int64
-    [<Key(5)>] Validator : string
+    [<Key(5)>] ProposerAddress : string
     [<Key(6)>] TxSetRoot : string
     [<Key(7)>] TxResultSetRoot : string
     [<Key(8)>] StateRoot : string
@@ -361,7 +361,7 @@ type GetBlockApiResponseDto = {
     PreviousHash : string
     ConfigurationBlockNumber : int64
     Timestamp : int64
-    Validator : string
+    ProposerAddress : string
     TxSetRoot : string
     TxResultSetRoot : string
     StateRoot : string

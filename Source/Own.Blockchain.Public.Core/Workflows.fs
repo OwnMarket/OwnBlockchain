@@ -363,7 +363,7 @@ module Workflows =
 
             let createdBlock, output =
                 createBlock
-                    block.Header.Validator
+                    block.Header.ProposerAddress
                     previousBlock.Header.Hash
                     block.Header.Number
                     block.Header.Timestamp

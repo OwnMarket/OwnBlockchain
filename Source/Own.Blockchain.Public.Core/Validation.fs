@@ -51,10 +51,10 @@ module Validation =
             if blockDto.Header.Timestamp < 0L then
                 yield AppError "Block.Header.Timestamp cannot be negative."
 
-            if blockDto.Header.Validator.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.Validator is missing."
-            elif blockDto.Header.Validator |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "Block.Header.Validator is not valid."
+            if blockDto.Header.ProposerAddress.IsNullOrWhiteSpace() then
+                yield AppError "Block.Header.ProposerAddress is missing."
+            elif blockDto.Header.ProposerAddress |> BlockchainAddress |> isValidAddress |> not then
+                yield AppError "Block.Header.ProposerAddress is not valid."
 
             if blockDto.Header.TxSetRoot.IsNullOrWhiteSpace() then
                 yield AppError "Block.Header.TxSetRoot is missing."

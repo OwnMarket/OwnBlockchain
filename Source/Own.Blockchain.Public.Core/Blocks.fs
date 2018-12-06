@@ -141,7 +141,7 @@ module Blocks =
         (BlockNumber blockNumber)
         (BlockHash previousBlockHash)
         (Timestamp timestamp)
-        (BlockchainAddress validator)
+        (BlockchainAddress proposerAddress)
         (MerkleTreeRoot txSetRoot)
         (MerkleTreeRoot txResultSetRoot)
         (MerkleTreeRoot stateRoot)
@@ -152,7 +152,7 @@ module Blocks =
             blockNumber |> int64ToBytes
             previousBlockHash |> decodeHash
             timestamp |> int64ToBytes
-            validator |> decodeHash
+            proposerAddress |> decodeHash
             txSetRoot |> decodeHash
             txResultSetRoot |> decodeHash
             stateRoot |> decodeHash
@@ -166,7 +166,7 @@ module Blocks =
         (decodeHash : string -> byte[])
         (createHash : byte[] -> string)
         (createMerkleTree : string list -> MerkleTreeRoot)
-        (validator : BlockchainAddress)
+        (proposerAddress : BlockchainAddress)
         (blockNumber : BlockNumber)
         (timestamp : Timestamp)
         (previousBlockHash : BlockHash)
@@ -262,7 +262,7 @@ module Blocks =
                 blockNumber
                 previousBlockHash
                 timestamp
-                validator
+                proposerAddress
                 txSetRoot
                 txResultSetRoot
                 stateRoot
@@ -275,7 +275,7 @@ module Blocks =
                 PreviousHash = previousBlockHash
                 ConfigurationBlockNumber = configurationBlockNumber
                 Timestamp = timestamp
-                Validator = validator
+                ProposerAddress = proposerAddress
                 TxSetRoot = txSetRoot
                 TxResultSetRoot = txResultSetRoot
                 StateRoot = stateRoot
@@ -428,7 +428,7 @@ module Blocks =
                 block.Header.Number
                 previousBlockHash
                 block.Header.Timestamp
-                block.Header.Validator
+                block.Header.ProposerAddress
                 txSetRoot
                 block.Header.TxResultSetRoot
                 block.Header.StateRoot
@@ -470,4 +470,3 @@ module Blocks =
                     |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't hapen")
                     |> Error
         }
-

@@ -178,7 +178,7 @@ module BlockTests =
         let previousBlockHash = BlockHash "B"
         let configurationBlockNumber = BlockNumber 0L
         let timestamp = Timestamp 3L
-        let validator = BlockchainAddress "D"
+        let proposerAddress = BlockchainAddress "D"
 
         let txSet =
             ["AAA"; "BBB"; "CCC"]
@@ -304,7 +304,7 @@ module BlockTests =
                 DummyHash.decode
                 DummyHash.create
                 DummyHash.merkleTree
-                validator
+                proposerAddress
                 blockNumber
                 timestamp
                 previousBlockHash
@@ -317,7 +317,7 @@ module BlockTests =
         test <@ block.Header.Number = blockNumber @>
         test <@ block.Header.PreviousHash = previousBlockHash @>
         test <@ block.Header.Timestamp = timestamp @>
-        test <@ block.Header.Validator = validator @>
+        test <@ block.Header.ProposerAddress = proposerAddress @>
         test <@ block.Header.TxSetRoot = MerkleTreeRoot txSetRoot @>
         test <@ block.Header.TxResultSetRoot = MerkleTreeRoot txResultSetRoot @>
         test <@ block.Header.StateRoot = MerkleTreeRoot stateRoot @>
@@ -328,7 +328,7 @@ module BlockTests =
     let ``Blocks.assembleBlock and verify merkle proofs`` () =
         let wallet1 = Signing.generateWallet ()
         let wallet2 = Signing.generateWallet ()
-        let validatorWallet = Signing.generateWallet ()
+        let proposerWallet = Signing.generateWallet ()
         let blockNumber = BlockNumber 1L
         let configurationBlockNumber = BlockNumber 0L
         let timestamp = Utils.getUnixTimestamp () |> Timestamp
@@ -422,7 +422,7 @@ module BlockTests =
                 Hashing.decode
                 Hashing.hash
                 Hashing.merkleTree
-                validatorWallet.Address
+                proposerWallet.Address
                 blockNumber
                 timestamp
                 previousBlockHash
@@ -435,7 +435,7 @@ module BlockTests =
         test <@ block.Header.Number = blockNumber @>
         test <@ block.Header.PreviousHash = previousBlockHash @>
         test <@ block.Header.Timestamp = timestamp @>
-        test <@ block.Header.Validator = validatorWallet.Address @>
+        test <@ block.Header.ProposerAddress = proposerWallet.Address @>
         test <@ block.TxSet = txSet @>
 
         let txSetMerkleProofs =
@@ -495,7 +495,7 @@ module BlockTests =
     let ``Blocks.isValidSuccessorBlock`` (previousBlockHashInTestedBlock, expectedSuccess) =
         let wallet1 = Signing.generateWallet ()
         let wallet2 = Signing.generateWallet ()
-        let validatorWallet = Signing.generateWallet ()
+        let proposerWallet = Signing.generateWallet ()
         let blockNumber = BlockNumber 1L
         let configurationBlockNumber = BlockNumber 0L
         let timestamp = Utils.getUnixTimestamp () |> Timestamp
@@ -603,7 +603,7 @@ module BlockTests =
                 Hashing.decode
                 Hashing.hash
                 Hashing.merkleTree
-                validatorWallet.Address
+                proposerWallet.Address
                 blockNumber
                 timestamp
                 previousBlockHash
@@ -617,7 +617,7 @@ module BlockTests =
                 Hashing.decode
                 Hashing.hash
                 Hashing.merkleTree
-                validatorWallet.Address
+                proposerWallet.Address
                 blockNumber
                 timestamp
                 (previousBlockHashInTestedBlock |> Conversion.stringToBytes |> Hashing.hash |> BlockHash)

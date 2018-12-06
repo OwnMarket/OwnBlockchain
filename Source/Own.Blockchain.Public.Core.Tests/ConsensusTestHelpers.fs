@@ -12,7 +12,7 @@ open Own.Blockchain.Public.Crypto
 
 module ConsensusTestHelpers =
 
-    let proposeDummyBlock validatorAddress blockNumber =
+    let proposeDummyBlock proposerAddress blockNumber =
         {
             Block.Header =
                 {
@@ -21,7 +21,7 @@ module ConsensusTestHelpers =
                     PreviousHash = Helpers.randomString () |> BlockHash
                     ConfigurationBlockNumber = BlockNumber 0L
                     Timestamp = Utils.getUnixTimestamp () |> Timestamp
-                    Validator = validatorAddress
+                    ProposerAddress = proposerAddress
                     TxSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     TxResultSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     StateRoot = Helpers.randomString () |> MerkleTreeRoot
