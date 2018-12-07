@@ -504,7 +504,7 @@ module Consensus =
 
                 do! Async.Sleep timeout
 
-                Log.debugf "Propose retry elapsed: %i / %i"
+                Log.debugf "Propose retry triggered: %i / %i"
                     blockNumber.Value
                     consensusRound.Value
 
