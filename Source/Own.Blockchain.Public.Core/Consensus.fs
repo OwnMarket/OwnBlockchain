@@ -119,7 +119,7 @@ module Consensus =
             | Some b -> __.SendPropose(_round, b)
 
         member private __.RetryPropose(blockNumber, consensusRound) =
-            if blockNumber = _blockNumber && consensusRound = _round && _step = ConsensusStep.Propose then
+            if _blockNumber = blockNumber && _round = consensusRound && _step = ConsensusStep.Propose then
                 if __.GetProposal() = None then
                     __.TryPropose()
 
@@ -197,17 +197,17 @@ module Consensus =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member private __.OnTimeoutPropose(blockNumber, consensusRound) =
-            if blockNumber = _blockNumber && consensusRound = _round && _step = ConsensusStep.Propose then
+            if _blockNumber = blockNumber && _round = consensusRound && _step = ConsensusStep.Propose then
                 __.SendVote(_round, None)
                 _step <- ConsensusStep.Vote
 
         member private __.OnTimeoutVote(blockNumber, consensusRound) =
-            if blockNumber = _blockNumber && consensusRound = _round && _step = ConsensusStep.Vote then
+            if _blockNumber = blockNumber && _round = consensusRound && _step = ConsensusStep.Vote then
                 __.SendCommit(_round, None)
                 _step <- ConsensusStep.Commit
 
         member private __.OnTimeoutCommit(blockNumber, consensusRound) =
-            if blockNumber = _blockNumber && consensusRound = _round then
+            if _blockNumber = blockNumber && _round = consensusRound then
                 __.StartRound(_round + 1)
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
