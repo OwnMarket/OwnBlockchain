@@ -20,7 +20,9 @@ module Consensus =
         applyBlock : BlockNumber -> Result<unit, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
         publishEvent : AppEvent -> unit,
-        startTimer : int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
+        schedulePropose : int -> (BlockNumber * ConsensusRound) -> unit,
+        scheduleTimeout : int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
+        proposeRetryingInterval : int,
         timeoutPropose : int,
         timeoutVote : int,
         timeoutCommit : int,
@@ -48,6 +50,7 @@ module Consensus =
             match command with
             | Synchronize -> __.Synchronize(false)
             | Message (senderAddress, message) -> __.ProcessConsensusMessage (senderAddress, message)
+            | RetryPropose (blockNumber, consensusRound) -> __.RetryPropose(blockNumber, consensusRound)
             | Timeout (blockNumber, consensusRound, consensusStep) ->
                 match consensusStep with
                 | ConsensusStep.Propose -> __.OnTimeoutPropose(blockNumber, consensusRound)
@@ -94,32 +97,40 @@ module Consensus =
                 _votes.Clear()
                 _commits.Clear()
 
+        member private __.TryPropose() =
+            let block =
+                _validBlock
+                |> Option.orElseWith (fun _ ->
+                    proposeBlock _blockNumber
+                    |> Option.bind (fun r ->
+                        match r with
+                        | Ok b -> Some b
+                        | Error e ->
+                            Log.error "Failed to propose block."
+                            Log.appErrors e
+                            None
+                    )
+                )
+
+            match block with
+            | None ->
+                Log.info "Nothing to propose."
+                schedulePropose proposeRetryingInterval (_blockNumber, _round)
+            | Some b -> __.SendPropose(_round, b)
+
+        member private __.RetryPropose(blockNumber, consensusRound) =
+            if blockNumber = _blockNumber && consensusRound = _round && _step = ConsensusStep.Propose then
+                if __.GetProposal() = None then
+                    __.TryPropose()
+
         member private __.StartRound(r) =
             _round <- r
             _step <- ConsensusStep.Propose
 
             if Validators.getProposerAddress _blockNumber _round _validators = validatorAddress then
-                let block =
-                    _validBlock
-                    |> Option.orElseWith (fun _ ->
-                        proposeBlock _blockNumber
-                        |> Option.bind (fun r ->
-                            match r with
-                            | Ok b -> Some b
-                            | Error e ->
-                                Log.error "Failed to propose block."
-                                Log.appErrors e
-                                None
-                        )
-                    )
-
-                match block with
-                | None ->
-                    Log.info "Nothing to propose."
-                    startTimer timeoutPropose (_blockNumber, _round, ConsensusStep.Propose) // TODO: Remove this
-                | Some b -> __.SendPropose(_round, b)
+                __.TryPropose()
             else
-                startTimer timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
+                scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
 
         member private __.UpdateState() =
             // PROPOSE RULES
@@ -145,7 +156,7 @@ module Consensus =
 
             // VOTE RULES
             if _step = ConsensusStep.Vote && __.MajorityVoted(_round) then
-                startTimer timeoutVote (_blockNumber, _round, ConsensusStep.Vote)
+                scheduleTimeout timeoutVote (_blockNumber, _round, ConsensusStep.Vote)
 
             if _step >= ConsensusStep.Vote then
                 __.GetProposal()
@@ -167,7 +178,7 @@ module Consensus =
 
             // COMMIT RULES
             if __.MajorityCommitted(_round) then
-                startTimer timeoutCommit (_blockNumber, _round, ConsensusStep.Commit)
+                scheduleTimeout timeoutCommit (_blockNumber, _round, ConsensusStep.Commit)
 
             if not (_decisions.ContainsKey _blockNumber) then
                 __.GetProposalCommittedByMajority()
@@ -186,18 +197,12 @@ module Consensus =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member private __.OnTimeoutPropose(blockNumber, consensusRound) =
-            if blockNumber = _blockNumber
-                && consensusRound = _round
-                && _step = ConsensusStep.Propose
-            then
+            if blockNumber = _blockNumber && consensusRound = _round && _step = ConsensusStep.Propose then
                 __.SendVote(_round, None)
                 _step <- ConsensusStep.Vote
 
         member private __.OnTimeoutVote(blockNumber, consensusRound) =
-            if blockNumber = _blockNumber
-                && consensusRound = _round
-                && _step = ConsensusStep.Vote
-            then
+            if blockNumber = _blockNumber && consensusRound = _round && _step = ConsensusStep.Vote then
                 __.SendCommit(_round, None)
                 _step <- ConsensusStep.Commit
 
@@ -427,6 +432,7 @@ module Consensus =
         publishEvent
         addressFromPrivateKey
         (validatorPrivateKey : PrivateKey)
+        proposeRetryingInterval
         timeoutPropose
         timeoutVote
         timeoutCommit
@@ -490,7 +496,25 @@ module Consensus =
                 consensusMessageEnvelope.Round.Value
                 (consensusMessageEnvelope.ConsensusMessage |> consensusMessageDisplayFormat)
 
-        let startTimer timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
+        let schedulePropose timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound) =
+            async {
+                Log.debugf "Propose retry scheduled: %i / %i"
+                    blockNumber.Value
+                    consensusRound.Value
+
+                do! Async.Sleep timeout
+
+                Log.debugf "Propose retry elapsed: %i / %i"
+                    blockNumber.Value
+                    consensusRound.Value
+
+                ConsensusCommand.RetryPropose (blockNumber, consensusRound)
+                |> ConsensusCommandInvoked
+                |> publishEvent
+            }
+            |> Async.Start
+
+        let scheduleTimeout timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
             async {
                 Log.debugf "Timeout scheduled: %i / %i / %s"
                     blockNumber.Value
@@ -520,7 +544,9 @@ module Consensus =
             applyBlock,
             sendConsensusMessage,
             publishEvent,
-            startTimer,
+            schedulePropose,
+            scheduleTimeout,
+            proposeRetryingInterval,
             timeoutPropose,
             timeoutVote,
             timeoutCommit,

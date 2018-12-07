@@ -268,6 +268,7 @@ module Composition =
             publishEvent
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
+            Config.ConsensusProposeRetryingInterval
             Config.ConsensusTimeoutPropose
             Config.ConsensusTimeoutVote
             Config.ConsensusTimeoutCommit

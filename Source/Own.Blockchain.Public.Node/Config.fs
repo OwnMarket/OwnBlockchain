@@ -114,6 +114,8 @@ type Config () =
 
     static member QuorumSupplyPercent = 25m // TODO: Change to ValidatorThreshold
 
+    static member ConsensusProposeRetryingInterval = 1000
+
     static member ConsensusTimeoutPropose = 5000
     static member ConsensusTimeoutVote = 5000
     static member ConsensusTimeoutCommit = 5000

@@ -67,7 +67,8 @@ module ConsensusTestHelpers =
         ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
         ?isValidBlock : BlockchainAddress -> Block -> bool,
         ?saveBlock : BlockNumber -> BlockEnvelopeDto -> Result<unit, AppErrors>,
-        ?startTimer : BlockchainAddress -> int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
+        ?schedulePropose : BlockchainAddress -> int -> (BlockNumber * ConsensusRound) -> unit,
+        ?scheduleTimeout : BlockchainAddress -> int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
         ?lastAppliedBlockNumber : BlockNumber
         ) =
 
@@ -129,8 +130,13 @@ module ConsensusTestHelpers =
                 let applyBlock _ =
                     Ok ()
 
-                let startTimer =
-                    match startTimer with
+                let schedulePropose =
+                    match schedulePropose with
+                    | Some f -> f validatorAddress
+                    | None -> fun _ _ -> ()
+
+                let scheduleTimeout =
+                    match scheduleTimeout with
                     | Some f -> f validatorAddress
                     | None -> fun _ _ -> ()
 
@@ -151,7 +157,9 @@ module ConsensusTestHelpers =
                         applyBlock,
                         sendConsensusMessage,
                         publishEvent,
-                        startTimer,
+                        schedulePropose,
+                        scheduleTimeout,
+                        0, // No need to pass in the value, because test will trigger the retry explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.

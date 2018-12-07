@@ -37,6 +37,10 @@ module Agents =
                     consensusMessageEnvelope.BlockNumber.Value
                     consensusMessageEnvelope.Round.Value
                     (consensusMessageEnvelope.ConsensusMessage |> Consensus.consensusMessageDisplayFormat)
+            | RetryPropose (blockNumber, consensusRound) ->
+                sprintf "RetryPropose %i / %i"
+                    blockNumber.Value
+                    consensusRound.Value
             | Timeout (blockNumber, consensusRound, consensusStep) ->
                 sprintf "Timeout %i / %i / %s"
                     blockNumber.Value

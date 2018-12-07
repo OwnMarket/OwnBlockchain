@@ -260,6 +260,7 @@ type ConsensusMessageEnvelope = {
 type ConsensusCommand =
     | Synchronize
     | Message of BlockchainAddress * ConsensusMessageEnvelope
+    | RetryPropose of BlockNumber * ConsensusRound
     | Timeout of BlockNumber * ConsensusRound * ConsensusStep
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
