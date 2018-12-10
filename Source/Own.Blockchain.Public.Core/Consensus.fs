@@ -15,13 +15,17 @@ module Consensus =
         getLastAppliedBlockNumber : unit -> BlockNumber,
         getCurrentValidators : unit -> ValidatorSnapshot list,
         proposeBlock : BlockNumber -> Result<Block, AppErrors> option,
+        txExists : TxHash -> bool,
+        requestTx : TxHash -> unit,
         isValidBlock : Block -> bool,
         saveBlock : BlockNumber -> BlockEnvelopeDto -> Result<unit, AppErrors>,
         applyBlock : BlockNumber -> Result<unit, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
         publishEvent : AppEvent -> unit,
+        scheduleMessage : int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
         schedulePropose : int -> (BlockNumber * ConsensusRound) -> unit,
         scheduleTimeout : int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
+        messageRetryingInterval : int,
         proposeRetryingInterval : int,
         timeoutPropose : int,
         timeoutVote : int,
@@ -62,9 +66,14 @@ module Consensus =
 
             match envelope.ConsensusMessage with
             | ConsensusMessage.Propose (block, vr) ->
-                if _proposals.TryAdd(key, (block, vr)) then
-                    // TODO: Get transactions from peers to be able to check if the block if valid.
-                    __.UpdateState()
+                let missingTxs = block.TxSet |> List.filter (txExists >> not)
+                if missingTxs.IsEmpty then
+                    if _proposals.TryAdd(key, (block, vr)) then
+                        __.UpdateState()
+                else
+                    if _blockNumber = block.Header.Number then
+                        missingTxs |> List.iter requestTx
+                        scheduleMessage messageRetryingInterval (senderAddress, envelope)
             | ConsensusMessage.Vote blockHash ->
                 if _votes.TryAdd(key, blockHash) then
                     __.UpdateState()
@@ -114,7 +123,7 @@ module Consensus =
 
             match block with
             | None ->
-                Log.info "Nothing to propose."
+                Log.debug "Nothing to propose."
                 schedulePropose proposeRetryingInterval (_blockNumber, _round)
             | Some b -> __.SendPropose(_round, b)
 
@@ -421,6 +430,8 @@ module Consensus =
         getLastAppliedBlockNumber
         getCurrentValidators
         proposeBlock
+        txExists
+        requestTx
         applyBlockToCurrentState
         saveBlock
         applyBlock
@@ -432,6 +443,7 @@ module Consensus =
         publishEvent
         addressFromPrivateKey
         (validatorPrivateKey : PrivateKey)
+        messageRetryingInterval
         proposeRetryingInterval
         timeoutPropose
         timeoutVote
@@ -496,6 +508,30 @@ module Consensus =
                 consensusMessageEnvelope.Round.Value
                 (consensusMessageEnvelope.ConsensusMessage |> consensusMessageDisplayFormat)
 
+        let scheduleMessage timeout (senderAddress : BlockchainAddress, envelope : ConsensusMessageEnvelope) =
+            async {
+                let displayFormat = consensusMessageDisplayFormat envelope.ConsensusMessage
+
+                Log.debugf "Message retry from %s scheduled: %i / %i / %s"
+                    senderAddress.Value
+                    envelope.BlockNumber.Value
+                    envelope.Round.Value
+                    displayFormat
+
+                do! Async.Sleep timeout
+
+                Log.debugf "Message retry from %s triggered: %i / %i / %s"
+                    senderAddress.Value
+                    envelope.BlockNumber.Value
+                    envelope.Round.Value
+                    displayFormat
+
+                ConsensusCommand.Message (senderAddress, envelope)
+                |> ConsensusCommandInvoked
+                |> publishEvent
+            }
+            |> Async.Start
+
         let schedulePropose timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound) =
             async {
                 Log.debugf "Propose retry scheduled: %i / %i"
@@ -539,13 +575,17 @@ module Consensus =
             getLastAppliedBlockNumber,
             getCurrentValidators,
             proposeBlock,
+            txExists,
+            requestTx,
             isValidBlock,
             saveBlock,
             applyBlock,
             sendConsensusMessage,
             publishEvent,
+            scheduleMessage,
             schedulePropose,
             scheduleTimeout,
+            messageRetryingInterval,
             proposeRetryingInterval,
             timeoutPropose,
             timeoutVote,

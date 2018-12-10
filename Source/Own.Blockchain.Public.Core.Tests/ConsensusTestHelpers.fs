@@ -67,6 +67,7 @@ module ConsensusTestHelpers =
         ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
         ?isValidBlock : BlockchainAddress -> Block -> bool,
         ?saveBlock : BlockNumber -> BlockEnvelopeDto -> Result<unit, AppErrors>,
+        ?scheduleMessage : BlockchainAddress -> int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
         ?schedulePropose : BlockchainAddress -> int -> (BlockNumber * ConsensusRound) -> unit,
         ?scheduleTimeout : BlockchainAddress -> int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
         ?lastAppliedBlockNumber : BlockNumber
@@ -119,6 +120,10 @@ module ConsensusTestHelpers =
 
                     (proposeBlock |? dummyFn) validatorAddress
 
+                let txExists _ = true
+
+                let requestTx _ = ()
+
                 let isValidBlock =
                     match isValidBlock with
                     | Some f -> f validatorAddress
@@ -129,6 +134,11 @@ module ConsensusTestHelpers =
 
                 let applyBlock _ =
                     Ok ()
+
+                let scheduleMessage =
+                    match scheduleMessage with
+                    | Some f -> f validatorAddress
+                    | None -> fun _ _ -> ()
 
                 let schedulePropose =
                     match schedulePropose with
@@ -152,13 +162,17 @@ module ConsensusTestHelpers =
                         getLastAppliedBlockNumber,
                         getValidators,
                         proposeBlock,
+                        txExists,
+                        requestTx,
                         isValidBlock,
                         saveBlock,
                         applyBlock,
                         sendConsensusMessage,
                         publishEvent,
+                        scheduleMessage,
                         schedulePropose,
                         scheduleTimeout,
+                        0, // No need to pass in the value, because test will trigger the retry explicitly.
                         0, // No need to pass in the value, because test will trigger the retry explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.

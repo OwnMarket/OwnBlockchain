@@ -257,6 +257,8 @@ module Composition =
             getLastAppliedBlockNumber
             getCurrentValidators
             proposeBlock
+            txExists
+            Peers.requestTxFromPeer
             applyBlockToCurrentState
             saveBlock
             applyBlock
@@ -268,6 +270,7 @@ module Composition =
             publishEvent
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
+            Config.ConsensusMessageRetryingInterval
             Config.ConsensusProposeRetryingInterval
             Config.ConsensusTimeoutPropose
             Config.ConsensusTimeoutVote
