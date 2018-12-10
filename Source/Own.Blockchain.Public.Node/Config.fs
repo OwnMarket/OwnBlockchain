@@ -91,8 +91,6 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     static member MinTxActionFee = 0.001m // CHX
 
-    static member BlockCreationInterval = 5 // Seconds
-
     static member MaxTxCountPerBlock = 100 // TODO: Shall this be managed by consensus protocol?
 
     static member ValidatorPrivateKey
