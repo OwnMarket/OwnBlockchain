@@ -112,7 +112,7 @@ type Config () =
     static member MinValidatorCount = 4
     static member MaxValidatorCount = 100
 
-    static member QuorumSupplyPercent = 25m // TODO: Change to ValidatorThreshold
+    static member ValidatorThreshold = 500_000m
 
     static member ConsensusMessageRetryingInterval = 1000
     static member ConsensusProposeRetryingInterval = 1000

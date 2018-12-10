@@ -48,58 +48,6 @@ module ValidatorTests =
         test <@ actualValidQuorum = expectedValidQuorum @>
 
     [<Fact>]
-    let ``Validators.calculateQuorumSupply`` () =
-        // ARRANGE
-        let totalSupply = ChxAmount 1000m
-        let quorumSupplyPercent = 33m
-        let expectedQuorumSupply = ChxAmount 330m
-
-        // ACT
-        let actualQuorumSupply = Validators.calculateQuorumSupply quorumSupplyPercent totalSupply
-
-        // ASSERT
-        test <@ actualQuorumSupply = expectedQuorumSupply @>
-
-    [<Fact>]
-    let ``Validators.calculateQuorumSupply with rounding`` () =
-        // ARRANGE
-        let totalSupply = ChxAmount 1000m
-        let quorumSupplyPercent = 99.99999999999999999955m
-        let expectedQuorumSupply = ChxAmount 999.999999999999999996m
-
-        // ACT
-        let actualQuorumSupply = Validators.calculateQuorumSupply quorumSupplyPercent totalSupply
-
-        // ASSERT
-        test <@ actualQuorumSupply = expectedQuorumSupply @>
-
-    [<Fact>]
-    let ``Validators.calculateValidatorThreshold`` () =
-        // ARRANGE
-        let quorumSupply = ChxAmount 1000m
-        let maxValidatorCount = 100
-        let expectedValidatorThreshold = ChxAmount 10m
-
-        // ACT
-        let actualValidatorThreshold = Validators.calculateValidatorThreshold maxValidatorCount quorumSupply
-
-        // ASSERT
-        test <@ actualValidatorThreshold = expectedValidatorThreshold @>
-
-    [<Fact>]
-    let ``Validators.calculateValidatorThreshold with rounding`` () =
-        // ARRANGE
-        let quorumSupply = ChxAmount 1000m
-        let maxValidatorCount = 11
-        let expectedValidatorThreshold = ChxAmount 90.909090909090909091m
-
-        // ACT
-        let actualValidatorThreshold = Validators.calculateValidatorThreshold maxValidatorCount quorumSupply
-
-        // ASSERT
-        test <@ actualValidatorThreshold = expectedValidatorThreshold @>
-
-    [<Fact>]
     let ``Validators.getProposer`` () =
         // ARRANGE
         let blockNumber = BlockNumber 1L

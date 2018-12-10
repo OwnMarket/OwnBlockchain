@@ -21,24 +21,14 @@ module Validators =
         |> Convert.ToInt32
         |> (+) 1
 
-    let calculateQuorumSupply quorumSupplyPercent (ChxAmount totalSupply) =
-        Decimal.Round(totalSupply * quorumSupplyPercent / 100m, 18, MidpointRounding.AwayFromZero)
-        |> ChxAmount
-
-    let calculateValidatorThreshold maxValidatorCount (ChxAmount quorumSupply) =
-        Decimal.Round(quorumSupply / (decimal maxValidatorCount), 18, MidpointRounding.AwayFromZero)
-        |> ChxAmount
-
     let getTopValidators
         getTopValidatorsByStake
         totalSupply
-        quorumSupplyPercent
+        validatorThreshold
         maxValidatorCount
         =
 
-        totalSupply
-        |> calculateQuorumSupply quorumSupplyPercent
-        |> calculateValidatorThreshold maxValidatorCount
+        validatorThreshold
         |> getTopValidatorsByStake maxValidatorCount
         |> List.map Mapping.validatorSnapshotFromDto
 

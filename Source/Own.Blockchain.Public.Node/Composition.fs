@@ -85,7 +85,7 @@ module Composition =
         Validators.getTopValidators
             getTopValidatorsByStake
             (ChxAmount Config.GenesisChxSupply)
-            Config.QuorumSupplyPercent
+            (ChxAmount Config.ValidatorThreshold)
             Config.MaxValidatorCount
 
     let getCurrentValidators () =
