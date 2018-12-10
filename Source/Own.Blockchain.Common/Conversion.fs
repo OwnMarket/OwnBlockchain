@@ -27,7 +27,8 @@ module Conversion =
             bytes
 
     let decimalToBytes (x : decimal) =
-        Decimal.GetBits x
+        x / 1.0000000000000000000000000000M // Remove trailing zeroes by changing the scaling factor.
+        |> Decimal.GetBits
         |> Array.collect int32ToBytes
 
     let stringToBytes (str : string) =
