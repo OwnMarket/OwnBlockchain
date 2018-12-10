@@ -88,17 +88,6 @@ module Composition =
             Config.QuorumSupplyPercent
             Config.MaxValidatorCount
 
-    let getFallbackValidators () =
-        // TODO: Remove the workaround once the fallback logic is implemented.
-        Config.GenesisValidators
-        |> List.map (fun (validatorAddress, networkAddress) ->
-            {
-                ValidatorSnapshot.ValidatorAddress = BlockchainAddress validatorAddress
-                NetworkAddress = networkAddress
-                TotalStake = ChxAmount 0m
-            }
-        )
-
     let getCurrentValidators () =
         Validators.getCurrentValidators
             getLastAppliedBlockNumber
@@ -123,7 +112,7 @@ module Composition =
         |> Blocks.calculateConfigurationBlockNumberForNewBlock
 
     let createNewBlockchainConfiguration () =
-        Blocks.createNewBlockchainConfiguration getTopValidators getFallbackValidators Config.MinValidatorCount
+        Blocks.createNewBlockchainConfiguration getTopValidators
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain

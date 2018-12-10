@@ -199,7 +199,7 @@ module Workflows =
         (getLastAppliedBlockNumber : unit -> BlockNumber option)
         createBlock
         isConfigurationBlock
-        (createNewBlockchainConfiguration : unit -> BlockchainConfiguration)
+        createNewBlockchainConfiguration
         getBlock
         getPendingTxs
         getChxBalanceStateFromStorage

@@ -383,14 +383,9 @@ module Blocks =
 
     let createNewBlockchainConfiguration
         (getTopValidators : unit -> ValidatorSnapshot list)
-        (getFallbackValidators : unit -> ValidatorSnapshot list)
-        minValidatorCount
         =
 
-        let validators =
-            match getTopValidators () with
-            | validators when validators.Length >= minValidatorCount -> validators
-            | _ -> getFallbackValidators ()
+        let validators = getTopValidators ()
 
         {
             BlockchainConfiguration.Validators = validators
