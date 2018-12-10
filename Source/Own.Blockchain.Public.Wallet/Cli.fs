@@ -47,8 +47,8 @@ module Cli =
 
     let handleCommand args =
         match args with
-        | ["-v"] -> handleShowVersionCommand ()
-        | ["-g"] -> handleGenerateWalletCommand ()
-        | ["-a"; privateKey] -> handleDeriveAddressCommand privateKey
-        | ["-s"; privateKey; message] -> handleSignMessageCommand privateKey message
+        | ["--version"] -> handleShowVersionCommand ()
+        | ["--generate"] -> handleGenerateWalletCommand ()
+        | ["--address"; privateKey] -> handleDeriveAddressCommand privateKey
+        | ["--sign"; privateKey; message] -> handleSignMessageCommand privateKey message
         | ["--help"] | _ -> handleHelpCommand args
