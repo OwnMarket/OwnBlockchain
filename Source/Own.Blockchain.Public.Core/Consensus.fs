@@ -404,27 +404,35 @@ module Consensus =
         match consensusMessage with
         | Propose (block, ConsensusRound validConsensusRound) ->
             [
-                [| 0uy |]
+                [| 0uy |] // Message type discriminator
+                blockNumber |> Conversion.int64ToBytes
+                consensusRound |> Conversion.int32ToBytes
                 block.Header.Hash.Value |> decodeHash
                 validConsensusRound |> Conversion.int32ToBytes
             ]
+            |> Array.concat
+            |> createHash
         | Vote blockHash ->
             [
-                [| 1uy |]
-                (blockHash |? BlockHash zeroHash).Value |> decodeHash
-            ]
-        | Commit blockHash ->
-            [
-                [| 2uy |]
-                (blockHash |? BlockHash zeroHash).Value |> decodeHash
-            ]
-        |> List.append
-            [
+                [| 1uy |] // Message type discriminator
                 blockNumber |> Conversion.int64ToBytes
                 consensusRound |> Conversion.int32ToBytes
+                (blockHash |? BlockHash zeroHash).Value |> decodeHash
             ]
-        |> Array.concat
-        |> createHash
+            |> Array.concat
+            |> createHash
+        | Commit blockHash ->
+            match blockHash with
+            | Some h -> h.Value // Simplifies verification of block signatures.
+            | None ->
+                [
+                    [| 2uy |] // Message type discriminator
+                    blockNumber |> Conversion.int64ToBytes
+                    consensusRound |> Conversion.int32ToBytes
+                    zeroHash |> decodeHash
+                ]
+                |> Array.concat
+                |> createHash
 
     let createConsensusStateInstance
         getLastAppliedBlockNumber
