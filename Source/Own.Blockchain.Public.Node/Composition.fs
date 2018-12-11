@@ -45,8 +45,6 @@ module Composition =
 
     let getLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbConnectionString
 
-    let getLastAppliedBlockTimestamp () = Db.getLastAppliedBlockTimestamp Config.DbConnectionString
-
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
 
     let getAddressAccounts = Db.getAddressAccounts Config.DbConnectionString

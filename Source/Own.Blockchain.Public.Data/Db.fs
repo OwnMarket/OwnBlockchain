@@ -137,19 +137,6 @@ module Db =
         |> List.tryHead
         |> Option.map (fun item -> BlockNumber item.BlockNumber)
 
-    let getLastAppliedBlockTimestamp (dbConnectionString : string) : Timestamp option =
-        let sql =
-            """
-            SELECT block_timestamp
-            FROM block
-            ORDER BY block_id DESC
-            LIMIT 1
-            """
-
-        DbTools.query<BlockInfoDto> dbConnectionString sql []
-        |> List.tryHead
-        |> Option.map (fun item -> Timestamp item.BlockTimestamp)
-
     let getChxBalanceState (dbConnectionString : string) (BlockchainAddress address) : ChxBalanceStateDto option =
         let sql =
             """
