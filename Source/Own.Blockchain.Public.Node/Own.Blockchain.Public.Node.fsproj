@@ -12,7 +12,8 @@
     <Compile Include="Api.fs" />
     <Compile Include="Cli.fs" />
     <Compile Include="Program.fs" />
-    <None Include="AppSettings.json" CopyToOutputDirectory="Always" />
+    <None Include="Config.json" CopyToOutputDirectory="Always" />
+    <None Include="Genesis.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />

@@ -1,0 +1,9 @@
+{
+    "DbEngineType": "PostgreSQL",
+    "DbConnectionString": "server=localhost;database=own_public_blockchain;user id=own_blockchain_node;password=testpass1;searchpath=own",
+    "NetworkBootstrapNodes": [
+        "localhost:25701",
+        "localhost:25702"
+    ],
+    "ValidatorPrivateKey": "6ZeUHCHEBpfryH9DDH5YhfaGabToseTnvH9Q8TGRhBio"
+}

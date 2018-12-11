@@ -12,7 +12,7 @@
     <Compile Include="PaceMaker.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="Program.fs" />
-    <None Include="AppSettings.json" CopyToOutputDirectory="Always" />
+    <None Include="Config.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />

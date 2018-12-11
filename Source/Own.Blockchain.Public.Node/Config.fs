@@ -7,12 +7,18 @@ open Own.Common
 
 type Config () =
 
-    static let appDir = Directory.GetCurrentDirectory()
+    static let workingDir = Directory.GetCurrentDirectory()
 
     static let config =
         ConfigurationBuilder()
-            .SetBasePath(appDir)
-            .AddJsonFile("AppSettings.json")
+            .SetBasePath(workingDir)
+            .AddJsonFile("Config.json")
+            .Build()
+
+    static let genesis =
+        ConfigurationBuilder()
+            .SetBasePath(workingDir)
+            .AddJsonFile("Genesis.json")
             .Build()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +26,7 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     static member DataDir
         with get () =
-            Path.Combine(appDir, "Data")
+            Path.Combine(workingDir, "Data")
 
     static member DbConnectionString
         with get () =
@@ -68,11 +74,11 @@ type Config () =
 
     static member GenesisAddress
         with get () =
-            config.["GenesisAddress"]
+            genesis.["GenesisAddress"]
 
     static member GenesisValidators
         with get () =
-            config.GetSection("GenesisValidators").GetChildren()
+            genesis.GetSection("GenesisValidators").GetChildren()
             |> Seq.map (fun e ->
                 match e.Value.Split(",") with
                 | [| validatorAddress; networkAddress |] -> validatorAddress, networkAddress
@@ -82,7 +88,7 @@ type Config () =
 
     static member GenesisSignatures
         with get () =
-            config.GetSection("GenesisSignatures").GetChildren()
+            genesis.GetSection("GenesisSignatures").GetChildren()
             |> Seq.map (fun e -> e.Value)
             |> Seq.toList
 

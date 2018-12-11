@@ -107,11 +107,16 @@ module internal Helper =
 
     let private appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
     let private config =
-        (
-            ConfigurationBuilder()
-                .SetBasePath(appDir)
-                .AddJsonFile("AppSettings.json")
-        ).Build()
+        ConfigurationBuilder()
+            .SetBasePath(appDir)
+            .AddJsonFile("Config.json")
+            .Build()
+
+    let private genesis =
+        ConfigurationBuilder()
+            .SetBasePath(appDir)
+            .AddJsonFile("Genesis.json")
+            .Build()
 
     let BlockCreationWaitingTime =
         config.["BlockCreationWaitingTimeInSeconds"] |> int

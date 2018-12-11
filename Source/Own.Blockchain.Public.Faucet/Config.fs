@@ -13,7 +13,7 @@ type Config () =
     static let config =
         ConfigurationBuilder()
             .SetBasePath(appDir)
-            .AddJsonFile("AppSettings.json")
+            .AddJsonFile("Config.json")
             .Build()
 
     static member NodeApiUrl
