@@ -9,14 +9,23 @@ module Log =
     let private log logType o =
         sprintf "%s %s | %s" (DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz")) logType (o.ToString())
 
-    let info o = log "INF" o |> printfn "%s"
-    let warning o = log "WRN" o |> printfn "%s"
-    let error o = log "ERR" o |> printfn "%s"
+    let private defaultColor = Console.ForegroundColor
+    let private printInColor color text =
+        Console.ForegroundColor <- color
+        printfn "%s" text
+        Console.ForegroundColor <- defaultColor
+
+    let info o =
+        log "INF" o |> printInColor ConsoleColor.White
+    let warning o =
+        log "WRN" o |> printInColor ConsoleColor.Yellow
+    let error o =
+        log "ERR" o |> printInColor ConsoleColor.Red
     let debug o =
         #if DEBUG
-            log "DBG" o |> printfn "%s"
+        log "DBG" o |> printInColor ConsoleColor.DarkGray
         #else
-            ()
+        ()
         #endif
 
     let infof format = Printf.ksprintf info format
