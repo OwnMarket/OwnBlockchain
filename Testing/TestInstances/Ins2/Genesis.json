@@ -1,0 +1,15 @@
+{
+    "GenesisAddress": "CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2",
+    "GenesisValidators": [
+        "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ,localhost:25701",
+        "CHXr1u8DvLmRrnBpVmPcEH43qBhjezuRRtq,localhost:25702",
+        "CHN5FmdEhjKHynhdbzXxsNB35oxL5195XE5,localhost:25703",
+        "CHStDQ5ZFeFW9rbMhw83f7FXg19okxQD9E7,localhost:25704"
+    ],
+    "GenesisSignatures": [
+        "GwndXsZJb4h9eWWP6Jdt5w6EWxRnB5Ba47yzgdTjCHELtVcEpeZHMYAdbkqyzB1MmYAKu521svRVASHkJRzL1Ecz4",
+        "2crAHP7zDp67umzdwMQRZHmN2ArkJwyFabC13bYygf1XRvmErhXRcGJev3nu7PaBD4zVJfmrrTi9owAxTVXV2k3gU",
+        "4EfceivqTBSsxK4LtgUUBT23kZB2bX1peDRnj6sBUXQxYDTEuahewkgpTeM9Jt7xp8PpMc1Lj1LURNvHkdu8Q6DHR",
+        "65JWXZkDpPKD6ovpfzbmAK17evwLekz9DAFgcC2gseB7UpSKibSqYi5dLzwC2VjfwA8LGNGzKScHmy2A5DWR7Shps"
+    ]
+}
