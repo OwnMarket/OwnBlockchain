@@ -62,7 +62,7 @@ module Workflows =
         |> signHash privateKey
 
     let initBlockchainState
-        (getLastAppliedBlockNumber : unit -> BlockNumber option)
+        (tryGetLastAppliedBlockNumber : unit -> BlockNumber option)
         (createGenesisBlock : unit -> Block * ProcessingOutput)
         (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
         saveBlock
@@ -71,7 +71,7 @@ module Workflows =
         genesisSignatures
         =
 
-        if getLastAppliedBlockNumber () = None then
+        if tryGetLastAppliedBlockNumber () = None then
             let genesisBlock, genesisState = createGenesisBlock ()
 
             let genesisBlockExists =
@@ -196,7 +196,7 @@ module Workflows =
         (block, output)
 
     let proposeBlock
-        (getLastAppliedBlockNumber : unit -> BlockNumber option)
+        (getLastAppliedBlockNumber : unit -> BlockNumber)
         createBlock
         isConfigurationBlock
         createNewBlockchainConfiguration
@@ -227,8 +227,7 @@ module Workflows =
         | [] -> None // Nothing to propose.
         | txSet ->
             result {
-                let lastAppliedBlockNumber =
-                    getLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
+                let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
 
                 if blockNumber <> lastAppliedBlockNumber + 1 then
                     return!
@@ -541,26 +540,25 @@ module Workflows =
                     }
                     |> respondToPeer senderAddress
                     Ok None
-                | _ -> Result.appError (sprintf "Requested tx %A not found" txHash)
+                | _ -> Result.appError (sprintf "Requested tx %s not found" txHash.Value)
 
             | Block blockNr ->
                 let blockNr =
-                    match blockNr with
-                    | BlockNumber -1L -> getLastAppliedBlockNumber()
-                    | _ -> Some blockNr
+                    if blockNr = BlockNumber -1L then
+                        getLastAppliedBlockNumber()
+                    else
+                        blockNr
 
-                match blockNr with
-                | Some blockNr ->
-                    match getBlock blockNr with
-                    | Ok blockEnvelopeDto ->
-                        ResponseDataMessage {
-                            MessageId = messageId
-                            Data = blockEnvelopeDto
-                        }
-                        |> respondToPeer senderAddress
-                        Ok None
-                    | _ -> Result.appError (sprintf "Requested block %A not found" blockNr)
-                | None -> Result.appError "Error retrieving last block"
+                match getBlock blockNr with
+                | Ok blockEnvelopeDto ->
+                    ResponseDataMessage {
+                        MessageId = messageId
+                        Data = blockEnvelopeDto
+                    }
+                    |> respondToPeer senderAddress
+                    Ok None
+                | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
+
             | Consensus _ -> Result.appError ("Cannot request consensus message from Peer")
 
         match peerMessage with

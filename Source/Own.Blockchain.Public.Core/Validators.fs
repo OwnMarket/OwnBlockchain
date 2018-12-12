@@ -34,18 +34,16 @@ module Validators =
 
     let getCurrentValidators getLastAppliedBlockNumber getBlock =
         let configBlock =
-            match getLastAppliedBlockNumber () with
-            | None -> failwith "Cannot get last applied block number."
-            | Some blockNumber ->
-                getBlock blockNumber
-                >>= Blocks.extractBlockFromEnvelopeDto
-                >>= (fun b ->
-                    if b.Configuration.IsSome then
-                        Ok b // Last block is the configuration block
-                    else
-                        getBlock b.Header.ConfigurationBlockNumber
-                        >>= Blocks.extractBlockFromEnvelopeDto
-                )
+            getLastAppliedBlockNumber ()
+            |> getBlock
+            >>= Blocks.extractBlockFromEnvelopeDto
+            >>= (fun b ->
+                if b.Configuration.IsSome then
+                    Ok b // Last block is the configuration block
+                else
+                    getBlock b.Header.ConfigurationBlockNumber
+                    >>= Blocks.extractBlockFromEnvelopeDto
+            )
 
         match configBlock with
         | Error e -> failwith "Cannot get last applied configuration block."

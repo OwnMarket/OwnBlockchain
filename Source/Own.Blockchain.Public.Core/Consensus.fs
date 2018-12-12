@@ -461,11 +461,6 @@ module Consensus =
         let validatorAddress =
             addressFromPrivateKey validatorPrivateKey
 
-        let getLastAppliedBlockNumber () =
-            match getLastAppliedBlockNumber () with
-            | None -> failwith "Cannot get last applied block number."
-            | Some blockNumber -> blockNumber
-
         let isValidBlock block =
             match applyBlockToCurrentState block with
             | Ok _ ->
@@ -476,7 +471,6 @@ module Consensus =
                 #endif
                 false
 
-        // TODO: Move to Workflows module.
         let sendConsensusMessage blockNumber consensusRound consensusMessage =
             let consensusMessageHash =
                 createConsensusMessageHash

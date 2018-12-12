@@ -43,7 +43,9 @@ module Composition =
 
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbConnectionString
 
-    let getLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbConnectionString
+    let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbConnectionString
+    let getLastAppliedBlockNumber () =
+        tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
 
@@ -135,7 +137,7 @@ module Composition =
 
     let initBlockchainState () =
         Workflows.initBlockchainState
-            getLastAppliedBlockNumber
+            tryGetLastAppliedBlockNumber
             createGenesisBlock
             getBlock
             saveBlock

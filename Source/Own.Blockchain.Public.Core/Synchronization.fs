@@ -76,23 +76,20 @@ module Synchronization =
             else
                 lastStoredBlockNumber
 
-        match getLastAppliedBlockNumber () with
-        | None -> failwith "Cannot get last applied block info."
-        | Some lastAppliedBlockNumber ->
-            getLastStoredBlockNumber ()
-            |> max lastAppliedBlockNumber
-            |> findLastBlockAvailableInStorage
-            |> getBlock
-            >>= Blocks.extractBlockFromEnvelopeDto
-            |> Result.handle
-                (fun lastBlock ->
-                    setLastStoredBlock lastBlock
-                    resetLastKnownBlock ()
-                )
-                (fun errors ->
-                    Log.appErrors errors
-                    failwith "Cannot load last available block from storage."
-                )
+        getLastAppliedBlockNumber ()
+        |> max (getLastStoredBlockNumber ())
+        |> findLastBlockAvailableInStorage
+        |> getBlock
+        >>= Blocks.extractBlockFromEnvelopeDto
+        |> Result.handle
+            (fun lastBlock ->
+                setLastStoredBlock lastBlock
+                resetLastKnownBlock ()
+            )
+            (fun errors ->
+                Log.appErrors errors
+                failwith "Cannot load last available block from storage."
+            )
 
     let private buildConfigurationChain
         requestBlockFromPeer
@@ -113,7 +110,7 @@ module Synchronization =
             requestBlockFromPeer blockNumber
 
     let acquireAndApplyMissingBlocks
-        (getLastAppliedBlockNumber : unit -> BlockNumber option)
+        (getLastAppliedBlockNumber : unit -> BlockNumber)
         getBlock
         blockExists
         txExists
@@ -126,37 +123,34 @@ module Synchronization =
 
         buildConfigurationChain requestBlockFromPeer configurationBlockDelta maxNumberOfBlocksToFetchInParallel
 
-        match getLastAppliedBlockNumber () with
-        | None -> failwith "Cannot load last applied block info."
-        | Some lastAppliedBlockNumber ->
-            let mutable lastAppliedBlockNumber = lastAppliedBlockNumber
+        let mutable lastAppliedBlockNumber = getLastAppliedBlockNumber ()
 
-            let lastBlockToFetch =
-                lastAppliedBlockNumber + maxNumberOfBlocksToFetchInParallel
-                |> min (getLastKnownBlockNumber ())
+        let lastBlockToFetch =
+            lastAppliedBlockNumber + maxNumberOfBlocksToFetchInParallel
+            |> min (getLastKnownBlockNumber ())
 
-            for blockNumber in [lastAppliedBlockNumber + 1 .. lastBlockToFetch] do
-                if not (blockExists blockNumber) then
-                    // Don't try fetching the block if the configuration block is not available
-                    if blockNumber <= (getLastStoredConfigurationBlockNumber () + configurationBlockDelta) then
-                        requestBlockFromPeer blockNumber
-                else
-                    result {
-                        let! block =
-                            getBlock blockNumber
-                            >>= Blocks.extractBlockFromEnvelopeDto
-                        let missingTxs =
-                            [
-                                for txHash in block.TxSet do
-                                    if not (txExists txHash) then
-                                        requestTxFromPeer txHash
-                                        yield txHash
-                            ]
-                        if missingTxs.IsEmpty && blockNumber = (lastAppliedBlockNumber + 1) then
-                            do! applyBlock blockNumber
-                            lastAppliedBlockNumber <- lastAppliedBlockNumber + 1
-                        return ()
-                    }
-                    |> Result.iterError Log.appErrors
+        for blockNumber in [lastAppliedBlockNumber + 1 .. lastBlockToFetch] do
+            if not (blockExists blockNumber) then
+                // Don't try fetching the block if the configuration block is not available
+                if blockNumber <= (getLastStoredConfigurationBlockNumber () + configurationBlockDelta) then
+                    requestBlockFromPeer blockNumber
+            else
+                result {
+                    let! block =
+                        getBlock blockNumber
+                        >>= Blocks.extractBlockFromEnvelopeDto
+                    let missingTxs =
+                        [
+                            for txHash in block.TxSet do
+                                if not (txExists txHash) then
+                                    requestTxFromPeer txHash
+                                    yield txHash
+                        ]
+                    if missingTxs.IsEmpty && blockNumber = (lastAppliedBlockNumber + 1) then
+                        do! applyBlock blockNumber
+                        lastAppliedBlockNumber <- lastAppliedBlockNumber + 1
+                    return ()
+                }
+                |> Result.iterError Log.appErrors
 
         resetLastKnownBlock () // Last known block might be a lie - we don't want to keep trying forever.
