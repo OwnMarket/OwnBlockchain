@@ -12,11 +12,11 @@ module Timers =
         timer.Elapsed |> Observable.subscribe callback |> ignore
         timer
 
-    let getTimer timers id =
+    let getTimer timers timerId =
         let timer =
             timers
             |> Map.ofDict
-            |> Map.filter (fun key _ -> key = id)
+            |> Map.filter (fun key _ -> key = timerId)
             |> Seq.toList
 
         match timer with
@@ -25,12 +25,12 @@ module Timers =
 
     let restartTimer<'T when 'T : comparison>
         (timers : ConcurrentDictionary<'T, System.Timers.Timer>)
-        id
+        timerId
         tInterval
         callback
         =
 
-        match getTimer timers id with
+        match getTimer timers timerId with
         | Some t ->
             t.Stop()
             t.Dispose()
@@ -38,4 +38,4 @@ module Timers =
 
         let timer = createTimer tInterval callback
         timer.Start()
-        timers.AddOrUpdate (id, timer, fun _ _ -> timer) |> ignore
+        timers.AddOrUpdate (timerId, timer, fun _ _ -> timer) |> ignore

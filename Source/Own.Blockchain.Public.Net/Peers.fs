@@ -156,10 +156,10 @@ module Peers =
             | _ -> ()
 
         member __.SendRequestDataMessage requestId =
-            let rec loop id =
+            let rec loop messageId =
                 async {
                     let expiredAddresses =
-                        match pendingDataRequests.TryGetValue id with
+                        match pendingDataRequests.TryGetValue messageId with
                         | true, expiredAddresses -> expiredAddresses
                         | false, _ -> []
 
@@ -173,11 +173,11 @@ module Peers =
                         let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
                         match selectedUnicastPeer with
                         | None ->
-                            Log.errorf "Cannot retrieve data from peers for %A" id
-                            pendingDataRequests.TryRemove id |> ignore
+                            Log.errorf "Cannot retrieve data from peers for %A" messageId
+                            pendingDataRequests.TryRemove messageId |> ignore
                         | Some networkAddress ->
                             pendingDataRequests.AddOrUpdate(
-                                id,
+                                messageId,
                                 networkAddress :: expiredAddresses,
                                 fun _ _ -> networkAddress :: expiredAddresses)
                             |> ignore
@@ -185,7 +185,7 @@ module Peers =
 
                     targetAddress |> Option.iter (fun address ->
                         let unicastMessage = RequestDataMessage {
-                            MessageId = id
+                            MessageId = messageId
                             SenderAddress = config.NetworkAddress
                         }
                         let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage unicastMessage
@@ -198,10 +198,10 @@ module Peers =
                         If no answer is received within 2 cycles (request - response i.e 4xtCycle),
                         repeat (i.e choose another peer).
                     *)
-                    match (pendingDataRequests.TryGetValue id) with
+                    match (pendingDataRequests.TryGetValue messageId) with
                     | true, addresses ->
                         if not (addresses.IsEmpty) then
-                            return! loop id
+                            return! loop messageId
                     | false, _ -> ()
                 }
             Async.Start(loop requestId, cts.Token)
