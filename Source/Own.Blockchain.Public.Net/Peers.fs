@@ -155,6 +155,9 @@ module Peers =
             | GossipMessage m -> __.SendGossipMessage m
             | _ -> ()
 
+        member __.IsRequestPending requestId =
+            pendingDataRequests.ContainsKey requestId
+
         member __.SendRequestDataMessage requestId =
             let rec loop messageId =
                 async {
@@ -557,7 +560,9 @@ module Peers =
 
     let requestFromPeer requestId =
         match node with
-        | Some n -> n.SendRequestDataMessage requestId
+        | Some n ->
+            if not (n.IsRequestPending requestId) then
+                n.SendRequestDataMessage requestId
         | None -> failwith "Please start gossip first"
 
     let requestBlockFromPeer blockNumber =
