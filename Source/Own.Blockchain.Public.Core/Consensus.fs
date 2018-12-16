@@ -53,7 +53,7 @@ module Consensus =
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             match command with
-            | Synchronize -> __.Synchronize(false)
+            | Synchronize -> __.Synchronize()
             | Message (senderAddress, message) -> __.ProcessConsensusMessage (senderAddress, message)
             | RetryPropose (blockNumber, consensusRound) -> __.RetryPropose(blockNumber, consensusRound)
             | Timeout (blockNumber, consensusRound, consensusStep) ->
@@ -82,30 +82,40 @@ module Consensus =
                 if _commits.TryAdd(key, (blockHash, envelope.Signature)) then
                     __.UpdateState()
 
-        member private __.Synchronize(deleteMessageLogs) =
+        member private __.Synchronize() =
             let nextBlockNumber = getLastAppliedBlockNumber () + 1
             if _blockNumber <> nextBlockNumber then
                 _blockNumber <- nextBlockNumber
                 _validators <- getCurrentValidators ()
                 _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
                 _validQuorum <- Validators.calculateValidQuorum _validators.Length
-                __.ResetState(deleteMessageLogs)
+                __.ResetState()
                 __.StartRound(ConsensusRound 0)
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Core Logic
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member private __.ResetState(deleteMessageLogs) =
+        member private __.ResetState() =
             _lockedRound <- ConsensusRound -1
             _lockedBlock <- None
             _validRound <- ConsensusRound -1
             _validBlock <- None
 
-            if deleteMessageLogs then
-                _proposals.Clear()
-                _votes.Clear()
-                _commits.Clear()
+            _proposals
+            |> List.ofDict
+            |> List.filter (fun ((b, _, _), _) -> b < _blockNumber)
+            |> List.iter (fun (key, _) -> _proposals.Remove(key) |> ignore)
+
+            _votes
+            |> List.ofDict
+            |> List.filter (fun ((b, _, _), _) -> b < _blockNumber)
+            |> List.iter (fun (key, _) -> _votes.Remove(key) |> ignore)
+
+            _commits
+            |> List.ofDict
+            |> List.filter (fun ((b, _, _), _) -> b < _blockNumber)
+            |> List.iter (fun (key, _) -> _commits.Remove(key) |> ignore)
 
         member private __.TryPropose() =
             let block =
@@ -196,7 +206,7 @@ module Consensus =
                     if (*__.MajorityCommitted(r, Some block.Header.Hash) &&*) isValidBlock block then
                         _decisions.[blockNumber] <- block
                         __.SaveBlock(block, r)
-                        __.Synchronize(true)
+                        __.Synchronize()
                 )
 
             __.LatestValidRound()
