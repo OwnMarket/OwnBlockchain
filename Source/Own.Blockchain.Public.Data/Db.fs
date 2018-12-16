@@ -114,7 +114,7 @@ module Db =
     let getTotalFeeForPendingTxs (dbConnectionString : string) (BlockchainAddress senderAddress) : ChxAmount =
         let sql =
             """
-            SELECT SUM(fee * action_count)
+            SELECT sum(fee * action_count)
             FROM tx
             WHERE sender_address = @senderAddress
             """
