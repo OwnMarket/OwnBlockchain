@@ -78,7 +78,6 @@ module Agents =
                     None
                 else
                     Log.infof "Configured as validator with address %s." validatorAddress.Value
-
                     Composition.createConsensusStateInstance publishEvent
                     |> Some
             )

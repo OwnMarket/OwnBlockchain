@@ -169,6 +169,7 @@ type BlockInfoDto = {
     BlockNumber : int64
     BlockHash : string
     BlockTimestamp : int64
+    IsConfigBlock : bool
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

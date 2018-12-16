@@ -19,6 +19,7 @@ module Consensus =
         requestTx : TxHash -> unit,
         isValidBlock : Block -> bool,
         saveBlock : BlockNumber -> BlockEnvelopeDto -> Result<unit, AppErrors>,
+        saveBlockToDb : BlockInfoDto -> Result<unit, AppErrors>,
         applyBlock : BlockNumber -> Result<unit, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
         publishEvent : AppEvent -> unit,
@@ -325,17 +326,26 @@ module Consensus =
                     _qualifiedMajority
                     signatures.Length
 
-            block
-            |> Mapping.blockToDto
-            |> Serialization.serialize<BlockDto>
-            |> Result.map (fun blockBytes ->
-                {
-                    Block = blockBytes |> Convert.ToBase64String
-                    Signatures = signatures |> List.toArray
-                }
-            )
-            >>= saveBlock block.Header.Number
-            >>= fun _ -> applyBlock block.Header.Number // TODO: This should be done by applier worker...
+            result {
+                let! blockEnvelopeDto =
+                    block
+                    |> Mapping.blockToDto
+                    |> Serialization.serialize<BlockDto>
+                    |> Result.map (fun blockBytes ->
+                        {
+                            Block = blockBytes |> Convert.ToBase64String
+                            Signatures = signatures |> List.toArray
+                        }
+                    )
+
+                // TODO: Replace with adding to inbound queue
+                do! saveBlock block.Header.Number blockEnvelopeDto
+                do! block.Header
+                    |> Mapping.blockHeaderToBlockInfoDto (block.Configuration <> None)
+                    |> saveBlockToDb
+
+                do! applyBlock block.Header.Number // TODO: This should be done by applier worker...
+            }
             |> Result.handle
                 (fun _ ->
                     Synchronization.setLastStoredBlock block
@@ -442,6 +452,7 @@ module Consensus =
         requestTx
         applyBlockToCurrentState
         saveBlock
+        saveBlockToDb
         applyBlock
         decodeHash
         createHash
@@ -581,6 +592,7 @@ module Consensus =
             requestTx,
             isValidBlock,
             saveBlock,
+            saveBlockToDb,
             applyBlock,
             sendConsensusMessage,
             publishEvent,

@@ -43,6 +43,8 @@ module Composition =
 
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbConnectionString
 
+    let saveBlockToDb = Db.saveBlock Config.DbConnectionString
+
     let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbConnectionString
     let getLastAppliedBlockNumber () =
         tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
@@ -141,6 +143,7 @@ module Composition =
             createGenesisBlock
             getBlock
             saveBlock
+            saveBlockToDb
             persistStateChanges
             Signing.verifySignature
             Config.GenesisSignatures
@@ -190,6 +193,7 @@ module Composition =
             Signing.verifySignature
             blockExists
             saveBlock
+            saveBlockToDb
             Config.MinValidatorCount
 
     let persistTxResults =
@@ -250,6 +254,7 @@ module Composition =
             Peers.requestTxFromPeer
             applyBlockToCurrentState
             saveBlock
+            saveBlockToDb
             applyBlock
             Hashing.decode
             Hashing.hash

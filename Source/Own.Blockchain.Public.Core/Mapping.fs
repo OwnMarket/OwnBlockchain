@@ -247,11 +247,12 @@ module Mapping =
             Signatures = dto.Signatures |> Array.map Signature |> Array.toList
         }
 
-    let blockHeaderToBlockInfoDto (blockHeader : BlockHeader) : BlockInfoDto =
+    let blockHeaderToBlockInfoDto isConfigBlock (blockHeader : BlockHeader) : BlockInfoDto =
         {
             BlockNumber = blockHeader.Number.Value
             BlockHash = blockHeader.Hash.Value
             BlockTimestamp = blockHeader.Timestamp.Value
+            IsConfigBlock = isConfigBlock
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

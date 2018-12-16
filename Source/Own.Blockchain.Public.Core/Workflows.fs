@@ -66,6 +66,7 @@ module Workflows =
         (createGenesisBlock : unit -> Block * ProcessingOutput)
         (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
         saveBlock
+        saveBlockToDb
         persistStateChanges
         verifySignature
         genesisSignatures
@@ -82,8 +83,6 @@ module Workflows =
                     true
                 | _ ->
                     false
-
-            let blockInfoDto = Mapping.blockHeaderToBlockInfoDto genesisBlock.Header
 
             let result =
                 result {
@@ -112,9 +111,13 @@ module Workflows =
 
                     if not genesisBlockExists then
                         do! saveBlock genesisBlock.Header.Number blockEnvelopeDto
+                        do! genesisBlock.Header
+                            |> Mapping.blockHeaderToBlockInfoDto (genesisBlock.Configuration <> None)
+                            |> saveBlockToDb
+
                     do! genesisState
                         |> Mapping.outputToDto
-                        |> persistStateChanges blockInfoDto
+                        |> persistStateChanges genesisBlock.Header.Number
                 }
 
             match result with
@@ -270,6 +273,7 @@ module Workflows =
         verifySignature
         blockExists
         saveBlock
+        saveBlockToDb
         minValidatorCount
         blockEnvelopeDto
         =
@@ -329,6 +333,10 @@ module Workflows =
                     |> Result.appError
 
             do! saveBlock block.Header.Number blockEnvelopeDto
+
+            do! block.Header
+                |> Mapping.blockHeaderToBlockInfoDto (block.Configuration <> None)
+                |> saveBlockToDb
 
             Synchronization.setLastStoredBlock block
 
@@ -399,10 +407,9 @@ module Workflows =
             System.IO.File.WriteAllText(outputFileName, sprintf "%A" output)
             #endif
 
-            let blockInfoDto = Mapping.blockHeaderToBlockInfoDto block.Header
             let outputDto = Mapping.outputToDto output
             do! persistTxResults outputDto.TxResults
-            do! persistStateChanges blockInfoDto outputDto
+            do! persistStateChanges blockNumber outputDto
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

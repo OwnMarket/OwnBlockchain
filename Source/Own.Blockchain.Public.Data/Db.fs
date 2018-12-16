@@ -19,6 +19,10 @@ module Db =
 
         (parameterNames, columnNames)
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Tx
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let saveTx (dbConnectionString : string) (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
         try
             let txParams =
@@ -124,18 +128,50 @@ module Db =
         |? 0m
         |> ChxAmount
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Block
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let saveBlock (dbConnectionString : string) (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            INSERT INTO block (block_number, block_hash, block_timestamp, is_config_block, is_applied)
+            VALUES (@blockNumber, @blockHash, @blockTimestamp, @isConfigBlock, 0)
+            """
+
+        let sqlParams =
+            [
+                "@blockNumber", blockInfo.BlockNumber |> box
+                "@blockHash", blockInfo.BlockHash |> box
+                "@blockTimestamp", blockInfo.BlockTimestamp |> box
+                "@isConfigBlock", (if blockInfo.IsConfigBlock then 1s else 0s) |> box
+            ]
+
+        try
+            match DbTools.execute dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert block."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert block."
+
     let getLastAppliedBlockNumber (dbConnectionString : string) : BlockNumber option =
         let sql =
             """
             SELECT block_number
             FROM block
-            ORDER BY block_id DESC
-            LIMIT 1
+            WHERE is_applied = 1
             """
 
-        DbTools.query<BlockInfoDto> dbConnectionString sql []
-        |> List.tryHead
-        |> Option.map (fun item -> BlockNumber item.BlockNumber)
+        match DbTools.query<int64> dbConnectionString sql [] with
+        | [] -> None
+        | [blockNumber] -> blockNumber |> BlockNumber |> Some
+        | numbers -> failwithf "Multiple applied block entries found: %A" numbers
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // State
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let getChxBalanceState (dbConnectionString : string) (BlockchainAddress address) : ChxBalanceStateDto option =
         let sql =
@@ -501,52 +537,51 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
-    let private addBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
-        let sql =
-            """
-            INSERT INTO block (block_number, block_hash, block_timestamp)
-            VALUES (@blockNumber, @blockHash, @blockTimestamp)
-            """
-
-        let sqlParams =
-            [
-                "@blockNumber", blockInfo.BlockNumber |> box
-                "@blockHash", blockInfo.BlockHash |> box
-                "@blockTimestamp", blockInfo.BlockTimestamp |> box
-            ]
-
-        try
-            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert block."
-        with
-        | ex ->
-            Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert block."
-
-    let private updateBlock conn transaction (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
+    let private updateBlock conn transaction (BlockNumber blockNumber) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE block
-            SET block_number = @blockNumber, block_hash = @blockHash, block_timestamp = @blockTimestamp
+            SET is_applied = 1
+            WHERE block_number = @blockNumber
+            AND is_applied = 0
             """
 
         let sqlParams =
             [
-                "@blockNumber", blockInfo.BlockNumber |> box
-                "@blockHash", blockInfo.BlockHash |> box
-                "@blockTimestamp", blockInfo.BlockTimestamp |> box
+                "@blockNumber", blockNumber |> box
             ]
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 -> addBlock conn transaction blockInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update block number."
+            | _ -> Result.appError "Didn't update applied block number."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update block number."
+            Result.appError "Failed to update applied block number."
+
+    let private removePreviousBlock conn transaction (BlockNumber currentBlockNumber) : Result<unit, AppErrors> =
+        let sql =
+            """
+            DELETE FROM block
+            WHERE block_number < @currentBlockNumber
+            """
+
+        let sqlParams =
+            [
+                "@currentBlockNumber", currentBlockNumber |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 when currentBlockNumber = 0L -> Ok () // Genesis block doesn't have a predecessor
+            | 0 -> Result.appError "Didn't remove previous block number."
+            | 1 -> Ok ()
+            | c -> failwithf "Removed %i previous block numbers, instead of only one." c
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to remove previous block number."
 
     let private addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -1023,7 +1058,7 @@ module Db =
 
     let persistStateChanges
         (dbConnectionString : string)
-        (blockInfoDto : BlockInfoDto)
+        (blockNumber : BlockNumber)
         (state : ProcessingOutputDto)
         : Result<unit, AppErrors>
         =
@@ -1042,7 +1077,8 @@ module Db =
                 do! updateAssets conn transaction state.Assets
                 do! updateAccounts conn transaction state.Accounts
                 do! updateHoldings conn transaction state.Holdings
-                do! updateBlock conn transaction blockInfoDto
+                do! updateBlock conn transaction blockNumber
+                do! removePreviousBlock conn transaction blockNumber
             }
 
         match result with
