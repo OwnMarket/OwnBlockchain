@@ -310,7 +310,7 @@ let shouldSkip path =
     patternsToSkip
     |> Seq.exists (fun pattern -> Regex.IsMatch (path, pattern))
 
-let errors =
+let issues =
     sourceDirs
     |> Seq.collect (fun d -> Directory.EnumerateFiles (d, "*.fs", SearchOption.AllDirectories))
     |> Seq.filter (shouldSkip >> not)
@@ -319,9 +319,9 @@ let errors =
     |> Async.RunSynchronously
     |> List.concat
 
-for file, lineNumber, error in errors do
+for file, lineNumber, error in issues do
     printfn "%s (%i): %s" file lineNumber error
 
-printfn "%i errors" errors.Length
+printfn "%i issues" issues.Length
 
-errors.Length // Return number of errors
+issues.Length // Return number of issues
