@@ -432,6 +432,7 @@ module Blocks =
         block.Header.Hash = blockHash
 
     let verifyBlockSignatures
+        createConsensusMessageHash
         verifySignature
         (blockEnvelope : BlockEnvelope)
         : Result<BlockchainAddress list, AppErrors>
@@ -446,7 +447,13 @@ module Blocks =
             let values, errors =
                 blockEnvelope.Signatures
                 |> List.map (fun s ->
-                    match verifySignature s block.Header.Hash.Value with
+                    let messageHash =
+                        createConsensusMessageHash
+                            block.Header.Number
+                            blockEnvelope.ConsensusRound
+                            (block.Header.Hash |> Some |> ConsensusMessage.Commit)
+
+                    match verifySignature s messageHash with
                     | Some blockchainAddress ->
                         Ok blockchainAddress
                     | None ->

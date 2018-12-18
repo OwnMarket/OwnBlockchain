@@ -124,7 +124,7 @@ module SharedTests =
         |> submissionChecks connString isValidTransaction senderWallet txDto expectedTx
 
     let processTransactions expectedBlockPath =
-        Workers.startApplier ()
+        Workers.startFetcher ()
 
         let mutable iter = 0
         let sleepTime = 2

@@ -51,14 +51,18 @@ module Workflows =
 
     let signGenesisBlock
         (createGenesisBlock : unit -> Block * ProcessingOutput)
-        decodeHash
+        createConsensusMessageHash
         signHash
         privateKey
         : Signature
         =
 
-        createGenesisBlock ()
-        |> fun (b, _) -> b.Header.Hash.Value
+        let block, _ = createGenesisBlock ()
+
+        createConsensusMessageHash
+            block.Header.Number
+            (ConsensusRound 0)
+            (block.Header.Hash |> Some |> ConsensusMessage.Commit)
         |> signHash privateKey
 
     let initBlockchainState
@@ -68,6 +72,7 @@ module Workflows =
         saveBlock
         saveBlockToDb
         persistStateChanges
+        createConsensusMessageHash
         verifySignature
         genesisSignatures
         =
@@ -93,6 +98,7 @@ module Workflows =
                         |> Result.map (fun blockBytes ->
                             {
                                 Block = blockBytes |> Convert.ToBase64String
+                                ConsensusRound = 0
                                 Signatures = genesisSignatures |> List.toArray
                             }
                         )
@@ -100,7 +106,7 @@ module Workflows =
                     let! genesisSigners =
                         blockEnvelopeDto
                         |> Mapping.blockEnvelopeFromDto
-                        |> Blocks.verifyBlockSignatures verifySignature
+                        |> Blocks.verifyBlockSignatures createConsensusMessageHash verifySignature
 
                     match genesisBlock.Configuration with
                     | None -> return! Result.appError "Genesis block must have configuration."
@@ -270,6 +276,7 @@ module Workflows =
     let storeReceivedBlock
         isValidAddress
         getBlock
+        createConsensusMessageHash
         verifySignature
         blockExists
         saveBlock
@@ -287,9 +294,8 @@ module Workflows =
 
             let! block = Validation.validateBlock isValidAddress blockDto
 
-            Synchronization.setLastKnownBlock block
-
             if not (blockExists block.Header.ConfigurationBlockNumber) then
+                Synchronization.unverifiedBlocks.TryAdd(block.Header.Number, blockEnvelopeDto) |> ignore
                 return!
                     sprintf "Missing configuration block %i for block %i."
                         block.Header.ConfigurationBlockNumber.Value
@@ -320,7 +326,7 @@ module Workflows =
                     |> Result.appError
 
             let! blockSigners =
-                Blocks.verifyBlockSignatures verifySignature blockEnvelope
+                Blocks.verifyBlockSignatures createConsensusMessageHash verifySignature blockEnvelope
                 |> Result.map (Set.ofList >> Set.intersect validators)
 
             let qualifiedMajority = Validators.calculateQualifiedMajority validators.Count
@@ -338,22 +344,24 @@ module Workflows =
                 |> Mapping.blockHeaderToBlockInfoDto (block.Configuration <> None)
                 |> saveBlockToDb
 
-            Synchronization.setLastStoredBlock block
+            Synchronization.unverifiedBlocks.TryRemove(block.Header.Number) |> ignore
 
-            return {BlockCreatedEventData.BlockNumber = block.Header.Number}
+            return block.Header.Number
         }
 
     let persistTxResults saveTxResult txResults =
         txResults
         |> Map.toList
         |> List.fold (fun result (txHash, txResult) ->
-            result
-            >>= fun _ -> saveTxResult (TxHash txHash) txResult
+            result >>= fun _ ->
+                Log.noticef "Saving TxResult %s" txHash
+                saveTxResult (TxHash txHash) txResult
         ) (Ok ())
 
     let applyBlockToCurrentState
         getBlock
         isValidSuccessorBlock
+        txResultExists
         createBlock
         (block : Block)
         =
@@ -367,6 +375,14 @@ module Workflows =
                 return!
                     sprintf "Block %i is not a valid successor of the previous block." block.Header.Number.Value
                     |> Result.appError
+
+            for txHash in block.TxSet do
+                if txResultExists txHash then
+                    return!
+                        sprintf "Tx %s cannot be included in the block %i because it is already processed."
+                            txHash.Value
+                            block.Header.Number.Value
+                        |> Result.appError
 
             let createdBlock, output =
                 createBlock
@@ -419,7 +435,6 @@ module Workflows =
     let handleReceivedConsensusMessage
         decodeHash
         createHash
-        zeroHash
         (getValidators : unit -> ValidatorSnapshot list)
         (verifySignature : Signature -> string -> BlockchainAddress option)
         (envelopeDto : ConsensusMessageEnvelopeDto)
@@ -431,7 +446,6 @@ module Workflows =
             Consensus.createConsensusMessageHash
                 decodeHash
                 createHash
-                zeroHash
                 envelope.BlockNumber
                 envelope.Round
                 envelope.ConsensusMessage
@@ -494,35 +508,37 @@ module Workflows =
         getTx
         getBlock
         getLastAppliedBlockNumber
-        handleReceivedTx
-        handleReceivedBlock
         handleReceivedConsensusMessage
         respondToPeer
         peerMessage
         =
 
-        let processTxFromPeer txHash data =
+        let processTxFromPeer isResponse txHash data =
             match getTx txHash with
-            | Ok _ -> Ok None
+            | Ok _ -> None
             | _ ->
                 data
                 |> Serialization.deserializeJObject
-                |> handleReceivedTx
-                |> Result.map (TxReceived >> Some)
+                |> fun txEnvelopeDto ->
+                    (txHash, txEnvelopeDto)
+                    |> (if isResponse then TxFetched else TxReceived)
+                    |> Some
+            |> Ok
 
-        let processBlockFromPeer blockNr data =
+        let processBlockFromPeer isResponse blockNr data =
             let blockEnvelopeDto = data |> Serialization.deserializeJObject
 
-            let existingBlock =
-                Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
-                >>= fun receivedBlock -> getBlock receivedBlock.Header.Number
+            result {
+                let! receivedBlock = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
 
-            match existingBlock with
-            | Ok _ -> Ok None
-            | _ ->
-                blockEnvelopeDto
-                |> handleReceivedBlock
-                |> Result.map (BlockReceived >> Some)
+                return
+                    match getBlock receivedBlock.Header.Number with
+                    | Ok _ -> None
+                    | _ ->
+                        (receivedBlock.Header.Number, blockEnvelopeDto)
+                        |> (if isResponse then BlockFetched else BlockReceived)
+                        |> Some
+            }
 
         let processConsensusMessageFromPeer consensusMessageId data =
             data
@@ -530,10 +546,10 @@ module Workflows =
             |> handleReceivedConsensusMessage
             |> Result.map (ConsensusMessageReceived >> Some)
 
-        let processData messageId (data : obj) =
+        let processData isResponse messageId (data : obj) =
             match messageId with
-            | Tx txHash -> processTxFromPeer txHash data
-            | Block blockNr -> processBlockFromPeer blockNr data
+            | Tx txHash -> processTxFromPeer isResponse txHash data
+            | Block blockNr -> processBlockFromPeer isResponse blockNr data
             | Consensus consensusMessageId -> processConsensusMessageFromPeer consensusMessageId data
 
         let processRequest messageId senderAddress =
@@ -570,10 +586,10 @@ module Workflows =
 
         match peerMessage with
         | GossipDiscoveryMessage _ -> None
-        | GossipMessage m -> processData m.MessageId m.Data |> Some
-        | MulticastMessage m -> processData m.MessageId m.Data |> Some
+        | GossipMessage m -> processData false m.MessageId m.Data |> Some
+        | MulticastMessage m -> processData false m.MessageId m.Data |> Some
         | RequestDataMessage m -> processRequest m.MessageId m.SenderAddress |> Some
-        | ResponseDataMessage m -> processData m.MessageId m.Data |> Some
+        | ResponseDataMessage m -> processData true m.MessageId m.Data |> Some
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API
@@ -589,7 +605,7 @@ module Workflows =
         saveTxToDb
         minTxActionFee
         txEnvelopeDto
-        : Result<TxReceivedEventData, AppErrors>
+        : Result<TxHash, AppErrors>
         =
 
         result {
@@ -612,7 +628,7 @@ module Workflows =
                 |> Mapping.txToTxInfoDto
                 |> saveTxToDb
 
-            return { TxHash = txHash }
+            return txHash
         }
 
     let getTxApi

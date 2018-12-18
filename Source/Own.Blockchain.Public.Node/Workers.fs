@@ -11,14 +11,14 @@ open Own.Blockchain.Public.Net
 module Workers =
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Applier
+    // Fetcher
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let startApplier () =
+    let startFetcher () =
         let rec loop () =
             async {
                 try
-                    Composition.acquireAndApplyMissingBlocks ()
+                    Composition.fetchMissingBlocks Agents.publishEvent
                 with
                 | ex -> Log.error ex.AllMessagesAndStackTraces
 

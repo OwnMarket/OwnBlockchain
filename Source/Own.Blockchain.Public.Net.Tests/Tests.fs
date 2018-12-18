@@ -65,22 +65,22 @@ module PeerTests =
     let requestBlock (node : NetworkNode) blockNr =
         node |> requestFromPeer (Block blockNr)
 
-    let private txPropagator node (message : TxReceivedEventData) =
-        gossipTx node message.TxHash
+    let private txPropagator node txHash =
+        gossipTx node txHash
 
-    let private blockPropagator node (message : BlockCreatedEventData) =
-        gossipBlock node message.BlockNumber
+    let private blockPropagator node blockNumber =
+        gossipBlock node blockNumber
 
     let publishEvent node appEvent =
         match appEvent with
         | TxSubmitted e -> txPropagator node e
-        | TxReceived e -> txPropagator node e
-        | BlockCreated e -> blockPropagator node e
-        | BlockReceived e -> blockPropagator node e
+        | TxReceived (e, _) -> txPropagator node e
+        | BlockCommitted (e, _) -> blockPropagator node e
+        | BlockReceived (e, _) -> blockPropagator node e
 
     let startGossip (node : NetworkNode) =
         let processPeerMessage = WorkflowsMock.processPeerMessage (node.GetNetworkAddress()) (respondToPeer node)
-        node.StartGossip processPeerMessage (publishEvent node)
+        node.StartGossip (publishEvent node)
 
     let stopGossip (node : NetworkNode) =
         node.StopGossip ()

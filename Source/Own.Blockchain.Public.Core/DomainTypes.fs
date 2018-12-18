@@ -143,8 +143,11 @@ type Block = {
     Configuration : BlockchainConfiguration option
 }
 
+type ConsensusRound = ConsensusRound of int
+
 type BlockEnvelope = {
     RawBlock : byte[]
+    ConsensusRound : ConsensusRound
     Signatures : Signature list
 }
 
@@ -237,8 +240,6 @@ type ProcessingOutput = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Consensus
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type ConsensusRound = ConsensusRound of int
 
 type ConsensusStep =
     | Propose

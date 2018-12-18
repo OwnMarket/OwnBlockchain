@@ -29,6 +29,8 @@ module Composition =
 
     let txExists = Raw.txExists Config.DataDir
 
+    let txResultExists = Raw.txResultExists Config.DataDir
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Database
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +50,8 @@ module Composition =
     let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbConnectionString
     let getLastAppliedBlockNumber () =
         tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
+
+    let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbConnectionString
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
 
@@ -100,6 +104,15 @@ module Composition =
             getCurrentValidators
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let createConsensusMessageHash =
+        Consensus.createConsensusMessageHash
+            Hashing.decode
+            Hashing.hash
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -134,7 +147,7 @@ module Composition =
     let signGenesisBlock =
         Workflows.signGenesisBlock
             createGenesisBlock
-            Hashing.decode
+            createConsensusMessageHash
             Signing.signHash
 
     let initBlockchainState () =
@@ -145,6 +158,7 @@ module Composition =
             saveBlock
             saveBlockToDb
             persistStateChanges
+            createConsensusMessageHash
             Signing.verifySignature
             Config.GenesisSignatures
 
@@ -190,6 +204,7 @@ module Composition =
         Workflows.storeReceivedBlock
             Hashing.isValidBlockchainAddress
             getBlock
+            createConsensusMessageHash
             Signing.verifySignature
             blockExists
             saveBlock
@@ -210,6 +225,7 @@ module Composition =
         Workflows.applyBlockToCurrentState
             getBlock
             isValidSuccessorBlock
+            txResultExists
             createBlock
 
     let applyBlock =
@@ -223,21 +239,24 @@ module Composition =
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let initSynchronizationState () =
-        Synchronization.initSynchronizationState
+    let tryApplyNextBlock publishEvent =
+        Synchronization.tryApplyNextBlock
             getLastAppliedBlockNumber
-            blockExists
             getBlock
+            applyBlock
+            txExists
+            publishEvent
 
-    let acquireAndApplyMissingBlocks () =
-        Synchronization.acquireAndApplyMissingBlocks
+    let fetchMissingBlocks publishEvent =
+        Synchronization.fetchMissingBlocks
+            getLastStoredBlockNumber
             getLastAppliedBlockNumber
             getBlock
             blockExists
             txExists
             Peers.requestBlockFromPeer
             Peers.requestTxFromPeer
-            applyBlock
+            publishEvent
             Config.ConfigurationBlockDelta
             Config.MaxNumberOfBlocksToFetchInParallel
 
@@ -253,12 +272,8 @@ module Composition =
             txExists
             Peers.requestTxFromPeer
             applyBlockToCurrentState
-            saveBlock
-            saveBlockToDb
-            applyBlock
             Hashing.decode
             Hashing.hash
-            Hashing.zeroHash
             Signing.signHash
             Peers.sendMessage
             publishEvent
@@ -274,7 +289,6 @@ module Composition =
         Workflows.handleReceivedConsensusMessage
             Hashing.decode
             Hashing.hash
-            Hashing.zeroHash
             getCurrentValidators
             Signing.verifySignature
 
@@ -326,8 +340,6 @@ module Composition =
             getTx
             getBlock
             getLastAppliedBlockNumber
-            submitTx
-            storeReceivedBlock
             handleReceivedConsensusMessage
             Peers.respondToPeer
             peerMessage
@@ -347,7 +359,6 @@ module Composition =
             Config.NetworkAddress
             Config.NetworkBootstrapNodes
             getCurrentValidators
-            processPeerMessage
             publishEvent
 
     let stopGossip () = Peers.stopGossip ()

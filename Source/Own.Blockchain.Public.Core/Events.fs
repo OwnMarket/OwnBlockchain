@@ -2,19 +2,18 @@ namespace Own.Blockchain.Public.Core.Events
 
 open System
 open Own.Blockchain.Public.Core.DomainTypes
-
-type TxReceivedEventData = {
-    TxHash : TxHash
-}
-
-type BlockCreatedEventData = {
-    BlockNumber : BlockNumber
-}
+open Own.Blockchain.Public.Core.Dtos
 
 type AppEvent =
-    | TxSubmitted of TxReceivedEventData
-    | TxReceived of TxReceivedEventData
-    | BlockCreated of BlockCreatedEventData
-    | BlockReceived of BlockCreatedEventData
+    | PeerMessageReceived of PeerMessage
+    | TxSubmitted of TxHash
+    | TxReceived of TxHash * TxEnvelopeDto
+    | TxFetched of TxHash * TxEnvelopeDto
+    | TxStored of TxHash
+    | BlockCommitted of BlockNumber * BlockEnvelopeDto
+    | BlockReceived of BlockNumber * BlockEnvelopeDto
+    | BlockFetched of BlockNumber * BlockEnvelopeDto
+    | BlockStored of BlockNumber
+    | BlockApplied of BlockNumber
     | ConsensusMessageReceived of ConsensusCommand
     | ConsensusCommandInvoked of ConsensusCommand

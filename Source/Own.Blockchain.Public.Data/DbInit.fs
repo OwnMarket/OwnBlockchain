@@ -96,6 +96,7 @@ module DbInit =
             |> List.sortBy (fun c -> c.Number)
 
         for change in dbChanges do
+            Log.noticef "Applying DB change %i" change.Number
             applyDbChange dbEngineType connectionString change
 
     let private initDb dbEngineType connectionString =

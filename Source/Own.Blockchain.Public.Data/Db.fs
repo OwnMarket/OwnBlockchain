@@ -169,6 +169,21 @@ module Db =
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
         | numbers -> failwithf "Multiple applied block entries found: %A" numbers
 
+    let getLastStoredBlockNumber (dbConnectionString : string) : BlockNumber option =
+        let sql =
+            """
+            SELECT block_number
+            FROM block
+            WHERE is_applied = 0
+            ORDER BY block_number DESC
+            LIMIT 1
+            """
+
+        match DbTools.query<int64> dbConnectionString sql [] with
+        | [] -> None
+        | [blockNumber] -> blockNumber |> BlockNumber |> Some
+        | _ -> failwith "getLastStoredBlockNumber query retrieved multiple rows."
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////

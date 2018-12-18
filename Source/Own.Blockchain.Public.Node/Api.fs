@@ -36,7 +36,7 @@ module Api =
             let response =
                 Composition.submitTx requestDto
                 |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
-                |> Result.map Mapping.txSubmittedEventToSubmitTxResponseDto
+                |> Result.map (fun txHash -> { SubmitTxResponseDto.TxHash = txHash.Value })
                 |> toApiResponse
 
             return! response next ctx

@@ -101,3 +101,10 @@ module Raw =
         |> createFileName Tx
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
+
+    let txResultExists (dataDir : string) (TxHash txHash) =
+        txHash
+        |> string
+        |> createFileName TxResult
+        |> fun fileName -> Path.Combine (dataDir, fileName)
+        |> File.Exists

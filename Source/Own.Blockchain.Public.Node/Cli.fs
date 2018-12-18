@@ -17,12 +17,11 @@ module Cli =
     let handleStartNodeCommand () =
         Composition.initDb ()
         Composition.initBlockchainState ()
-        Composition.initSynchronizationState ()
+        Agents.startAgents ()
         Composition.startGossip Agents.publishEvent
         Composition.discoverNetwork ()
         Composition.requestLastBlockFromPeer ()
-        Workers.startApplier ()
-        Agents.startValidator ()
+        Workers.startFetcher ()
         Api.start ()
         Composition.stopGossip ()
 

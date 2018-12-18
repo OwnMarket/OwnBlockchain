@@ -244,6 +244,7 @@ module Mapping =
     let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
         {
             RawBlock = dto.Block |> Convert.FromBase64String
+            ConsensusRound = ConsensusRound dto.ConsensusRound
             Signatures = dto.Signatures |> Array.map Signature |> Array.toList
         }
 
@@ -381,14 +382,6 @@ module Mapping =
             Validators = validators
             Stakes = stakes
         }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Events
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let txSubmittedEventToSubmitTxResponseDto (event : TxReceivedEventData) =
-        let (TxHash hash) = event.TxHash
-        { SubmitTxResponseDto.TxHash = hash }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API

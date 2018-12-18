@@ -66,8 +66,6 @@ module ConsensusTestHelpers =
         (
         ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
         ?isValidBlock : BlockchainAddress -> Block -> bool,
-        ?saveBlock : BlockNumber -> BlockEnvelopeDto -> Result<unit, AppErrors>,
-        ?saveBlockToDb : BlockInfoDto -> Result<unit, AppErrors>,
         ?scheduleMessage : BlockchainAddress -> int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
         ?schedulePropose : BlockchainAddress -> int -> (BlockNumber * ConsensusRound) -> unit,
         ?scheduleTimeout : BlockchainAddress -> int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
@@ -130,15 +128,6 @@ module ConsensusTestHelpers =
                     | Some f -> f validatorAddress
                     | None -> fun _ -> true
 
-                let saveBlock =
-                    saveBlock |? fun _ _ -> Ok ()
-
-                let saveBlockToDb =
-                    saveBlockToDb |? fun _ -> Ok ()
-
-                let applyBlock _ =
-                    Ok ()
-
                 let scheduleMessage =
                     match scheduleMessage with
                     | Some f -> f validatorAddress
@@ -169,9 +158,6 @@ module ConsensusTestHelpers =
                         txExists,
                         requestTx,
                         isValidBlock,
-                        saveBlock,
-                        saveBlockToDb,
-                        applyBlock,
                         sendConsensusMessage,
                         publishEvent,
                         scheduleMessage,

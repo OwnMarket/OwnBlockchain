@@ -6,151 +6,103 @@ open System.Collections.Concurrent
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.Events
 
 module Synchronization =
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // State
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    let unverifiedBlocks = new ConcurrentDictionary<BlockNumber, BlockEnvelopeDto>()
 
-    type private SynchronizationStateKey =
-        | LastStoredBlockNumber
-        | LastStoredConfigurationBlockNumber
-        | LastKnownBlockNumber
-        | LastKnownConfigurationBlockNumber
+    let private requestBlock requestFromPeer publishEvent blockNumber =
+        match unverifiedBlocks.TryRemove(blockNumber) with
+        | true, blockEnvelopeDto -> (blockNumber, blockEnvelopeDto) |> BlockFetched |> publishEvent
+        | _ -> requestFromPeer blockNumber
 
-    let private state = new ConcurrentDictionary<SynchronizationStateKey, BlockNumber>()
-
-    let private getState stateKey =
-        state.GetOrAdd(stateKey, BlockNumber 0L)
-
-    let private setState stateKey newValue =
-        state.AddOrUpdate(stateKey, newValue, fun _ currentValue -> max newValue currentValue) |> ignore
-
-    let getLastStoredBlockNumber () = getState LastStoredBlockNumber
-    let getLastStoredConfigurationBlockNumber () = getState LastStoredConfigurationBlockNumber
-    let getLastKnownBlockNumber () = getState LastKnownBlockNumber
-    let getLastKnownConfigurationBlockNumber () = getState LastKnownConfigurationBlockNumber
-
-    let setLastStoredBlock (block : Block) =
-        if block.Configuration <> None then
-            block.Header.Number
-        else
-            block.Header.ConfigurationBlockNumber
-        |> setState LastStoredConfigurationBlockNumber
-
-        setState LastStoredBlockNumber block.Header.Number
-
-    let setLastKnownBlock (block : Block) =
-        if block.Configuration <> None then
-            block.Header.Number
-        else
-            block.Header.ConfigurationBlockNumber
-        |> setState LastKnownConfigurationBlockNumber
-
-        setState LastKnownBlockNumber block.Header.Number
-
-    let resetLastKnownBlock () =
-        getLastStoredBlockNumber ()
-        |> fun n -> state.AddOrUpdate(LastKnownBlockNumber, n, fun _ _ -> n)
-        |> ignore
-
-        getLastStoredConfigurationBlockNumber ()
-        |> fun n -> state.AddOrUpdate(LastKnownConfigurationBlockNumber, n, fun _ _ -> n)
-        |> ignore
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Logic
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let initSynchronizationState
-        getLastAppliedBlockNumber
-        blockExists
-        getBlock
-        =
-
-        let rec findLastBlockAvailableInStorage (lastStoredBlockNumber : BlockNumber) =
-            let nextBlockNumber = lastStoredBlockNumber + 1
-            if blockExists nextBlockNumber then
-                findLastBlockAvailableInStorage nextBlockNumber
-            else
-                lastStoredBlockNumber
-
-        getLastAppliedBlockNumber ()
-        |> max (getLastStoredBlockNumber ())
-        |> findLastBlockAvailableInStorage
-        |> getBlock
-        >>= Blocks.extractBlockFromEnvelopeDto
-        |> Result.handle
-            (fun lastBlock ->
-                setLastStoredBlock lastBlock
-                resetLastKnownBlock ()
-            )
-            (fun errors ->
-                Log.appErrors errors
-                failwith "Cannot load last available block from storage."
-            )
-
-    let private buildConfigurationChain
-        requestBlockFromPeer
-        (configurationBlockDelta : int)
-        (maxNumberOfBlocksToFetchInParallel : int)
-        =
-
-        let lastStoredConfigurationBlockNumber = getLastStoredConfigurationBlockNumber ()
-        let lastKnownConfigurationBlockNumber = getLastKnownConfigurationBlockNumber ()
-
-        let firstBlockToFetch = lastStoredConfigurationBlockNumber + configurationBlockDelta
-
-        let lastBlockToFetch =
-            firstBlockToFetch + (maxNumberOfBlocksToFetchInParallel * configurationBlockDelta)
-            |> min lastKnownConfigurationBlockNumber
-
-        for blockNumber in [firstBlockToFetch .. configurationBlockDelta .. lastBlockToFetch] do
-            requestBlockFromPeer blockNumber
-
-    let acquireAndApplyMissingBlocks
+    let fetchMissingBlocks
+        (getLastStoredBlockNumber : unit -> BlockNumber option)
         (getLastAppliedBlockNumber : unit -> BlockNumber)
         getBlock
         blockExists
         txExists
         requestBlockFromPeer
         requestTxFromPeer
-        applyBlock
-        configurationBlockDelta
+        publishEvent
+        (configurationBlockDelta : int)
         maxNumberOfBlocksToFetchInParallel
         =
 
-        buildConfigurationChain requestBlockFromPeer configurationBlockDelta maxNumberOfBlocksToFetchInParallel
+        let lastStoredBlockNumber = getLastStoredBlockNumber ()
+        let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+        let lastVerifiedConfigBlock =
+            lastStoredBlockNumber
+            |? lastAppliedBlockNumber
+            |> getBlock
+            >>= Blocks.extractBlockFromEnvelopeDto
+            >>= (fun b ->
+                if b.Configuration.IsSome then
+                    Ok b
+                else
+                    getBlock b.Header.ConfigurationBlockNumber
+                    >>= Blocks.extractBlockFromEnvelopeDto
+            )
+            |> Result.handle id (fun _ -> failwith "Cannot get last verified configuration block.")
 
-        let mutable lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+        unverifiedBlocks.Keys
+        |> Seq.sortDescending
+        |> Seq.tryHead
+        |> Option.iter (fun lastUnverifiedBlock ->
+            // Fetch next configuration block
+            // TODO: Use delta from block configuration
+            let nextConfigBlockNumber = lastVerifiedConfigBlock.Header.Number + configurationBlockDelta
+            if nextConfigBlockNumber <= lastUnverifiedBlock then
+                requestBlock requestBlockFromPeer publishEvent nextConfigBlockNumber
 
-        let lastBlockToFetch =
-            lastAppliedBlockNumber + maxNumberOfBlocksToFetchInParallel
-            |> min (getLastKnownBlockNumber ())
+            // Fetch verifiable blocks
+            let lastVerifiableBlockNumber = min nextConfigBlockNumber lastUnverifiedBlock
+            seq {
+                for bn in [lastAppliedBlockNumber + 1 .. lastVerifiableBlockNumber] do
+                    if bn <= lastVerifiableBlockNumber && not (blockExists bn) then
+                        yield bn
+            }
+            |> Seq.truncate maxNumberOfBlocksToFetchInParallel
+            |> Seq.iter (requestBlock requestBlockFromPeer publishEvent)
+        )
 
-        for blockNumber in [lastAppliedBlockNumber + 1 .. lastBlockToFetch] do
-            if not (blockExists blockNumber) then
-                // Don't try fetching the block if the configuration block is not available
-                if blockNumber <= (getLastStoredConfigurationBlockNumber () + configurationBlockDelta) then
-                    requestBlockFromPeer blockNumber
-            else
+        // Fetch Txs for verified blocks
+        lastStoredBlockNumber
+        |> Option.iter (fun lastStoredBlockNumber ->
+            for bn in [lastAppliedBlockNumber + 1 .. lastStoredBlockNumber] do
+                getBlock bn
+                >>= Blocks.extractBlockFromEnvelopeDto
+                |> Result.handle
+                    (fun block ->
+                        block.TxSet
+                        |> List.filter (txExists >> not)
+                        |> List.iter requestTxFromPeer
+                    )
+                    Log.appErrors
+        )
+
+    let tryApplyNextBlock
+        (getLastAppliedBlockNumber : unit -> BlockNumber)
+        getBlock
+        applyBlock
+        txExists
+        publishEvent
+        =
+
+        getLastAppliedBlockNumber () + 1
+        |> getBlock
+        |> Result.iter
+            (fun blockEnvelopeDto ->
                 result {
-                    let! block =
-                        getBlock blockNumber
-                        >>= Blocks.extractBlockFromEnvelopeDto
-                    let missingTxs =
-                        [
-                            for txHash in block.TxSet do
-                                if not (txExists txHash) then
-                                    requestTxFromPeer txHash
-                                    yield txHash
-                        ]
-                    if missingTxs.IsEmpty && blockNumber = (lastAppliedBlockNumber + 1) then
-                        do! applyBlock blockNumber
-                        lastAppliedBlockNumber <- lastAppliedBlockNumber + 1
-                    return ()
+                    let! block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+                    if block.TxSet |> List.forall txExists then
+                        Log.noticef "Applying block %i" block.Header.Number.Value
+                        do! applyBlock block.Header.Number
+                    return block.Header.Number
                 }
-                |> Result.iterError Log.appErrors
-
-        resetLastKnownBlock () // Last known block might be a lie - we don't want to keep trying forever.
+                |> Result.handle
+                    (BlockApplied >> publishEvent)
+                    Log.appErrors
+            )

@@ -18,9 +18,6 @@ module Consensus =
         txExists : TxHash -> bool,
         requestTx : TxHash -> unit,
         isValidBlock : Block -> bool,
-        saveBlock : BlockNumber -> BlockEnvelopeDto -> Result<unit, AppErrors>,
-        saveBlockToDb : BlockInfoDto -> Result<unit, AppErrors>,
-        applyBlock : BlockNumber -> Result<unit, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
         publishEvent : AppEvent -> unit,
         scheduleMessage : int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
@@ -83,7 +80,15 @@ module Consensus =
                     __.UpdateState()
 
         member private __.Synchronize() =
-            let nextBlockNumber = getLastAppliedBlockNumber () + 1
+            let lastBlockNumber =
+                _decisions.Keys
+                |> Seq.sortDescending
+                |> Seq.tryHead
+                |? BlockNumber 0L
+                |> max (getLastAppliedBlockNumber ())
+
+            let nextBlockNumber = lastBlockNumber + 1
+
             if _blockNumber <> nextBlockNumber then
                 _blockNumber <- nextBlockNumber
                 _validators <- getCurrentValidators ()
@@ -121,6 +126,8 @@ module Consensus =
             let block =
                 _validBlock
                 |> Option.orElseWith (fun _ ->
+                    // TODO: if LAB < LSB then (warning "blockchain state not yet updated"; None)
+
                     proposeBlock _blockNumber
                     |> Option.bind (fun r ->
                         match r with
@@ -336,37 +343,25 @@ module Consensus =
                     _qualifiedMajority
                     signatures.Length
 
-            result {
-                let! blockEnvelopeDto =
-                    block
-                    |> Mapping.blockToDto
-                    |> Serialization.serialize<BlockDto>
-                    |> Result.map (fun blockBytes ->
-                        {
-                            Block = blockBytes |> Convert.ToBase64String
-                            Signatures = signatures |> List.toArray
-                        }
-                    )
-
-                // TODO: Replace with adding to inbound queue
-                do! saveBlock block.Header.Number blockEnvelopeDto
-                do! block.Header
-                    |> Mapping.blockHeaderToBlockInfoDto (block.Configuration <> None)
-                    |> saveBlockToDb
-
-                do! applyBlock block.Header.Number // TODO: This should be done by applier worker...
-            }
+            block
+            |> Mapping.blockToDto
+            |> Serialization.serialize<BlockDto>
+            |> Result.map (fun blockBytes ->
+                {
+                    Block = blockBytes |> Convert.ToBase64String
+                    ConsensusRound = consensusRound.Value
+                    Signatures = signatures |> List.toArray
+                }
+            )
             |> Result.handle
-                (fun _ ->
-                    Synchronization.setLastStoredBlock block
-                    Synchronization.resetLastKnownBlock ()
-
-                    BlockCreated { BlockCreatedEventData.BlockNumber = block.Header.Number }
+                (fun blockEnvelopeDto ->
+                    (block.Header.Number, blockEnvelopeDto)
+                    |> BlockCommitted
                     |> publishEvent
                 )
                 (fun errors ->
                     Log.appErrors errors
-                    failwithf "Cannot store the block %i created in consensus round %i."
+                    failwithf "Cannot serialize the block %i created in consensus round %i."
                         block.Header.Number.Value
                         consensusRound.Value
                 )
@@ -415,7 +410,6 @@ module Consensus =
     let createConsensusMessageHash
         decodeHash
         createHash
-        zeroHash
         (BlockNumber blockNumber)
         (ConsensusRound consensusRound)
         (consensusMessage : ConsensusMessage)
@@ -425,34 +419,26 @@ module Consensus =
         | Propose (block, ConsensusRound validConsensusRound) ->
             [
                 [| 0uy |] // Message type discriminator
-                blockNumber |> Conversion.int64ToBytes
-                consensusRound |> Conversion.int32ToBytes
                 block.Header.Hash.Value |> decodeHash
                 validConsensusRound |> Conversion.int32ToBytes
             ]
-            |> Array.concat
-            |> createHash
         | Vote blockHash ->
             [
                 [| 1uy |] // Message type discriminator
+                blockHash |> Option.map (fun h -> decodeHash h.Value) |? [| 0uy |]
+            ]
+        | Commit blockHash ->
+            [
+                [| 2uy |] // Message type discriminator
+                blockHash |> Option.map (fun h -> decodeHash h.Value) |? [| 0uy |]
+            ]
+        |> List.append
+            [
                 blockNumber |> Conversion.int64ToBytes
                 consensusRound |> Conversion.int32ToBytes
-                (blockHash |? BlockHash zeroHash).Value |> decodeHash
             ]
-            |> Array.concat
-            |> createHash
-        | Commit blockHash ->
-            match blockHash with
-            | Some h -> h.Value // Simplifies verification of block signatures.
-            | None ->
-                [
-                    [| 2uy |] // Message type discriminator
-                    blockNumber |> Conversion.int64ToBytes
-                    consensusRound |> Conversion.int32ToBytes
-                    zeroHash |> decodeHash
-                ]
-                |> Array.concat
-                |> createHash
+        |> Array.concat
+        |> createHash
 
     let createConsensusStateInstance
         getLastAppliedBlockNumber
@@ -461,12 +447,8 @@ module Consensus =
         txExists
         requestTx
         applyBlockToCurrentState
-        saveBlock
-        saveBlockToDb
-        applyBlock
         decodeHash
         createHash
-        zeroHash
         signHash
         sendPeerMessage
         publishEvent
@@ -497,7 +479,6 @@ module Consensus =
                 createConsensusMessageHash
                     decodeHash
                     createHash
-                    zeroHash
                     blockNumber
                     consensusRound
                     consensusMessage
@@ -601,9 +582,6 @@ module Consensus =
             txExists,
             requestTx,
             isValidBlock,
-            saveBlock,
-            saveBlockToDb,
-            applyBlock,
             sendConsensusMessage,
             publishEvent,
             scheduleMessage,

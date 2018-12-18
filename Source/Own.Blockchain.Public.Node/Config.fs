@@ -1,6 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Node
 
 open System
+open System.Globalization
 open System.IO
 open Microsoft.Extensions.Configuration
 open Own.Common
@@ -95,9 +96,13 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member MinTxActionFee = 0.001m // CHX
+    static member MinTxActionFee // In CHX
+        with get () =
+            match Decimal.TryParse(config.["MinTxActionFee"], NumberStyles.Number, CultureInfo.InvariantCulture) with
+            | true, value -> if value > 0m then value else failwith "MinTxActionFee must be a positive number."
+            | _ -> 0.001m
 
-    static member MaxTxCountPerBlock = 100 // TODO: Shall this be managed by consensus protocol?
+    static member MaxTxCountPerBlock = 100
 
     static member ValidatorPrivateKey
         with get () =

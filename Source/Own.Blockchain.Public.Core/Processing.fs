@@ -355,7 +355,7 @@ module Processing =
 
         match state.GetValidator(senderAddress) with
         | None ->
-            // TODO: Prevent filling the validator table with junk, by requiring X amount of CHX for initial entry.
+            // TODO: Prevent filling the validator table with junk.
             state.SetValidator(senderAddress, {ValidatorState.NetworkAddress = action.NetworkAddress})
             Ok state
         | Some validatorState ->

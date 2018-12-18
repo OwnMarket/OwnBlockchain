@@ -8,6 +8,7 @@ open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Events
 
 module Peers =
 
@@ -118,8 +119,8 @@ module Peers =
         // Public
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member __.StartGossip processPeerMessage publishEvent =
-            __.StartNode processPeerMessage publishEvent
+        member __.StartGossip publishEvent =
+            __.StartNode publishEvent
             __.StartGossipDiscovery()
 
         member __.StopGossip () =
@@ -217,16 +218,16 @@ module Peers =
         // Gossip Discovery
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member private __.StartNode processPeerMessage publishEvent =
+        member private __.StartNode publishEvent =
             Log.debug "Start node..."
             __.InitializeMemberList()
-            __.StartServer processPeerMessage publishEvent
+            __.StartServer publishEvent
 
-        member private __.StartServer processPeerMessage publishEvent =
+        member private __.StartServer publishEvent =
             Log.infof "Open communication channel for %s" (config.NetworkAddress |> networkAddressToString)
             receiveMessage
                 (config.NetworkAddress |> networkAddressToString)
-                (__.ReceivePeerMessage processPeerMessage publishEvent)
+                (__.ReceivePeerMessage publishEvent)
 
         member private __.StartGossipDiscovery () =
             Log.info "Network layer initialized"
@@ -406,7 +407,7 @@ module Peers =
 
             Async.Start (loop message, cts.Token)
 
-        member private __.ReceiveGossipMessage processPeerMessage publishEvent (gossipMessage : GossipMessage) =
+        member private __.ReceiveGossipMessage publishEvent (gossipMessage : GossipMessage) =
             match gossipMessages.TryGetValue gossipMessage.MessageId with
             | true, processedAddresses ->
                 if not (processedAddresses |> List.contains gossipMessage.SenderAddress) then
@@ -425,12 +426,9 @@ module Peers =
                     [],
                     fun _ _ -> []) |> ignore
 
-                processPeerMessage (GossipMessage gossipMessage)
-                |> Option.iter (fun result ->
-                    match result with
-                    | Ok appEvent -> appEvent |> Option.iter publishEvent
-                    | Error errors -> Log.appErrors errors
-                )
+                GossipMessage gossipMessage
+                |> PeerMessageReceived
+                |> publishEvent
 
                 let msg = GossipMessage {
                     MessageId = gossipMessage.MessageId
@@ -441,49 +439,39 @@ module Peers =
                 // Once a node is infected, propagate the message further.
                 __.SendMessage msg
 
-        member private __.ReceivePeerMessage processPeerMessage publishEvent dto =
+        member private __.ReceivePeerMessage publishEvent dto =
             let peerMessage = Mapping.peerMessageFromDto dto
             match peerMessage with
             | GossipDiscoveryMessage m -> __.ReceiveMembers m
-            | GossipMessage m -> __.ReceiveGossipMessage processPeerMessage publishEvent m
-            | MulticastMessage m -> __.ReceiveMulticastMessage processPeerMessage publishEvent m
-            | RequestDataMessage m -> __.ReceiveRequestMessage processPeerMessage m
-            | ResponseDataMessage m -> __.ReceiveResponseMessage processPeerMessage m
+            | GossipMessage m -> __.ReceiveGossipMessage publishEvent m
+            | MulticastMessage m -> __.ReceiveMulticastMessage publishEvent m
+            | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m
+            | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Multicast Message Passing
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member private __.ReceiveMulticastMessage processPeerMessage publishEvent multicastMessage =
-            processPeerMessage (MulticastMessage multicastMessage)
-            |> Option.iter (fun result ->
-                match result with
-                | Ok appEvent -> appEvent |> Option.iter publishEvent
-                | Error errors -> Log.appErrors errors
-            )
+        member private __.ReceiveMulticastMessage publishEvent multicastMessage =
+            MulticastMessage multicastMessage
+            |> PeerMessageReceived
+            |> publishEvent
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Request/Response
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member private __.ReceiveRequestMessage processPeerMessage (requestDataMessage : RequestDataMessage) =
-            processPeerMessage (RequestDataMessage requestDataMessage)
-            |> Option.iter (fun result ->
-                match result with
-                | Ok appEvent ->
-                    appEvent |> Option.iter (fun e -> Log.debugf "IGNORED EVENT: %A" e)
-                | Error errors -> Log.appErrors errors
-            )
+        member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
+            RequestDataMessage requestDataMessage
+            |> PeerMessageReceived
+            |> publishEvent
 
-        member private __.ReceiveResponseMessage processPeerMessage (requestDataMessage : ResponseDataMessage) =
-            processPeerMessage (ResponseDataMessage requestDataMessage)
-            |> Option.iter (fun result ->
-                match result with
-                | Ok appEvent ->
-                    pendingDataRequests.TryRemove requestDataMessage.MessageId |> ignore
-                    appEvent |> Option.iter (fun e -> Log.debugf "IGNORED EVENT: %A" e)
-                | Error errors -> Log.appErrors errors
-            )
+        member private __.ReceiveResponseMessage publishEvent (requestDataMessage : ResponseDataMessage) =
+            ResponseDataMessage requestDataMessage
+            |> PeerMessageReceived
+            |> publishEvent
+
+            pendingDataRequests.TryRemove requestDataMessage.MessageId |> ignore
 
         member private __.SelectNewUnicastPeer networkAddressPool =
             networkAddressPool
@@ -507,7 +495,6 @@ module Peers =
         networkAddress
         bootstrapNodes
         getCurrentValidators
-        processPeerMessage
         publishEvent
         =
 
@@ -538,7 +525,7 @@ module Peers =
                 tCycle,
                 tFail
             )
-        n.StartGossip processPeerMessage publishEvent
+        n.StartGossip publishEvent
         node <- Some n
 
     let stopGossip () =
