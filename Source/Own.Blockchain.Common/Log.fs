@@ -15,12 +15,31 @@ module Log =
         printfn "%s" text
         Console.ForegroundColor <- defaultColor
 
-    let info o =
-        log "INF" o |> printInColor ConsoleColor.White
-    let warning o =
-        log "WRN" o |> printInColor ConsoleColor.Yellow
+    /// Errors which prevented successful execution.
     let error o =
         log "ERR" o |> printInColor ConsoleColor.Red
+
+    /// Events that are potentially problematic but didn't prevent the successful execution.
+    /// (e.g. not being able to propose block due to not having latest block applied to the state yet)
+    let warning o =
+        log "WRN" o |> printInColor ConsoleColor.Yellow
+
+    /// Important successful events.
+    /// (e.g. block applied to the state)
+    let success o =
+        log "SUC" o |> printInColor ConsoleColor.Green
+
+    /// Important unordinary events.
+    /// (e.g. applying DB change; saving TxResult to the disk during processing)
+    let notice o =
+        log "NOT" o |> printInColor ConsoleColor.Cyan
+
+    /// Ordinary events.
+    /// (e.g. Tx submitted; block received)
+    let info o =
+        log "INF" o |> printInColor ConsoleColor.White
+
+    /// Detailed info for debugging purpose.
     let debug o =
         #if DEBUG
         log "DBG" o |> printInColor ConsoleColor.DarkGray
@@ -28,9 +47,11 @@ module Log =
         ()
         #endif
 
-    let infof format = Printf.ksprintf info format
-    let warningf format = Printf.ksprintf warning format
     let errorf format = Printf.ksprintf error format
+    let warningf format = Printf.ksprintf warning format
+    let successf format = Printf.ksprintf success format
+    let noticef format = Printf.ksprintf notice format
+    let infof format = Printf.ksprintf info format
     let debugf format = Printf.ksprintf debug format
 
     let appError (AppError message) = error message
