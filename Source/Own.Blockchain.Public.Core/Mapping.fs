@@ -332,7 +332,7 @@ module Mapping =
         let txResults =
             output.TxResults
             |> Map.toList
-            |> List.map (fun (TxHash h, s : TxResult) -> h, s |> txResultToDto)
+            |> List.map (fun (TxHash h, s : TxResult) -> h, txResultToDto s)
             |> Map.ofList
 
         let chxBalances =
