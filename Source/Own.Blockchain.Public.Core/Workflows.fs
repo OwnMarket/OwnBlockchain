@@ -181,7 +181,6 @@ module Workflows =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                minTxActionFee
                 validatorAddress
                 blockNumber
 
@@ -604,6 +603,7 @@ module Workflows =
         saveTx
         saveTxToDb
         minTxActionFee
+        isIncludedInBlock
         txEnvelopeDto
         : Result<TxHash, AppErrors>
         =
@@ -614,14 +614,19 @@ module Workflows =
             let txHash = txEnvelope.RawTx |> createHash |> TxHash
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-            let! tx = Validation.validateTx isValidAddress minTxActionFee senderAddress txHash txDto
+            let! tx = Validation.validateTx isValidAddress senderAddress txHash txDto
 
-            do!
-                Validation.checkIfBalanceCanCoverFees
-                    getAvailableChxBalance
-                    getTotalFeeForPendingTxs
-                    senderAddress
-                    tx.TotalFee
+            // Txs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
+            if not isIncludedInBlock then
+                if tx.Fee < minTxActionFee then
+                    return! Result.appError "Fee is too low."
+
+                do!
+                    Validation.checkIfBalanceCanCoverFees
+                        getAvailableChxBalance
+                        getTotalFeeForPendingTxs
+                        senderAddress
+                        tx.TotalFee
 
             do! saveTx txHash txEnvelopeDto
             do! tx

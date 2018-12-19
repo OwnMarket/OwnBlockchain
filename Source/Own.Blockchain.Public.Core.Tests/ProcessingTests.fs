@@ -214,7 +214,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -308,7 +307,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -403,7 +401,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -497,7 +494,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -586,7 +582,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -695,7 +690,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -800,7 +794,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -911,7 +904,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1019,7 +1011,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1120,7 +1111,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1220,7 +1210,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1316,7 +1305,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1414,7 +1402,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1511,7 +1498,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1613,7 +1599,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1713,7 +1698,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1809,7 +1793,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1900,7 +1883,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -1996,7 +1978,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2096,7 +2077,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2187,7 +2167,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2283,7 +2262,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2383,7 +2361,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2474,7 +2451,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2570,7 +2546,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2667,7 +2642,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2756,7 +2730,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2852,7 +2825,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -2943,7 +2915,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -3034,7 +3005,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet
@@ -3130,7 +3100,6 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
-                Helpers.minTxActionFee
                 validatorWallet.Address
                 blockNumber
                 txSet

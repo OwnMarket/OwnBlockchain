@@ -34,7 +34,7 @@ module Api =
             let! requestDto = ctx.BindJsonAsync<TxEnvelopeDto>()
 
             let response =
-                Composition.submitTx requestDto
+                Composition.submitTx false requestDto
                 |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
                 |> Result.map (fun txHash -> { SubmitTxResponseDto.TxHash = txHash.Value })
                 |> toApiResponse

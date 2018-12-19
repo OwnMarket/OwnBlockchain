@@ -164,7 +164,7 @@ module Validation =
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private validateTxFields (ChxAmount minTxActionFee) (BlockchainAddress signerAddress) (t : TxDto) =
+    let private validateTxFields (BlockchainAddress signerAddress) (t : TxDto) =
         [
             if t.SenderAddress <> signerAddress then
                 yield AppError "Sender address doesn't match the signature."
@@ -172,8 +172,6 @@ module Validation =
                 yield AppError "Nonce must be positive."
             if t.Fee <= 0m then
                 yield AppError "Fee must be positive."
-            if t.Fee < minTxActionFee then
-                yield AppError "Fee is too low."
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
         ]
@@ -208,8 +206,8 @@ module Validation =
         actions
         |> List.collect validateTxAction
 
-    let validateTx isValidAddress minTxActionFee sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        validateTxFields minTxActionFee sender txDto
+    let validateTx isValidAddress sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
+        validateTxFields sender txDto
         @ validateTxActions isValidAddress txDto.Actions
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
 

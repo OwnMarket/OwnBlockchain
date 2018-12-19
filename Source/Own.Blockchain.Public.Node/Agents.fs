@@ -26,7 +26,7 @@ module Agents =
         | Some h -> h.Post m
         | None -> Log.error "PeerMessageHandler agent not started."
 
-    let mutable private txVerifier : MailboxProcessor<TxEnvelopeDto> option = None
+    let mutable private txVerifier : MailboxProcessor<TxEnvelopeDto * bool> option = None
     let private invokeTxVerifier e =
         match txVerifier with
         | Some v -> v.Post e
@@ -124,9 +124,10 @@ module Agents =
         | TxSubmitted txHash ->
             invokeApplier ()
             txPropagator.Post txHash
-        | TxReceived (txHash, txEnvelopeDto)
+        | TxReceived (txHash, txEnvelopeDto) ->
+            invokeTxVerifier (txEnvelopeDto, false)
         | TxFetched (txHash, txEnvelopeDto) ->
-            invokeTxVerifier txEnvelopeDto // TODO: Don't propagate fetched Txs
+            invokeTxVerifier (txEnvelopeDto, true)
         | TxStored txHash ->
             invokeApplier ()
             txPropagator.Post txHash // TODO: Don't propagate fetched Txs
@@ -164,9 +165,9 @@ module Agents =
             failwith "TxVerifier agent is already started."
 
         txVerifier <-
-            Agent.start <| fun (txEnvelopeDto) ->
+            Agent.start <| fun (txEnvelopeDto, isIncludedInBlock) ->
                 async {
-                    Composition.submitTx txEnvelopeDto
+                    Composition.submitTx isIncludedInBlock txEnvelopeDto
                     |> Result.handle
                         (TxStored >> publishEvent)
                         Log.appErrors

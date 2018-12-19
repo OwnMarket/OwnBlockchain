@@ -80,6 +80,7 @@ module SubmissionTests =
                 saveTx
                 saveTxToDb
                 Helpers.minTxActionFee
+                false
                 txEnvelopeDto
 
         // ASSERT

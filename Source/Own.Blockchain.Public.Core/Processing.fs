@@ -498,7 +498,7 @@ module Processing =
         |> orderSet []
         |> List.map (fun tx -> tx.TxHash)
 
-    let getTxBody getTx createHash verifySignature isValidAddress minTxActionFee txHash =
+    let getTxBody getTx createHash verifySignature isValidAddress txHash =
         result {
             let! txEnvelopeDto = getTx txHash
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
@@ -507,7 +507,7 @@ module Processing =
             let! tx =
                 txEnvelope.RawTx
                 |> Serialization.deserializeTx
-                >>= (Validation.validateTx isValidAddress minTxActionFee sender txHash)
+                >>= (Validation.validateTx isValidAddress sender txHash)
 
             return tx
         }
@@ -584,7 +584,6 @@ module Processing =
         (getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option)
         (getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option)
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
-        minTxActionFee
         (validator : BlockchainAddress)
         (blockNumber : BlockNumber)
         (txSet : TxHash list)
@@ -592,7 +591,7 @@ module Processing =
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
             let tx =
-                match getTxBody getTx createHash verifySignature isValidAddress minTxActionFee txHash with
+                match getTxBody getTx createHash verifySignature isValidAddress txHash with
                 | Ok tx -> tx
                 | Error err ->
                     Log.appErrors err
