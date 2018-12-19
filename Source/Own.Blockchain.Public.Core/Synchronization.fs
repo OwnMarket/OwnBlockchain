@@ -100,9 +100,11 @@ module Synchronization =
                     if block.TxSet |> List.forall txExists then
                         Log.noticef "Applying block %i" block.Header.Number.Value
                         do! applyBlock block.Header.Number
-                    return block.Header.Number
+                        return (block.Header.Number |> BlockApplied |> Some)
+                    else
+                        return None
                 }
                 |> Result.handle
-                    (BlockApplied >> publishEvent)
+                    (Option.iter publishEvent)
                     Log.appErrors
             )
