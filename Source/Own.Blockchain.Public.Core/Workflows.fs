@@ -661,6 +661,7 @@ module Workflows =
         }
 
     let getBlockApi
+        getLastAppliedBlockNumber
         getBlock
         (blockNumber : BlockNumber)
         : Result<GetBlockApiResponseDto, AppErrors>
@@ -668,14 +669,19 @@ module Workflows =
 
         match getBlock blockNumber with
         | Ok blockEnvelopeDto ->
-            Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
-            >>= fun block ->
-                block
-                |> Mapping.blockToDto
-                |> Mapping.blockDtosToGetBlockApiResponseDto blockEnvelopeDto
-                |> Ok
+            let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+            if blockNumber > lastAppliedBlockNumber then
+                sprintf "Last applied block on this node is %i" lastAppliedBlockNumber.Value
+                |> Result.appError
+            else
+                Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+                >>= fun block ->
+                    block
+                    |> Mapping.blockToDto
+                    |> Mapping.blockDtosToGetBlockApiResponseDto blockEnvelopeDto
+                    |> Ok
         | _ ->
-            sprintf "Block %i does not exist" blockNumber.Value
+            sprintf "Block %i not found" blockNumber.Value
             |> Result.appError
 
     let getAddressApi

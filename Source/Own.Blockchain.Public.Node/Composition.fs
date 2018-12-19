@@ -309,7 +309,7 @@ module Composition =
 
     let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Hashing.hash Signing.verifySignature
 
-    let getBlockApi = Workflows.getBlockApi getBlock
+    let getBlockApi = Workflows.getBlockApi getLastAppliedBlockNumber getBlock
 
     let getAddressApi = Workflows.getAddressApi getChxBalanceState
 
