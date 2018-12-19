@@ -90,6 +90,7 @@ module Consensus =
             let nextBlockNumber = lastBlockNumber + 1
 
             if _blockNumber <> nextBlockNumber then
+                Log.notice "Synchronizing the consensus"
                 _blockNumber <- nextBlockNumber
                 _validators <- getCurrentValidators ()
                 _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
@@ -126,17 +127,29 @@ module Consensus =
             let block =
                 _validBlock
                 |> Option.orElseWith (fun _ ->
-                    // TODO: if LAB < LSB then (warning "blockchain state not yet updated"; None)
-
-                    proposeBlock _blockNumber
-                    |> Option.bind (fun r ->
-                        match r with
-                        | Ok b -> Some b
-                        | Error e ->
-                            Log.error "Failed to propose block."
-                            Log.appErrors e
-                            None
-                    )
+                    let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+                    let nextBlockNumber = lastAppliedBlockNumber + 1
+                    if _blockNumber < nextBlockNumber then
+                        Log.warningf "Consensus is at block %i, while the state is at block %i."
+                            _blockNumber.Value
+                            lastAppliedBlockNumber.Value
+                        __.Synchronize()
+                        None
+                    elif _blockNumber > nextBlockNumber then
+                        Log.warningf "Cannot propose block %i at this time due to block %i being last applied block."
+                            _blockNumber.Value
+                            lastAppliedBlockNumber.Value
+                        None
+                    else
+                        proposeBlock _blockNumber
+                        |> Option.bind (fun r ->
+                            match r with
+                            | Ok b -> Some b
+                            | Error e ->
+                                Log.error "Failed to propose block."
+                                Log.appErrors e
+                                None
+                        )
                 )
 
             match block with
