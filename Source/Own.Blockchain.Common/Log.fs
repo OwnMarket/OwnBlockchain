@@ -7,7 +7,7 @@ module Log =
     // TODO: Implement logging using an instance of a MailboxProcessor, to avoid corrupted output when multi-threading.
 
     let private log logType o =
-        sprintf "%s %s | %s" (DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz")) logType (o.ToString())
+        sprintf "%s %s | %s" (DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")) logType (o.ToString())
 
     let private defaultColor = Console.ForegroundColor
     let private printInColor color text =
