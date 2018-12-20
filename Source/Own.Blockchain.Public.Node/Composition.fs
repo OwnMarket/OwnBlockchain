@@ -96,6 +96,10 @@ module Composition =
             (ChxAmount Config.ValidatorThreshold)
             Config.MaxValidatorCount
 
+    let getValidatorsAtHeight =
+        Validators.getValidatorsAtHeight
+            getBlock
+
     let getCurrentValidators () =
         Validators.getCurrentValidators
             getLastAppliedBlockNumber
@@ -270,7 +274,7 @@ module Composition =
     let createConsensusStateInstance publishEvent =
         Consensus.createConsensusStateInstance
             getLastAppliedBlockNumber
-            getCurrentValidators
+            getValidatorsAtHeight
             proposeBlock
             txExists
             Peers.requestTxFromPeer

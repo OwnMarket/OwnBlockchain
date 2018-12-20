@@ -32,28 +32,31 @@ module Validators =
         |> getTopValidatorsByStake maxValidatorCount
         |> List.map Mapping.validatorSnapshotFromDto
 
-    let getCurrentValidators getLastAppliedBlockNumber getBlock =
+    let getValidatorsAtHeight getBlock blockNumber =
         let configBlock =
-            getLastAppliedBlockNumber ()
-            |> getBlock
+            getBlock blockNumber
             >>= Blocks.extractBlockFromEnvelopeDto
             >>= (fun b ->
                 if b.Configuration.IsSome then
-                    Ok b // Last block is the configuration block
+                    Ok b // This block is the configuration block
                 else
                     getBlock b.Header.ConfigurationBlockNumber
                     >>= Blocks.extractBlockFromEnvelopeDto
             )
 
         match configBlock with
-        | Error e -> failwith "Cannot get last applied configuration block."
+        | Error e -> failwithf "Cannot get configuration block at height %i." blockNumber.Value
         | Ok block ->
             match block.Configuration with
-            | None -> failwith "Cannot find configuration in last applied configuration block."
+            | None -> failwithf "Cannot find configuration in configuration block %i." block.Header.Number.Value
             | Some config ->
                 match config.Validators with
-                | [] -> failwith "Cannot find validators in last applied configuration block."
+                | [] -> failwithf "Cannot find validators in configuration block %i." block.Header.Number.Value
                 | validators -> validators
+
+    let getCurrentValidators getLastAppliedBlockNumber getBlock =
+        getLastAppliedBlockNumber ()
+        |> getValidatorsAtHeight getBlock
 
     let isValidator
         (getValidators : unit -> ValidatorSnapshot list)

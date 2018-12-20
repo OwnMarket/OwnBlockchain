@@ -13,7 +13,7 @@ module Consensus =
     type ConsensusState
         (
         getLastAppliedBlockNumber : unit -> BlockNumber,
-        getCurrentValidators : unit -> ValidatorSnapshot list,
+        getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
         proposeBlock : BlockNumber -> Result<Block, AppErrors> option,
         txExists : TxHash -> bool,
         requestTx : TxHash -> unit,
@@ -80,19 +80,13 @@ module Consensus =
                     __.UpdateState()
 
         member private __.Synchronize() =
-            let lastBlockNumber =
-                _decisions.Keys
-                |> Seq.sortDescending
-                |> Seq.tryHead
-                |? BlockNumber 0L
-                |> max (getLastAppliedBlockNumber ())
-
-            let nextBlockNumber = lastBlockNumber + 1
+            let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+            let nextBlockNumber = lastAppliedBlockNumber + 1
 
             if _blockNumber <> nextBlockNumber then
                 Log.notice "Synchronizing the consensus"
                 _blockNumber <- nextBlockNumber
-                _validators <- getCurrentValidators ()
+                _validators <- getValidatorsAtHeight lastAppliedBlockNumber
                 _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
                 _validQuorum <- Validators.calculateValidQuorum _validators.Length
                 __.ResetState()
@@ -371,6 +365,13 @@ module Consensus =
                     (block.Header.Number, blockEnvelopeDto)
                     |> BlockCommitted
                     |> publishEvent
+
+                    // Wait for the state to get updated before proceeding.
+                    async {
+                        while getLastAppliedBlockNumber () < block.Header.Number do
+                            do! Async.Sleep 100
+                    }
+                    |> Async.RunSynchronously
                 )
                 (fun errors ->
                     Log.appErrors errors
@@ -455,7 +456,7 @@ module Consensus =
 
     let createConsensusStateInstance
         (getLastAppliedBlockNumber : unit -> BlockNumber)
-        getCurrentValidators
+        getValidatorsAtHeight
         proposeBlock
         txExists
         requestTx
@@ -478,10 +479,11 @@ module Consensus =
             addressFromPrivateKey validatorPrivateKey
 
         let canParticipateInConsensus = memoizeWhen (fun output -> output <> None) <| fun blockNumber ->
-            if blockNumber = getLastAppliedBlockNumber () + 1 then
+            let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+            if blockNumber = lastAppliedBlockNumber + 1 then
                 // Participation in consensus is relevant only relative to the current blockchain state,
                 // in which case the information about participation eligibility is cached for efficiency.
-                getCurrentValidators ()
+                getValidatorsAtHeight lastAppliedBlockNumber
                 |> List.exists (fun (v : ValidatorSnapshot) -> v.ValidatorAddress = validatorAddress)
                 |> Some
             else
@@ -604,7 +606,7 @@ module Consensus =
         new ConsensusState
             (
             getLastAppliedBlockNumber,
-            getCurrentValidators,
+            getValidatorsAtHeight,
             proposeBlock,
             txExists,
             requestTx,
