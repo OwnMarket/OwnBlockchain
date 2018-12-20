@@ -454,7 +454,7 @@ module Consensus =
         |> createHash
 
     let createConsensusStateInstance
-        getLastAppliedBlockNumber
+        (getLastAppliedBlockNumber : unit -> BlockNumber)
         getCurrentValidators
         proposeBlock
         txExists
@@ -477,6 +477,16 @@ module Consensus =
         let validatorAddress =
             addressFromPrivateKey validatorPrivateKey
 
+        let canParticipateInConsensus = memoizeWhen (fun output -> output <> None) <| fun blockNumber ->
+            if blockNumber = getLastAppliedBlockNumber () + 1 then
+                // Participation in consensus is relevant only relative to the current blockchain state,
+                // in which case the information about participation eligibility is cached for efficiency.
+                getCurrentValidators ()
+                |> List.exists (fun (v : ValidatorSnapshot) -> v.ValidatorAddress = validatorAddress)
+                |> Some
+            else
+                None
+
         let isValidBlock block =
             match applyBlockToCurrentState block with
             | Ok _ ->
@@ -488,104 +498,108 @@ module Consensus =
                 false
 
         let sendConsensusMessage blockNumber consensusRound consensusMessage =
-            let consensusMessageHash =
-                createConsensusMessageHash
-                    decodeHash
-                    createHash
-                    blockNumber
-                    consensusRound
-                    consensusMessage
+            if canParticipateInConsensus blockNumber = Some true then
+                let consensusMessageHash =
+                    createConsensusMessageHash
+                        decodeHash
+                        createHash
+                        blockNumber
+                        consensusRound
+                        consensusMessage
 
-            let signature = signHash validatorPrivateKey consensusMessageHash
+                let signature = signHash validatorPrivateKey consensusMessageHash
 
-            let consensusMessageEnvelope =
+                let consensusMessageEnvelope =
+                    {
+                        ConsensusMessageEnvelope.BlockNumber = blockNumber
+                        Round = consensusRound
+                        ConsensusMessage = consensusMessage
+                        Signature = signature
+                    }
+
+                ConsensusCommand.Message (validatorAddress, consensusMessageEnvelope)
+                |> ConsensusCommandInvoked
+                |> publishEvent // Send message to self
+
                 {
-                    ConsensusMessageEnvelope.BlockNumber = blockNumber
-                    Round = consensusRound
-                    ConsensusMessage = consensusMessage
-                    Signature = signature
+                    MulticastMessage.MessageId =
+                        sprintf "Consensus_%s" consensusMessageHash
+                        |> ConsensusMessageId
+                        |> NetworkMessageId.Consensus
+                    Data = consensusMessageEnvelope |> Mapping.consensusMessageEnvelopeToDto
                 }
+                |> MulticastMessage
+                |> sendPeerMessage
 
-            ConsensusCommand.Message (validatorAddress, consensusMessageEnvelope)
-            |> ConsensusCommandInvoked
-            |> publishEvent // Send message to self
-
-            {
-                MulticastMessage.MessageId =
-                    sprintf "Consensus_%s" consensusMessageHash
-                    |> ConsensusMessageId
-                    |> NetworkMessageId.Consensus
-                Data = consensusMessageEnvelope |> Mapping.consensusMessageEnvelopeToDto
-            }
-            |> MulticastMessage
-            |> sendPeerMessage
-
-            Log.debugf "Consensus message sent: %i / %i / %s"
-                consensusMessageEnvelope.BlockNumber.Value
-                consensusMessageEnvelope.Round.Value
-                (consensusMessageEnvelope.ConsensusMessage |> consensusMessageDisplayFormat)
+                Log.debugf "Consensus message sent: %i / %i / %s"
+                    consensusMessageEnvelope.BlockNumber.Value
+                    consensusMessageEnvelope.Round.Value
+                    (consensusMessageEnvelope.ConsensusMessage |> consensusMessageDisplayFormat)
 
         let scheduleMessage timeout (senderAddress : BlockchainAddress, envelope : ConsensusMessageEnvelope) =
-            async {
-                let displayFormat = consensusMessageDisplayFormat envelope.ConsensusMessage
+            if canParticipateInConsensus envelope.BlockNumber = Some true then
+                async {
+                    let displayFormat = consensusMessageDisplayFormat envelope.ConsensusMessage
 
-                Log.debugf "Message retry from %s scheduled: %i / %i / %s"
-                    senderAddress.Value
-                    envelope.BlockNumber.Value
-                    envelope.Round.Value
-                    displayFormat
+                    Log.debugf "Message retry from %s scheduled: %i / %i / %s"
+                        senderAddress.Value
+                        envelope.BlockNumber.Value
+                        envelope.Round.Value
+                        displayFormat
 
-                do! Async.Sleep timeout
+                    do! Async.Sleep timeout
 
-                Log.debugf "Message retry from %s triggered: %i / %i / %s"
-                    senderAddress.Value
-                    envelope.BlockNumber.Value
-                    envelope.Round.Value
-                    displayFormat
+                    Log.debugf "Message retry from %s triggered: %i / %i / %s"
+                        senderAddress.Value
+                        envelope.BlockNumber.Value
+                        envelope.Round.Value
+                        displayFormat
 
-                ConsensusCommand.Message (senderAddress, envelope)
-                |> ConsensusCommandInvoked
-                |> publishEvent
-            }
-            |> Async.Start
+                    ConsensusCommand.Message (senderAddress, envelope)
+                    |> ConsensusCommandInvoked
+                    |> publishEvent
+                }
+                |> Async.Start
 
         let schedulePropose timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound) =
-            async {
-                Log.debugf "Propose retry scheduled: %i / %i"
-                    blockNumber.Value
-                    consensusRound.Value
+            if canParticipateInConsensus blockNumber = Some true then
+                async {
+                    Log.debugf "Propose retry scheduled: %i / %i"
+                        blockNumber.Value
+                        consensusRound.Value
 
-                do! Async.Sleep timeout
+                    do! Async.Sleep timeout
 
-                Log.debugf "Propose retry triggered: %i / %i"
-                    blockNumber.Value
-                    consensusRound.Value
+                    Log.debugf "Propose retry triggered: %i / %i"
+                        blockNumber.Value
+                        consensusRound.Value
 
-                ConsensusCommand.RetryPropose (blockNumber, consensusRound)
-                |> ConsensusCommandInvoked
-                |> publishEvent
-            }
-            |> Async.Start
+                    ConsensusCommand.RetryPropose (blockNumber, consensusRound)
+                    |> ConsensusCommandInvoked
+                    |> publishEvent
+                }
+                |> Async.Start
 
         let scheduleTimeout timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
-            async {
-                Log.debugf "Timeout scheduled: %i / %i / %s"
-                    blockNumber.Value
-                    consensusRound.Value
-                    (unionCaseName consensusStep)
+            if canParticipateInConsensus blockNumber = Some true then
+                async {
+                    Log.debugf "Timeout scheduled: %i / %i / %s"
+                        blockNumber.Value
+                        consensusRound.Value
+                        (unionCaseName consensusStep)
 
-                do! Async.Sleep timeout
+                    do! Async.Sleep timeout
 
-                Log.debugf "Timeout elapsed: %i / %i / %s"
-                    blockNumber.Value
-                    consensusRound.Value
-                    (unionCaseName consensusStep)
+                    Log.debugf "Timeout elapsed: %i / %i / %s"
+                        blockNumber.Value
+                        consensusRound.Value
+                        (unionCaseName consensusStep)
 
-                ConsensusCommand.Timeout (blockNumber, consensusRound, consensusStep)
-                |> ConsensusCommandInvoked
-                |> publishEvent
-            }
-            |> Async.Start
+                    ConsensusCommand.Timeout (blockNumber, consensusRound, consensusStep)
+                    |> ConsensusCommandInvoked
+                    |> publishEvent
+                }
+                |> Async.Start
 
         new ConsensusState
             (
