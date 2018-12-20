@@ -38,8 +38,6 @@ module Peers =
         let pendingDataRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
         let cts = new CancellationTokenSource()
 
-        let networkAddressToString (NetworkAddress a) = a
-
         let extractValuesFromKeyValuePairs (pairs : KeyValuePair<_, _> seq) =
             pairs
             |> Seq.map (fun p -> p.Value)
@@ -49,7 +47,7 @@ module Peers =
             #if DEBUG
                 Log.debug "====================== ACTIVE CONNECTIONS ======================"
                 for m in activeMembers do
-                    Log.debugf "%s Heartbeat:%i" (m.Key.Value) m.Value.Heartbeat
+                    Log.debugf "%s Heartbeat:%i" m.Key.Value m.Value.Heartbeat
                 Log.debug "================================================================"
             #else
                 ()
@@ -78,10 +76,10 @@ module Peers =
         let setFinalDeadMember networkAddress =
             match activeMembers.TryGetValue networkAddress with
             | false, _ ->
-                Log.debugf "*** Member marked as DEAD %s" (networkAddress |> networkAddressToString)
+                Log.debugf "*** Member marked as DEAD %s" networkAddress.Value
                 deadMembers.TryRemove networkAddress |> ignore
                 memberStateTimers.TryRemove networkAddress |> ignore
-                networkAddress |> networkAddressToString |> closeConnection
+                networkAddress.Value |> closeConnection
 
                 match removePeerNode networkAddress with
                 | Ok () -> ()
@@ -95,8 +93,8 @@ module Peers =
             - remove its timers
             - set to be removed from the dead-nodes. so that if it recovers can be added
         *)
-        let setPendingDeadMember networkAddress =
-            Log.debugf "*** Member potentially DEAD: %s" (networkAddress |> networkAddressToString)
+        let setPendingDeadMember (networkAddress : NetworkAddress) =
+            Log.debugf "*** Member potentially DEAD: %s" networkAddress.Value
             match activeMembers.TryGetValue networkAddress with
             | true, activeMember ->
                 activeMembers.TryRemove networkAddress |> ignore
@@ -138,17 +136,17 @@ module Peers =
                 __.SelectRandomMembers()
                 |> Option.iter (fun members ->
                     for m in members do
-                        Log.debugf "Sending memberlist to: %s" (m.NetworkAddress |> networkAddressToString)
+                        Log.debugf "Sending memberlist to: %s" m.NetworkAddress.Value
                         let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage message
                         sendGossipDiscoveryMessage
                             peerMessageDto
-                            (m.NetworkAddress |> networkAddressToString)
+                            m.NetworkAddress.Value
                 )
 
             | MulticastMessage _ ->
                 let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage message
                 sendMulticastMessage
-                    (config.NetworkAddress |> networkAddressToString)
+                    config.NetworkAddress.Value
                     peerMessageDto
                     (getCurrentValidators() |> List.map (fun v -> v.NetworkAddress))
 
@@ -192,7 +190,7 @@ module Peers =
                             SenderAddress = config.NetworkAddress
                         }
                         let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage unicastMessage
-                        sendUnicastMessage peerMessageDto (address |> networkAddressToString)
+                        sendUnicastMessage peerMessageDto address.Value
                     )
 
                     do! Async.Sleep(4 * tCycle)
@@ -209,9 +207,9 @@ module Peers =
                 }
             Async.Start(loop requestId, cts.Token)
 
-        member __.SendResponseDataMessage targetAddress responseMessage =
+        member __.SendResponseDataMessage (targetAddress : NetworkAddress) responseMessage =
             let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage responseMessage
-            sendUnicastMessage peerMessageDto (targetAddress |> networkAddressToString)
+            sendUnicastMessage peerMessageDto targetAddress.Value
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Gossip Discovery
@@ -223,9 +221,9 @@ module Peers =
             __.StartServer publishEvent
 
         member private __.StartServer publishEvent =
-            Log.infof "Open communication channel for %s" (config.NetworkAddress |> networkAddressToString)
+            Log.infof "Open communication channel for %s" config.NetworkAddress.Value
             receiveMessage
-                (config.NetworkAddress |> networkAddressToString)
+                config.NetworkAddress.Value
                 (__.ReceivePeerMessage publishEvent)
 
         member private __.StartGossipDiscovery () =
@@ -253,7 +251,7 @@ module Peers =
 
         member private __.AddMember inputMember =
             let rec loop (mem : GossipMember) =
-                Log.debugf "Adding new member: %s" (mem.NetworkAddress |> networkAddressToString)
+                Log.debugf "Adding new member: %s" mem.NetworkAddress.Value
                 activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
                 match savePeerNode mem.NetworkAddress with
                 | Ok () -> ()
@@ -284,7 +282,7 @@ module Peers =
 
         member private __.MergeMember inputMember =
             if inputMember.NetworkAddress <> config.NetworkAddress then
-                Log.debugf "Receive member: %s" (inputMember.NetworkAddress |> networkAddressToString)
+                Log.debugf "Receive member: %s" inputMember.NetworkAddress.Value
                 match __.GetActiveMember inputMember.NetworkAddress with
                 | Some localMember ->
                     if localMember.Heartbeat < inputMember.Heartbeat then
@@ -347,7 +345,7 @@ module Peers =
             | true, recipientMember ->
                 Log.debugf "Sending gossip message %A to %s"
                     gossipMessage.MessageId
-                    (recipientAddress |> networkAddressToString)
+                    recipientAddress.Value
 
                 let peerMessage = GossipMessage gossipMessage
                 let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage peerMessage
@@ -417,7 +415,7 @@ module Peers =
             | false, _ ->
                 Log.debugf "Received gossip message %A from %s "
                     gossipMessage.MessageId
-                    (gossipMessage.SenderAddress |> networkAddressToString)
+                    gossipMessage.SenderAddress.Value
 
                 // Make sure the message is not processed twice.
                 gossipMessages.AddOrUpdate(
