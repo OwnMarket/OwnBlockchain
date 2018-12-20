@@ -70,14 +70,18 @@ module Synchronization =
 
         // Fetch Txs for verified blocks
         getStoredBlockNumbers ()
+        |> List.sort
         |> List.iter (fun bn ->
             getBlock bn
             >>= Blocks.extractBlockFromEnvelopeDto
             |> Result.handle
                 (fun block ->
-                    block.TxSet
-                    |> List.filter (txExists >> not)
-                    |> List.iter requestTxFromPeer
+                    match block.TxSet |> List.filter (txExists >> not) with
+                    | [] ->
+                        if block.Header.Number = lastAppliedBlockNumber + 1 then
+                            BlockCompleted block.Header.Number |> publishEvent
+                    | missingTxs ->
+                        missingTxs |> List.iter requestTxFromPeer
                 )
                 Log.appErrors
         )

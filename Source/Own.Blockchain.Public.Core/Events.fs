@@ -14,6 +14,7 @@ type AppEvent =
     | BlockReceived of BlockNumber * BlockEnvelopeDto
     | BlockFetched of BlockNumber * BlockEnvelopeDto
     | BlockStored of BlockNumber
+    | BlockCompleted of BlockNumber // Block is completed (all Txs fetched) and ready to be applied.
     | BlockApplied of BlockNumber
     | ConsensusMessageReceived of ConsensusCommand
     | ConsensusCommandInvoked of ConsensusCommand

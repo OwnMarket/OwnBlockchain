@@ -83,7 +83,8 @@ module Agents =
             |> string
             |> formatMessage
             |> Log.info
-        | BlockStored bn ->
+        | BlockStored bn
+        | BlockCompleted bn ->
             bn.Value
             |> string
             |> formatMessage
@@ -138,6 +139,8 @@ module Agents =
         | BlockStored blockNumber ->
             invokeApplier ()
             blockPropagator.Post blockNumber
+        | BlockCompleted blockNumber ->
+            invokeApplier ()
         | BlockApplied blockNumber ->
             invokeValidator Synchronize
         | ConsensusMessageReceived c
