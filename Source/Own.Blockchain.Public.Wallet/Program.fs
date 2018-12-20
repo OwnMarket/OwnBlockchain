@@ -15,4 +15,6 @@ let main argv =
     with
     | ex -> Log.error ex.AllMessagesAndStackTraces
 
+    Log.stopLogging ()
+
     0 // Exit code

@@ -1,19 +1,39 @@
 namespace Own.Blockchain.Common
 
 open System
+open System.Threading
+open Own.Blockchain.Common
 
 module Log =
 
-    // TODO: Implement logging using an instance of a MailboxProcessor, to avoid corrupted output when multi-threading.
+    let private defaultColor = Console.ForegroundColor
+
+    let private cts = new CancellationTokenSource()
+
+    let private logger =
+        MailboxProcessor.Start(
+            (fun inbox ->
+                let rec messageLoop () =
+                    async {
+                        let! color, message = inbox.Receive()
+                        Console.ForegroundColor <- color
+                        printfn "%s" message
+                        Console.ForegroundColor <- defaultColor
+                        return! messageLoop ()
+                    }
+                messageLoop ()
+            ),
+            cts.Token
+        )
+
+    let stopLogging () =
+        cts.Cancel()
+
+    let private printInColor color text =
+        logger.Post (color, text)
 
     let private log logType o =
         sprintf "%s %s | %s" (DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")) logType (o.ToString())
-
-    let private defaultColor = Console.ForegroundColor
-    let private printInColor color text =
-        Console.ForegroundColor <- color
-        printfn "%s" text
-        Console.ForegroundColor <- defaultColor
 
     /// Errors which prevented successful execution.
     let error o =
