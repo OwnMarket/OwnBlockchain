@@ -54,7 +54,7 @@ module Raw =
                 |> LZ4MessagePackSerializer.Deserialize<'T>
                 |> Ok
             else
-                Result.appError (sprintf "%s %s not found." dataTypeName key)
+                Result.appError (sprintf "%s %s not found in storage." dataTypeName key)
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces

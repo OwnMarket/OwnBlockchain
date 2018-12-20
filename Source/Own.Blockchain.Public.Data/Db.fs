@@ -184,6 +184,17 @@ module Db =
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
         | _ -> failwith "getLastStoredBlockNumber query retrieved multiple rows."
 
+    let getStoredBlockNumbers (dbConnectionString : string) : BlockNumber list =
+        let sql =
+            """
+            SELECT block_number
+            FROM block
+            WHERE is_applied = 0
+            """
+
+        DbTools.query<int64> dbConnectionString sql []
+        |> List.map BlockNumber
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////

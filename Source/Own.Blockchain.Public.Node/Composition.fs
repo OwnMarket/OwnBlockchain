@@ -53,6 +53,8 @@ module Composition =
 
     let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbConnectionString
 
+    let getStoredBlockNumbers () = Db.getStoredBlockNumbers Config.DbConnectionString
+
     let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
 
     let getAddressAccounts = Db.getAddressAccounts Config.DbConnectionString
@@ -249,8 +251,9 @@ module Composition =
 
     let fetchMissingBlocks publishEvent =
         Synchronization.fetchMissingBlocks
-            getLastStoredBlockNumber
             getLastAppliedBlockNumber
+            getLastStoredBlockNumber
+            getStoredBlockNumbers
             getBlock
             blockExists
             txExists

@@ -1,7 +1,6 @@
 namespace Own.Blockchain.Public.Core
 
 open System
-open System.Threading
 open System.Collections.Concurrent
 open Own.Common
 open Own.Blockchain.Common
@@ -19,8 +18,9 @@ module Synchronization =
         | _ -> requestFromPeer blockNumber
 
     let fetchMissingBlocks
-        (getLastStoredBlockNumber : unit -> BlockNumber option)
         (getLastAppliedBlockNumber : unit -> BlockNumber)
+        (getLastStoredBlockNumber : unit -> BlockNumber option)
+        getStoredBlockNumbers
         getBlock
         blockExists
         txExists
@@ -31,8 +31,8 @@ module Synchronization =
         maxNumberOfBlocksToFetchInParallel
         =
 
-        let lastStoredBlockNumber = getLastStoredBlockNumber ()
         let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+        let lastStoredBlockNumber = getLastStoredBlockNumber ()
         let lastVerifiedConfigBlock =
             lastStoredBlockNumber
             |? lastAppliedBlockNumber
@@ -47,40 +47,39 @@ module Synchronization =
             )
             |> Result.handle id (fun _ -> failwith "Cannot get last verified configuration block.")
 
+        // TODO: Use delta from block configuration
+        let nextConfigBlockNumber = lastVerifiedConfigBlock.Header.Number + configurationBlockDelta
+
         unverifiedBlocks.Keys
         |> Seq.sortDescending
         |> Seq.tryHead
-        |> Option.iter (fun lastUnverifiedBlock ->
-            // Fetch next configuration block
-            // TODO: Use delta from block configuration
-            let nextConfigBlockNumber = lastVerifiedConfigBlock.Header.Number + configurationBlockDelta
-            if nextConfigBlockNumber <= lastUnverifiedBlock then
+        |> Option.map (min nextConfigBlockNumber) // Because we cannot verify blocks after next missing config block.
+        |> Option.orElse lastStoredBlockNumber
+        |> Option.iter (fun lastVerifiableBlockNumber ->
+            // Fetch next config block to build config chain in advance.
+            if nextConfigBlockNumber <= lastVerifiableBlockNumber then
                 requestBlock requestBlockFromPeer publishEvent nextConfigBlockNumber
 
             // Fetch verifiable blocks
-            let lastVerifiableBlockNumber = min nextConfigBlockNumber lastUnverifiedBlock
-            seq {
-                for bn in [lastAppliedBlockNumber + 1 .. lastVerifiableBlockNumber] do
-                    if bn <= lastVerifiableBlockNumber && not (blockExists bn) then
-                        yield bn
-            }
+            [lastAppliedBlockNumber + 1 .. lastVerifiableBlockNumber]
+            |> Seq.except [nextConfigBlockNumber] // Config block is already requested above.
+            |> Seq.filter (blockExists >> not)
             |> Seq.truncate maxNumberOfBlocksToFetchInParallel
             |> Seq.iter (requestBlock requestBlockFromPeer publishEvent)
         )
 
         // Fetch Txs for verified blocks
-        lastStoredBlockNumber
-        |> Option.iter (fun lastStoredBlockNumber ->
-            for bn in [lastAppliedBlockNumber + 1 .. lastStoredBlockNumber] do
-                getBlock bn
-                >>= Blocks.extractBlockFromEnvelopeDto
-                |> Result.handle
-                    (fun block ->
-                        block.TxSet
-                        |> List.filter (txExists >> not)
-                        |> List.iter requestTxFromPeer
-                    )
-                    Log.appErrors
+        getStoredBlockNumbers ()
+        |> List.iter (fun bn ->
+            getBlock bn
+            >>= Blocks.extractBlockFromEnvelopeDto
+            |> Result.handle
+                (fun block ->
+                    block.TxSet
+                    |> List.filter (txExists >> not)
+                    |> List.iter requestTxFromPeer
+                )
+                Log.appErrors
         )
 
     let tryApplyNextBlock
