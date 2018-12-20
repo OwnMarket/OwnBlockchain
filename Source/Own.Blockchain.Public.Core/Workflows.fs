@@ -672,22 +672,21 @@ module Workflows =
         : Result<GetBlockApiResponseDto, AppErrors>
         =
 
-        match getBlock blockNumber with
-        | Ok blockEnvelopeDto ->
-            let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
-            if blockNumber > lastAppliedBlockNumber then
-                sprintf "Last applied block on this node is %i" lastAppliedBlockNumber.Value
-                |> Result.appError
-            else
-                Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
-                >>= fun block ->
+        let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+        if blockNumber > lastAppliedBlockNumber then
+            sprintf "Last applied block on this node is %i" lastAppliedBlockNumber.Value
+            |> Result.appError
+        else
+            getBlock blockNumber
+            >>= (fun blockEnvelopeDto ->
+                blockEnvelopeDto
+                |> Blocks.extractBlockFromEnvelopeDto
+                |> Result.map (fun block ->
                     block
                     |> Mapping.blockToDto
                     |> Mapping.blockDtosToGetBlockApiResponseDto blockEnvelopeDto
-                    |> Ok
-        | _ ->
-            sprintf "Block %i not found" blockNumber.Value
-            |> Result.appError
+                )
+            )
 
     let getAddressApi
         getChxBalanceState
