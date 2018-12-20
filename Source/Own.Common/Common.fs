@@ -22,6 +22,19 @@ module Common =
         let cache = ConcurrentDictionary<int * 'TIn, 'TOut>()
         fun x -> cache.GetOrAdd((Thread.CurrentThread.ManagedThreadId, x), fun _ -> f x)
 
+    /// Memoize the value once the calculated output satisfies the condition.
+    let memoizeWhen (condition : 'TOut -> bool) (f : 'TIn -> 'TOut) =
+        let cache = ConcurrentDictionary<'TIn, 'TOut>()
+        fun x ->
+            match cache.TryGetValue(x) with
+            | true, v -> v
+            | _ ->
+                let v = f x
+                if condition v then
+                    cache.GetOrAdd(x, v)
+                else
+                    v
+
     let retry timesToRetry f =
         if timesToRetry < 1 then
             raise (new ArgumentOutOfRangeException("timesToRetry", timesToRetry, "Value must be greater than zero."))
