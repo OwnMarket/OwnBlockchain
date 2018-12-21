@@ -97,11 +97,11 @@ module Api =
         choose [
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
-                routef "/tx/%s" (fun txHash -> getTxHandler txHash)
-                routef "/block/%d" (fun blockNumber -> getBlockHandler blockNumber)
-                routef "/address/%s/accounts" (fun blockchainAddress -> getAddressAccountsHandler blockchainAddress)
-                routef "/address/%s" (fun blockchainAddress -> getAddressHandler blockchainAddress)
-                routef "/account/%s" (fun accountHash -> getAccountHandler accountHash)
+                routef "/tx/%s" getTxHandler
+                routef "/block/%d" getBlockHandler
+                routef "/address/%s/accounts" getAddressAccountsHandler
+                routef "/address/%s" getAddressHandler
+                routef "/account/%s" getAccountHandler
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler
