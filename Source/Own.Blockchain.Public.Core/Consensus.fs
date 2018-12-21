@@ -60,24 +60,25 @@ module Consensus =
                 | ConsensusStep.Commit -> __.OnTimeoutCommit(blockNumber, consensusRound)
 
         member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope) =
-            let key = (envelope.BlockNumber, envelope.Round, senderAddress)
+            if envelope.BlockNumber >= _blockNumber then
+                let key = (envelope.BlockNumber, envelope.Round, senderAddress)
 
-            match envelope.ConsensusMessage with
-            | ConsensusMessage.Propose (block, vr) ->
-                let missingTxs = block.TxSet |> List.filter (txExists >> not)
-                if missingTxs.IsEmpty then
-                    if _proposals.TryAdd(key, (block, vr)) then
+                match envelope.ConsensusMessage with
+                | ConsensusMessage.Propose (block, vr) ->
+                    let missingTxs = block.TxSet |> List.filter (txExists >> not)
+                    if missingTxs.IsEmpty then
+                        if _proposals.TryAdd(key, (block, vr)) then
+                            __.UpdateState()
+                    else
+                        if _blockNumber = block.Header.Number then
+                            missingTxs |> List.iter requestTx
+                            scheduleMessage messageRetryingInterval (senderAddress, envelope)
+                | ConsensusMessage.Vote blockHash ->
+                    if _votes.TryAdd(key, blockHash) then
                         __.UpdateState()
-                else
-                    if _blockNumber = block.Header.Number then
-                        missingTxs |> List.iter requestTx
-                        scheduleMessage messageRetryingInterval (senderAddress, envelope)
-            | ConsensusMessage.Vote blockHash ->
-                if _votes.TryAdd(key, blockHash) then
-                    __.UpdateState()
-            | ConsensusMessage.Commit blockHash ->
-                if _commits.TryAdd(key, (blockHash, envelope.Signature)) then
-                    __.UpdateState()
+                | ConsensusMessage.Commit blockHash ->
+                    if _commits.TryAdd(key, (blockHash, envelope.Signature)) then
+                        __.UpdateState()
 
         member private __.Synchronize() =
             let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
