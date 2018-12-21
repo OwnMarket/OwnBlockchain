@@ -1,6 +1,7 @@
 namespace Own.Blockchain.Public.Net.Tests
 
 open System.Threading
+open Own.Common
 open Own.Blockchain.Public.Net.Peers
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Events
@@ -71,12 +72,32 @@ module PeerTests =
     let private blockPropagator node blockNumber =
         gossipBlock node blockNumber
 
+    // TODO: Fix the network tests by adjusting the mocked propagation logic.
     let publishEvent node appEvent =
         match appEvent with
-        | TxSubmitted e -> txPropagator node e
-        | TxReceived (e, _) -> txPropagator node e
-        | BlockCommitted (e, _) -> blockPropagator node e
-        | BlockReceived (e, _) -> blockPropagator node e
+        | PeerMessageReceived message ->
+            ()
+        | TxSubmitted txHash ->
+            txPropagator node txHash
+        | TxReceived (txHash, txEnvelopeDto)
+        | TxFetched (txHash, txEnvelopeDto) ->
+            ()
+        | TxStored (txHash, isFetched) ->
+            if not isFetched then
+                txPropagator node txHash
+        | BlockCommitted (blockNumber, blockEnvelopeDto)
+        | BlockReceived (blockNumber, blockEnvelopeDto)
+        | BlockFetched (blockNumber, blockEnvelopeDto) ->
+            ()
+        | BlockStored (blockNumber, isFetched) ->
+            if not isFetched then
+                blockPropagator node blockNumber
+        | BlockCompleted blockNumber
+        | BlockApplied blockNumber ->
+            ()
+        | ConsensusMessageReceived c
+        | ConsensusCommandInvoked c ->
+            ()
 
     let startGossip (node : NetworkNode) =
         let processPeerMessage = WorkflowsMock.processPeerMessage (node.GetNetworkAddress()) (respondToPeer node)
