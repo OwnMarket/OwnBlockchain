@@ -8,7 +8,6 @@ open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
-open Own.Blockchain.Public.Core.Events
 open Own.Blockchain.Public.Crypto
 
 module SubmissionTests =

@@ -1,7 +1,6 @@
 namespace Own.Blockchain.Public.Crypto.Tests
 
 open System
-open System.Text
 open Xunit
 open Swensen.Unquote
 open Own.Blockchain.Common

@@ -4,7 +4,6 @@ open System
 open System.IO
 open System.Reflection
 open Microsoft.Extensions.Configuration
-open Own.Blockchain.Common
 
 type Config () =
 

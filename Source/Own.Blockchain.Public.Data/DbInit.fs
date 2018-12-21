@@ -1,11 +1,8 @@
 namespace Own.Blockchain.Public.Data
 
 open System
-open System.Data
-open System.Data.Common
 open System.IO
 open Microsoft.Data.Sqlite
-open Dapper
 open Own.Common
 open Own.Blockchain.Common
 

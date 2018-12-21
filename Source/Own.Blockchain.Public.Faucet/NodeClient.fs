@@ -4,7 +4,6 @@ open System.Text
 open Hopac
 open HttpFs.Client
 open Newtonsoft.Json
-open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 

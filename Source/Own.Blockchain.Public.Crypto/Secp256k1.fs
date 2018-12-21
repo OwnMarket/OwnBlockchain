@@ -1,9 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Crypto
 
 open System
-open System.Collections.Concurrent
 open System.Security.Cryptography
-open System.Threading
 open Secp256k1Net
 open Own.Common
 

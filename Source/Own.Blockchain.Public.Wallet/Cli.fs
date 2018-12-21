@@ -1,9 +1,7 @@
 namespace Own.Blockchain.Public.Wallet
 
 open System
-open System.Text
 open System.Reflection
-open Own.Common
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Crypto
 

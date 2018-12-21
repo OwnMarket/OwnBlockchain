@@ -3,7 +3,6 @@ namespace Own.Blockchain.Public.Core.Tests
 open System
 open Xunit
 open Swensen.Unquote
-open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 
 module DomainTypesTests =

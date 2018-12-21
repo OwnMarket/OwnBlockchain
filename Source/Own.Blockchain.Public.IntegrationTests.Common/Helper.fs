@@ -8,8 +8,6 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.Configuration
 open Microsoft.Data.Sqlite
-open Own.Blockchain.Common
-open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Crypto
 open Own.Blockchain.Public.Data
 open Own.Blockchain.Public.Node

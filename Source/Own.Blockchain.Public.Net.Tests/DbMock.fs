@@ -2,7 +2,6 @@
 
 open System.Collections.Concurrent
 open Own.Common
-open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Core.DomainTypes
 
 module DbMock =

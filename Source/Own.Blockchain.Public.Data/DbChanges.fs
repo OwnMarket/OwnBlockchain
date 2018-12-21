@@ -1,7 +1,6 @@
 namespace Own.Blockchain.Public.Data
 
 open System
-open Own.Common
 
 type DbChange = {
     Number : int

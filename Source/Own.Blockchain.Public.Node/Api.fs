@@ -8,7 +8,6 @@ open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Own.Common
 open Own.Blockchain.Common
-open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Core.Events

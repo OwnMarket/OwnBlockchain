@@ -4,7 +4,6 @@ open System
 open Own.Common
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
-open Own.Blockchain.Public.Core.Events
 
 module Mapping =
 
