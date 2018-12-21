@@ -10,13 +10,15 @@ open Own.Blockchain.Public.Crypto
 
 module Agents =
 
-    let private txPropagator = Agent.start <| fun txHash ->
+    let private txPropagator = Agent.start <| fun (txHash : TxHash) ->
         async {
+            Log.debugf "Propagating Tx %s" txHash.Value
             Composition.propagateTx txHash
         }
 
-    let private blockPropagator = Agent.start <| fun blockNumber ->
+    let private blockPropagator = Agent.start <| fun (blockNumber : BlockNumber) ->
         async {
+            Log.debugf "Propagating block %i" blockNumber.Value
             Composition.propagateBlock blockNumber
         }
 
@@ -32,7 +34,7 @@ module Agents =
         | Some v -> v.Post e
         | None -> Log.error "TxVerifier agent not started."
 
-    let mutable private blockVerifier : MailboxProcessor<BlockEnvelopeDto> option = None
+    let mutable private blockVerifier : MailboxProcessor<BlockEnvelopeDto * bool> option = None
     let private invokeBlockVerifier e =
         match blockVerifier with
         | Some v -> v.Post e
@@ -68,7 +70,7 @@ module Agents =
             h.Value
             |> formatMessage
             |> Log.info
-        | TxStored h ->
+        | TxStored (h, _) ->
             h.Value
             |> formatMessage
             |> Log.info
@@ -83,7 +85,11 @@ module Agents =
             |> string
             |> formatMessage
             |> Log.info
-        | BlockStored bn
+        | BlockStored (bn, _) ->
+            bn.Value
+            |> string
+            |> formatMessage
+            |> Log.info
         | BlockCompleted bn ->
             bn.Value
             |> string
@@ -129,20 +135,24 @@ module Agents =
             invokeTxVerifier (txEnvelopeDto, false)
         | TxFetched (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, true)
-        | TxStored txHash ->
+        | TxStored (txHash, isFetched) ->
             invokeApplier ()
-            txPropagator.Post txHash // TODO: Don't propagate fetched Txs
+            if not isFetched then
+                txPropagator.Post txHash
         | BlockCommitted (blockNumber, blockEnvelopeDto)
-        | BlockReceived (blockNumber, blockEnvelopeDto)
+        | BlockReceived (blockNumber, blockEnvelopeDto) ->
+            invokeBlockVerifier (blockEnvelopeDto, false)
         | BlockFetched (blockNumber, blockEnvelopeDto) ->
-            invokeBlockVerifier blockEnvelopeDto
-        | BlockStored blockNumber ->
+            invokeBlockVerifier (blockEnvelopeDto, true)
+        | BlockStored (blockNumber, isFetched) ->
             invokeApplier ()
-            blockPropagator.Post blockNumber
+            if not isFetched then
+                blockPropagator.Post blockNumber
         | BlockCompleted blockNumber ->
             invokeApplier ()
         | BlockApplied blockNumber ->
-            invokeValidator Synchronize
+            invokeValidator Synchronize // TODO: Don't invoke if not validator (and remove WORKAROUND below).
+            invokeApplier () // Avoid waiting for a kick from the Fetcher.
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             invokeValidator c
@@ -168,11 +178,11 @@ module Agents =
             failwith "TxVerifier agent is already started."
 
         txVerifier <-
-            Agent.start <| fun (txEnvelopeDto, isIncludedInBlock) ->
+            Agent.start <| fun (txEnvelopeDto, isFetched) ->
                 async {
-                    Composition.submitTx isIncludedInBlock txEnvelopeDto
+                    Composition.submitTx isFetched txEnvelopeDto
                     |> Result.handle
-                        (TxStored >> publishEvent)
+                        (fun txHash -> (txHash, isFetched) |> TxStored |> publishEvent)
                         Log.appErrors
                 }
             |> Some
@@ -182,11 +192,11 @@ module Agents =
             failwith "BlockVerifier agent is already started."
 
         blockVerifier <-
-            Agent.start <| fun (blockEnvelopeDto) ->
+            Agent.start <| fun (blockEnvelopeDto, isFetched) ->
                 async {
                     Composition.storeReceivedBlock blockEnvelopeDto
                     |> Result.handle
-                        (BlockStored >> publishEvent)
+                        (fun blockNumber -> (blockNumber, isFetched) |> BlockStored |> publishEvent)
                         Log.appErrors
                 }
             |> Some
@@ -225,7 +235,10 @@ module Agents =
                 async {
                     match state with
                     | Some s -> s.HandleConsensusCommand command
-                    | None -> Log.warning "Consensus message ignored (node is not configured as validator)."
+                    | None ->
+                        // WORKAROUND: Avoid log polution due to Synchronize being invoked upon applying the block.
+                        if command <> Synchronize then
+                            Log.warning "Consensus command ignored (node is not configured as validator)."
                 }
             |> Some
 

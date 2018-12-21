@@ -9,11 +9,11 @@ type AppEvent =
     | TxSubmitted of TxHash
     | TxReceived of TxHash * TxEnvelopeDto
     | TxFetched of TxHash * TxEnvelopeDto
-    | TxStored of TxHash
+    | TxStored of TxHash * isFetched : bool
     | BlockCommitted of BlockNumber * BlockEnvelopeDto
     | BlockReceived of BlockNumber * BlockEnvelopeDto
     | BlockFetched of BlockNumber * BlockEnvelopeDto
-    | BlockStored of BlockNumber
+    | BlockStored of BlockNumber * isFetched : bool
     | BlockCompleted of BlockNumber // Block is completed (all Txs fetched) and ready to be applied.
     | BlockApplied of BlockNumber
     | ConsensusMessageReceived of ConsensusCommand
