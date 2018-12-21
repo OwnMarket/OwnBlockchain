@@ -28,6 +28,16 @@ module Api =
     // Handlers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let getStatsHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Stats.getCurrent ()
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let submitTxHandler : HttpHandler = fun next ctx ->
         task {
             let! requestDto = ctx.BindJsonAsync<TxEnvelopeDto>()
@@ -97,6 +107,7 @@ module Api =
         choose [
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
+                route "/stats" >=> getStatsHandler
                 routef "/tx/%s" getTxHandler
                 routef "/block/%d" getBlockHandler
                 routef "/address/%s/accounts" getAddressAccountsHandler

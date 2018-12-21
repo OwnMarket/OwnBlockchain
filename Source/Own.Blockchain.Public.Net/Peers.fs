@@ -157,6 +157,7 @@ module Peers =
             pendingDataRequests.ContainsKey requestId
 
         member __.SendRequestDataMessage requestId =
+            Stats.increment Stats.Counter.PeerRequests
             let rec loop messageId =
                 async {
                     let expiredAddresses =
