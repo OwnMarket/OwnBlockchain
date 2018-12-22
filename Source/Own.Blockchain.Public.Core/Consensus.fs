@@ -164,8 +164,8 @@ module Consensus =
 
             if Validators.getProposerAddress _blockNumber _round _validators = validatorAddress then
                 __.TryPropose()
-            else
-                scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
+
+            scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
 
         member private __.UpdateState() =
             // PROPOSE RULES
