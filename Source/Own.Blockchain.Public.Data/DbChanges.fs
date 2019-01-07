@@ -15,7 +15,7 @@ module DbChanges =
                 Number = 1
                 Script =
                     """
-                    CREATE TABLE IF NOT EXISTS db_version (
+                    CREATE TABLE db_version (
                         version_number INTEGER NOT NULL,
                         execution_timestamp BIGINT NOT NULL,
 
@@ -27,7 +27,7 @@ module DbChanges =
                 Number = 2
                 Script =
                     """
-                    CREATE TABLE IF NOT EXISTS tx (
+                    CREATE TABLE tx (
                         tx_id INTEGER NOT NULL,
                         tx_hash TEXT NOT NULL,
                         sender_address TEXT NOT NULL,
@@ -41,7 +41,7 @@ module DbChanges =
                     CREATE INDEX tx__ix__sender_address ON tx (sender_address);
                     CREATE INDEX tx__ix__fee ON tx (fee DESC);
 
-                    CREATE TABLE IF NOT EXISTS chx_balance (
+                    CREATE TABLE chx_balance (
                         chx_balance_id INTEGER NOT NULL,
                         blockchain_address TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
@@ -51,7 +51,7 @@ module DbChanges =
                         CONSTRAINT chx_balance__uk__blockchain_address UNIQUE (blockchain_address)
                     );
 
-                    CREATE TABLE IF NOT EXISTS account (
+                    CREATE TABLE account (
                         account_id INTEGER NOT NULL,
                         account_hash TEXT NOT NULL,
                         controller_address TEXT NOT NULL,
@@ -60,7 +60,7 @@ module DbChanges =
                         CONSTRAINT account__uk__account_hash UNIQUE (account_hash)
                     );
 
-                    CREATE TABLE IF NOT EXISTS asset (
+                    CREATE TABLE asset (
                         asset_id INTEGER NOT NULL,
                         asset_hash TEXT NOT NULL,
                         asset_code TEXT,
@@ -71,7 +71,7 @@ module DbChanges =
                         CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
                     );
 
-                    CREATE TABLE IF NOT EXISTS holding (
+                    CREATE TABLE holding (
                         holding_id INTEGER NOT NULL,
                         account_id BIGINT NOT NULL,
                         asset_hash TEXT NOT NULL,
@@ -83,7 +83,7 @@ module DbChanges =
                             REFERENCES account (account_id)
                     );
 
-                    CREATE TABLE IF NOT EXISTS block (
+                    CREATE TABLE block (
                         block_id INTEGER NOT NULL,
                         block_number BIGINT NOT NULL,
                         block_hash TEXT NOT NULL,
@@ -102,7 +102,7 @@ module DbChanges =
                 Number = 3
                 Script =
                     """
-                    CREATE TABLE IF NOT EXISTS validator (
+                    CREATE TABLE validator (
                         validator_id INTEGER NOT NULL,
                         validator_address TEXT NOT NULL,
                         network_address TEXT NOT NULL,
@@ -111,7 +111,7 @@ module DbChanges =
                         CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
                     );
 
-                    CREATE TABLE IF NOT EXISTS stake (
+                    CREATE TABLE stake (
                         stake_id INTEGER NOT NULL,
                         stakeholder_address TEXT NOT NULL,
                         validator_address TEXT NOT NULL,
@@ -122,7 +122,7 @@ module DbChanges =
                             UNIQUE (stakeholder_address, validator_address)
                     );
 
-                    CREATE TABLE IF NOT EXISTS peer (
+                    CREATE TABLE peer (
                         peer_id INTEGER NOT NULL,
                         network_address TEXT NOT NULL,
 
@@ -139,7 +139,7 @@ module DbChanges =
                 Number = 1
                 Script =
                     """
-                    CREATE TABLE IF NOT EXISTS db_version (
+                    CREATE TABLE db_version (
                         version_number INTEGER NOT NULL,
                         execution_timestamp BIGINT NOT NULL,
 
@@ -151,7 +151,7 @@ module DbChanges =
                 Number = 2
                 Script =
                     """
-                    CREATE TABLE IF NOT EXISTS tx (
+                    CREATE TABLE tx (
                         tx_id BIGSERIAL NOT NULL,
                         tx_hash TEXT NOT NULL,
                         sender_address TEXT NOT NULL,
@@ -165,7 +165,7 @@ module DbChanges =
                     CREATE INDEX tx__ix__sender_address ON tx (sender_address);
                     CREATE INDEX tx__ix__fee ON tx (fee DESC);
 
-                    CREATE TABLE IF NOT EXISTS chx_balance (
+                    CREATE TABLE chx_balance (
                         chx_balance_id BIGSERIAL NOT NULL,
                         blockchain_address TEXT NOT NULL,
                         amount DECIMAL(30, 18) NOT NULL,
@@ -175,7 +175,7 @@ module DbChanges =
                         CONSTRAINT chx_balance__uk__blockchain_address UNIQUE (blockchain_address)
                     );
 
-                    CREATE TABLE IF NOT EXISTS account (
+                    CREATE TABLE account (
                         account_id BIGSERIAL NOT NULL,
                         account_hash TEXT NOT NULL,
                         controller_address TEXT NOT NULL,
@@ -184,7 +184,7 @@ module DbChanges =
                         CONSTRAINT account__uk__account_hash UNIQUE (account_hash)
                     );
 
-                    CREATE TABLE IF NOT EXISTS asset (
+                    CREATE TABLE asset (
                         asset_id BIGSERIAL NOT NULL,
                         asset_hash TEXT NOT NULL,
                         asset_code TEXT,
@@ -195,7 +195,7 @@ module DbChanges =
                         CONSTRAINT asset__uk__asset_code UNIQUE (asset_code)
                     );
 
-                    CREATE TABLE IF NOT EXISTS holding (
+                    CREATE TABLE holding (
                         holding_id BIGSERIAL NOT NULL,
                         account_id BIGINT NOT NULL,
                         asset_hash TEXT NOT NULL,
@@ -207,7 +207,7 @@ module DbChanges =
                             REFERENCES account (account_id)
                     );
 
-                    CREATE TABLE IF NOT EXISTS block (
+                    CREATE TABLE block (
                         block_id BIGSERIAL NOT NULL,
                         block_number BIGINT NOT NULL,
                         block_hash TEXT NOT NULL,
@@ -226,7 +226,7 @@ module DbChanges =
                 Number = 3
                 Script =
                     """
-                    CREATE TABLE IF NOT EXISTS validator (
+                    CREATE TABLE validator (
                         validator_id BIGSERIAL NOT NULL,
                         validator_address TEXT NOT NULL,
                         network_address TEXT NOT NULL,
@@ -235,7 +235,7 @@ module DbChanges =
                         CONSTRAINT validator__uk__validator_address UNIQUE (validator_address)
                     );
 
-                    CREATE TABLE IF NOT EXISTS stake (
+                    CREATE TABLE stake (
                         stake_id BIGSERIAL NOT NULL,
                         stakeholder_address TEXT NOT NULL,
                         validator_address TEXT NOT NULL,
@@ -246,7 +246,7 @@ module DbChanges =
                             UNIQUE (stakeholder_address, validator_address)
                     );
 
-                    CREATE TABLE IF NOT EXISTS peer (
+                    CREATE TABLE peer (
                         peer_id BIGSERIAL NOT NULL,
                         network_address TEXT NOT NULL,
 
