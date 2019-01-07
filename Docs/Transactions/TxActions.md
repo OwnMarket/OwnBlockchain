@@ -55,7 +55,7 @@ Delegated amount to validator X before TX is processed | Amount value in Delegat
 0 | 100 | 100
 100 | 50 | 150
 150 | -70 | 80
-80 | -100 | ERROR: `InsufficientStake`
+80 | -100 | 80 (ERROR: `InsufficientStake`)
 80 | -80 | 0
 
 
