@@ -27,6 +27,9 @@ module Stats =
     let increment counter =
         counters.AddOrUpdate(counter, 1L, fun _ c -> c + 1L) |> ignore
 
+    let decrement counter =
+        counters.AddOrUpdate(counter, -1L, fun _ c -> c - 1L) |> ignore
+
     let getCurrent () =
         let currentTime = DateTime.UtcNow
 
