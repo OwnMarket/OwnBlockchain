@@ -156,8 +156,8 @@ module Validation =
             elif action.ValidatorAddress |> BlockchainAddress |> isValidAddress |> not then
                 yield AppError "ValidatorAddress is not valid."
 
-            if action.Amount < 0m then
-                yield AppError "CHX amount must not be negative."
+            if action.Amount = 0m then
+                yield AppError "CHX amount cannot be zero."
         ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

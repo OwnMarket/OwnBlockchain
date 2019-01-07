@@ -697,7 +697,7 @@ module ValidationTests =
         let expected =
             {
                 DelegateStakeTxActionDto.ValidatorAddress = ""
-                Amount = -1m
+                Amount = 0m
             }
 
         let tx = {

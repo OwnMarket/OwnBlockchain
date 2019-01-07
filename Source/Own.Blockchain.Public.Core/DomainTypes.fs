@@ -179,6 +179,9 @@ type TxErrorCode =
     | AssetAlreadyExists = 420s
     | SenderIsNotAssetController = 430s
 
+    // Validators
+    | InsufficientStake = 910s
+
 type TxError =
     | TxError of TxErrorCode
     | TxActionError of TxActionNumber * TxErrorCode

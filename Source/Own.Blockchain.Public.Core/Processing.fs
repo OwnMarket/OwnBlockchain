@@ -377,15 +377,17 @@ module Processing =
         if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
         else
-            match state.GetStake(senderAddress, action.ValidatorAddress) with
-            | None ->
-                state.SetStake(senderAddress, action.ValidatorAddress, {StakeState.Amount = action.Amount})
-                state.SetTotalChxStaked(senderAddress, totalChxStaked + action.Amount)
-            | Some stakeState ->
-                state.SetStake(senderAddress, action.ValidatorAddress, {stakeState with Amount = action.Amount})
-                state.SetTotalChxStaked(senderAddress, totalChxStaked - stakeState.Amount + action.Amount)
+            let stakeState =
+                match state.GetStake(senderAddress, action.ValidatorAddress) with
+                | None -> {StakeState.Amount = action.Amount}
+                | Some s -> {s with Amount = s.Amount + action.Amount}
 
-            Ok state
+            if stakeState.Amount < ChxAmount 0m then
+                Error TxErrorCode.InsufficientStake
+            else
+                state.SetStake(senderAddress, action.ValidatorAddress, stakeState)
+                state.SetTotalChxStaked(senderAddress, totalChxStaked + action.Amount)
+                Ok state
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing

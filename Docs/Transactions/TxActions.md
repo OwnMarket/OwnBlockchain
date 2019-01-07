@@ -37,14 +37,26 @@ Parameter | Data Type | Description
 
 ### `DelegateStake`
 
-Delegates specified amount of CHX from transaction sender wallet address to the specified validator wallet address.
+Increases/decreases delegation of specified amount of CHX from transaction sender wallet address to the specified validator wallet address.
 
 Parameter | Data Type | Description
 --- | --- | ---
 `ValidatorAddress` | string | Wallet address of the validator being "voted" for.
 `Amount` | decimal number | Number of CHX tokens being delegated.
 
-**NOTE:** Delegated amount of CHX is still in possession of the sender address, but it is not available for transfers or for paying transaction fees. To change the amount of CHX delegated to a specific validator address (or completely withdraw the delegation) and "unlock" the CHX amount, a new transaction must be submitted containing a `DelegateStake` action with the new `Amount` set. Setting the new amount to zero (`0`) effectively withdraws the delegation and unlocks all CHX previously delegated to the specified validator.
+**NOTE:** Delegated amount of CHX is still in possession of the sender address, but it is not available for transfers, additional delegation or for paying transaction fees.
+
+To change the amount of CHX delegated to a specific validator address (or completely withdraw the delegation and "unlock" the CHX), a new transaction must be submitted containing a `DelegateStake` action with the specified amount to increase/decrease in the `Amount` field. Setting the `Amount` field to a positive number results in the increase of the delegated amount, while setting the field to a negative number effectively withdraws the delegation for specified amount and unlocks the specified amount of CHX previously delegated to the specified validator.
+
+Examples:
+
+Delegated amount to validator X before TX is processed | Amount value in DelegateStake action | Delegated amount to validator X after TX is processed
+--- | --- | ---
+0 | 100 | 100
+100 | 50 | 150
+150 | -70 | 80
+80 | -100 | ERROR: `InsufficientStake`
+80 | -80 | 0
 
 
 ### `SetValidatorNetworkAddress`

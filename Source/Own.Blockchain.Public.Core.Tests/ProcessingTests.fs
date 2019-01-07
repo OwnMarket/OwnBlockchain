@@ -2750,14 +2750,20 @@ module ProcessingTests =
     // DelegateStake
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    [<Fact>]
-    let ``Processing.processTxSet DelegateStake - updating existing stake`` () =
+    [<Theory>]
+    [<InlineData(40, 10, 50)>]
+    [<InlineData(40, -10, 30)>]
+    let ``Processing.processTxSet DelegateStake - increasing existing stake``
+        (currentStakeAmount, stakeChangeAmount, newStakeAmount)
+        =
+
         // INIT STATE
+        let currentStakeAmount = currentStakeAmount |> decimal |> ChxAmount
+        let stakeChangeAmount = stakeChangeAmount |> decimal |> ChxAmount
+        let newStakeAmount = newStakeAmount |> decimal |> ChxAmount
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
-        let stakeAmount = ChxAmount 10m
-        let currentStakeAmount = ChxAmount 4m
 
         let initialChxState =
             [
@@ -2777,7 +2783,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             ValidatorAddress = stakeValidatorAddress.Value
-                            Amount = stakeAmount.Value
+                            Amount = stakeChangeAmount.Value
                         }
                 } :> obj
             ]
@@ -2839,7 +2845,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = stakeAmount @>
+        test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = newStakeAmount @>
 
     [<Fact>]
     let ``Processing.processTxSet DelegateStake - setting new stake`` () =
@@ -3031,8 +3037,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
-        let stakeAmount = ChxAmount 50m
-        let currentStakeAmount = ChxAmount 50m
+        let stakeAmount = ChxAmount 40m
+        let currentStakeAmount = ChxAmount 60m
 
         let initialChxState =
             [
@@ -3119,3 +3125,98 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Stakes = Map.empty @>
+
+    [<Fact>]
+    let ``Processing.processTxSet DelegateStake - decreasing stake for more than already staked`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let stakeValidatorAddress = (Signing.generateWallet ()).Address
+        let stakeAmount = ChxAmount -51m
+        let currentStakeAmount = ChxAmount 50m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "DelegateStake"
+                    ActionData =
+                        {
+                            ValidatorAddress = stakeValidatorAddress.Value
+                            Amount = stakeAmount.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getAccountCode _ =
+            failwith "getAccountCode should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            Some {StakeState.Amount = currentStakeAmount}
+
+        let getTotalChxStaked _ = currentStakeAmount
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getAccountCode
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedTxStatus =
+            (TxActionNumber 1s, TxErrorCode.InsufficientStake)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = currentStakeAmount @>
