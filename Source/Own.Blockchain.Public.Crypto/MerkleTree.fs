@@ -142,7 +142,7 @@ module MerkleTree =
             else
                 LeftHash (Array.zeroCreate 0)
             |> Some
-        );
+        )
 
     // Builds the merkle proof segments for a node (ordered sequence of hashes that can reconstruct the root hash).
     let rec private merkleProof node segments =
