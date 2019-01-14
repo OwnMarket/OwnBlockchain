@@ -5,8 +5,11 @@ open System.Globalization
 open System.IO
 open Microsoft.Extensions.Configuration
 open Own.Common
+open Own.Blockchain.Public.Core.DomainTypes
 
 type Config () =
+
+    static let appDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
 
     static let workingDir = Directory.GetCurrentDirectory()
 
@@ -35,7 +38,11 @@ type Config () =
 
     static member DbEngineType
         with get () =
-            config.["DbEngineType"]
+            match config.["DbEngineType"] with
+            | "Firebird" -> Firebird
+            | "PostgreSQL" -> PostgreSQL
+            | t -> failwithf "Unknown DB engine type: %s" t
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API

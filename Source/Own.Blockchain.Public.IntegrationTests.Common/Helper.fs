@@ -8,14 +8,12 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.Configuration
 open Microsoft.Data.Sqlite
+open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Crypto
 open Own.Blockchain.Public.Data
 open Own.Blockchain.Public.Node
 
 module internal Helper =
-
-    let SQLite = "SQLite"
-    let Postgres = "PostgreSQL"
 
     let private deleteFile filePath =
         let numberOfDeletionTrys = 20
@@ -36,15 +34,15 @@ module internal Helper =
 
         tryDeleteFile filePath 0
 
-    let testCleanup sqlEngineType connString =
+    let testCleanup dbEngineType connString =
         if Directory.Exists(Config.DataDir) then do
             Directory.Delete(Config.DataDir, true)
 
-        if sqlEngineType = SQLite then
+        if dbEngineType = Firebird then
             let conn = new SqliteConnection(connString)
             deleteFile conn.DataSource
 
-        if sqlEngineType = Postgres then
+        if dbEngineType = PostgreSQL then
             let schemaName = (Npgsql.NpgsqlConnectionStringBuilder connString).SearchPath
             let removeAllTables =
                 sprintf
@@ -63,7 +61,7 @@ module internal Helper =
                     """
                     schemaName
 
-            DbTools.execute connString removeAllTables [] |> ignore
+            DbTools.execute dbEngineType connString removeAllTables [] |> ignore
 
     let testServer () =
         let hostBuilder =
@@ -77,7 +75,7 @@ module internal Helper =
         Signing.generateRandomBytes 64
         |> Hashing.hash
 
-    let addChxBalance connectionString (address : string) (amount : decimal) =
+    let addChxBalance dbEngineType connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """
             INSERT INTO chx_balance (blockchain_address, amount, nonce)
@@ -87,10 +85,10 @@ module internal Helper =
             "@amount", amount |> box
             "@blockchain_address", address |> box
         ]
-        |> DbTools.execute connectionString insertStatement
+        |> DbTools.execute dbEngineType connectionString insertStatement
         |> ignore
 
-    let addBalanceAndAccount connectionString (address : string) (amount : decimal) =
+    let addBalanceAndAccount dbEngineType connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """
             INSERT INTO chx_balance (blockchain_address, amount, nonce) VALUES (@blockchain_address, @amount, 0);
@@ -100,7 +98,7 @@ module internal Helper =
             "@amount", amount |> box
             "@blockchain_address", address |> box
         ]
-        |> DbTools.execute connectionString insertStatement
+        |> DbTools.execute dbEngineType connectionString insertStatement
         |> ignore
 
     let private appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)

@@ -37,51 +37,51 @@ module Composition =
 
     let initDb () = DbInit.init Config.DbEngineType Config.DbConnectionString
 
-    let saveTxToDb = Db.saveTx Config.DbConnectionString
+    let saveTxToDb = Db.saveTx Config.DbEngineType Config.DbConnectionString
 
-    let getTxInfo = Db.getTx Config.DbConnectionString
+    let getTxInfo = Db.getTx Config.DbEngineType Config.DbConnectionString
 
-    let getPendingTxs = Db.getPendingTxs Config.DbConnectionString
+    let getPendingTxs = Db.getPendingTxs Config.DbEngineType Config.DbConnectionString
 
-    let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbConnectionString
+    let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
 
-    let saveBlockToDb = Db.saveBlock Config.DbConnectionString
+    let saveBlockToDb = Db.saveBlock Config.DbEngineType Config.DbConnectionString
 
-    let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbConnectionString
+    let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbEngineType Config.DbConnectionString
     let getLastAppliedBlockNumber () =
         tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
 
-    let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbConnectionString
+    let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbEngineType Config.DbConnectionString
 
-    let getStoredBlockNumbers () = Db.getStoredBlockNumbers Config.DbConnectionString
+    let getStoredBlockNumbers () = Db.getStoredBlockNumbers Config.DbEngineType Config.DbConnectionString
 
-    let getChxBalanceState = Db.getChxBalanceState Config.DbConnectionString
+    let getChxBalanceState = Db.getChxBalanceState Config.DbEngineType Config.DbConnectionString
 
-    let getAddressAccounts = Db.getAddressAccounts Config.DbConnectionString
+    let getAddressAccounts = Db.getAddressAccounts Config.DbEngineType Config.DbConnectionString
 
-    let getAccountState = Db.getAccountState Config.DbConnectionString
+    let getAccountState = Db.getAccountState Config.DbEngineType Config.DbConnectionString
 
-    let getAccountHoldings = Db.getAccountHoldings Config.DbConnectionString
+    let getAccountHoldings = Db.getAccountHoldings Config.DbEngineType Config.DbConnectionString
 
-    let getHoldingState = Db.getHoldingState Config.DbConnectionString
+    let getHoldingState = Db.getHoldingState Config.DbEngineType Config.DbConnectionString
 
-    let getAssetState = Db.getAssetState Config.DbConnectionString
+    let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
 
-    let getValidatorState = Db.getValidatorState Config.DbConnectionString
+    let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
 
-    let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbConnectionString
+    let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString
 
-    let getStakeState = Db.getStakeState Config.DbConnectionString
+    let getStakeState = Db.getStakeState Config.DbEngineType Config.DbConnectionString
 
-    let getTotalChxStaked = Db.getTotalChxStaked Config.DbConnectionString
+    let getTotalChxStaked = Db.getTotalChxStaked Config.DbEngineType Config.DbConnectionString
 
-    let getAllPeerNodes () = Db.getAllPeerNodes Config.DbConnectionString
+    let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
 
-    let savePeerNode = Db.savePeerNode Config.DbConnectionString
+    let savePeerNode = Db.savePeerNode Config.DbEngineType Config.DbConnectionString
 
-    let removePeerNode = Db.removePeerNode Config.DbConnectionString
+    let removePeerNode = Db.removePeerNode Config.DbEngineType Config.DbConnectionString
 
-    let persistStateChanges = Db.persistStateChanges Config.DbConnectionString
+    let persistStateChanges = Db.persistStateChanges Config.DbEngineType Config.DbConnectionString
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Validators

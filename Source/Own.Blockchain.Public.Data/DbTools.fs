@@ -1,10 +1,15 @@
 namespace Own.Blockchain.Public.Data
 
+open System.IO
 open System.Data.Common
-open Microsoft.Data.Sqlite
+open System.Runtime.InteropServices
+open FirebirdSql.Data.FirebirdClient
+open FirebirdSql.Data.Isql
 open Npgsql
 open Dapper
 open Own.Common
+open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
 
 module DbTools =
 
@@ -15,14 +20,16 @@ module DbTools =
             CreateTransactionCommand : string -> DbConnection -> DbTransaction -> DbCommand
         }
 
-    let sqlLiteCommand sql (conn : DbConnection) =
-        new SqliteCommand(sql, conn :?> SqliteConnection)
+    let appDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) // TODO: Use Config!
+
+    let firebirdCommand sql (conn : DbConnection) =
+        new FbCommand(sql, conn :?> FbConnection)
         :> DbCommand
-    let sqlLiteParam (name : string, value : obj) =
-        SqliteParameter(name, value)
+    let firebirdParam (name : string, value : obj) =
+        FbParameter(name, value)
         :> DbParameter
-    let sqlLiteTransactionCmd (sql : string) (conn : DbConnection) (transaction : DbTransaction) =
-        new SqliteCommand(sql, conn :?> SqliteConnection, transaction :?> SqliteTransaction)
+    let firebirdTransactionCmd (sql : string) (conn : DbConnection) (transaction : DbTransaction) =
+        new FbCommand(sql, conn :?> FbConnection, transaction :?> FbTransaction)
         :> DbCommand
 
     let postgresCommand sql (conn : DbConnection) =
@@ -37,11 +44,11 @@ module DbTools =
 
     let private databaseSetup =
         dict [
-            typeof<SqliteConnection>,
+            typeof<FbConnection>,
             {
-                CreateCommand = sqlLiteCommand
-                CreateParam = sqlLiteParam
-                CreateTransactionCommand = sqlLiteTransactionCmd
+                CreateCommand = firebirdCommand
+                CreateParam = firebirdParam
+                CreateTransactionCommand = firebirdTransactionCmd
             }
             typeof<NpgsqlConnection>,
             {
@@ -51,14 +58,38 @@ module DbTools =
             }
         ]
 
-    let newConnection (dbConnectionString : string) =
-        try
-            let builder = SqliteConnectionStringBuilder dbConnectionString
-            new SqliteConnection(builder.ConnectionString) :> DbConnection
-        with
-        | ex ->
-            let postgresBuilder = NpgsqlConnectionStringBuilder dbConnectionString
-            new NpgsqlConnection(postgresBuilder.ConnectionString) :> DbConnection
+    let prepareFirebirdConnectionString connectionString =
+        let csb = FbConnectionStringBuilder connectionString
+        let clientLibraryFileName =
+            if connectionString.ToLowerInvariant().Contains("clientlibrary") then
+                Path.GetFileName(csb.ClientLibrary)
+            else
+                if RuntimeInformation.IsOSPlatform OSPlatform.Windows then
+                    "fbclient.dll"
+                elif RuntimeInformation.IsOSPlatform OSPlatform.OSX then
+                    "libfbclient.dylib"
+                elif RuntimeInformation.IsOSPlatform OSPlatform.Linux then
+                    "libfbclient.so"
+                else
+                    failwith "Unknown OS"
+
+        csb.ClientLibrary <- Path.Combine(appDir, clientLibraryFileName)
+
+        if csb.UserID.IsNullOrWhiteSpace() then
+            csb.UserID <- "SYSDBA"
+
+        if csb.Charset.IsNullOrWhiteSpace() then
+            csb.Charset <- "UTF8"
+
+        csb
+
+    let newConnection dbEngineType (dbConnectionString : string) =
+        match dbEngineType with
+        | Firebird ->
+            let csb = prepareFirebirdConnectionString dbConnectionString
+            new FbConnection(csb.ConnectionString) :> DbConnection
+        | PostgreSQL ->
+            new NpgsqlConnection(dbConnectionString) :> DbConnection
 
     let private connectionBasedActions dbConnection =
         let connType = dbConnection.GetType()
@@ -66,8 +97,8 @@ module DbTools =
             databaseSetup.[connType]
         else failwith "Unknown connection type"
 
-    let execute (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : int =
-        use conn = newConnection(dbConnectionString)
+    let execute dbEngineType (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : int =
+        use conn = newConnection dbEngineType dbConnectionString
         try
             let dbActions = connectionBasedActions conn
 
@@ -78,6 +109,34 @@ module DbTools =
 
             conn.Open()
             cmd.ExecuteNonQuery()
+        finally
+            conn.Close()
+
+    let executeFbBatch dbEngineType (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) =
+        use conn = newConnection dbEngineType dbConnectionString
+        try
+            let dbActions = connectionBasedActions conn
+
+            let script = new FbScript(sql)
+            if script.Parse() <= 0 then
+                failwithf "No statements parsed from Firebird SQL script:\n%s" sql
+
+            conn.Open()
+
+            for line in script.Results do
+                try
+                    use cmd = dbActions.CreateCommand line.Text conn
+
+                    parameters
+                    |> Seq.iter (dbActions.CreateParam >> cmd.Parameters.Add >> ignore)
+
+                    cmd.ExecuteNonQuery() |> ignore
+                with
+                | ex ->
+                    Log.errorf "Failed to execute Firebird SQL script statement: %s\nWITH ERROR: %s"
+                        line.Text ex.AllMessages
+                    reraise ()
+
         finally
             conn.Close()
 
@@ -97,9 +156,9 @@ module DbTools =
 
         cmd.ExecuteNonQuery()
 
-    let query<'T> (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : 'T list =
+    let query<'T> dbEngineType (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : 'T list =
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores <- true
-        use conn = newConnection(dbConnectionString)
+        use conn = newConnection dbEngineType dbConnectionString
 
         try
             conn.Open()

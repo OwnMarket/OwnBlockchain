@@ -23,7 +23,7 @@ module Db =
     // Tx
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let saveTx (dbConnectionString : string) (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
+    let saveTx dbEngineType (dbConnectionString : string) (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
         try
             let txParams =
                 [
@@ -45,7 +45,7 @@ module Db =
                     (snd paramData)
                     (fst paramData)
 
-            let result = DbTools.execute dbConnectionString insertSql txParams
+            let result = DbTools.execute dbEngineType dbConnectionString insertSql txParams
 
             if result < 0 then
                 failwith "Unknown DB error"
@@ -57,6 +57,7 @@ module Db =
             Result.appError "DB operation error"
 
     let getPendingTxs
+        dbEngineType
         (dbConnectionString : string)
         (txsToSkip : TxHash list)
         (txCountToFetch : int)
@@ -76,24 +77,35 @@ module Db =
                 ""
 
         let sql =
-            sprintf
-                """
-                SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
-                FROM tx
-                %s
-                ORDER BY fee DESC, tx_id
-                LIMIT @txCountToFetch
-                """
-                skipConditionPattern
+            match dbEngineType with
+            | Firebird ->
+                sprintf
+                    """
+                    SELECT FIRST @txCountToFetch tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
+                    FROM tx
+                    %s
+                    ORDER BY fee DESC, tx_id
+                    """
+                    skipConditionPattern
+            | PostgreSQL ->
+                sprintf
+                    """
+                    SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
+                    FROM tx
+                    %s
+                    ORDER BY fee DESC, tx_id
+                    LIMIT @txCountToFetch
+                    """
+                    skipConditionPattern
 
         let sqlParams =
             [
                 "@txCountToFetch", txCountToFetch |> box
             ]
 
-        DbTools.query dbConnectionString sql sqlParams
+        DbTools.query dbEngineType dbConnectionString sql sqlParams
 
-    let getTx (dbConnectionString : string) (TxHash txHash) : TxInfoDto option =
+    let getTx dbEngineType (dbConnectionString : string) (TxHash txHash) : TxInfoDto option =
         let sql =
             """
             SELECT tx_hash, sender_address, nonce, fee, action_count
@@ -106,12 +118,18 @@ module Db =
                 "@txHash", txHash |> box
             ]
 
-        match DbTools.query<TxInfoDto> dbConnectionString sql sqlParams with
+        match DbTools.query<TxInfoDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [tx] -> Some tx
         | _ -> failwithf "Multiple Txs found for hash %A" txHash
 
-    let getTotalFeeForPendingTxs (dbConnectionString : string) (BlockchainAddress senderAddress) : ChxAmount =
+    let getTotalFeeForPendingTxs
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockchainAddress senderAddress)
+        : ChxAmount
+        =
+
         let sql =
             """
             SELECT sum(fee * action_count)
@@ -122,7 +140,7 @@ module Db =
         [
             "@senderAddress", senderAddress |> box
         ]
-        |> DbTools.query<Nullable<decimal>> dbConnectionString sql
+        |> DbTools.query<Nullable<decimal>> dbEngineType dbConnectionString sql
         |> List.tryHead
         |> Option.bind Option.ofNullable
         |? 0m
@@ -132,7 +150,7 @@ module Db =
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let saveBlock (dbConnectionString : string) (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
+    let saveBlock dbEngineType (dbConnectionString : string) (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO block (block_number, block_hash, block_timestamp, is_config_block, is_applied)
@@ -148,7 +166,7 @@ module Db =
             ]
 
         try
-            match DbTools.execute dbConnectionString sql sqlParams with
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't insert block."
         with
@@ -156,7 +174,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert block."
 
-    let getLastAppliedBlockNumber (dbConnectionString : string) : BlockNumber option =
+    let getLastAppliedBlockNumber dbEngineType (dbConnectionString : string) : BlockNumber option =
         let sql =
             """
             SELECT block_number
@@ -164,27 +182,36 @@ module Db =
             WHERE is_applied = 1
             """
 
-        match DbTools.query<int64> dbConnectionString sql [] with
+        match DbTools.query<int64> dbEngineType dbConnectionString sql [] with
         | [] -> None
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
         | numbers -> failwithf "Multiple applied block entries found: %A" numbers
 
-    let getLastStoredBlockNumber (dbConnectionString : string) : BlockNumber option =
+    let getLastStoredBlockNumber dbEngineType (dbConnectionString : string) : BlockNumber option =
         let sql =
-            """
-            SELECT block_number
-            FROM block
-            WHERE is_applied = 0
-            ORDER BY block_number DESC
-            LIMIT 1
-            """
+            match dbEngineType with
+            | Firebird ->
+                """
+                SELECT FIRST 1 block_number
+                FROM block
+                WHERE is_applied = 0
+                ORDER BY block_number DESC
+                """
+            | PostgreSQL ->
+                """
+                SELECT block_number
+                FROM block
+                WHERE is_applied = 0
+                ORDER BY block_number DESC
+                LIMIT 1
+                """
 
-        match DbTools.query<int64> dbConnectionString sql [] with
+        match DbTools.query<int64> dbEngineType dbConnectionString sql [] with
         | [] -> None
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
         | _ -> failwith "getLastStoredBlockNumber query retrieved multiple rows."
 
-    let getStoredBlockNumbers (dbConnectionString : string) : BlockNumber list =
+    let getStoredBlockNumbers dbEngineType (dbConnectionString : string) : BlockNumber list =
         let sql =
             """
             SELECT block_number
@@ -192,14 +219,14 @@ module Db =
             WHERE is_applied = 0
             """
 
-        DbTools.query<int64> dbConnectionString sql []
+        DbTools.query<int64> dbEngineType dbConnectionString sql []
         |> List.map BlockNumber
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let getChxBalanceState (dbConnectionString : string) (BlockchainAddress address) : ChxBalanceStateDto option =
+    let getChxBalanceState dbEngineType (dbConnectionString : string) (BlockchainAddress address) : ChxBalanceStateDto option =
         let sql =
             """
             SELECT amount, nonce
@@ -212,12 +239,13 @@ module Db =
                 "@address", address |> box
             ]
 
-        match DbTools.query<ChxBalanceStateDto> dbConnectionString sql sqlParams with
+        match DbTools.query<ChxBalanceStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [state] -> Some state
         | _ -> failwithf "Multiple CHX balance entries found for address %A" address
 
     let getAddressAccounts
+        dbEngineType
         (dbConnectionString : string)
         (BlockchainAddress address)
         : AccountHash list
@@ -234,10 +262,10 @@ module Db =
         [
             "@controllerAddress", address |> box
         ]
-        |> DbTools.query<string> dbConnectionString sql
+        |> DbTools.query<string> dbEngineType dbConnectionString sql
         |> List.map AccountHash
 
-    let getAccountState (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
+    let getAccountState dbEngineType (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
         let sql =
             """
             SELECT controller_address
@@ -250,12 +278,13 @@ module Db =
                 "@accountHash", accountHash |> box
             ]
 
-        match DbTools.query<AccountStateDto> dbConnectionString sql sqlParams with
+        match DbTools.query<AccountStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [accountState] -> Some accountState
         | _ -> failwithf "Multiple accounts found for account hash %A" accountHash
 
     let getAccountHoldings
+        dbEngineType
         (dbConnectionString : string)
         (AccountHash accountHash)
         (assetHash : AssetHash option)
@@ -291,11 +320,12 @@ module Db =
                     "@assetHash", hash |> box
                 ]
 
-        match DbTools.query<AccountHoldingDto> dbConnectionString sql sqlParams with
+        match DbTools.query<AccountHoldingDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | holdings -> Some holdings
 
     let getHoldingState
+        dbEngineType
         (dbConnectionString : string)
         (AccountHash accountHash, AssetHash assetHash)
         : HoldingStateDto option =
@@ -314,12 +344,12 @@ module Db =
                 "@assetHash", assetHash |> box
             ]
 
-        match DbTools.query<HoldingStateDto> dbConnectionString sql sqlParams with
+        match DbTools.query<HoldingStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [holdingDetails] -> Some holdingDetails
         | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
 
-    let getAssetState (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
+    let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
             """
             SELECT asset_code, controller_address
@@ -332,12 +362,12 @@ module Db =
                 "@assetHash", assetHash |> box
             ]
 
-        match DbTools.query<AssetStateDto> dbConnectionString sql sqlParams with
+        match DbTools.query<AssetStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [assetState] -> Some assetState
         | _ -> failwithf "Multiple assets found for asset hash %A" assetHash
 
-    let getAssetHashByCode (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
+    let getAssetHashByCode dbEngineType (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
         let sql =
             """
             SELECT asset_hash
@@ -350,12 +380,13 @@ module Db =
                 "@assetCode", assetCode |> box
             ]
 
-        match DbTools.query<string> dbConnectionString sql sqlParams with
+        match DbTools.query<string> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [assetHash] -> assetHash |> AssetHash |> Some
         | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
 
     let getValidatorState
+        dbEngineType
         (dbConnectionString : string)
         (BlockchainAddress validatorAddress)
         : ValidatorStateDto option
@@ -373,12 +404,13 @@ module Db =
                 "@validatorAddress", validatorAddress |> box
             ]
 
-        match DbTools.query<ValidatorStateDto> dbConnectionString sql sqlParams with
+        match DbTools.query<ValidatorStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [validatorState] -> Some validatorState
         | _ -> failwithf "Multiple validators found for validator address %A" validatorAddress
 
     let getTopValidatorsByStake
+        dbEngineType
         (dbConnectionString : string)
         (topCount : int)
         (ChxAmount threshold)
@@ -386,27 +418,43 @@ module Db =
         =
 
         let sql =
-            """
-            SELECT validator_address, network_address, total_stake
-            FROM validator
-            JOIN (
-                SELECT validator_address, sum(amount) AS total_stake
-                FROM stake
-                GROUP BY validator_address
-                HAVING sum(amount) >= @threshold
-                ORDER BY sum(amount) DESC, count(stakeholder_address) DESC, validator_address
-                LIMIT @topCount
-            ) s USING (validator_address)
-            ORDER BY validator_address
-            """
+            match dbEngineType with
+            | Firebird ->
+                """
+                SELECT validator_address, network_address, total_stake
+                FROM validator
+                JOIN (
+                    SELECT FIRST @topCount validator_address, sum(amount) AS total_stake
+                    FROM stake
+                    GROUP BY validator_address
+                    HAVING sum(amount) >= @threshold
+                    ORDER BY sum(amount) DESC, count(stakeholder_address) DESC, validator_address
+                ) s USING (validator_address)
+                ORDER BY validator_address
+                """
+            | PostgreSQL ->
+                """
+                SELECT validator_address, network_address, total_stake
+                FROM validator
+                JOIN (
+                    SELECT validator_address, sum(amount) AS total_stake
+                    FROM stake
+                    GROUP BY validator_address
+                    HAVING sum(amount) >= @threshold
+                    ORDER BY sum(amount) DESC, count(stakeholder_address) DESC, validator_address
+                    LIMIT @topCount
+                ) s USING (validator_address)
+                ORDER BY validator_address
+                """
 
         [
             "@topCount", topCount |> box
             "@threshold", threshold |> box
         ]
-        |> DbTools.query<ValidatorSnapshotDto> dbConnectionString sql
+        |> DbTools.query<ValidatorSnapshotDto> dbEngineType dbConnectionString sql
 
     let getStakeState
+        dbEngineType
         (dbConnectionString : string)
         (BlockchainAddress stakeholderAddress, BlockchainAddress validatorAddress)
         : StakeStateDto option
@@ -426,12 +474,12 @@ module Db =
                 "@validatorAddress", validatorAddress |> box
             ]
 
-        match DbTools.query<StakeStateDto> dbConnectionString sql sqlParams with
+        match DbTools.query<StakeStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [stakeState] -> Some stakeState
         | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakeholderAddress validatorAddress
 
-    let getTotalChxStaked (dbConnectionString : string) (BlockchainAddress stakeholderAddress) : ChxAmount =
+    let getTotalChxStaked dbEngineType (dbConnectionString : string) (BlockchainAddress stakeholderAddress) : ChxAmount =
         let sql =
             """
             SELECT sum(amount)
@@ -442,7 +490,7 @@ module Db =
         [
             "@stakeholderAddress", stakeholderAddress |> box
         ]
-        |> DbTools.query<Nullable<decimal>> dbConnectionString sql
+        |> DbTools.query<Nullable<decimal>> dbEngineType dbConnectionString sql
         |> List.tryHead
         |> Option.bind Option.ofNullable
         |? 0m
@@ -452,17 +500,17 @@ module Db =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let getAllPeerNodes (dbConnectionString : string) : NetworkAddress list =
+    let getAllPeerNodes dbEngineType (dbConnectionString : string) : NetworkAddress list =
         let sql =
             """
             SELECT network_address
             FROM peer
             """
 
-        DbTools.query<string> dbConnectionString sql []
+        DbTools.query<string> dbEngineType dbConnectionString sql []
         |> List.map (fun a -> NetworkAddress a)
 
-    let removePeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+    let removePeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
         let sql =
             """
             DELETE FROM peer
@@ -473,7 +521,7 @@ module Db =
                 "@networkAddress", networkAddress |> box
             ]
         try
-            match DbTools.execute dbConnectionString sql sqlParams with
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't remove peer."
         with
@@ -481,7 +529,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove peer."
 
-    let private getPeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : NetworkAddress option =
+    let private getPeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : NetworkAddress option =
         let sql =
             """
             SELECT network_address
@@ -494,12 +542,12 @@ module Db =
                 "@networkAddress", networkAddress |> box
             ]
 
-        match DbTools.query<string> dbConnectionString sql sqlParams with
+        match DbTools.query<string> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [a] -> a |> NetworkAddress |> Some
         | _ -> failwithf "Multiple entries found for address %A" networkAddress
 
-    let private insertPeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+    let private insertPeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO peer (network_address)
@@ -512,7 +560,7 @@ module Db =
             ]
 
         try
-            match DbTools.execute dbConnectionString sql sqlParams with
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't insert peer."
         with
@@ -520,10 +568,10 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert peer."
 
-    let savePeerNode (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
-        match getPeerNode dbConnectionString (NetworkAddress networkAddress) with
+    let savePeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+        match getPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress) with
         | Some _ -> Ok ()
-        | None -> insertPeerNode dbConnectionString (NetworkAddress networkAddress)
+        | None -> insertPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Apply New State
@@ -1083,16 +1131,17 @@ module Db =
         |> List.fold foldFn (Ok ())
 
     let persistStateChanges
+        dbEngineType
         (dbConnectionString : string)
         (blockNumber : BlockNumber)
         (state : ProcessingOutputDto)
         : Result<unit, AppErrors>
         =
 
-        use conn = DbTools.newConnection dbConnectionString
+        use conn = DbTools.newConnection dbEngineType dbConnectionString
 
         conn.Open()
-        let transaction = conn.BeginTransaction(Data.IsolationLevel.ReadCommitted)
+        use transaction = conn.BeginTransaction(Data.IsolationLevel.ReadCommitted)
 
         let result =
             result {

@@ -2,15 +2,13 @@ namespace Own.Blockchain.Public.Data
 
 open System
 open System.IO
-open Microsoft.Data.Sqlite
+open System.Runtime.InteropServices
+open FirebirdSql.Data.FirebirdClient
 open Own.Common
 open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
 
 module DbInit =
-
-    type DbEngineType =
-        | SQLite
-        | PostgreSQL
 
     [<CLIMutable>]
     type DbVersionInfo = {
@@ -19,18 +17,18 @@ module DbInit =
     }
 
     let private ensureDbExists dbEngineType connectionString =
-        if dbEngineType = SQLite then
-            let csb = SqliteConnectionStringBuilder connectionString
-            let dbFile = csb.DataSource
+        if dbEngineType = Firebird then
+            let csb = DbTools.prepareFirebirdConnectionString connectionString
+            let dbFile = csb.Database
             if not (File.Exists dbFile) then
-                use fs = File.Create(dbFile)
-                fs.Close()
+                Log.notice "Creating database..."
+                FbConnection.CreateDatabase(csb.ConnectionString, false)
         else
             dbEngineType
             |> unionCaseName
             |> invalidOp "DB creation is not supported for DbEngineType: %s"
 
-    let private getDbVersion connectionString =
+    let private getDbVersion dbEngineType connectionString =
         let sql =
             """
             SELECT max(version_number) AS version_number
@@ -38,14 +36,14 @@ module DbInit =
             """
 
         try
-            DbTools.query<DbVersionInfo> connectionString sql []
+            DbTools.query<DbVersionInfo> dbEngineType connectionString sql []
             |> List.tryHead
             |> Option.map (fun v -> v.VersionNumber)
             |? 0
         with
         | ex when
-            ex.AllMessages.Contains "no such table: db_version"
-            || ex.AllMessages.Contains """relation "db_version" does not exist"""
+            (ex.AllMessages.Contains "Table unknown" && ex.AllMessages.Contains "DB_VERSION") // Firebird
+            || ex.AllMessages.Contains """relation "db_version" does not exist""" // PostgreSQL
             -> 0
 
     let private ensureDbChangeNumberConsistency (dbChanges : DbChange list) =
@@ -62,30 +60,29 @@ module DbInit =
         let sql =
             sprintf
                 """
-                %s;
+                %s
                 INSERT INTO db_version (version_number, execution_timestamp)
-                VALUES (@versionNumber, @executionTimestamp);
+                VALUES (%i, %i);
                 """
                 dbChange.Script
+                dbChange.Number
+                (Utils.getUnixTimestamp ())
 
-        let rowsAffected =
-            [
-                "@versionNumber", dbChange.Number |> box
-                "@executionTimestamp", Utils.getUnixTimestamp () |> box
-            ]
-            |> DbTools.execute connectionString sql
-
-        ()
+        match dbEngineType with
+        | Firebird ->
+            DbTools.executeFbBatch dbEngineType connectionString sql []
+        | PostgreSQL ->
+            DbTools.execute dbEngineType connectionString sql [] |> ignore
 
     let private applyDbChanges dbEngineType connectionString =
         let dbChanges =
             match dbEngineType with
-            | SQLite -> DbChanges.sqliteChanges
+            | Firebird -> DbChanges.firebirdChanges
             | PostgreSQL -> DbChanges.postgresqlChanges
 
         ensureDbChangeNumberConsistency dbChanges
 
-        let lastAppliedChangeNumber = getDbVersion connectionString
+        let lastAppliedChangeNumber = getDbVersion dbEngineType connectionString
 
         let dbChanges =
             dbChanges
@@ -96,13 +93,13 @@ module DbInit =
             Log.noticef "Applying DB change %i" change.Number
             applyDbChange dbEngineType connectionString change
 
-    let private initDb dbEngineType connectionString =
-        if dbEngineType = SQLite then
-            ensureDbExists dbEngineType connectionString
-        applyDbChanges dbEngineType connectionString
+    let init dbEngineType connectionString =
+        if dbEngineType = Firebird then
+            if not (RuntimeInformation.IsOSPlatform OSPlatform.Windows) then
+                let firebirdDir = Environment.GetEnvironmentVariable("FIREBIRD")
+                if isNull firebirdDir || firebirdDir <> DbTools.appDir then
+                    failwith "FIREBIRD environment variable not set to the application directory for the shell session."
 
-    let init dbEngineTypeCode connectionString =
-        match dbEngineTypeCode with
-        | "SQLite" -> initDb SQLite connectionString
-        | "PostgreSQL" -> initDb PostgreSQL connectionString
-        | t -> failwithf "Unknown DB engine type: %s" t
+            ensureDbExists dbEngineType connectionString
+
+        applyDbChanges dbEngineType connectionString

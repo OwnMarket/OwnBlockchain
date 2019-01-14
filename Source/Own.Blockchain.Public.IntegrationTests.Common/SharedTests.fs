@@ -60,15 +60,16 @@ module SharedTests =
         |> Async.RunSynchronously
         |> JsonConvert.DeserializeObject<SubmitTxResponseDto>
 
-    let private testInit engineType connectionString =
-        Helper.testCleanup engineType connectionString
-        DbInit.init engineType connectionString
+    let private testInit dbEngineType connectionString =
+        Helper.testCleanup dbEngineType connectionString
+        DbInit.init dbEngineType connectionString
         Composition.initBlockchainState ()
 
         let testServer = Helper.testServer()
         testServer.CreateClient()
 
     let submissionChecks
+        dbEngineType
         connectionString
         shouldExist
         senderWallet
@@ -90,7 +91,7 @@ module SharedTests =
 
             test <@ expectedTx = savedData @>
 
-        let actual = Db.getTx connectionString (TxHash responseDto.TxHash)
+        let actual = Db.getTx dbEngineType connectionString (TxHash responseDto.TxHash)
 
         match actual with
         | None ->
@@ -102,8 +103,8 @@ module SharedTests =
             test <@ dto.Nonce = txInfo.Nonce @>
             test <@ txInfo.SenderAddress = senderWallet.Address.Value @>
 
-    let transactionSubmitTest engineType connString isValidTransaction =
-        let client = testInit engineType connString
+    let transactionSubmitTest dbEngineType connString isValidTransaction =
+        let client = testInit dbEngineType connString
         let senderWallet = Signing.generateWallet ()
         let receiverWallet = Signing.generateWallet ()
 
@@ -121,7 +122,7 @@ module SharedTests =
         let expectedTx = transactionEnvelope senderWallet txDto
 
         submitTransaction client expectedTx
-        |> submissionChecks connString isValidTransaction senderWallet txDto expectedTx
+        |> submissionChecks dbEngineType connString isValidTransaction senderWallet txDto expectedTx
 
     let processTransactions expectedBlockPath =
         Workers.startFetcher ()
@@ -135,8 +136,8 @@ module SharedTests =
 
         test <@ File.Exists(expectedBlockPath) @>
 
-    let transactionProcessingTest engineType connString =
-        let client = testInit engineType connString
+    let transactionProcessingTest dbEngineType connString =
+        let client = testInit dbEngineType connString
 
         let submittedTxHashes =
             [
@@ -144,8 +145,8 @@ module SharedTests =
                     let senderWallet = Signing.generateWallet ()
                     let receiverWallet = Signing.generateWallet ()
 
-                    Helper.addBalanceAndAccount connString senderWallet.Address.Value 100m
-                    Helper.addBalanceAndAccount connString receiverWallet.Address.Value 0m
+                    Helper.addBalanceAndAccount dbEngineType connString senderWallet.Address.Value 100m
+                    Helper.addBalanceAndAccount dbEngineType connString receiverWallet.Address.Value 0m
 
                     let isValid = i % 2 = 0
                     let amt = if isValid then 10m else -10m
@@ -167,7 +168,7 @@ module SharedTests =
                     let expectedTx = transactionEnvelope senderWallet txDto
 
                     let submitedTransactionDto = submitTransaction client expectedTx
-                    submissionChecks connString isValid senderWallet txDto expectedTx submitedTransactionDto
+                    submissionChecks dbEngineType connString isValid senderWallet txDto expectedTx submitedTransactionDto
 
                     if isValid then
                         yield submitedTransactionDto.TxHash
@@ -182,26 +183,26 @@ module SharedTests =
             let expectedTxResultPath = Path.Combine(Config.DataDir, txResultFileName)
             test <@ File.Exists expectedTxResultPath @>
 
-            test <@ Db.getTx connString (TxHash txHash) = None @>
+            test <@ Db.getTx dbEngineType connString (TxHash txHash) = None @>
 
-    let private numOfUpdatesExecuted connectionString =
+    let private numOfUpdatesExecuted dbEngineType connectionString =
         let sql =
             """
             SELECT version_number
             FROM db_version;
             """
-        DbTools.query<int> connectionString sql []
+        DbTools.query<int> dbEngineType connectionString sql []
 
-    let initDatabaseTest engineType connString =
-        Helper.testCleanup engineType connString
-        DbInit.init engineType connString
-        let changes = numOfUpdatesExecuted connString
+    let initDatabaseTest dbEngineType connString =
+        Helper.testCleanup dbEngineType connString
+        DbInit.init dbEngineType connString
+        let changes = numOfUpdatesExecuted dbEngineType connString
         test <@ changes.Length > 0 @>
 
-    let initBlockchainStateTest engineType connString =
+    let initBlockchainStateTest dbEngineType connString =
         // ARRANGE
-        Helper.testCleanup engineType connString
-        DbInit.init engineType connString
+        Helper.testCleanup dbEngineType connString
+        DbInit.init dbEngineType connString
         let expectedChxBalanceState =
             {
                 ChxBalanceStateDto.Amount = Config.GenesisChxSupply
@@ -215,18 +216,18 @@ module SharedTests =
         let genesisAddressChxBalanceState =
             Config.GenesisAddress
             |> BlockchainAddress
-            |> Db.getChxBalanceState connString
+            |> Db.getChxBalanceState dbEngineType connString
 
         let lastAppliedBlockNumber =
-            Db.getLastAppliedBlockNumber connString
+            Db.getLastAppliedBlockNumber dbEngineType connString
 
         test <@ genesisAddressChxBalanceState = Some expectedChxBalanceState @>
         test <@ lastAppliedBlockNumber = Some (BlockNumber 0L) @>
 
-    let loadBlockTest engineType connString =
+    let loadBlockTest dbEngineType connString =
         // ARRANGE
-        Helper.testCleanup engineType connString
-        DbInit.init engineType connString
+        Helper.testCleanup dbEngineType connString
+        DbInit.init dbEngineType connString
         Composition.initBlockchainState ()
 
         let genesisValidators =
@@ -250,9 +251,9 @@ module SharedTests =
         // ASSERT
         test <@ loadedBlockDto = Ok expectedBlockDto @>
 
-    let getAccountStateTest engineType connectionString =
-        Helper.testCleanup engineType connectionString
-        DbInit.init engineType connectionString
+    let getAccountStateTest dbEngineType connectionString =
+        Helper.testCleanup dbEngineType connectionString
+        DbInit.init dbEngineType connectionString
         let wallet = Signing.generateWallet ()
 
         let paramName = "@blockchain_address"
@@ -271,16 +272,16 @@ module SharedTests =
 
         [paramName, address |> box]
         |> Seq.ofList
-        |> DbTools.execute connectionString insertSql
+        |> DbTools.execute dbEngineType connectionString insertSql
         |> ignore
 
-        match Db.getAccountState connectionString (AccountHash address) with // TODO: Use separate account hash.
+        match Db.getAccountState dbEngineType connectionString (AccountHash address) with // TODO: Use separate account hash.
         | None -> failwith "Unable to get account state."
         | Some accountState -> test <@ BlockchainAddress accountState.ControllerAddress = wallet.Address @>
 
-    let setAccountControllerTest engineType connectionString =
+    let setAccountControllerTest dbEngineType connectionString =
         // ARRANGE
-        let client = testInit engineType connectionString
+        let client = testInit dbEngineType connectionString
 
         let sender = Signing.generateWallet()
         let newController = Signing.generateWallet()
@@ -291,8 +292,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
-        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let accountHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -321,26 +322,26 @@ module SharedTests =
 
         // ACT
         submitTransaction client txEnvelope
-        |> submissionChecks connectionString true sender txDto txEnvelope
+        |> submissionChecks dbEngineType connectionString true sender txDto txEnvelope
 
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // ASSERT
         let accountState =
-            Db.getAccountState connectionString (AccountHash accountHash)
+            Db.getAccountState dbEngineType connectionString (AccountHash accountHash)
             |> Option.map Mapping.accountStateFromDto
 
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let senderBalance = Db.getChxBalanceState connectionString sender.Address
-        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
+        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
+        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
         test <@ accountState = Some { ControllerAddress = newController.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
-    let setAssetControllerTest engineType connectionString =
+    let setAssetControllerTest dbEngineType connectionString =
         // ARRANGE
-        let client = testInit engineType connectionString
+        let client = testInit dbEngineType connectionString
 
         let sender = Signing.generateWallet()
         let newController = Signing.generateWallet()
@@ -351,8 +352,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString (sender.Address.Value) initialSenderChxBalance
-        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxBalance dbEngineType connectionString (sender.Address.Value) initialSenderChxBalance
+        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let assetHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -381,25 +382,25 @@ module SharedTests =
 
         // ACT
         submitTransaction client txEnvelope
-        |> submissionChecks connectionString true sender txDto txEnvelope
+        |> submissionChecks dbEngineType connectionString true sender txDto txEnvelope
 
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // ASSERT
         let assetState =
-            Db.getAssetState connectionString (AssetHash assetHash)
+            Db.getAssetState dbEngineType connectionString (AssetHash assetHash)
             |> Option.map Mapping.assetStateFromDto
-        let senderBalance = Db.getChxBalanceState connectionString sender.Address
+        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
+        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
         test <@ assetState = Some { AssetCode = None; ControllerAddress = newController.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
-    let setAssetCodeTest engineType connectionString =
+    let setAssetCodeTest dbEngineType connectionString =
         // ARRANGE
-        let client = testInit engineType connectionString
+        let client = testInit dbEngineType connectionString
 
         let assetCode = "Foo"
         let sender = Signing.generateWallet()
@@ -410,8 +411,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
-        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let assetHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -440,26 +441,26 @@ module SharedTests =
 
         // ACT
         submitTransaction client txEnvelope
-        |> submissionChecks connectionString true sender txDto txEnvelope
+        |> submissionChecks dbEngineType connectionString true sender txDto txEnvelope
 
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // ASSERT
         let assetCode = AssetCode assetCode
         let assetState =
-            Db.getAssetState connectionString (AssetHash assetHash)
+            Db.getAssetState dbEngineType connectionString (AssetHash assetHash)
             |> Option.map Mapping.assetStateFromDto
-        let senderBalance = Db.getChxBalanceState connectionString sender.Address
+        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
+        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
         test <@ assetState = Some { AssetCode = Some assetCode; ControllerAddress = sender.Address } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
-    let setValidatorNetworkAddressTest engineType connectionString =
+    let setValidatorNetworkAddressTest dbEngineType connectionString =
         // ARRANGE
-        let client = testInit engineType connectionString
+        let client = testInit dbEngineType connectionString
 
         let networkAddress = "localhost:5000"
         let sender = Signing.generateWallet()
@@ -470,8 +471,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
-        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
 
@@ -494,29 +495,29 @@ module SharedTests =
 
         // ACT
         submitTransaction client txEnvelope
-        |> submissionChecks connectionString true sender txDto txEnvelope
+        |> submissionChecks dbEngineType connectionString true sender txDto txEnvelope
 
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // ASSERT
         let validatorState =
-            Db.getValidatorState connectionString sender.Address
+            Db.getValidatorState dbEngineType connectionString sender.Address
             |> Option.map Mapping.validatorStateFromDto
-        let senderBalance = Db.getChxBalanceState connectionString sender.Address
+        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
         let validatorAddress =
             Config.ValidatorPrivateKey
             |> PrivateKey
             |> addressFromPrivateKey
 
-        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
+        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
         test <@ validatorState = Some { NetworkAddress = networkAddress } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
-    let delegateStakeTest engineType connectionString =
+    let delegateStakeTest dbEngineType connectionString =
         // ARRANGE
-        let client = testInit engineType connectionString
+        let client = testInit dbEngineType connectionString
 
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
         let stakeAmount = 5m
@@ -524,9 +525,9 @@ module SharedTests =
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
 
-        Helper.addChxBalance connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
         let (BlockchainAddress validatorAddress) = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        Helper.addChxBalance connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
 
@@ -550,17 +551,17 @@ module SharedTests =
 
         // ACT
         submitTransaction client txEnvelope
-        |> submissionChecks connectionString true sender txDto txEnvelope
+        |> submissionChecks dbEngineType connectionString true sender txDto txEnvelope
 
         processTransactions Helper.ExpectedPathForFirstBlock
 
         // ASSERT
         let stakeState =
-            Db.getStakeState connectionString (sender.Address, stakeValidatorAddress)
+            Db.getStakeState dbEngineType connectionString (sender.Address, stakeValidatorAddress)
             |> Option.map Mapping.stakeStateFromDto
-        let senderBalance = Db.getChxBalanceState connectionString sender.Address
+        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let validatorBalance = Db.getChxBalanceState connectionString validatorAddress
+        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
         test <@ stakeState = Some { StakeState.Amount = ChxAmount stakeAmount } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>

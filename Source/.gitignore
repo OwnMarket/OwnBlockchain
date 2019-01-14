@@ -3,7 +3,8 @@
 **/.vs
 *.user
 
-# SQLite and Raw data
+# DB and Raw data
+*.fdb
 *.db
 Own.Blockchain.Public.Node/Data
 
