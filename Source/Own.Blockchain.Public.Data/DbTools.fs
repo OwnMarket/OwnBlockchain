@@ -75,6 +75,9 @@ module DbTools =
 
         csb.ClientLibrary <- Path.Combine(appDir, clientLibraryFileName)
 
+        if not (connectionString.ToLowerInvariant().Contains("servertype")) then
+            csb.ServerType <- FbServerType.Embedded
+
         if csb.UserID.IsNullOrWhiteSpace() then
             csb.UserID <- "SYSDBA"
 
