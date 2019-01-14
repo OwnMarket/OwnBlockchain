@@ -154,7 +154,7 @@ module Db =
         let sql =
             """
             INSERT INTO block (block_number, block_hash, block_timestamp, is_config_block, is_applied)
-            VALUES (@blockNumber, @blockHash, @blockTimestamp, @isConfigBlock, 0)
+            VALUES (@blockNumber, @blockHash, @blockTimestamp, @isConfigBlock, FALSE)
             """
 
         let sqlParams =
@@ -162,7 +162,7 @@ module Db =
                 "@blockNumber", blockInfo.BlockNumber |> box
                 "@blockHash", blockInfo.BlockHash |> box
                 "@blockTimestamp", blockInfo.BlockTimestamp |> box
-                "@isConfigBlock", (if blockInfo.IsConfigBlock then 1s else 0s) |> box
+                "@isConfigBlock", blockInfo.IsConfigBlock |> box
             ]
 
         try
@@ -179,7 +179,7 @@ module Db =
             """
             SELECT block_number
             FROM block
-            WHERE is_applied = 1
+            WHERE is_applied = TRUE
             """
 
         match DbTools.query<int64> dbEngineType dbConnectionString sql [] with
@@ -194,14 +194,14 @@ module Db =
                 """
                 SELECT FIRST 1 block_number
                 FROM block
-                WHERE is_applied = 0
+                WHERE is_applied = FALSE
                 ORDER BY block_number DESC
                 """
             | PostgreSQL ->
                 """
                 SELECT block_number
                 FROM block
-                WHERE is_applied = 0
+                WHERE is_applied = FALSE
                 ORDER BY block_number DESC
                 LIMIT 1
                 """
@@ -216,7 +216,7 @@ module Db =
             """
             SELECT block_number
             FROM block
-            WHERE is_applied = 0
+            WHERE is_applied = FALSE
             """
 
         DbTools.query<int64> dbEngineType dbConnectionString sql []
@@ -651,9 +651,9 @@ module Db =
         let sql =
             """
             UPDATE block
-            SET is_applied = 1
+            SET is_applied = TRUE
             WHERE block_number = @blockNumber
-            AND is_applied = 0
+            AND is_applied = FALSE
             """
 
         let sqlParams =

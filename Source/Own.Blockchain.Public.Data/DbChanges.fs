@@ -88,8 +88,8 @@ module DbChanges =
                         block_number BIGINT NOT NULL,
                         block_hash VARCHAR(50) NOT NULL,
                         block_timestamp BIGINT NOT NULL,
-                        is_config_block SMALLINT NOT NULL, -- TODO: Change this to BOOLEAN once supported in both DBs.
-                        is_applied SMALLINT NOT NULL, -- TODO: Change this to BOOLEAN once supported in both DBs.
+                        is_config_block BOOLEAN NOT NULL,
+                        is_applied BOOLEAN NOT NULL,
 
                         CONSTRAINT block__pk PRIMARY KEY (block_id),
                         CONSTRAINT block__uk__number UNIQUE (block_number),
@@ -212,8 +212,8 @@ module DbChanges =
                         block_number BIGINT NOT NULL,
                         block_hash VARCHAR(50) NOT NULL,
                         block_timestamp BIGINT NOT NULL,
-                        is_config_block SMALLINT NOT NULL, -- TODO: Change this to BOOLEAN once supported in both DBs.
-                        is_applied SMALLINT NOT NULL, -- TODO: Change this to BOOLEAN once supported in both DBs.
+                        is_config_block BOOLEAN NOT NULL,
+                        is_applied BOOLEAN NOT NULL,
 
                         CONSTRAINT block__pk PRIMARY KEY (block_id),
                         CONSTRAINT block__uk__number UNIQUE (block_number),
