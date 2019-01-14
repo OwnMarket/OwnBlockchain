@@ -168,7 +168,14 @@ module SharedTests =
                     let expectedTx = transactionEnvelope senderWallet txDto
 
                     let submitedTransactionDto = submitTransaction client expectedTx
-                    submissionChecks dbEngineType connString isValid senderWallet txDto expectedTx submitedTransactionDto
+                    submissionChecks
+                        dbEngineType
+                        connString
+                        isValid
+                        senderWallet
+                        txDto
+                        expectedTx
+                        submitedTransactionDto
 
                     if isValid then
                         yield submitedTransactionDto.TxHash
@@ -275,7 +282,8 @@ module SharedTests =
         |> DbTools.execute dbEngineType connectionString insertSql
         |> ignore
 
-        match Db.getAccountState dbEngineType connectionString (AccountHash address) with // TODO: Use separate account hash.
+        // TODO: Use separate account hash.
+        match Db.getAccountState dbEngineType connectionString (AccountHash address) with
         | None -> failwith "Unable to get account state."
         | Some accountState -> test <@ BlockchainAddress accountState.ControllerAddress = wallet.Address @>
 

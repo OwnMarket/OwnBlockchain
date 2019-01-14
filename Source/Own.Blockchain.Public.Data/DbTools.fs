@@ -156,7 +156,14 @@ module DbTools =
 
         cmd.ExecuteNonQuery()
 
-    let query<'T> dbEngineType (dbConnectionString : string) (sql : string) (parameters : (string * obj) seq) : 'T list =
+    let query<'T>
+        dbEngineType
+        (dbConnectionString : string)
+        (sql : string)
+        (parameters : (string * obj) seq)
+        : 'T list
+        =
+
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores <- true
         use conn = newConnection dbEngineType dbConnectionString
 

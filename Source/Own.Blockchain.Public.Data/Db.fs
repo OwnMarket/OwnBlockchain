@@ -226,7 +226,13 @@ module Db =
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let getChxBalanceState dbEngineType (dbConnectionString : string) (BlockchainAddress address) : ChxBalanceStateDto option =
+    let getChxBalanceState
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockchainAddress address)
+        : ChxBalanceStateDto option
+        =
+
         let sql =
             """
             SELECT amount, nonce
@@ -479,7 +485,13 @@ module Db =
         | [stakeState] -> Some stakeState
         | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakeholderAddress validatorAddress
 
-    let getTotalChxStaked dbEngineType (dbConnectionString : string) (BlockchainAddress stakeholderAddress) : ChxAmount =
+    let getTotalChxStaked
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockchainAddress stakeholderAddress)
+        : ChxAmount
+        =
+
         let sql =
             """
             SELECT sum(amount)
@@ -510,7 +522,13 @@ module Db =
         DbTools.query<string> dbEngineType dbConnectionString sql []
         |> List.map (fun a -> NetworkAddress a)
 
-    let removePeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+    let removePeerNode
+        dbEngineType
+        (dbConnectionString : string)
+        (NetworkAddress networkAddress)
+        : Result<unit, AppErrors>
+        =
+
         let sql =
             """
             DELETE FROM peer
@@ -529,7 +547,13 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove peer."
 
-    let private getPeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : NetworkAddress option =
+    let private getPeerNode
+        dbEngineType
+        (dbConnectionString : string)
+        (NetworkAddress networkAddress)
+        : NetworkAddress option
+        =
+
         let sql =
             """
             SELECT network_address
@@ -547,7 +571,13 @@ module Db =
         | [a] -> a |> NetworkAddress |> Some
         | _ -> failwithf "Multiple entries found for address %A" networkAddress
 
-    let private insertPeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+    let private insertPeerNode
+        dbEngineType
+        (dbConnectionString : string)
+        (NetworkAddress networkAddress)
+        : Result<unit, AppErrors>
+        =
+
         let sql =
             """
             INSERT INTO peer (network_address)
@@ -568,7 +598,13 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert peer."
 
-    let savePeerNode dbEngineType (dbConnectionString : string) (NetworkAddress networkAddress) : Result<unit, AppErrors> =
+    let savePeerNode
+        dbEngineType
+        (dbConnectionString : string)
+        (NetworkAddress networkAddress)
+        : Result<unit, AppErrors>
+        =
+
         match getPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress) with
         | Some _ -> Ok ()
         | None -> insertPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress)
