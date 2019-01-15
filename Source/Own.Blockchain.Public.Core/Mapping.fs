@@ -93,21 +93,23 @@ module Mapping =
             |> DelegateStake
         | :? SubmitVoteTxActionDto as a ->
             {
-                VoteId = {
-                    AccountHash = AccountHash a.AccountHash
-                    AssetHash = AssetHash a.AssetHash
-                    ResolutionHash = VotingResolutionHash a.ResolutionHash
-                }
+                VoteId =
+                    {
+                        AccountHash = AccountHash a.AccountHash
+                        AssetHash = AssetHash a.AssetHash
+                        ResolutionHash = VotingResolutionHash a.ResolutionHash
+                    }
                 VoteHash = VoteHash a.VoteHash
             }
             |> SubmitVote
         | :? SubmitVoteWeightTxActionDto as a ->
             {
-                VoteId = {
-                    AccountHash = AccountHash a.AccountHash
-                    AssetHash = AssetHash a.AssetHash
-                    ResolutionHash = VotingResolutionHash a.ResolutionHash
-                }
+                VoteId =
+                    {
+                        AccountHash = AccountHash a.AccountHash
+                        AssetHash = AssetHash a.AssetHash
+                        ResolutionHash = VotingResolutionHash a.ResolutionHash
+                    }
                 VoteWeight = VoteWeight a.VoteWeight
             }
             |> SubmitVoteWeight

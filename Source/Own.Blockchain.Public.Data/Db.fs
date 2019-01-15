@@ -957,10 +957,11 @@ module Db =
                     AccountHash = accountHash
                     AssetHash = assetHash
                     ResolutionHash = resolutionHash
-                    VoteState = {
-                        VoteHash = voteState.VoteHash
-                        VoteWeight = voteState.VoteWeight
-                    }
+                    VoteState =
+                        {
+                            VoteHash = voteState.VoteHash
+                            VoteWeight = voteState.VoteWeight
+                        }
                 }
                 |> updateVote conn transaction
 
