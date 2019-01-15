@@ -185,6 +185,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -209,6 +212,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -278,6 +282,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -302,6 +309,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -372,6 +380,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -396,6 +407,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -466,6 +478,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -489,6 +504,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -549,6 +565,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -577,6 +596,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -661,6 +681,9 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -685,6 +708,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -765,6 +789,9 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -789,6 +816,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -872,6 +900,9 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState accountHash =
             if accountHash = recipientAccountHash then
                 Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -899,6 +930,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -979,6 +1011,9 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState accountHash =
             if accountHash = senderAccountHash then
                 Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1006,6 +1041,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1029,6 +1065,1098 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Holdings = Map.empty @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SubmitVote
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVote`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteHash = VoteHash "Yes"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteHash = voteHash.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+        test <@ output.Votes.Count = 1 @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash}]
+            = {VoteHash = voteHash; VoteWeight = None} @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVote account not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteHash = VoteHash "Yes"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteHash = voteHash.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getAccountState _ =
+            None
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash =
+            (TxActionNumber 1s, TxErrorCode.AccountNotFound) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatusTxHash @>
+        test <@ output.Votes.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVote asset not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteHash = VoteHash "Yes"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteHash = voteHash.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            None
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash =
+            (TxActionNumber 1s, TxErrorCode.AssetNotFound) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatusTxHash @>
+        test <@ output.Votes.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVote sender is not account controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteHash = VoteHash "Yes"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteHash = voteHash.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = otherWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotSourceAccountController) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatusTxHash @>
+        test <@ output.Votes.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVote one account multiple votes`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let rsh1 = VotingResolutionHash "RS1"
+        let rsh2 = VotingResolutionHash "RS2"
+        let rsh3 = VotingResolutionHash "RS3"
+        let voteHashYes = VoteHash "Yes"
+        let voteHashNo = VoteHash "No"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce1 = Nonce 11L
+        let nonce2 = nonce1 + 1L
+        let nonce3 = nonce2 + 1L
+
+        let fee = ChxAmount 1m
+
+        // Vote Yes on RS1
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = rsh1.Value
+                            VoteHash = voteHashYes.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce1 fee
+
+        // Vote Yes on RS2
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = rsh2.Value
+                            VoteHash = voteHashYes.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce2 fee
+
+        // Vote No on RS3
+        let txHash3, txEnvelope3 =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = rsh3.Value
+                            VoteHash = voteHashNo.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce3 fee
+
+        let txSet = [txHash1; txHash2; txHash3]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            elif txHash = txHash3 then Ok txEnvelope3
+            else Result.appError "Invalid txHash"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState (voteId: VoteId) =
+            // No vote for rsh1
+            if voteId.ResolutionHash = rsh1 then
+                None
+            // Existing non weighted vote for rsh2
+            elif voteId.ResolutionHash = rsh2 then
+                Some {VoteState.VoteHash = voteHashNo; VoteWeight = None}
+            // Existing, weighted vote for rsh3
+            elif voteId.ResolutionHash = rsh3 then
+                Some {VoteState.VoteHash = voteHashNo; VoteWeight = 1m |> VoteWeight |> Some}
+            else
+                None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - (ChxAmount 3m) * fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + (ChxAmount 3m) * fee
+        let expectedStatusTxHash3 = (TxActionNumber 1s, TxErrorCode.VoteIsAlreadyWeighted) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 3 @>
+        test <@ output.TxResults.[txHash1].Status = Success @>
+        test <@ output.TxResults.[txHash2].Status = Success @>
+        test <@ output.TxResults.[txHash3].Status = expectedStatusTxHash3 @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce3 @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Votes.Count = 2 @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = rsh1}]
+            = {VoteHash = voteHashYes; VoteWeight = None} @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = rsh2}]
+            = {VoteHash = voteHashYes; VoteWeight = None} @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SubmitVoteWeight
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVoteWeight`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteHash = VoteHash "Yes"
+        let voteWeight = VoteWeight 1m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            Some {VoteState.VoteHash = voteHash; VoteWeight = None}
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+        test <@ output.Votes.Count = 1 @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash}]
+            = {VoteHash = voteHash; VoteWeight = Some voteWeight} @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVoteWeight account not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteWeight = VoteWeight 1m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getAccountState _ =
+            None
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash =
+            (TxActionNumber 1s, TxErrorCode.AccountNotFound) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatusTxHash @>
+        test <@ output.Votes.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVoteWeight asset not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteWeight = VoteWeight 1m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            None
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash =
+            (TxActionNumber 1s, TxErrorCode.AssetNotFound) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatusTxHash @>
+        test <@ output.Votes.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVoteWeight sender is not asset controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteWeight = VoteWeight 1m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatusTxHash @>
+        test <@ output.Votes.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVoteWeight one account multiple votes`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let rsh1 = VotingResolutionHash "RS1"
+        let rsh2 = VotingResolutionHash "RS2"
+        let rsh3 = VotingResolutionHash "RS3"
+        let voteHashYes = VoteHash "Yes"
+        let voteHashNo = VoteHash "No"
+        let voteWeight = VoteWeight 1m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce1 = Nonce 11L
+        let nonce2 = nonce1 + 1L
+        let nonce3 = nonce2 + 1L
+
+        let fee = ChxAmount 1m
+
+        // Vote Yes on RS1
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = rsh1.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce1 fee
+
+        // Vote Yes on RS2
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = rsh2.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce2 fee
+
+        // Vote No on RS3
+        let txHash3, txEnvelope3 =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = rsh3.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce3 fee
+
+        let txSet = [txHash1; txHash2; txHash3]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            elif txHash = txHash3 then Ok txEnvelope3
+            else Result.appError "Invalid txHash"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState (voteId: VoteId) =
+            // No vote for rsh1
+            if voteId.ResolutionHash = rsh1 then
+                None
+            // Existing non weighted vote for rsh2
+            elif voteId.ResolutionHash = rsh2 then
+                Some {VoteState.VoteHash = voteHashNo; VoteWeight = None}
+            // Existing, weighted vote for rsh3
+            elif voteId.ResolutionHash = rsh3 then
+                Some {VoteState.VoteHash = voteHashNo; VoteWeight = 2m |> VoteWeight |> Some}
+            else
+                None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                validatorWallet.Address
+                blockNumber
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - (ChxAmount 3m) * fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + (ChxAmount 3m) * fee
+        let expectedStatusTxHash1 = (TxActionNumber 1s, TxErrorCode.VoteNotFound) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 3 @>
+        test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
+        test <@ output.TxResults.[txHash2].Status = Success @>
+        test <@ output.TxResults.[txHash3].Status = Success @>
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce3 @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.Votes.Count = 2 @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = rsh2}]
+            = {VoteHash = voteHashNo; VoteWeight = Some voteWeight} @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = rsh3}]
+            = {VoteHash = voteHashNo; VoteWeight = Some voteWeight} @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission
@@ -1082,6 +2210,9 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -1106,6 +2237,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1181,6 +2313,9 @@ module ProcessingTests =
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -1205,6 +2340,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1276,6 +2412,9 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -1300,6 +2439,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1373,6 +2513,9 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -1397,6 +2540,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1469,6 +2613,9 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             None
 
@@ -1493,6 +2640,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1570,6 +2718,9 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             None
 
@@ -1594,6 +2745,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1669,6 +2821,9 @@ module ProcessingTests =
         let getHoldingState _ =
             None
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -1693,6 +2848,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1764,6 +2920,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -1788,6 +2947,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1854,6 +3014,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             None
 
@@ -1878,6 +3041,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1949,6 +3113,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = currentControllerWallet.Address}
 
@@ -1973,6 +3140,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2048,6 +3216,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -2072,6 +3243,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2138,6 +3310,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -2162,6 +3337,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2233,6 +3409,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -2257,6 +3436,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2332,6 +3512,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -2356,6 +3539,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -2422,6 +3606,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -2446,6 +3633,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -2517,6 +3705,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -2541,6 +3732,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -2615,6 +3807,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -2642,6 +3837,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -2709,6 +3905,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -2733,6 +3932,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -2811,6 +4011,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -2835,6 +4038,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -2901,6 +4105,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -2925,6 +4132,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -2991,6 +4199,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -3015,6 +4226,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -3086,6 +4298,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -3110,6 +4325,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -3181,6 +4397,9 @@ module ProcessingTests =
         let getHoldingState _ =
             failwith "getHoldingState should not be called"
 
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -3205,6 +4424,7 @@ module ProcessingTests =
                 Hashing.hash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountCode
                 getAssetState
                 getValidatorState
