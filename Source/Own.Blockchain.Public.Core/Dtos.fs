@@ -65,6 +65,22 @@ type DelegateStakeTxActionDto = {
 }
 
 [<CLIMutable>]
+type SubmitVoteTxActionDto = {
+    AccountHash : string
+    AssetHash : string
+    ResolutionHash : string
+    VoteHash : string
+}
+
+[<CLIMutable>]
+type SubmitVoteWeightTxActionDto = {
+    AccountHash : string
+    AssetHash : string
+    ResolutionHash : string
+    VoteWeight : decimal
+}
+
+[<CLIMutable>]
 type TxActionDto = {
     ActionType : string
     ActionData : obj
@@ -190,6 +206,12 @@ type HoldingStateDto = {
 }
 
 [<CLIMutable>]
+type VoteStateDto = {
+    VoteHash : string
+    VoteWeight : Nullable<decimal>
+}
+
+[<CLIMutable>]
 type AccountStateDto = {
     ControllerAddress : string
 }
@@ -215,6 +237,7 @@ type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
+    Votes : Map<string * string * string, VoteStateDto>
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto>
@@ -265,6 +288,15 @@ type StakeInfoDto = {
 type AccountHoldingDto = {
     AssetHash : string
     Amount : decimal
+}
+
+[<CLIMutable>]
+type VoteInfoDto = {
+    AccountHash : string
+    AssetHash : string
+    ResolutionHash : string
+    VoteHash : string
+    VoteWeight : Nullable<decimal>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -220,6 +220,53 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let votes =
+            let voteId1V =
+                {
+                    AccountHash = AccountHash "DDD"
+                    AssetHash = AssetHash "EEE"
+                    ResolutionHash = VotingResolutionHash "AAAA"
+                }
+            let voteId1W =
+                {
+                    AccountHash = AccountHash "DDD"
+                    AssetHash = AssetHash "EEE"
+                    ResolutionHash = VotingResolutionHash "BBBB"
+                }
+            let voteId1Y =
+                {
+                    AccountHash = AccountHash "DDD"
+                    AssetHash = AssetHash "EEE"
+                    ResolutionHash = VotingResolutionHash "CCCC"
+                }
+            let voteId2V =
+                {
+                    AccountHash = AccountHash "FFF"
+                    AssetHash = AssetHash "GGG"
+                    ResolutionHash = VotingResolutionHash "AAAA"
+                }
+            let voteId2W =
+                {
+                    AccountHash = AccountHash "FFF"
+                    AssetHash = AssetHash "GGG"
+                    ResolutionHash = VotingResolutionHash "BBBB"
+                }
+            let voteId2Y =
+                {
+                    AccountHash = AccountHash "FFF"
+                    AssetHash = AssetHash "GGG"
+                    ResolutionHash = VotingResolutionHash "CCCC"
+                }
+            [
+                voteId1V, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId1W, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId1Y, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId2V, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 2m |> VoteWeight |> Some}
+                voteId2W, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 2m |> VoteWeight |> Some}
+                voteId2Y, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 2m |> VoteWeight |> Some}
+            ]
+            |> Map.ofList
+
         let accounts =
             [
                 AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
@@ -266,6 +313,7 @@ module BlockTests =
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
+                Votes = votes
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
@@ -288,6 +336,12 @@ module BlockTests =
                 "II...F...................H" // CHX balance 2
                 "DDDEEE...A............" // Holding balance 1
                 "FFFGGG...B............" // Holding balance 2
+                "DDDEEEAAAADA...A............" // Vote 1 Holding 1
+                "DDDEEEBBBBDA...A............" // Vote 2 Holding 1
+                "DDDEEECCCCAD...A............" // Vote 3 Holding 1
+                "FFFGGGAAAAAD...B............" // Vote 1 Holding 2
+                "FFFGGGBBBBAD...B............" // Vote 2 Holding 2
+                "FFFGGGCCCCDA...B............" // Vote 3 Holding 2
                 "AAAABBBB" // Account controller 1
                 "CCCCDDDD" // Account controller 2
                 "EEEEFFFF" // Asset controller 1
@@ -390,6 +444,53 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let votes =
+            let voteId1V =
+                {
+                    AccountHash = AccountHash "Acc1"
+                    AssetHash = AssetHash "Eq1"
+                    ResolutionHash = VotingResolutionHash "AAAA"
+                }
+            let voteId1W =
+                {
+                    AccountHash = AccountHash "Acc1"
+                    AssetHash = AssetHash "Eq1"
+                    ResolutionHash = VotingResolutionHash "BBBB"
+                }
+            let voteId1Y =
+                {
+                    AccountHash = AccountHash "Acc1"
+                    AssetHash = AssetHash "Eq1"
+                    ResolutionHash = VotingResolutionHash "CCCC"
+                }
+            let voteId2V =
+                {
+                    AccountHash = AccountHash "Acc2"
+                    AssetHash = AssetHash "Eq2"
+                    ResolutionHash = VotingResolutionHash "AAAA"
+                }
+            let voteId2W =
+                {
+                    AccountHash = AccountHash "Acc2"
+                    AssetHash = AssetHash "Eq2"
+                    ResolutionHash = VotingResolutionHash "BBBB"
+                }
+            let voteId2Y =
+                {
+                    AccountHash = AccountHash "Acc2"
+                    AssetHash = AssetHash "Eq2"
+                    ResolutionHash = VotingResolutionHash "CCCC"
+                }
+            [
+                voteId1V, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId1W, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId1Y, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId2V, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 2m |> VoteWeight |> Some}
+                voteId2W, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 2m |> VoteWeight |> Some}
+                voteId2Y, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 2m |> VoteWeight |> Some}
+            ]
+            |> Map.ofList
+
         let accounts =
             [
                 AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
@@ -436,6 +537,7 @@ module BlockTests =
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
+                Votes = votes
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
@@ -491,6 +593,15 @@ module BlockTests =
                     Blocks.createHoldingStateHash Hashing.decode Hashing.hash (accountHash, assetHash, state)
                 )
 
+                votes
+                |> Map.toList
+                |> List.map (fun (voteId, state) ->
+                    Blocks.createVoteStateHash
+                        Hashing.decode
+                        Hashing.hash
+                        (voteId.AccountHash, voteId.AssetHash, voteId.ResolutionHash, state)
+                )
+
                 accounts
                 |> Map.toList
                 |> List.map (Blocks.createAccountStateHash Hashing.decode Hashing.hash)
@@ -513,7 +624,7 @@ module BlockTests =
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 13 true @>
+        test <@ stateMerkleProofs = List.replicate 19 true @>
 
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -567,6 +678,53 @@ module BlockTests =
             [
                 (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m}
                 (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m}
+            ]
+            |> Map.ofList
+
+        let votes =
+            let voteId1V =
+                {
+                    AccountHash = AccountHash "Acc1"
+                    AssetHash = AssetHash "Eq1"
+                    ResolutionHash = VotingResolutionHash "AAAA"
+                }
+            let voteId1W =
+                {
+                    AccountHash = AccountHash "Acc1"
+                    AssetHash = AssetHash "Eq1"
+                    ResolutionHash = VotingResolutionHash "BBBB"
+                }
+            let voteId1Y =
+                {
+                    AccountHash = AccountHash "Acc1"
+                    AssetHash = AssetHash "Eq1"
+                    ResolutionHash = VotingResolutionHash "CCCC"
+                }
+            let voteId2V =
+                {
+                    AccountHash = AccountHash "Acc2"
+                    AssetHash = AssetHash "Eq2"
+                    ResolutionHash = VotingResolutionHash "AAAA"
+                }
+            let voteId2W =
+                {
+                    AccountHash = AccountHash "Acc2"
+                    AssetHash = AssetHash "Eq2"
+                    ResolutionHash = VotingResolutionHash "BBBB"
+                }
+            let voteId2Y =
+                {
+                    AccountHash = AccountHash "Acc2"
+                    AssetHash = AssetHash "Eq2"
+                    ResolutionHash = VotingResolutionHash "CCCC"
+                }
+            [
+                voteId1V, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId1W, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId1Y, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 1m |> VoteWeight |> Some}
+                voteId2V, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 2m |> VoteWeight |> Some}
+                voteId2W, {VoteState.VoteHash = VoteHash "AD"; VoteWeight = 2m |> VoteWeight |> Some}
+                voteId2Y, {VoteState.VoteHash = VoteHash "DA"; VoteWeight = 2m |> VoteWeight |> Some}
             ]
             |> Map.ofList
 
@@ -630,6 +788,7 @@ module BlockTests =
                 ProcessingOutput.TxResults = txResults
                 ChxBalances = chxBalances
                 Holdings = holdings
+                Votes = votes
                 Accounts = accounts
                 Assets = assets
                 Validators = validators

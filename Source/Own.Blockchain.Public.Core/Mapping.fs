@@ -91,6 +91,26 @@ module Mapping =
                 Amount = ChxAmount a.Amount
             }
             |> DelegateStake
+        | :? SubmitVoteTxActionDto as a ->
+            {
+                VoteId = {
+                    AccountHash = AccountHash a.AccountHash
+                    AssetHash = AssetHash a.AssetHash
+                    ResolutionHash = VotingResolutionHash a.ResolutionHash
+                }
+                VoteHash = VoteHash a.VoteHash
+            }
+            |> SubmitVote
+        | :? SubmitVoteWeightTxActionDto as a ->
+            {
+                VoteId = {
+                    AccountHash = AccountHash a.AccountHash
+                    AssetHash = AssetHash a.AssetHash
+                    ResolutionHash = VotingResolutionHash a.ResolutionHash
+                }
+                VoteWeight = VoteWeight a.VoteWeight
+            }
+            |> SubmitVoteWeight
         | _ ->
             failwith "Invalid action type to map."
 
@@ -282,6 +302,23 @@ module Mapping =
             Amount = state.Amount.Value
         }
 
+    let voteStateFromDto (dto : VoteStateDto) : VoteState =
+        {
+            VoteHash = VoteHash dto.VoteHash
+            VoteWeight =
+                if dto.VoteWeight.HasValue then dto.VoteWeight.Value |> VoteWeight |> Some
+                else None
+        }
+
+    let voteStateToDto (state : VoteState) : VoteStateDto =
+        {
+            VoteHash = state.VoteHash.Value
+            VoteWeight =
+                match state.VoteWeight with
+                | None -> Nullable ()
+                | Some (VoteWeight voteWeight) -> Nullable voteWeight;
+        }
+
     let accountStateFromDto (dto : AccountStateDto) : AccountState =
         {
             ControllerAddress = BlockchainAddress dto.ControllerAddress
@@ -349,6 +386,13 @@ module Mapping =
             |> List.map (fun ((AccountHash ah, AssetHash ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
             |> Map.ofList
 
+        let votes =
+            output.Votes
+            |> Map.toList
+            |> List.map (fun (voteId : VoteId, s : VoteState) ->
+                ((voteId.AccountHash.Value, voteId.AssetHash.Value, voteId.ResolutionHash.Value), voteStateToDto s))
+            |> Map.ofList
+
         let accounts =
             output.Accounts
             |> Map.toList
@@ -379,6 +423,7 @@ module Mapping =
             ProcessingOutputDto.TxResults = txResults
             ChxBalances = chxBalances
             Holdings = holdings
+            Votes = votes
             Accounts = accounts
             Assets = assets
             Validators = validators

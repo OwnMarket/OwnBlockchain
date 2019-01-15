@@ -31,6 +31,27 @@ type ChxAmount = ChxAmount of decimal
 type AssetAmount = AssetAmount of decimal
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Voting
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type VotingResolutionHash = VotingResolutionHash of string
+
+type VoteHash = VoteHash of string
+type VoteWeight = VoteWeight of decimal
+
+type VoteId = {
+    AccountHash : AccountHash
+    AssetHash : AssetHash
+    ResolutionHash : VotingResolutionHash
+}
+
+type VoteInfo = {
+    VoteId : VoteId
+    VoteHash : VoteHash
+    VoteWeight : VoteWeight option
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tx
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,6 +100,16 @@ type DelegateStakeTxAction = {
     Amount : ChxAmount
 }
 
+type SubmitVoteTxAction = {
+    VoteId : VoteId
+    VoteHash : VoteHash
+}
+
+type SubmitVoteWeightTxAction = {
+    VoteId : VoteId
+    VoteWeight : VoteWeight
+}
+
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
@@ -90,6 +121,8 @@ type TxAction =
     | SetAssetCode of SetAssetCodeTxAction
     | SetValidatorConfig of SetValidatorConfigTxAction
     | DelegateStake of DelegateStakeTxAction
+    | SubmitVote of SubmitVoteTxAction
+    | SubmitVoteWeight of SubmitVoteWeightTxAction
 
 type Tx = {
     TxHash : TxHash
@@ -182,6 +215,10 @@ type TxErrorCode =
     | AssetAlreadyExists = 420s
     | SenderIsNotAssetController = 430s
 
+    // Voting
+    | VoteNotFound = 510s
+    | VoteIsAlreadyWeighted = 520s
+
     // Validators
     | InsufficientStake = 910s
 
@@ -216,6 +253,11 @@ type HoldingState = {
     Amount : AssetAmount
 }
 
+type VoteState = {
+    VoteHash : VoteHash
+    VoteWeight : VoteWeight option
+}
+
 type AccountState = {
     ControllerAddress : BlockchainAddress
 }
@@ -238,6 +280,7 @@ type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     ChxBalances : Map<BlockchainAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
+    Votes : Map<VoteId, VoteState>
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
     Validators : Map<BlockchainAddress, ValidatorState>
@@ -383,6 +426,18 @@ type BlockHash with
 type MerkleTreeRoot with
     member __.Value =
         __ |> fun (MerkleTreeRoot v) -> v
+
+type VotingResolutionHash with
+    member __.Value =
+        __ |> fun (VotingResolutionHash v) -> v
+
+type VoteHash with
+    member __.Value =
+        __ |> fun (VoteHash v) -> v
+
+type VoteWeight with
+    member __.Value =
+        __ |> fun (VoteWeight v) -> v
 
 type BlockNumber with
     member __.Value =

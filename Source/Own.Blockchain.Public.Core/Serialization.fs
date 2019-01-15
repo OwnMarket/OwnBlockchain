@@ -40,6 +40,8 @@ module Serialization =
             "SetAssetCode", tokenToAction<SetAssetCodeTxActionDto>
             "SetValidatorConfig", tokenToAction<SetValidatorConfigTxActionDto>
             "DelegateStake", tokenToAction<DelegateStakeTxActionDto>
+            "SubmitVote", tokenToAction<SubmitVoteTxActionDto>
+            "SubmitVoteWeight", tokenToAction<SubmitVoteWeightTxActionDto>
         ] |> Map.ofList
 
     let private actionsConverter = {

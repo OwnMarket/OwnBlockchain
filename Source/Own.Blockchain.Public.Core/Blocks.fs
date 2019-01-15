@@ -54,6 +54,28 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createVoteStateHash
+        decodeHash
+        createHash
+        (AccountHash accountHash, AssetHash assetHash, VotingResolutionHash resolutionHash, state : VoteState)
+        =
+
+        let (VoteHash voteHash) = state.VoteHash
+        let voteWeightBytes =
+            match state.VoteWeight with
+            | None -> Array.zeroCreate 0
+            | Some (VoteWeight voteWeight) -> decimalToBytes voteWeight
+
+        [
+            decodeHash accountHash
+            decodeHash assetHash
+            decodeHash resolutionHash
+            decodeHash voteHash
+            voteWeightBytes
+        ]
+        |> Array.concat
+        |> createHash
+
     let createAccountStateHash
         decodeHash
         createHash
@@ -210,6 +232,17 @@ module Blocks =
                 createHoldingStateHash decodeHash createHash (accountHash, assetHash, state)
             )
 
+        let voteHashes =
+            output.Votes
+            |> Map.toList
+            |> List.sort // Ensure a predictable order
+            |> List.map (fun (voteId, state) ->
+                createVoteStateHash
+                    decodeHash
+                    createHash
+                    (voteId.AccountHash, voteId.AssetHash, voteId.ResolutionHash, state)
+            )
+
         let accountHashes =
             output.Accounts
             |> Map.toList
@@ -239,6 +272,7 @@ module Blocks =
         let stateRoot =
             chxBalanceHashes
             @ holdingHashes
+            @ voteHashes
             @ accountHashes
             @ assetHashes
             @ validatorHashes
@@ -316,6 +350,7 @@ module Blocks =
             TxResults = Map.empty
             ChxBalances = chxBalances
             Holdings = Map.empty
+            Votes = Map.empty
             Accounts = Map.empty
             Assets = Map.empty
             Validators = genesisValidators

@@ -25,6 +25,8 @@ module Helpers =
         | SetAssetCode action -> box action :?> 'T
         | SetValidatorConfig action -> box action :?> 'T
         | DelegateStake action -> box action :?> 'T
+        | SubmitVote action -> box action :?> 'T
+        | SubmitVoteWeight action -> box action :?> 'T
 
     let newPendingTxInfo
         (txHash : TxHash)

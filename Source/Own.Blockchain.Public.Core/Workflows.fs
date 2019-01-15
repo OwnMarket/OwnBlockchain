@@ -141,6 +141,7 @@ module Workflows =
         isValidAddress
         getChxBalanceStateFromStorage
         getHoldingStateFromStorage
+        getVoteStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
         getValidatorStateFromStorage
@@ -162,6 +163,7 @@ module Workflows =
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
+        let getVoteState = memoize (getVoteStateFromStorage >> Option.map Mapping.voteStateFromDto)
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
@@ -178,6 +180,7 @@ module Workflows =
                 createHash
                 getChxBalanceState
                 getHoldingState
+                getVoteState
                 getAccountState
                 getAssetState
                 getValidatorState

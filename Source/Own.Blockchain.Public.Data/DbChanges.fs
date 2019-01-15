@@ -132,6 +132,24 @@ module DbChanges =
                     );
                     """
             }
+            {
+                Number = 4
+                Script =
+                    """
+                    CREATE TABLE vote (
+                        vote_id INTEGER NOT NULL,
+                        holding_id INTEGER NOT NULL,
+                        resolution_hash VARCHAR(50) NOT NULL,
+                        vote_hash VARCHAR(50) NOT NULL,
+                        vote_weight DECIMAL(18, 8),
+
+                        CONSTRAINT vote__pk PRIMARY KEY (vote_id),
+                        CONSTRAINT vote__uk__holding_id__resolution_hash UNIQUE (holding_id, resolution_hash),
+                        CONSTRAINT vote__fk__holding FOREIGN KEY (holding_id)
+                            REFERENCES holding (holding_id)
+                    );
+                    """
+            }
         ]
 
     let internal postgresqlChanges : DbChange list =
@@ -254,6 +272,24 @@ module DbChanges =
 
                         CONSTRAINT peer__pk PRIMARY KEY (peer_id),
                         CONSTRAINT peer__uk__network_address UNIQUE (network_address)
+                    );
+                    """
+            }
+            {
+                Number = 4
+                Script =
+                    """
+                    CREATE TABLE vote (
+                        vote_id BIGSERIAL NOT NULL,
+                        holding_id BIGINT NOT NULL,
+                        resolution_hash VARCHAR(50) NOT NULL,
+                        vote_hash VARCHAR(50) NOT NULL,
+                        vote_weight DECIMAL(18, 8),
+
+                        CONSTRAINT vote__pk PRIMARY KEY (vote_id),
+                        CONSTRAINT vote__uk__holding_id__resolution_hash UNIQUE (holding_id, resolution_hash),
+                        CONSTRAINT vote__fk__holding FOREIGN KEY (holding_id)
+                            REFERENCES holding (holding_id)
                     );
                     """
             }

@@ -65,6 +65,8 @@ module Composition =
 
     let getHoldingState = Db.getHoldingState Config.DbEngineType Config.DbConnectionString
 
+    let getVoteState = Db.getVoteState Config.DbEngineType Config.DbConnectionString
+
     let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
 
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
@@ -175,6 +177,7 @@ module Composition =
             Hashing.isValidBlockchainAddress
             getChxBalanceState
             getHoldingState
+            getVoteState
             getAccountState
             getAssetState
             getValidatorState

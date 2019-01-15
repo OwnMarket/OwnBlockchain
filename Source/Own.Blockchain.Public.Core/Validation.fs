@@ -160,6 +160,33 @@ module Validation =
                 yield AppError "CHX amount cannot be zero."
         ]
 
+    let private validateSubmitVote (action : SubmitVoteTxActionDto) =
+        [
+            if action.AccountHash.IsNullOrWhiteSpace() then
+                yield AppError "AccountHash value is not provided."
+
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "AssetHash is not provided."
+
+            if action.ResolutionHash.IsNullOrWhiteSpace() then
+                yield AppError "ResolutionHash is not provided."
+        ]
+
+    let private validateSubmitVoteWeight (action : SubmitVoteWeightTxActionDto) =
+        [
+            if action.AccountHash.IsNullOrWhiteSpace() then
+                yield AppError "AccountHash value is not provided."
+
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "AssetHash is not provided."
+
+            if action.ResolutionHash.IsNullOrWhiteSpace() then
+                yield AppError "ResolutionHash is not provided."
+
+            if action.VoteWeight < 0m then
+                yield AppError "Vote weight cannot be negative."
+        ]
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +226,10 @@ module Validation =
                 validateSetValidatorConfig a
             | :? DelegateStakeTxActionDto as a ->
                 validateDelegateStake isValidAddress a
+            | :? SubmitVoteTxActionDto as a ->
+                validateSubmitVote a
+            | :? SubmitVoteWeightTxActionDto as a ->
+                validateSubmitVoteWeight a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

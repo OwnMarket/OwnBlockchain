@@ -13,6 +13,7 @@ module Processing =
         (
         getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option,
         getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
+        getVoteStateFromStorage : VoteId -> VoteState option,
         getAccountStateFromStorage : AccountHash -> AccountState option,
         getAssetStateFromStorage : AssetHash -> AssetState option,
         getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
@@ -21,6 +22,7 @@ module Processing =
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         chxBalances : ConcurrentDictionary<BlockchainAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
+        votes: ConcurrentDictionary<VoteId, VoteState option>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
@@ -39,6 +41,7 @@ module Processing =
             (
             getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option,
             getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
+            getVoteStateFromStorage : VoteId -> VoteState option,
             getAccountStateFromStorage : AccountHash -> AccountState option,
             getAssetStateFromStorage : AssetHash -> AssetState option,
             getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
@@ -48,6 +51,7 @@ module Processing =
             ProcessingState(
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
+                getVoteStateFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
@@ -56,6 +60,7 @@ module Processing =
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<BlockchainAddress, ChxBalanceState>(),
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
+                ConcurrentDictionary<VoteId, VoteState option>(),
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
                 ConcurrentDictionary<BlockchainAddress, ValidatorState option>(),
@@ -67,6 +72,7 @@ module Processing =
             ProcessingState(
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
+                getVoteStateFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
@@ -75,6 +81,7 @@ module Processing =
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(chxBalances),
                 ConcurrentDictionary(holdings),
+                ConcurrentDictionary(votes),
                 ConcurrentDictionary(accounts),
                 ConcurrentDictionary(assets),
                 ConcurrentDictionary(validators),
@@ -105,6 +112,9 @@ module Processing =
         member __.GetHolding (accountHash : AccountHash, assetHash : AssetHash) =
             holdings.GetOrAdd((accountHash, assetHash), getHoldingState)
 
+        member __.GetVote (voteId : VoteId) =
+            votes.GetOrAdd(voteId, getVoteStateFromStorage)
+
         member __.GetAccount (accountHash : AccountHash) =
             accounts.GetOrAdd(accountHash, getAccountStateFromStorage)
 
@@ -126,6 +136,10 @@ module Processing =
 
         member __.SetHolding (accountHash, assetHash, state : HoldingState) =
             holdings.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
+
+        member __.SetVote (voteId, state : VoteState) =
+            let state = Some state;
+            votes.AddOrUpdate(voteId, state, fun _ _ -> state) |> ignore
 
         member __.SetAccount (accountHash, state : AccountState) =
             let state = Some state
@@ -155,6 +169,10 @@ module Processing =
                 TxResults = txResults |> Map.ofDict
                 ChxBalances = chxBalances |> Map.ofDict
                 Holdings = holdings |> Map.ofDict
+                Votes =
+                    votes
+                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Map.ofSeq
                 Accounts =
                     accounts
                     |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
@@ -401,6 +419,53 @@ module Processing =
                 state.SetTotalChxStaked(senderAddress, totalChxStaked + action.Amount)
                 Ok state
 
+    let processSubmitVoteTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : SubmitVoteTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.VoteId.AssetHash), state.GetAccount(action.VoteId.AccountHash) with
+        | None, _ ->
+            Error TxErrorCode.AssetNotFound
+        | _, None ->
+            Error TxErrorCode.AccountNotFound
+        | Some _, Some accountState when accountState.ControllerAddress = senderAddress ->
+            match state.GetVote(action.VoteId) with
+            | None ->
+                state.SetVote(action.VoteId, { VoteHash = action.VoteHash; VoteWeight = None })
+                Ok state
+            | Some vote ->
+                match vote.VoteWeight with
+                | None ->
+                    state.SetVote(action.VoteId, { vote with VoteHash = action.VoteHash })
+                    Ok state
+                | Some _ -> Error TxErrorCode.VoteIsAlreadyWeighted
+        | _ ->
+            Error TxErrorCode.SenderIsNotSourceAccountController
+
+    let processSubmitVoteWeightTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : SubmitVoteWeightTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.VoteId.AssetHash), state.GetAccount(action.VoteId.AccountHash) with
+        | None, _ ->
+            Error TxErrorCode.AssetNotFound
+        | _, None ->
+            Error TxErrorCode.AccountNotFound
+        | Some assetState, Some _ when assetState.ControllerAddress = senderAddress ->
+            match state.GetVote(action.VoteId) with
+            | None -> Error TxErrorCode.VoteNotFound
+            | Some vote ->
+                state.SetVote(action.VoteId, { vote with VoteWeight = action.VoteWeight |> Some })
+                Ok state
+        | _ ->
+            Error TxErrorCode.SenderIsNotAssetController
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -566,6 +631,8 @@ module Processing =
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
         | SetValidatorConfig action -> processSetValidatorConfigTxAction state senderAddress action
         | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
+        | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
+        | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
 
     let processTxActions
         deriveHash
@@ -593,6 +660,7 @@ module Processing =
         createHash
         (getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option)
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
+        (getVoteStateFromStorage : VoteId -> VoteState option)
         (getAccountStateFromStorage : AccountHash -> AccountState option)
         (getAssetStateFromStorage : AssetHash -> AssetState option)
         (getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option)
@@ -635,6 +703,7 @@ module Processing =
             ProcessingState (
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
+                getVoteStateFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,

@@ -355,6 +355,44 @@ module Db =
         | [holdingDetails] -> Some holdingDetails
         | _ -> failwithf "Multiple holdings of asset hash %A found for account hash %A" assetHash accountHash
 
+    let getVoteState
+        dbEngineType
+        (dbConnectionString : string)
+        (voteId : VoteId)
+        : VoteStateDto option =
+        let sql =
+            """
+            WITH cte_holding (holding_id)
+            AS
+            (
+                SELECT holding_id FROM holding
+                WHERE asset_hash = @assetHash
+                AND account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
+            )
+            SELECT vote_hash, vote_weight
+            FROM vote AS v
+            JOIN cte_holding AS h
+            ON v.holding_id = h.holding_id
+            WHERE v.resolution_hash = @resolutionHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", voteId.AccountHash |> box
+                "@assetHash", voteId.AssetHash |> box
+                "@resolutionHash", voteId.ResolutionHash |> box
+            ]
+
+        match DbTools.query<VoteStateDto> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | [vote] -> Some vote
+        | _ ->
+            failwithf
+                "Multiple votes of resolution hash %A found for account hash %A and asset hash %A"
+                voteId.ResolutionHash
+                voteId.AccountHash
+                voteId.AssetHash
+
     let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
             """
@@ -840,6 +878,96 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let addVote conn transaction (voteInfoDto : VoteInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            INSERT INTO vote (holding_id, resolution_hash, vote_hash, vote_weight)
+            SELECT holding_id, @resolutionHash, @voteHash, @voteWeight
+            FROM holding
+            WHERE asset_hash = @assetHash
+            AND account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", voteInfoDto.AccountHash |> box
+                "@assetHash", voteInfoDto.AssetHash |> box
+                "@resolutionHash", voteInfoDto.ResolutionHash |> box
+                "@voteHash", voteInfoDto.VoteHash |> box
+                "@voteWeight", DBNull.Value |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert vote state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert vote state."
+
+    let private updateVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            WITH cte_holding (holding_id)
+            AS
+            (
+                SELECT h.holding_id FROM holding AS h
+                JOIN account AS a USING (account_id)
+                WHERE h.asset_hash = @assetHash
+                AND a.account_hash = @accountHash
+            )
+            UPDATE vote SET vote_hash = @voteHash, vote_weight = @voteWeight
+            FROM cte_holding
+            WHERE holding_id = cte_holding.holding_id
+            AND resolution_hash = @resolutionHash
+            """
+
+        let voteWeightParamValue =
+            if voteInfo.VoteWeight.HasValue then voteInfo.VoteWeight.Value |> box
+            else DBNull.Value |> box
+
+        let sqlParams =
+            [
+                "@accountHash", voteInfo.AccountHash |> box
+                "@assetHash", voteInfo.AssetHash |> box
+                "@resolutionHash", voteInfo.ResolutionHash |> box
+                "@voteHash", voteInfo.VoteHash |> box
+                "@voteWeight", voteWeightParamValue
+            ]
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addVote conn transaction voteInfo
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update holding state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update holding state."
+
+    let private updateVotes
+        conn
+        transaction
+        (votes : Map<string * string * string, VoteStateDto>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result ((accountHash, assetHash, resolutionHash), voteState : VoteStateDto) =
+            result
+            >>= fun _ ->
+                {
+                    AccountHash = accountHash
+                    AssetHash = assetHash
+                    ResolutionHash = resolutionHash
+                    VoteHash = voteState.VoteHash
+                    VoteWeight = voteState.VoteWeight
+                }
+                |> updateVote conn transaction
+
+        votes
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
     let private addAccount
         conn
         transaction
@@ -1192,6 +1320,7 @@ module Db =
                 do! updateAssets conn transaction state.Assets
                 do! updateAccounts conn transaction state.Accounts
                 do! updateHoldings conn transaction state.Holdings
+                do! updateVotes conn transaction state.Votes
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber
             }
