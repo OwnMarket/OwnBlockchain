@@ -21,7 +21,7 @@ module ValidationTests =
     let setAccountControllerActionType = "SetAccountController"
     let setAssetControllerActionType = "SetAssetController"
     let setAssetCodeActionType = "SetAssetCode"
-    let setValidatorNetworkAddressActionType = "SetValidatorNetworkAddress"
+    let setValidatorConfigActionType = "SetValidatorConfig"
     let delegateStakeActionType = "DelegateStake"
 
     [<Fact>]
@@ -614,10 +614,11 @@ module ValidationTests =
             test <@ e.Length = 2 @>
 
     [<Fact>]
-    let ``Validation.validateTx SetValidatorNetworkAddress valid action`` () =
+    let ``Validation.validateTx SetValidatorConfig valid action`` () =
         let expected =
             {
-                SetValidatorNetworkAddressTxActionDto.NetworkAddress = "A"
+                SetValidatorConfigTxActionDto.NetworkAddress = "A"
+                SharedRewardPercent = 42m
             }
 
         let tx = {
@@ -627,7 +628,7 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = setValidatorNetworkAddressActionType
+                        ActionType = setValidatorConfigActionType
                         ActionData = expected
                     }
                 ]
@@ -635,15 +636,17 @@ module ValidationTests =
 
         match Validation.validateTx isValidAddressMock chAddress txHash tx with
         | Ok t ->
-            let actual = Helpers.extractActionData<SetValidatorNetworkAddressTxAction> t.Actions.Head
-            test <@ expected.NetworkAddress = actual.NetworkAddress @>
+            let actual = Helpers.extractActionData<SetValidatorConfigTxAction> t.Actions.Head
+            test <@ expected.NetworkAddress = actual.NetworkAddress.Value @>
+            test <@ expected.SharedRewardPercent = actual.SharedRewardPercent @>
         | Error e -> failwithf "%A" e
 
     [<Fact>]
-    let ``Validation.validateTx SetValidatorNetworkAddress invalid action`` () =
+    let ``Validation.validateTx SetValidatorConfig invalid action`` () =
         let expected =
             {
-                SetValidatorNetworkAddressTxActionDto.NetworkAddress = ""
+                SetValidatorConfigTxActionDto.NetworkAddress = ""
+                SharedRewardPercent = 0m
             }
 
         let tx = {
@@ -653,7 +656,7 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = setValidatorNetworkAddressActionType
+                        ActionType = setValidatorConfigActionType
                         ActionData = expected
                     }
                 ]

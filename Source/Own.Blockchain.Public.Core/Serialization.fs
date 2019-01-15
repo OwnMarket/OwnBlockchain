@@ -38,7 +38,7 @@ module Serialization =
             "SetAccountController", tokenToAction<SetAccountControllerTxActionDto>
             "SetAssetController", tokenToAction<SetAssetControllerTxActionDto>
             "SetAssetCode", tokenToAction<SetAssetCodeTxActionDto>
-            "SetValidatorNetworkAddress", tokenToAction<SetValidatorNetworkAddressTxActionDto>
+            "SetValidatorConfig", tokenToAction<SetValidatorConfigTxActionDto>
             "DelegateStake", tokenToAction<DelegateStakeTxActionDto>
         ] |> Map.ofList
 

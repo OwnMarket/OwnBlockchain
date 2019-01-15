@@ -1023,14 +1023,15 @@ module Db =
 
         let sql =
             """
-            INSERT INTO validator (validator_address, network_address)
-            VALUES (@validatorAddress, @networkAddress)
+            INSERT INTO validator (validator_address, network_address, shared_reward_percent)
+            VALUES (@validatorAddress, @networkAddress, @sharedRewardPercent)
             """
 
         let sqlParams =
             [
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
+                "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
             ]
 
         try
@@ -1052,7 +1053,8 @@ module Db =
         let sql =
             """
             UPDATE validator
-            SET network_address = @networkAddress
+            SET network_address = @networkAddress,
+                shared_reward_percent = @sharedRewardPercent
             WHERE validator_address = @validatorAddress
             """
 
@@ -1060,6 +1062,7 @@ module Db =
             [
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
+                "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
             ]
 
         try
@@ -1085,6 +1088,7 @@ module Db =
                 {
                     ValidatorAddress = validatorAddress
                     NetworkAddress = state.NetworkAddress
+                    SharedRewardPercent = state.SharedRewardPercent
                 }
                 |> updateValidator conn transaction
             )

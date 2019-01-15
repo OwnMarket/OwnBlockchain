@@ -79,11 +79,12 @@ module Mapping =
                 AssetCode = AssetCode a.AssetCode
             }
             |> SetAssetCode
-        | :? SetValidatorNetworkAddressTxActionDto as a ->
+        | :? SetValidatorConfigTxActionDto as a ->
             {
-                SetValidatorNetworkAddressTxAction.NetworkAddress = a.NetworkAddress
+                SetValidatorConfigTxAction.NetworkAddress = NetworkAddress a.NetworkAddress
+                SharedRewardPercent = a.SharedRewardPercent
             }
-            |> SetValidatorNetworkAddress
+            |> SetValidatorConfig
         | :? DelegateStakeTxActionDto as a ->
             {
                 DelegateStakeTxAction.ValidatorAddress = BlockchainAddress a.ValidatorAddress
@@ -196,14 +197,14 @@ module Mapping =
     let validatorSnapshotFromDto (dto : ValidatorSnapshotDto) : ValidatorSnapshot =
         {
             ValidatorAddress = BlockchainAddress dto.ValidatorAddress
-            NetworkAddress = dto.NetworkAddress
+            NetworkAddress = NetworkAddress dto.NetworkAddress
             TotalStake = ChxAmount dto.TotalStake
         }
 
     let validatorSnapshotToDto (snapshot : ValidatorSnapshot) : ValidatorSnapshotDto =
         {
             ValidatorAddress = snapshot.ValidatorAddress.Value
-            NetworkAddress = snapshot.NetworkAddress
+            NetworkAddress = snapshot.NetworkAddress.Value
             TotalStake = snapshot.TotalStake.Value
         }
 
@@ -309,12 +310,14 @@ module Mapping =
 
     let validatorStateFromDto (dto : ValidatorStateDto) : ValidatorState =
         {
-            NetworkAddress = dto.NetworkAddress
+            NetworkAddress = NetworkAddress dto.NetworkAddress
+            SharedRewardPercent = dto.SharedRewardPercent
         }
 
     let validatorStateToDto (state : ValidatorState) : ValidatorStateDto =
         {
-            NetworkAddress = state.NetworkAddress
+            NetworkAddress = state.NetworkAddress.Value
+            SharedRewardPercent = state.SharedRewardPercent
         }
 
     let stakeStateFromDto (dto : StakeStateDto) : StakeState =

@@ -346,20 +346,32 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
-    let processSetValidatorNetworkAddressTxAction
+    let processSetValidatorConfigTxAction
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
-        (action : SetValidatorNetworkAddressTxAction)
+        (action : SetValidatorConfigTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
         match state.GetValidator(senderAddress) with
         | None ->
             // TODO: Prevent filling the validator table with junk.
-            state.SetValidator(senderAddress, {ValidatorState.NetworkAddress = action.NetworkAddress})
+            state.SetValidator(
+                senderAddress,
+                {
+                    ValidatorState.NetworkAddress = action.NetworkAddress
+                    SharedRewardPercent = action.SharedRewardPercent
+                }
+            )
             Ok state
         | Some validatorState ->
-            state.SetValidator(senderAddress, {validatorState with NetworkAddress = action.NetworkAddress})
+            state.SetValidator(
+                senderAddress,
+                { validatorState with
+                    NetworkAddress = action.NetworkAddress
+                    SharedRewardPercent = action.SharedRewardPercent
+                }
+            )
             Ok state
 
     let processDelegateStakeTxAction
@@ -552,7 +564,7 @@ module Processing =
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
-        | SetValidatorNetworkAddress action -> processSetValidatorNetworkAddressTxAction state senderAddress action
+        | SetValidatorConfig action -> processSetValidatorConfigTxAction state senderAddress action
         | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
 
     let processTxActions

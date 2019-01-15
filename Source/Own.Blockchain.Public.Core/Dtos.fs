@@ -53,8 +53,9 @@ type SetAssetCodeTxActionDto = {
 }
 
 [<CLIMutable>]
-type SetValidatorNetworkAddressTxActionDto = {
+type SetValidatorConfigTxActionDto = {
     NetworkAddress : string
+    SharedRewardPercent : decimal
 }
 
 [<CLIMutable>]
@@ -202,6 +203,7 @@ type AssetStateDto = {
 [<CLIMutable>]
 type ValidatorStateDto = {
     NetworkAddress : string
+    SharedRewardPercent : decimal
 }
 
 [<CLIMutable>]
@@ -249,6 +251,7 @@ type AssetInfoDto = {
 type ValidatorInfoDto = {
     ValidatorAddress : string
     NetworkAddress : string
+    SharedRewardPercent : decimal
 }
 
 [<CLIMutable>]

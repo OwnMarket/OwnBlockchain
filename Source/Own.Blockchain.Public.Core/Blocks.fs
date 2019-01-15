@@ -97,7 +97,8 @@ module Blocks =
 
         [
             decodeHash validatorAddress
-            stringToBytes state.NetworkAddress
+            stringToBytes state.NetworkAddress.Value
+            decimalToBytes state.SharedRewardPercent
         ]
         |> Array.concat
         |> createHash
@@ -113,7 +114,7 @@ module Blocks =
 
         [
             decodeHash validatorAddress
-            stringToBytes validatorSnapshot.NetworkAddress
+            stringToBytes validatorSnapshot.NetworkAddress.Value
             decimalToBytes totalStake
         ]
         |> Array.concat

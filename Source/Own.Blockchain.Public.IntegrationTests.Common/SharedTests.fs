@@ -239,7 +239,9 @@ module SharedTests =
 
         let genesisValidators =
             Config.GenesisValidators
-            |> List.map (fun (ba, na) -> BlockchainAddress ba, {ValidatorState.NetworkAddress = na})
+            |> List.map (fun (ba, na) ->
+                BlockchainAddress ba, {ValidatorState.NetworkAddress = NetworkAddress na; SharedRewardPercent = 0m}
+            )
             |> Map.ofList
 
         let expectedBlockDto =
@@ -466,11 +468,15 @@ module SharedTests =
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
-    let setValidatorNetworkAddressTest dbEngineType connectionString =
+    let setValidatorConfigTest dbEngineType connectionString =
         // ARRANGE
         let client = testInit dbEngineType connectionString
 
-        let networkAddress = "localhost:5000"
+        let expectedConfig =
+            {
+                NetworkAddress = NetworkAddress "localhost:5000"
+                SharedRewardPercent = 42m
+            }
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
@@ -487,10 +493,11 @@ module SharedTests =
         let txActions =
             [
                 {
-                    ActionType = "SetValidatorNetworkAddress"
+                    ActionType = "SetValidatorConfig"
                     ActionData =
                         {
-                            SetValidatorNetworkAddressTxActionDto.NetworkAddress = networkAddress
+                            SetValidatorConfigTxActionDto.NetworkAddress = expectedConfig.NetworkAddress.Value
+                            SharedRewardPercent = expectedConfig.SharedRewardPercent
                         }
                 }
             ]
@@ -519,7 +526,7 @@ module SharedTests =
 
         let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
-        test <@ validatorState = Some { NetworkAddress = networkAddress } @>
+        test <@ validatorState = Some expectedConfig @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 

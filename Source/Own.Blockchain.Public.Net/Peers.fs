@@ -148,7 +148,7 @@ module Peers =
                 sendMulticastMessage
                     config.NetworkAddress.Value
                     peerMessageDto
-                    (getCurrentValidators() |> List.map (fun v -> v.NetworkAddress))
+                    (getCurrentValidators() |> List.map (fun v -> v.NetworkAddress.Value))
 
             | GossipMessage m -> __.SendGossipMessage m
             | _ -> ()

@@ -331,13 +331,14 @@ module SerializationTests =
             failwithf "%A" appErrors
 
     [<Fact>]
-    let ``Serialization.deserializeTx SetValidatorNetworkAddress`` () =
+    let ``Serialization.deserializeTx SetValidatorConfig`` () =
         let expectedTxAction =
             {
-                ActionType = "SetValidatorNetworkAddress"
+                ActionType = "SetValidatorConfig"
                 ActionData =
                     {
-                        SetValidatorNetworkAddressTxActionDto.NetworkAddress = "localhost:5000"
+                        SetValidatorConfigTxActionDto.NetworkAddress = "localhost:5000"
+                        SharedRewardPercent = 0m
                     }
             }
 

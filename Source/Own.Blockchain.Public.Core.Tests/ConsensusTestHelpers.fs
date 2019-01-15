@@ -86,7 +86,7 @@ module ConsensusTestHelpers =
                     |> Seq.map (fun a ->
                         {
                             ValidatorSnapshot.ValidatorAddress = a
-                            NetworkAddress = ""
+                            NetworkAddress = NetworkAddress ""
                             TotalStake = ChxAmount 0m
                         }
                     )

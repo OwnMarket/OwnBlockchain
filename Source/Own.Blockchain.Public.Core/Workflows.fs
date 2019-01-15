@@ -38,7 +38,9 @@ module Workflows =
 
         let genesisValidators =
             genesisValidators
-            |> List.map (fun (ba, na) -> BlockchainAddress ba, {ValidatorState.NetworkAddress = na})
+            |> List.map (fun (ba, na) ->
+                BlockchainAddress ba, {ValidatorState.NetworkAddress = NetworkAddress na; SharedRewardPercent = 0m}
+            )
             |> Map.ofList
 
         let genesisState = Blocks.createGenesisState genesisChxSupply genesisAddress genesisValidators

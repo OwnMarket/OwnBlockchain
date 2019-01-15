@@ -2567,15 +2567,16 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash].AssetCode = None @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // SetValidatorNetworkAddress
+    // SetValidatorConfig
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetValidatorNetworkAddress - updating existing network address`` () =
+    let ``Processing.processTxSet SetValidatorConfig - updating existing config`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let newNetworkAddress = "localhost:5000"
+        let newNetworkAddress = NetworkAddress "localhost:5000"
+        let newSharedRewardPercent = 10m
 
         let initialChxState =
             [
@@ -2591,10 +2592,11 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetValidatorNetworkAddress"
+                    ActionType = "SetValidatorConfig"
                     ActionData =
                         {
-                            NetworkAddress = newNetworkAddress
+                            SetValidatorConfigTxActionDto.NetworkAddress = newNetworkAddress.Value
+                            SharedRewardPercent = newSharedRewardPercent
                         }
                 } :> obj
             ]
@@ -2620,7 +2622,10 @@ module ProcessingTests =
             failwith "getAssetState should not be called"
 
         let getValidatorState _ =
-            Some {ValidatorState.NetworkAddress = "old-address:12345"}
+            Some {
+                ValidatorState.NetworkAddress = NetworkAddress "old-address:12345"
+                SharedRewardPercent = 6m
+            }
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2657,13 +2662,15 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Validators.[senderWallet.Address].NetworkAddress = newNetworkAddress @>
+        test <@ output.Validators.[senderWallet.Address].SharedRewardPercent = newSharedRewardPercent @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetValidatorNetworkAddress - inserting new network address`` () =
+    let ``Processing.processTxSet SetValidatorConfig - inserting new config`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let newNetworkAddress = "localhost:5000"
+        let newNetworkAddress = NetworkAddress "localhost:5000"
+        let newSharedRewardPercent = 10m
 
         let initialChxState =
             [
@@ -2679,10 +2686,11 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetValidatorNetworkAddress"
+                    ActionType = "SetValidatorConfig"
                     ActionData =
                         {
-                            NetworkAddress = newNetworkAddress
+                            SetValidatorConfigTxActionDto.NetworkAddress = newNetworkAddress.Value
+                            SharedRewardPercent = newSharedRewardPercent
                         }
                 } :> obj
             ]
@@ -2745,6 +2753,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Validators.[senderWallet.Address].NetworkAddress = newNetworkAddress @>
+        test <@ output.Validators.[senderWallet.Address].SharedRewardPercent = newSharedRewardPercent @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // DelegateStake

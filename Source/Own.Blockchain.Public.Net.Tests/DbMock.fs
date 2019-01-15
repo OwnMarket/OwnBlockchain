@@ -33,7 +33,7 @@ module DbMock =
         |> List.map (fun (NetworkAddress n) ->
             {
                 ValidatorSnapshot.ValidatorAddress = BlockchainAddress "CH"
-                NetworkAddress = n
+                NetworkAddress = NetworkAddress n
                 TotalStake = ChxAmount 0m
             }
         )

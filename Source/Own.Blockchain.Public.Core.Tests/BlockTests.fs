@@ -107,21 +107,24 @@ module BlockTests =
     [<Fact>]
     let ``Blocks.createValidatorStateHash`` () =
         let validator = BlockchainAddress "AAA"
-        let networkAddress = "XXX" // X = 88 = 8 = H
-        let state = {ValidatorState.NetworkAddress = networkAddress}
+        let state =
+            {
+                ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
+                SharedRewardPercent = 4m
+            }
 
         // ACT
         let stateHash = Blocks.createValidatorStateHash DummyHash.decode DummyHash.create (validator, state)
 
         // ASSERT
-        test <@ stateHash = "AAAHHH" @>
+        test <@ stateHash = "AAAHHH...D............" @>
 
     [<Fact>]
     let ``Blocks.createValidatorSnapshotHash`` () =
         let validatorSnapshot =
             {
                 ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAA"
-                NetworkAddress = "XXX" // X = 88 = 8 = H
+                NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                 TotalStake = ChxAmount 5m
             }
 
@@ -233,9 +236,21 @@ module BlockTests =
 
         let validators =
             [
-                BlockchainAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
-                BlockchainAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
-                BlockchainAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+                BlockchainAddress "AAAAA",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
+                        SharedRewardPercent = 1m
+                    }
+                BlockchainAddress "BBBBB",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
+                        SharedRewardPercent = 2m
+                    }
+                BlockchainAddress "CCCCC",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
+                        SharedRewardPercent = 3m
+                    }
             ]
             |> Map.ofList
 
@@ -277,9 +292,9 @@ module BlockTests =
                 "CCCCDDDD" // Account controller 2
                 "EEEEFFFF" // Asset controller 1
                 "GGGGHHHH" // Asset controller 2
-                "AAAAAGGG" // Validator 1
-                "BBBBBHHH" // Validator 2
-                "CCCCCIII" // Validator 3
+                "AAAAAGGG...A............" // Validator 1
+                "BBBBBHHH...B............" // Validator 2
+                "CCCCCIII...C............" // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
             ]
@@ -391,9 +406,21 @@ module BlockTests =
 
         let validators =
             [
-                BlockchainAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
-                BlockchainAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
-                BlockchainAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+                BlockchainAddress "AAAAA",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
+                        SharedRewardPercent = 1m
+                    }
+                BlockchainAddress "BBBBB",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
+                        SharedRewardPercent = 2m
+                    }
+                BlockchainAddress "CCCCC",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
+                        SharedRewardPercent = 3m
+                    }
             ]
             |> Map.ofList
 
@@ -559,9 +586,21 @@ module BlockTests =
 
         let validators =
             [
-                BlockchainAddress "AAAAA", {ValidatorState.NetworkAddress = "WWW"} // W = 87 = 7 = G
-                BlockchainAddress "BBBBB", {ValidatorState.NetworkAddress = "XXX"} // X = 88 = 8 = H
-                BlockchainAddress "CCCCC", {ValidatorState.NetworkAddress = "YYY"} // Y = 89 = 9 = I
+                BlockchainAddress "AAAAA",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
+                        SharedRewardPercent = 1m
+                    }
+                BlockchainAddress "BBBBB",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
+                        SharedRewardPercent = 2m
+                    }
+                BlockchainAddress "CCCCC",
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
+                        SharedRewardPercent = 3m
+                    }
             ]
             |> Map.ofList
 
@@ -569,12 +608,12 @@ module BlockTests =
             [
                 {
                     ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAAAA"
-                    NetworkAddress = "WWW" // W = 87 = 7 = G
+                    NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
                     TotalStake = ChxAmount 1m
                 }
                 {
                     ValidatorSnapshot.ValidatorAddress = BlockchainAddress "BBBBB"
-                    NetworkAddress = "XXX" // X = 88 = 8 = H
+                    NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                     TotalStake = ChxAmount 2m
                 }
             ]

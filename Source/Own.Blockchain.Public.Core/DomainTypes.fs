@@ -2,6 +2,8 @@ namespace Own.Blockchain.Public.Core.DomainTypes
 
 open System
 
+type NetworkAddress = NetworkAddress of string
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Wallet
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,8 +69,9 @@ type SetAssetCodeTxAction = {
     AssetCode : AssetCode
 }
 
-type SetValidatorNetworkAddressTxAction = {
-    NetworkAddress : string
+type SetValidatorConfigTxAction = {
+    NetworkAddress : NetworkAddress
+    SharedRewardPercent : decimal
 }
 
 type DelegateStakeTxAction = {
@@ -85,7 +88,7 @@ type TxAction =
     | SetAccountController of SetAccountControllerTxAction
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction
-    | SetValidatorNetworkAddress of SetValidatorNetworkAddressTxAction
+    | SetValidatorConfig of SetValidatorConfigTxAction
     | DelegateStake of DelegateStakeTxAction
 
 type Tx = {
@@ -107,7 +110,7 @@ type TxEnvelope = {
 
 type ValidatorSnapshot = {
     ValidatorAddress : BlockchainAddress
-    NetworkAddress : string
+    NetworkAddress : NetworkAddress
     TotalStake : ChxAmount
 }
 
@@ -223,7 +226,8 @@ type AssetState = {
 }
 
 type ValidatorState = {
-    NetworkAddress : string
+    NetworkAddress : NetworkAddress
+    SharedRewardPercent : decimal
 }
 
 type StakeState = {
@@ -272,8 +276,6 @@ type ConsensusMessageId = ConsensusMessageId of string // Just for the network l
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type NetworkAddress = NetworkAddress of string
 
 type NetworkMessageId =
     | Tx of TxHash
