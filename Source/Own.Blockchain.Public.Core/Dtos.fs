@@ -258,6 +258,14 @@ type HoldingInfoDto = {
 }
 
 [<CLIMutable>]
+type VoteInfoDto = {
+    AccountHash : string
+    AssetHash : string
+    ResolutionHash : string
+    VoteState : VoteStateDto
+}
+
+[<CLIMutable>]
 type AccountInfoDto = {
     AccountHash : string
     ControllerAddress : string
@@ -288,15 +296,6 @@ type StakeInfoDto = {
 type AccountHoldingDto = {
     AssetHash : string
     Amount : decimal
-}
-
-[<CLIMutable>]
-type VoteInfoDto = {
-    AccountHash : string
-    AssetHash : string
-    ResolutionHash : string
-    VoteHash : string
-    VoteWeight : Nullable<decimal>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

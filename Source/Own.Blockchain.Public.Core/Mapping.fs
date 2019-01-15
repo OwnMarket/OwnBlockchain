@@ -390,7 +390,7 @@ module Mapping =
             output.Votes
             |> Map.toList
             |> List.map (fun (voteId : VoteId, s : VoteState) ->
-                ((voteId.AccountHash.Value, voteId.AssetHash.Value, voteId.ResolutionHash.Value), voteStateToDto s))
+                (voteId.AccountHash.Value, voteId.AssetHash.Value, voteId.ResolutionHash.Value), voteStateToDto s)
             |> Map.ofList
 
         let accounts =

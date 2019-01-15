@@ -882,7 +882,7 @@ module Db =
         let sql =
             """
             INSERT INTO vote (holding_id, resolution_hash, vote_hash, vote_weight)
-            SELECT holding_id, @resolutionHash, @voteHash, @voteWeight
+            SELECT holding_id, @resolutionHash, @voteHash, NULL
             FROM holding
             WHERE asset_hash = @assetHash
             AND account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
@@ -893,8 +893,7 @@ module Db =
                 "@accountHash", voteInfoDto.AccountHash |> box
                 "@assetHash", voteInfoDto.AssetHash |> box
                 "@resolutionHash", voteInfoDto.ResolutionHash |> box
-                "@voteHash", voteInfoDto.VoteHash |> box
-                "@voteWeight", DBNull.Value |> box
+                "@voteHash", voteInfoDto.VoteState.VoteHash |> box
             ]
 
         try
@@ -909,8 +908,7 @@ module Db =
     let private updateVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            WITH cte_holding (holding_id)
-            AS
+            WITH cte_holding AS
             (
                 SELECT h.holding_id FROM holding AS h
                 JOIN account AS a USING (account_id)
@@ -919,12 +917,12 @@ module Db =
             )
             UPDATE vote SET vote_hash = @voteHash, vote_weight = @voteWeight
             FROM cte_holding
-            WHERE holding_id = cte_holding.holding_id
+            WHERE vote.holding_id = cte_holding.holding_id
             AND resolution_hash = @resolutionHash
             """
 
         let voteWeightParamValue =
-            if voteInfo.VoteWeight.HasValue then voteInfo.VoteWeight.Value |> box
+            if voteInfo.VoteState.VoteWeight.HasValue then voteInfo.VoteState.VoteWeight.Value |> box
             else DBNull.Value |> box
 
         let sqlParams =
@@ -932,7 +930,7 @@ module Db =
                 "@accountHash", voteInfo.AccountHash |> box
                 "@assetHash", voteInfo.AssetHash |> box
                 "@resolutionHash", voteInfo.ResolutionHash |> box
-                "@voteHash", voteInfo.VoteHash |> box
+                "@voteHash", voteInfo.VoteState.VoteHash |> box
                 "@voteWeight", voteWeightParamValue
             ]
         try
@@ -959,8 +957,10 @@ module Db =
                     AccountHash = accountHash
                     AssetHash = assetHash
                     ResolutionHash = resolutionHash
-                    VoteHash = voteState.VoteHash
-                    VoteWeight = voteState.VoteWeight
+                    VoteState = {
+                        VoteHash = voteState.VoteHash
+                        VoteWeight = voteState.VoteWeight
+                    }
                 }
                 |> updateVote conn transaction
 

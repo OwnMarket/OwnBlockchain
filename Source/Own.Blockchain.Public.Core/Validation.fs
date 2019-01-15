@@ -170,6 +170,9 @@ module Validation =
 
             if action.ResolutionHash.IsNullOrWhiteSpace() then
                 yield AppError "ResolutionHash is not provided."
+
+            if action.VoteHash.IsNullOrWhiteSpace() then
+                yield AppError "VoteHash is not provided."
         ]
 
     let private validateSubmitVoteWeight (action : SubmitVoteWeightTxActionDto) =
