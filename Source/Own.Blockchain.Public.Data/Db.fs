@@ -362,25 +362,20 @@ module Db =
         : VoteStateDto option =
         let sql =
             """
-            WITH cte_holding (holding_id)
-            AS
-            (
-                SELECT holding_id FROM holding
-                WHERE asset_hash = @assetHash
-                AND account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
-            )
             SELECT vote_hash, vote_weight
-            FROM vote AS v
-            JOIN cte_holding AS h
-            ON v.holding_id = h.holding_id
-            WHERE v.resolution_hash = @resolutionHash
+            FROM vote
+            JOIN holding USING (holding_id)
+            JOIN account USING (account_id)
+            WHERE asset_hash = @assetHash
+            AND account_hash = @accountHash
+            AND resolution_hash = @resolutionHash
             """
 
         let sqlParams =
             [
-                "@accountHash", voteId.AccountHash |> box
-                "@assetHash", voteId.AssetHash |> box
-                "@resolutionHash", voteId.ResolutionHash |> box
+                "@accountHash", voteId.AccountHash.Value |> box
+                "@assetHash", voteId.AssetHash.Value |> box
+                "@resolutionHash", voteId.ResolutionHash.Value |> box
             ]
 
         match DbTools.query<VoteStateDto> dbEngineType dbConnectionString sql sqlParams with
@@ -388,10 +383,10 @@ module Db =
         | [vote] -> Some vote
         | _ ->
             failwithf
-                "Multiple votes of resolution hash %A found for account hash %A and asset hash %A"
-                voteId.ResolutionHash
-                voteId.AccountHash
-                voteId.AssetHash
+                "Multiple votes of resolution hash %s found for account hash %s and asset hash %s"
+                voteId.ResolutionHash.Value
+                voteId.AccountHash.Value
+                voteId.AssetHash.Value
 
     let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
@@ -884,8 +879,9 @@ module Db =
             INSERT INTO vote (holding_id, resolution_hash, vote_hash, vote_weight)
             SELECT holding_id, @resolutionHash, @voteHash, NULL
             FROM holding
+            JOIN account USING (account_id)
             WHERE asset_hash = @assetHash
-            AND account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
+            AND account_hash = @accountHash
             """
 
         let sqlParams =
@@ -908,14 +904,16 @@ module Db =
     let private updateVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            WITH cte_holding AS
-            (
-                SELECT h.holding_id FROM holding AS h
-                JOIN account AS a USING (account_id)
-                WHERE h.asset_hash = @assetHash
-                AND a.account_hash = @accountHash
+            WITH cte_holding AS (
+                SELECT holding_id
+                FROM holding
+                JOIN account USING (account_id)
+                WHERE asset_hash = @assetHash
+                AND account_hash = @accountHash
             )
-            UPDATE vote SET vote_hash = @voteHash, vote_weight = @voteWeight
+            UPDATE vote
+            SET vote_hash = @voteHash,
+                vote_weight = @voteWeight
             FROM cte_holding
             WHERE vote.holding_id = cte_holding.holding_id
             AND resolution_hash = @resolutionHash
