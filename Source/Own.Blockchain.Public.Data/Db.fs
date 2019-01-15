@@ -878,7 +878,7 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
-    let addVote conn transaction (voteInfoDto : VoteInfoDto) : Result<unit, AppErrors> =
+    let private addVote conn transaction (voteInfoDto : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO vote (holding_id, resolution_hash, vote_hash, vote_weight)
