@@ -2,7 +2,7 @@
     "DbEngineType": "PostgreSQL",
     "DbConnectionString": "server=localhost;database=own_public_blockchain_3;user id=own_blockchain_node;password=testpass1;searchpath=own",
     "ApiListeningAddresses": "http://*:10703",
-    "NetworkAddress": "*:25703",
+    "NetworkAddress": "127.0.0.1:25703",
     "NetworkBootstrapNodes": [
         "127.0.0.1:25701"
     ],
