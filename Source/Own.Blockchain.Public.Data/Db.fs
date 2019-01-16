@@ -873,7 +873,7 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
-    let private addVote conn transaction (voteInfoDto : VoteInfoDto) : Result<unit, AppErrors> =
+    let private addVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO vote (holding_id, resolution_hash, vote_hash, vote_weight)
@@ -886,10 +886,10 @@ module Db =
 
         let sqlParams =
             [
-                "@accountHash", voteInfoDto.AccountHash |> box
-                "@assetHash", voteInfoDto.AssetHash |> box
-                "@resolutionHash", voteInfoDto.ResolutionHash |> box
-                "@voteHash", voteInfoDto.VoteState.VoteHash |> box
+                "@accountHash", voteInfo.AccountHash |> box
+                "@assetHash", voteInfo.AssetHash |> box
+                "@resolutionHash", voteInfo.ResolutionHash |> box
+                "@voteHash", voteInfo.VoteState.VoteHash |> box
             ]
 
         try
@@ -935,11 +935,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addVote conn transaction voteInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update holding state."
+            | _ -> Result.appError "Didn't update vote state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update holding state."
+            Result.appError "Failed to update vote state."
 
     let private updateVotes
         conn
