@@ -3899,11 +3899,11 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash].AssetCode = None @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // SetValidatorConfig
+    // ConfigureValidator
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetValidatorConfig - updating existing config`` () =
+    let ``Processing.processTxSet ConfigureValidator - updating existing config`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -3924,10 +3924,10 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetValidatorConfig"
+                    ActionType = "ConfigureValidator"
                     ActionData =
                         {
-                            SetValidatorConfigTxActionDto.NetworkAddress = newNetworkAddress.Value
+                            ConfigureValidatorTxActionDto.NetworkAddress = newNetworkAddress.Value
                             SharedRewardPercent = newSharedRewardPercent
                         }
                 } :> obj
@@ -4005,7 +4005,7 @@ module ProcessingTests =
         test <@ output.Validators.[senderWallet.Address].SharedRewardPercent = newSharedRewardPercent @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetValidatorConfig - inserting new config`` () =
+    let ``Processing.processTxSet ConfigureValidator - inserting new config`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -4026,10 +4026,10 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetValidatorConfig"
+                    ActionType = "ConfigureValidator"
                     ActionData =
                         {
-                            SetValidatorConfigTxActionDto.NetworkAddress = newNetworkAddress.Value
+                            ConfigureValidatorTxActionDto.NetworkAddress = newNetworkAddress.Value
                             SharedRewardPercent = newSharedRewardPercent
                         }
                 } :> obj

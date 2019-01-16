@@ -21,7 +21,7 @@ module ValidationTests =
     let setAccountControllerActionType = "SetAccountController"
     let setAssetControllerActionType = "SetAssetController"
     let setAssetCodeActionType = "SetAssetCode"
-    let setValidatorConfigActionType = "SetValidatorConfig"
+    let configureValidatorActionType = "ConfigureValidator"
     let delegateStakeActionType = "DelegateStake"
 
     [<Fact>]
@@ -614,10 +614,10 @@ module ValidationTests =
             test <@ e.Length = 2 @>
 
     [<Fact>]
-    let ``Validation.validateTx SetValidatorConfig valid action`` () =
+    let ``Validation.validateTx ConfigureValidator valid action`` () =
         let expected =
             {
-                SetValidatorConfigTxActionDto.NetworkAddress = "A"
+                ConfigureValidatorTxActionDto.NetworkAddress = "A"
                 SharedRewardPercent = 42m
             }
 
@@ -628,7 +628,7 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = setValidatorConfigActionType
+                        ActionType = configureValidatorActionType
                         ActionData = expected
                     }
                 ]
@@ -636,16 +636,16 @@ module ValidationTests =
 
         match Validation.validateTx isValidAddressMock chAddress txHash tx with
         | Ok t ->
-            let actual = Helpers.extractActionData<SetValidatorConfigTxAction> t.Actions.Head
+            let actual = Helpers.extractActionData<ConfigureValidatorTxAction> t.Actions.Head
             test <@ expected.NetworkAddress = actual.NetworkAddress.Value @>
             test <@ expected.SharedRewardPercent = actual.SharedRewardPercent @>
         | Error e -> failwithf "%A" e
 
     [<Fact>]
-    let ``Validation.validateTx SetValidatorConfig invalid action`` () =
+    let ``Validation.validateTx ConfigureValidator invalid action`` () =
         let expected =
             {
-                SetValidatorConfigTxActionDto.NetworkAddress = ""
+                ConfigureValidatorTxActionDto.NetworkAddress = ""
                 SharedRewardPercent = 0m
             }
 
@@ -656,7 +656,7 @@ module ValidationTests =
             Actions =
                 [
                     {
-                        ActionType = setValidatorConfigActionType
+                        ActionType = configureValidatorActionType
                         ActionData = expected
                     }
                 ]

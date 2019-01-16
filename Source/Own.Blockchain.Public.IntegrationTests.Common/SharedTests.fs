@@ -468,7 +468,7 @@ module SharedTests =
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
-    let setValidatorConfigTest dbEngineType connectionString =
+    let configureValidatorTest dbEngineType connectionString =
         // ARRANGE
         let client = testInit dbEngineType connectionString
 
@@ -493,10 +493,10 @@ module SharedTests =
         let txActions =
             [
                 {
-                    ActionType = "SetValidatorConfig"
+                    ActionType = "ConfigureValidator"
                     ActionData =
                         {
-                            SetValidatorConfigTxActionDto.NetworkAddress = expectedConfig.NetworkAddress.Value
+                            ConfigureValidatorTxActionDto.NetworkAddress = expectedConfig.NetworkAddress.Value
                             SharedRewardPercent = expectedConfig.SharedRewardPercent
                         }
                 }

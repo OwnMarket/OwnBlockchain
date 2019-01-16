@@ -7,7 +7,7 @@ An action is a single command that changes the state. The action types supported
 - Network Management Actions
     - [`TransferChx`](#transferchx)
     - [`DelegateStake`](#delegatestake)
-    - [`SetValidatorNetworkAddress`](#setvalidatornetworkaddress)
+    - [`ConfigureValidator`](#configurevalidator)
 - Asset Management Actions
     - [`TransferAsset`](#transferasset)
     - [`CreateAssetEmission`](#createassetemission)
@@ -59,13 +59,14 @@ Delegated amount to validator X before TX is processed | Amount value in Delegat
 80 | -80 | 0
 
 
-### `SetValidatorNetworkAddress`
+### `ConfigureValidator`
 
-Sets the network address for the validator node.
+Configures operational parameters for a validator.
 
 Parameter | Data Type | Description
 --- | --- | ---
 `NetworkAddress` | string | Network address of the validator being configured. (e.g. `validator1.weown.com:25718`)
+`SharedRewardPercent` | decimal | Percent of the reward shared with stakers. (0 - 100)
 
 **NOTE:** The transaction must be signed using the private key of the validator wallet address with enough stake to participate in consensus.
 

@@ -42,7 +42,7 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
 - `actionType` identifies the type of the action that should be performed against the blockchain state. There are following action types available:
     - [`TransferChx`](TxActions.md#transferchx)
     - [`DelegateStake`](TxActions.md#delegatestake)
-    - [`SetValidatorNetworkAddress`](TxActions.md#setvalidatornetworkaddress)
+    - [`ConfigureValidator`](TxActions.md#configurevalidator)
     - [`TransferAsset`](TxActions.md#transferasset)
     - [`CreateAssetEmission`](TxActions.md#createassetemission)
     - [`CreateAsset`](TxActions.md#createasset)

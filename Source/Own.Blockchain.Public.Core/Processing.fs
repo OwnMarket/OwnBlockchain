@@ -369,10 +369,10 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
-    let processSetValidatorConfigTxAction
+    let processConfigureValidatorTxAction
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
-        (action : SetValidatorConfigTxAction)
+        (action : ConfigureValidatorTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
@@ -634,7 +634,7 @@ module Processing =
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
-        | SetValidatorConfig action -> processSetValidatorConfigTxAction state senderAddress action
+        | ConfigureValidator action -> processConfigureValidatorTxAction state senderAddress action
         | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action

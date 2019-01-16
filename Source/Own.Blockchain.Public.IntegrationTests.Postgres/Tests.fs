@@ -45,7 +45,7 @@ module Tests =
 
     [<Fact>]
     let ``TransactionProcessing - set validator config`` () =
-        SharedTests.setValidatorConfigTest Config.DbEngineType Config.DbConnectionString
+        SharedTests.configureValidatorTest Config.DbEngineType Config.DbConnectionString
 
     [<Fact>]
     let ``TransactionProcessing - delegate stake`` () =

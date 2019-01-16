@@ -143,7 +143,7 @@ module Validation =
                 yield AppError "AssetCode is not provided."
         ]
 
-    let private validateSetValidatorConfig (action : SetValidatorConfigTxActionDto) =
+    let private validateConfigureValidator (action : ConfigureValidatorTxActionDto) =
         [
             if action.NetworkAddress.IsNullOrWhiteSpace() then
                 yield AppError "NetworkAddress is not provided."
@@ -230,8 +230,8 @@ module Validation =
                 validateSetAssetController isValidAddress a
             | :? SetAssetCodeTxActionDto as a ->
                 validateSetAssetCode a
-            | :? SetValidatorConfigTxActionDto as a ->
-                validateSetValidatorConfig a
+            | :? ConfigureValidatorTxActionDto as a ->
+                validateConfigureValidator a
             | :? DelegateStakeTxActionDto as a ->
                 validateDelegateStake isValidAddress a
             | :? SubmitVoteTxActionDto as a ->

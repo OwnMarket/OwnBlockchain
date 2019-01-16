@@ -90,7 +90,7 @@ type SetAssetCodeTxAction = {
     AssetCode : AssetCode
 }
 
-type SetValidatorConfigTxAction = {
+type ConfigureValidatorTxAction = {
     NetworkAddress : NetworkAddress
     SharedRewardPercent : decimal
 }
@@ -119,7 +119,7 @@ type TxAction =
     | SetAccountController of SetAccountControllerTxAction
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction
-    | SetValidatorConfig of SetValidatorConfigTxAction
+    | ConfigureValidator of ConfigureValidatorTxAction
     | DelegateStake of DelegateStakeTxAction
     | SubmitVote of SubmitVoteTxAction
     | SubmitVoteWeight of SubmitVoteWeightTxAction

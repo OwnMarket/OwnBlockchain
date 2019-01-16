@@ -79,12 +79,12 @@ module Mapping =
                 AssetCode = AssetCode a.AssetCode
             }
             |> SetAssetCode
-        | :? SetValidatorConfigTxActionDto as a ->
+        | :? ConfigureValidatorTxActionDto as a ->
             {
-                SetValidatorConfigTxAction.NetworkAddress = NetworkAddress a.NetworkAddress
+                ConfigureValidatorTxAction.NetworkAddress = NetworkAddress a.NetworkAddress
                 SharedRewardPercent = a.SharedRewardPercent
             }
-            |> SetValidatorConfig
+            |> ConfigureValidator
         | :? DelegateStakeTxActionDto as a ->
             {
                 DelegateStakeTxAction.ValidatorAddress = BlockchainAddress a.ValidatorAddress

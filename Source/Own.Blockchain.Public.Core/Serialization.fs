@@ -38,7 +38,7 @@ module Serialization =
             "SetAccountController", tokenToAction<SetAccountControllerTxActionDto>
             "SetAssetController", tokenToAction<SetAssetControllerTxActionDto>
             "SetAssetCode", tokenToAction<SetAssetCodeTxActionDto>
-            "SetValidatorConfig", tokenToAction<SetValidatorConfigTxActionDto>
+            "ConfigureValidator", tokenToAction<ConfigureValidatorTxActionDto>
             "DelegateStake", tokenToAction<DelegateStakeTxActionDto>
             "SubmitVote", tokenToAction<SubmitVoteTxActionDto>
             "SubmitVoteWeight", tokenToAction<SubmitVoteWeightTxActionDto>

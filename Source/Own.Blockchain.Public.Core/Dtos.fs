@@ -53,7 +53,7 @@ type SetAssetCodeTxActionDto = {
 }
 
 [<CLIMutable>]
-type SetValidatorConfigTxActionDto = {
+type ConfigureValidatorTxActionDto = {
     NetworkAddress : string
     SharedRewardPercent : decimal
 }
