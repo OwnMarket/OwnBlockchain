@@ -94,7 +94,6 @@ module Composition =
     let getTopValidators () =
         Validators.getTopValidators
             getTopValidatorsByStake
-            (ChxAmount Config.GenesisChxSupply)
             (ChxAmount Config.ValidatorThreshold)
             Config.MaxValidatorCount
 

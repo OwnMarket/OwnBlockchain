@@ -22,7 +22,6 @@ module Validators =
 
     let getTopValidators
         getTopValidatorsByStake
-        totalSupply
         validatorThreshold
         maxValidatorCount
         =
