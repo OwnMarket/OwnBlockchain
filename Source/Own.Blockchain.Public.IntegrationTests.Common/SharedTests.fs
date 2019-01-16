@@ -106,14 +106,14 @@ module SharedTests =
     let transactionSubmitTest dbEngineType connString isValidTransaction =
         let client = testInit dbEngineType connString
         let senderWallet = Signing.generateWallet ()
-        let receiverWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
 
         let action =
             {
                 ActionType = "TransferChx"
                 ActionData =
                     {
-                        RecipientAddress = receiverWallet.Address.Value
+                        RecipientAddress = recipientWallet.Address.Value
                         TransferChxTxActionDto.Amount = 10m
                     }
             }
@@ -143,10 +143,10 @@ module SharedTests =
             [
                 for i in [1 .. 4] do
                     let senderWallet = Signing.generateWallet ()
-                    let receiverWallet = Signing.generateWallet ()
+                    let recipientWallet = Signing.generateWallet ()
 
                     Helper.addBalanceAndAccount dbEngineType connString senderWallet.Address.Value 100m
-                    Helper.addBalanceAndAccount dbEngineType connString receiverWallet.Address.Value 0m
+                    Helper.addBalanceAndAccount dbEngineType connString recipientWallet.Address.Value 0m
 
                     let isValid = i % 2 = 0
                     let amt = if isValid then 10m else -10m
@@ -156,7 +156,7 @@ module SharedTests =
                             ActionType = "TransferChx"
                             ActionData =
                                 {
-                                    RecipientAddress = receiverWallet.Address.Value
+                                    RecipientAddress = recipientWallet.Address.Value
                                     TransferChxTxActionDto.Amount = amt
                                 }
                         }
