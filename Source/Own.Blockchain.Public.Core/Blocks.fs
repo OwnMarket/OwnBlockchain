@@ -131,13 +131,11 @@ module Blocks =
         (validatorSnapshot : ValidatorSnapshot)
         =
 
-        let (BlockchainAddress validatorAddress) = validatorSnapshot.ValidatorAddress
-        let (ChxAmount totalStake) = validatorSnapshot.TotalStake
-
         [
-            decodeHash validatorAddress
+            decodeHash validatorSnapshot.ValidatorAddress.Value
             stringToBytes validatorSnapshot.NetworkAddress.Value
-            decimalToBytes totalStake
+            decimalToBytes validatorSnapshot.SharedRewardPercent
+            decimalToBytes validatorSnapshot.TotalStake.Value
         ]
         |> Array.concat
         |> createHash
@@ -379,6 +377,7 @@ module Blocks =
                 {
                     ValidatorSnapshot.ValidatorAddress = validatorAddress
                     NetworkAddress = state.NetworkAddress
+                    SharedRewardPercent = state.SharedRewardPercent
                     TotalStake = ChxAmount 0m
                 }
             )

@@ -138,7 +138,8 @@ type TxResultDto = {
 type ValidatorSnapshotDto = {
     [<Key(0)>] ValidatorAddress : string
     [<Key(1)>] NetworkAddress : string
-    [<Key(2)>] TotalStake : decimal
+    [<Key(2)>] SharedRewardPercent : decimal
+    [<Key(3)>] TotalStake : decimal
 }
 
 [<CLIMutable>]

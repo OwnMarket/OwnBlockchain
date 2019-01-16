@@ -144,6 +144,7 @@ type TxEnvelope = {
 type ValidatorSnapshot = {
     ValidatorAddress : BlockchainAddress
     NetworkAddress : NetworkAddress
+    SharedRewardPercent : decimal
     TotalStake : ChxAmount
 }
 

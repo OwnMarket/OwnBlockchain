@@ -220,6 +220,7 @@ module Mapping =
         {
             ValidatorAddress = BlockchainAddress dto.ValidatorAddress
             NetworkAddress = NetworkAddress dto.NetworkAddress
+            SharedRewardPercent = dto.SharedRewardPercent
             TotalStake = ChxAmount dto.TotalStake
         }
 
@@ -227,6 +228,7 @@ module Mapping =
         {
             ValidatorAddress = snapshot.ValidatorAddress.Value
             NetworkAddress = snapshot.NetworkAddress.Value
+            SharedRewardPercent = snapshot.SharedRewardPercent
             TotalStake = snapshot.TotalStake.Value
         }
 

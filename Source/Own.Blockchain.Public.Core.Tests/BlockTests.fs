@@ -125,6 +125,7 @@ module BlockTests =
             {
                 ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAA"
                 NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
+                SharedRewardPercent = 4m
                 TotalStake = ChxAmount 5m
             }
 
@@ -132,7 +133,7 @@ module BlockTests =
         let snapshotHash = Blocks.createValidatorSnapshotHash DummyHash.decode DummyHash.create validatorSnapshot
 
         // ASSERT
-        test <@ snapshotHash = "AAAHHH...E............" @>
+        test <@ snapshotHash = "AAAHHH...D...............E............" @>
 
     [<Fact>]
     let ``Blocks.createStakeStateHash`` () =
@@ -320,6 +321,31 @@ module BlockTests =
                 Stakes = stakes
             }
 
+        let config =
+            {
+                BlockchainConfiguration.Validators =
+                    [
+                        {
+                            ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAAAA"
+                            NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
+                            SharedRewardPercent = 1m
+                            TotalStake = ChxAmount 4m
+                        }
+                        {
+                            ValidatorSnapshot.ValidatorAddress = BlockchainAddress "BBBBB"
+                            NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
+                            SharedRewardPercent = 2m
+                            TotalStake = ChxAmount 5m
+                        }
+                        {
+                            ValidatorSnapshot.ValidatorAddress = BlockchainAddress "CCCCC"
+                            NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
+                            SharedRewardPercent = 3m
+                            TotalStake = ChxAmount 6m
+                        }
+                    ]
+            }
+
         let txSetRoot = "AAABBBCCC"
 
         let txResultSetRoot =
@@ -354,6 +380,14 @@ module BlockTests =
             ]
             |> String.Concat
 
+        let configRoot =
+            [
+                "AAAAAGGG...A...............D............" // Validator 1
+                "BBBBBHHH...B...............E............" // Validator 2
+                "CCCCCIII...C...............F............" // Validator 3
+            ]
+            |> String.Concat
+
         let blockHash =
             [
                 ".......A" // blockNumber
@@ -363,6 +397,7 @@ module BlockTests =
                 txSetRoot
                 txResultSetRoot
                 stateRoot
+                configRoot
             ]
             |> String.Concat
 
@@ -379,7 +414,7 @@ module BlockTests =
                 configurationBlockNumber
                 txSet
                 processingOutput
-                None
+                (Some config)
 
         // ASSERT
         test <@ block.Header.Number = blockNumber @>
@@ -767,11 +802,13 @@ module BlockTests =
                 {
                     ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAAAA"
                     NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
+                    SharedRewardPercent = 4m
                     TotalStake = ChxAmount 1m
                 }
                 {
                     ValidatorSnapshot.ValidatorAddress = BlockchainAddress "BBBBB"
                     NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
+                    SharedRewardPercent = 5m
                     TotalStake = ChxAmount 2m
                 }
             ]

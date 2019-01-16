@@ -34,6 +34,7 @@ module DbMock =
             {
                 ValidatorSnapshot.ValidatorAddress = BlockchainAddress "CH"
                 NetworkAddress = NetworkAddress n
+                SharedRewardPercent = 0m
                 TotalStake = ChxAmount 0m
             }
         )

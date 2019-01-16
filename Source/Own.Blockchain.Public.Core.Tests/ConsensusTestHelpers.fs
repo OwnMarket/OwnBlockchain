@@ -87,6 +87,7 @@ module ConsensusTestHelpers =
                         {
                             ValidatorSnapshot.ValidatorAddress = a
                             NetworkAddress = NetworkAddress ""
+                            SharedRewardPercent = 0m
                             TotalStake = ChxAmount 0m
                         }
                     )

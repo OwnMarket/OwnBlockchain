@@ -53,10 +53,10 @@ module ValidatorTests =
         let consensusRound = ConsensusRound 0
         let validators =
             [
-                {ValidatorSnapshotDto.ValidatorAddress = "A"; NetworkAddress = "1"; TotalStake = 0m}
-                {ValidatorSnapshotDto.ValidatorAddress = "B"; NetworkAddress = "2"; TotalStake = 0m}
-                {ValidatorSnapshotDto.ValidatorAddress = "C"; NetworkAddress = "3"; TotalStake = 0m}
-                {ValidatorSnapshotDto.ValidatorAddress = "D"; NetworkAddress = "4"; TotalStake = 0m}
+                {ValidatorAddress = "A"; NetworkAddress = "1"; SharedRewardPercent = 0m; TotalStake = 0m}
+                {ValidatorAddress = "B"; NetworkAddress = "2"; SharedRewardPercent = 0m; TotalStake = 0m}
+                {ValidatorAddress = "C"; NetworkAddress = "3"; SharedRewardPercent = 0m; TotalStake = 0m}
+                {ValidatorAddress = "D"; NetworkAddress = "4"; SharedRewardPercent = 0m; TotalStake = 0m}
             ]
             |> List.map Mapping.validatorSnapshotFromDto
 
