@@ -27,7 +27,8 @@ module Processing =
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
         stakes : ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>,
-        totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount> // Not part of the blockchain state
+        totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not part of the blockchain state
+        collectedReward : ChxAmount
         ) =
 
         let getChxBalanceState address =
@@ -65,8 +66,11 @@ module Processing =
                 ConcurrentDictionary<AssetHash, AssetState option>(),
                 ConcurrentDictionary<BlockchainAddress, ValidatorState option>(),
                 ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>(),
-                ConcurrentDictionary<BlockchainAddress, ChxAmount>()
+                ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
+                ChxAmount 0m
             )
+
+        member val CollectedReward = collectedReward with get, set
 
         member __.Clone () =
             ProcessingState(
@@ -86,7 +90,8 @@ module Processing =
                 ConcurrentDictionary(assets),
                 ConcurrentDictionary(validators),
                 ConcurrentDictionary(stakes),
-                ConcurrentDictionary(totalChxStaked)
+                ConcurrentDictionary(totalChxStaked),
+                __.CollectedReward
             )
 
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
@@ -652,6 +657,42 @@ module Processing =
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
+    let distributeReward
+        processTxActions
+        (getTopStakers : BlockchainAddress -> StakerInfo list)
+        validatorAddress
+        (sharedRewardPercent : decimal)
+        (state : ProcessingState)
+        =
+
+        if sharedRewardPercent < 0m then
+            failwithf "SharedRewardPercent cannot be negative: %A." sharedRewardPercent
+
+        if sharedRewardPercent > 100m then
+            failwithf "SharedRewardPercent cannot be greater than 100: %A." sharedRewardPercent
+
+        if sharedRewardPercent = 0m then
+            state
+        else
+            let stakers = getTopStakers validatorAddress
+            if stakers.IsEmpty then
+                state
+            else
+                let sumOfStakes = stakers |> List.sumBy (fun s -> s.Amount)
+                let distributableReward = state.CollectedReward * sharedRewardPercent / 100m
+                let actions =
+                    stakers
+                    |> List.map (fun s ->
+                        TransferChx {
+                            RecipientAddress = s.StakeholderAddress
+                            Amount = s.Amount / sumOfStakes * distributableReward
+                        }
+                    )
+                let nonce = state.GetChxBalance(validatorAddress).Nonce + 1
+                match processTxActions validatorAddress nonce actions state with
+                | Ok state -> state
+                | Error err -> failwithf "Cannot process reward distribution (%A)." err
+
     let processTxSet
         getTx
         verifySignature
@@ -666,7 +707,9 @@ module Processing =
         (getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option)
         (getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option)
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
+        (getTopStakers : BlockchainAddress -> StakerInfo list)
         (validator : BlockchainAddress)
+        (sharedRewardPercent : decimal)
         (blockNumber : BlockNumber)
         (txSet : TxHash list)
         =
@@ -684,6 +727,7 @@ module Processing =
                 // Logic in excludeTxsIfBalanceCannotCoverFees is supposed to prevent this.
                 failwithf "Cannot process validator reward for tx %s (Error: %A)" txHash.Value e
             | Ok state ->
+                state.CollectedReward <- state.CollectedReward + tx.TotalFee
                 match updateChxBalanceNonce tx.Sender tx.Nonce state with
                 | Error e ->
                     state.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
@@ -714,5 +758,6 @@ module Processing =
         let state =
             txSet
             |> List.fold processTx initialState
+            |> distributeReward (processTxActions deriveHash) getTopStakers validator sharedRewardPercent
 
         state.ToProcessingOutput()

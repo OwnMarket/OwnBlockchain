@@ -23,11 +23,9 @@ module Validators =
     let getTopValidators
         getTopValidatorsByStake
         validatorThreshold
-        maxValidatorCount
         =
 
-        validatorThreshold
-        |> getTopValidatorsByStake maxValidatorCount
+        getTopValidatorsByStake validatorThreshold
         |> List.map Mapping.validatorSnapshotFromDto
 
     let getValidatorsAtHeight getBlock blockNumber =

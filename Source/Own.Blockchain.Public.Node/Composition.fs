@@ -71,7 +71,11 @@ module Composition =
 
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
 
-    let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString
+    let getTopValidatorsByStake =
+        Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString Config.MaxValidatorCount
+
+    let getTopStakersByStake =
+        Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakersCount
 
     let getStakeState = Db.getStakeState Config.DbEngineType Config.DbConnectionString
 
@@ -95,7 +99,6 @@ module Composition =
         Validators.getTopValidators
             getTopValidatorsByStake
             (ChxAmount Config.ValidatorThreshold)
-            Config.MaxValidatorCount
 
     let getValidatorsAtHeight =
         Validators.getValidatorsAtHeight
@@ -182,6 +185,8 @@ module Composition =
             getValidatorState
             getStakeState
             getTotalChxStaked
+            getTopStakersByStake
+            getValidatorsAtHeight
             Hashing.deriveHash
             Hashing.decode
             Hashing.hash

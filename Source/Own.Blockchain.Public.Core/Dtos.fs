@@ -294,6 +294,12 @@ type StakeInfoDto = {
 }
 
 [<CLIMutable>]
+type StakerInfoDto = {
+    StakeholderAddress : string
+    Amount : decimal
+}
+
+[<CLIMutable>]
 type AccountHoldingDto = {
     AssetHash : string
     Amount : decimal

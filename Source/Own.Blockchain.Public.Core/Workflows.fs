@@ -147,6 +147,8 @@ module Workflows =
         getValidatorStateFromStorage
         getStakeStateFromStorage
         getTotalChxStakedFromStorage
+        getTopStakersFromStorage
+        (getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list)
         deriveHash
         decodeHash
         createHash
@@ -155,7 +157,7 @@ module Workflows =
         minTxActionFee
         validatorAddress
         (previousBlockHash : BlockHash)
-        blockNumber
+        (blockNumber : BlockNumber)
         timestamp
         txSet
         blockchainConfiguration
@@ -169,6 +171,27 @@ module Workflows =
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
         let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
         let getTotalChxStaked = memoize getTotalChxStakedFromStorage
+
+        let getTopStakers = getTopStakersFromStorage >> List.map Mapping.stakerInfoFromDto
+
+        let sharedRewardPercent =
+            let validators =
+                blockNumber - 1
+                |> getValidatorsAtHeight
+                |> List.filter (fun v -> v.ValidatorAddress = validatorAddress)
+
+            match validators with
+            | [] ->
+                failwithf "Validator %s not found to create block %i."
+                    validatorAddress.Value
+                    blockNumber.Value
+            | [v] ->
+                v.SharedRewardPercent
+            | vs ->
+                failwithf "%i entries found for validator %s while creating block %i."
+                    vs.Length
+                    validatorAddress.Value
+                    blockNumber.Value
 
         let output =
             txSet
@@ -186,7 +209,9 @@ module Workflows =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorAddress
+                sharedRewardPercent
                 blockNumber
 
         let configurationBlockNumber =

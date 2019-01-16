@@ -277,6 +277,11 @@ type StakeState = {
     Amount : ChxAmount
 }
 
+type StakerInfo = {
+    StakeholderAddress : BlockchainAddress
+    Amount : ChxAmount
+}
+
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     ChxBalances : Map<BlockchainAddress, ChxBalanceState>

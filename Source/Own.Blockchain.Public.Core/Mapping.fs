@@ -371,6 +371,12 @@ module Mapping =
             Amount = state.Amount.Value
         }
 
+    let stakerInfoFromDto (dto : StakerInfoDto) : StakerInfo =
+        {
+            StakerInfo.StakeholderAddress = BlockchainAddress dto.StakeholderAddress
+            Amount = ChxAmount dto.Amount
+        }
+
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults

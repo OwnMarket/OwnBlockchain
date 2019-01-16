@@ -147,6 +147,11 @@ module Validation =
         [
             if action.NetworkAddress.IsNullOrWhiteSpace() then
                 yield AppError "NetworkAddress is not provided."
+
+            if action.SharedRewardPercent < 0m then
+                yield AppError "SharedRewardPercent cannot be negative."
+            if action.SharedRewardPercent > 100m then
+                yield AppError "SharedRewardPercent cannot be greater than 100."
         ]
 
     let private validateDelegateStake isValidAddress (action : DelegateStakeTxActionDto) =

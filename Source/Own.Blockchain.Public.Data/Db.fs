@@ -460,7 +460,7 @@ module Db =
             match dbEngineType with
             | Firebird ->
                 """
-                SELECT validator_address, network_address, total_stake
+                SELECT validator_address, network_address, shared_reward_percent, total_stake
                 FROM validator
                 JOIN (
                     SELECT FIRST @topCount validator_address, sum(amount) AS total_stake
@@ -473,7 +473,7 @@ module Db =
                 """
             | PostgreSQL ->
                 """
-                SELECT validator_address, network_address, total_stake
+                SELECT validator_address, network_address, shared_reward_percent, total_stake
                 FROM validator
                 JOIN (
                     SELECT validator_address, sum(amount) AS total_stake
@@ -491,6 +491,40 @@ module Db =
             "@threshold", threshold |> box
         ]
         |> DbTools.query<ValidatorSnapshotDto> dbEngineType dbConnectionString sql
+
+    let getTopStakersByStake
+        dbEngineType
+        (dbConnectionString : string)
+        (topCount : int)
+        (BlockchainAddress validatorAddress)
+        : StakerInfoDto list
+        =
+
+        let sql =
+            match dbEngineType with
+            | Firebird ->
+                """
+                SELECT FIRST @topCount stakeholder_address, amount
+                FROM stake
+                WHERE validator_address = @validatorAddress
+                AND amount > 0
+                ORDER BY amount DESC, stakeholder_address
+                """
+            | PostgreSQL ->
+                """
+                SELECT stakeholder_address, amount
+                FROM stake
+                WHERE validator_address = @validatorAddress
+                AND amount > 0
+                ORDER BY amount DESC, stakeholder_address
+                LIMIT @topCount
+                """
+
+        [
+            "@topCount", topCount |> box
+            "@validatorAddress", validatorAddress |> box
+        ]
+        |> DbTools.query<StakerInfoDto> dbEngineType dbConnectionString sql
 
     let getStakeState
         dbEngineType

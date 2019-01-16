@@ -202,6 +202,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -218,7 +220,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -299,6 +303,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -315,7 +321,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -397,6 +405,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -413,7 +423,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -495,6 +507,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         let processTxSet () =
             Processing.processTxSet
                 getTx
@@ -510,7 +524,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -586,6 +602,8 @@ module ProcessingTests =
             else
                 ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -602,7 +620,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -698,6 +718,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -714,7 +736,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -806,6 +830,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -822,7 +848,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -920,6 +948,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -936,7 +966,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1031,6 +1063,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1047,7 +1081,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1136,6 +1172,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1152,7 +1190,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1239,6 +1279,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1255,7 +1297,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1332,6 +1376,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1348,7 +1394,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1426,6 +1474,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1442,7 +1492,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1571,6 +1623,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1587,7 +1641,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1681,6 +1737,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1697,7 +1755,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1785,6 +1845,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1801,7 +1863,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1879,6 +1943,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1895,7 +1961,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -1973,6 +2041,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -1989,7 +2059,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2119,6 +2191,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2135,7 +2209,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2227,6 +2303,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2243,7 +2321,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2330,6 +2410,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2346,7 +2428,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2429,6 +2513,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2445,7 +2531,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2530,6 +2618,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2546,7 +2636,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2630,6 +2722,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2646,7 +2740,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2735,6 +2831,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2751,7 +2849,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2838,6 +2938,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2854,7 +2956,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -2937,6 +3041,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -2953,7 +3059,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3031,6 +3139,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3047,7 +3157,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3130,6 +3242,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3146,7 +3260,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3233,6 +3349,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3249,7 +3367,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3327,6 +3447,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3343,7 +3465,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3426,6 +3550,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3442,7 +3568,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3529,6 +3657,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3545,7 +3675,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3623,6 +3755,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3639,7 +3773,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3722,6 +3858,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3738,7 +3876,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3827,6 +3967,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3843,7 +3985,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -3922,6 +4066,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -3938,7 +4084,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -4028,6 +4176,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = currentStakeAmount
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -4044,7 +4194,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -4122,6 +4274,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -4138,7 +4292,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -4216,6 +4372,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = ChxAmount 0m
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -4232,7 +4390,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -4315,6 +4475,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = currentStakeAmount
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -4331,7 +4493,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
@@ -4414,6 +4578,8 @@ module ProcessingTests =
 
         let getTotalChxStaked _ = currentStakeAmount
 
+        let getTopStakers _ = []
+
         // ACT
         let output =
             Processing.processTxSet
@@ -4430,7 +4596,9 @@ module ProcessingTests =
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
+                getTopStakers
                 validatorWallet.Address
+                0m
                 blockNumber
                 txSet
 
