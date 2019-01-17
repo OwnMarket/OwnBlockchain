@@ -708,7 +708,7 @@ module Processing =
         (getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option)
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
         (getTopStakers : BlockchainAddress -> StakerInfo list)
-        (validator : BlockchainAddress)
+        (validatorAddress : BlockchainAddress)
         (sharedRewardPercent : decimal)
         (blockNumber : BlockNumber)
         (txSet : TxHash list)
@@ -722,7 +722,7 @@ module Processing =
                     Log.appErrors err
                     failwithf "Cannot load tx %s" txHash.Value // TODO: Remove invalid tx from the pool?
 
-            match processValidatorReward tx validator state with
+            match processValidatorReward tx validatorAddress state with
             | Error e ->
                 // Logic in excludeTxsIfBalanceCannotCoverFees is supposed to prevent this.
                 failwithf "Cannot process validator reward for tx %s (Error: %A)" txHash.Value e
@@ -758,6 +758,6 @@ module Processing =
         let state =
             txSet
             |> List.fold processTx initialState
-            |> distributeReward (processTxActions deriveHash) getTopStakers validator sharedRewardPercent
+            |> distributeReward (processTxActions deriveHash) getTopStakers validatorAddress sharedRewardPercent
 
         state.ToProcessingOutput()
