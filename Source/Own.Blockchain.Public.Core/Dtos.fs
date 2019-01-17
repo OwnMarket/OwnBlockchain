@@ -288,14 +288,14 @@ type ValidatorInfoDto = {
 
 [<CLIMutable>]
 type StakeInfoDto = {
-    StakeholderAddress : string
+    StakerAddress : string
     ValidatorAddress : string
     StakeState : StakeStateDto
 }
 
 [<CLIMutable>]
 type StakerInfoDto = {
-    StakeholderAddress : string
+    StakerAddress : string
     Amount : decimal
 }
 

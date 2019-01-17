@@ -220,9 +220,9 @@ module ProcessingTests =
 
         let getTopStakers _ =
             [
-                {StakerInfo.StakeholderAddress = staker1Wallet.Address; Amount = stake1}
-                {StakerInfo.StakeholderAddress = staker2Wallet.Address; Amount = stake2}
-                {StakerInfo.StakeholderAddress = staker3Wallet.Address; Amount = stake3}
+                {StakerInfo.StakerAddress = staker1Wallet.Address; Amount = stake1}
+                {StakerInfo.StakerAddress = staker2Wallet.Address; Amount = stake2}
+                {StakerInfo.StakerAddress = staker3Wallet.Address; Amount = stake3}
             ]
 
         // ACT

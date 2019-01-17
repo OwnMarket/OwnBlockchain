@@ -467,7 +467,7 @@ module Db =
                     FROM stake
                     GROUP BY validator_address
                     HAVING sum(amount) >= @threshold
-                    ORDER BY sum(amount) DESC, count(stakeholder_address) DESC, validator_address
+                    ORDER BY sum(amount) DESC, count(staker_address) DESC, validator_address
                 ) s USING (validator_address)
                 ORDER BY validator_address
                 """
@@ -480,7 +480,7 @@ module Db =
                     FROM stake
                     GROUP BY validator_address
                     HAVING sum(amount) >= @threshold
-                    ORDER BY sum(amount) DESC, count(stakeholder_address) DESC, validator_address
+                    ORDER BY sum(amount) DESC, count(staker_address) DESC, validator_address
                     LIMIT @topCount
                 ) s USING (validator_address)
                 ORDER BY validator_address
@@ -504,19 +504,19 @@ module Db =
             match dbEngineType with
             | Firebird ->
                 """
-                SELECT FIRST @topCount stakeholder_address, amount
+                SELECT FIRST @topCount staker_address, amount
                 FROM stake
                 WHERE validator_address = @validatorAddress
                 AND amount > 0
-                ORDER BY amount DESC, stakeholder_address
+                ORDER BY amount DESC, staker_address
                 """
             | PostgreSQL ->
                 """
-                SELECT stakeholder_address, amount
+                SELECT staker_address, amount
                 FROM stake
                 WHERE validator_address = @validatorAddress
                 AND amount > 0
-                ORDER BY amount DESC, stakeholder_address
+                ORDER BY amount DESC, staker_address
                 LIMIT @topCount
                 """
 
@@ -529,7 +529,7 @@ module Db =
     let getStakeState
         dbEngineType
         (dbConnectionString : string)
-        (BlockchainAddress stakeholderAddress, BlockchainAddress validatorAddress)
+        (BlockchainAddress stakerAddress, BlockchainAddress validatorAddress)
         : StakeStateDto option
         =
 
@@ -537,25 +537,25 @@ module Db =
             """
             SELECT amount
             FROM stake
-            WHERE stakeholder_address = @stakeholderAddress
+            WHERE staker_address = @stakerAddress
             AND validator_address = @validatorAddress
             """
 
         let sqlParams =
             [
-                "@stakeholderAddress", stakeholderAddress |> box
+                "@stakerAddress", stakerAddress |> box
                 "@validatorAddress", validatorAddress |> box
             ]
 
         match DbTools.query<StakeStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [stakeState] -> Some stakeState
-        | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakeholderAddress validatorAddress
+        | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakerAddress validatorAddress
 
     let getTotalChxStaked
         dbEngineType
         (dbConnectionString : string)
-        (BlockchainAddress stakeholderAddress)
+        (BlockchainAddress stakerAddress)
         : ChxAmount
         =
 
@@ -563,11 +563,11 @@ module Db =
             """
             SELECT sum(amount)
             FROM stake
-            WHERE stakeholder_address = @stakeholderAddress
+            WHERE staker_address = @stakerAddress
             """
 
         [
-            "@stakeholderAddress", stakeholderAddress |> box
+            "@stakerAddress", stakerAddress |> box
         ]
         |> DbTools.query<Nullable<decimal>> dbEngineType dbConnectionString sql
         |> List.tryHead
@@ -1261,13 +1261,13 @@ module Db =
     let private addStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO stake (stakeholder_address, validator_address, amount)
-            VALUES (@stakeholderAddress, @validatorAddress, @amount)
+            INSERT INTO stake (staker_address, validator_address, amount)
+            VALUES (@stakerAddress, @validatorAddress, @amount)
             """
 
         let sqlParams =
             [
-                "@stakeholderAddress", stakeInfo.StakeholderAddress |> box
+                "@stakerAddress", stakeInfo.StakerAddress |> box
                 "@validatorAddress", stakeInfo.ValidatorAddress |> box
                 "@amount", stakeInfo.StakeState.Amount |> box
             ]
@@ -1286,13 +1286,13 @@ module Db =
             """
             UPDATE stake
             SET amount = @amount
-            WHERE stakeholder_address = @stakeholderAddress
+            WHERE staker_address = @stakerAddress
             AND validator_address = @validatorAddress
             """
 
         let sqlParams =
             [
-                "@stakeholderAddress", stakeInfo.StakeholderAddress |> box
+                "@stakerAddress", stakeInfo.StakerAddress |> box
                 "@validatorAddress", stakeInfo.ValidatorAddress |> box
                 "@amount", stakeInfo.StakeState.Amount |> box
             ]
@@ -1314,11 +1314,11 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        let foldFn result ((stakeholderAddress, validatorAddress), stakeState : StakeStateDto) =
+        let foldFn result ((stakerAddress, validatorAddress), stakeState : StakeStateDto) =
             result
             >>= fun _ ->
                 {
-                    StakeholderAddress = stakeholderAddress
+                    StakerAddress = stakerAddress
                     ValidatorAddress = validatorAddress
                     StakeState =
                         {

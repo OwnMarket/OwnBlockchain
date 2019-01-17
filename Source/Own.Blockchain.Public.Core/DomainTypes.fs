@@ -278,7 +278,7 @@ type StakeState = {
 }
 
 type StakerInfo = {
-    StakeholderAddress : BlockchainAddress
+    StakerAddress : BlockchainAddress
     Amount : ChxAmount
 }
 

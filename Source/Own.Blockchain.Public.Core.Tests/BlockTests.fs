@@ -137,12 +137,12 @@ module BlockTests =
 
     [<Fact>]
     let ``Blocks.createStakeStateHash`` () =
-        let stakeholder = BlockchainAddress "AAA"
+        let staker = BlockchainAddress "AAA"
         let validator = BlockchainAddress "BBB"
         let state = {StakeState.Amount = ChxAmount 5m}
 
         // ACT
-        let stateHash = Blocks.createStakeStateHash DummyHash.decode DummyHash.create (stakeholder, validator, state)
+        let stateHash = Blocks.createStakeStateHash DummyHash.decode DummyHash.create (staker, validator, state)
 
         // ASSERT
         test <@ stateHash = "AAABBB...E............" @>
@@ -651,8 +651,8 @@ module BlockTests =
 
                 stakes
                 |> Map.toList
-                |> List.map (fun ((stakeholderAddress, validatorAddress), state) ->
-                    (stakeholderAddress, validatorAddress, state)
+                |> List.map (fun ((stakerAddress, validatorAddress), state) ->
+                    (stakerAddress, validatorAddress, state)
                     |> Blocks.createStakeStateHash Hashing.decode Hashing.hash
                 )
             ]

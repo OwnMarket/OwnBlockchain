@@ -143,13 +143,13 @@ module Blocks =
     let createStakeStateHash
         decodeHash
         createHash
-        (BlockchainAddress stakeholderAddress, BlockchainAddress validatorAddress, state : StakeState)
+        (BlockchainAddress stakerAddress, BlockchainAddress validatorAddress, state : StakeState)
         =
 
         let (ChxAmount amount) = state.Amount
 
         [
-            decodeHash stakeholderAddress
+            decodeHash stakerAddress
             decodeHash validatorAddress
             decimalToBytes amount
         ]
@@ -263,8 +263,8 @@ module Blocks =
             output.Stakes
             |> Map.toList
             |> List.sort // Ensure a predictable order
-            |> List.map (fun ((stakeholderAddress, validatorAddress), state) ->
-                createStakeStateHash decodeHash createHash (stakeholderAddress, validatorAddress, state)
+            |> List.map (fun ((stakerAddress, validatorAddress), state) ->
+                createStakeStateHash decodeHash createHash (stakerAddress, validatorAddress, state)
             )
 
         let stateRoot =

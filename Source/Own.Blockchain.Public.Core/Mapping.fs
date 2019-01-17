@@ -373,7 +373,7 @@ module Mapping =
 
     let stakerInfoFromDto (dto : StakerInfoDto) : StakerInfo =
         {
-            StakerInfo.StakeholderAddress = BlockchainAddress dto.StakeholderAddress
+            StakerInfo.StakerAddress = BlockchainAddress dto.StakerAddress
             Amount = ChxAmount dto.Amount
         }
 

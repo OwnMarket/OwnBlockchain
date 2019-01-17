@@ -129,8 +129,8 @@ module Processing =
         member __.GetValidator (address : BlockchainAddress) =
             validators.GetOrAdd(address, getValidatorStateFromStorage)
 
-        member __.GetStake (stakeholderAddress : BlockchainAddress, validatorAddress : BlockchainAddress) =
-            stakes.GetOrAdd((stakeholderAddress, validatorAddress), getStakeStateFromStorage)
+        member __.GetStake (stakerAddress : BlockchainAddress, validatorAddress : BlockchainAddress) =
+            stakes.GetOrAdd((stakerAddress, validatorAddress), getStakeStateFromStorage)
 
         // Not part of the blockchain state
         member __.GetTotalChxStaked (address) =
@@ -158,9 +158,9 @@ module Processing =
             let state = Some state
             validators.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
 
-        member __.SetStake (stakeholderAddr, validatorAddr, state : StakeState) =
+        member __.SetStake (stakerAddress, validatorAddress, state : StakeState) =
             let state = Some state
-            stakes.AddOrUpdate((stakeholderAddr, validatorAddr), state, fun _ _ -> state) |> ignore
+            stakes.AddOrUpdate((stakerAddress, validatorAddress), state, fun _ _ -> state) |> ignore
 
         // Not part of the blockchain state
         member __.SetTotalChxStaked (address : BlockchainAddress, amount) =
@@ -684,7 +684,7 @@ module Processing =
                     stakers
                     |> List.map (fun s ->
                         TransferChx {
-                            RecipientAddress = s.StakeholderAddress
+                            RecipientAddress = s.StakerAddress
                             Amount = s.Amount / sumOfStakes * distributableReward
                         }
                     )
