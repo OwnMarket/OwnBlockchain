@@ -505,10 +505,13 @@ module Mapping =
             GetBlockApiResponseDto.TxSetRoot = blockDto.Header.TxSetRoot
             GetBlockApiResponseDto.TxResultSetRoot = blockDto.Header.TxResultSetRoot
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
+            GetBlockApiResponseDto.StakerRewardsRoot = blockDto.Header.StakerRewardsRoot
             GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
             GetBlockApiResponseDto.TxSet = blockDto.TxSet
-            GetBlockApiResponseDto.Signatures = blockEnvelopeDto.Signatures |> Array.toList
+            GetBlockApiResponseDto.StakerRewards = blockDto.StakerRewards
             GetBlockApiResponseDto.Configuration = blockDto.Configuration
+            GetBlockApiResponseDto.ConsensusRound = blockEnvelopeDto.ConsensusRound
+            GetBlockApiResponseDto.Signatures = blockEnvelopeDto.Signatures |> Array.toList
         }
 
     let txToGetTxApiResponseDto

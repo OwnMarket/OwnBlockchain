@@ -417,10 +417,13 @@ type GetBlockApiResponseDto = {
     TxSetRoot : string
     TxResultSetRoot : string
     StateRoot : string
+    StakerRewardsRoot : string
     ConfigurationRoot : string
     TxSet : string list
-    Signatures : string list
+    StakerRewards : StakerRewardDto list
     Configuration : BlockchainConfigurationDto
+    ConsensusRound : int
+    Signatures : string list
 }
 
 type GetAddressApiResponseDto = {
