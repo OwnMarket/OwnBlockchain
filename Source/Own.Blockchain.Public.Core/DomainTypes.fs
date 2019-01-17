@@ -171,12 +171,19 @@ type BlockHeader = {
     TxSetRoot : MerkleTreeRoot
     TxResultSetRoot : MerkleTreeRoot
     StateRoot : MerkleTreeRoot
+    StakerRewardsRoot : MerkleTreeRoot
     ConfigurationRoot : MerkleTreeRoot
+}
+
+type StakerReward = {
+    StakerAddress : BlockchainAddress
+    Amount : ChxAmount
 }
 
 type Block = {
     Header : BlockHeader
     TxSet : TxHash list
+    StakerRewards : StakerReward list
     Configuration : BlockchainConfiguration option
 }
 
@@ -291,6 +298,7 @@ type ProcessingOutput = {
     Assets : Map<AssetHash, AssetState>
     Validators : Map<BlockchainAddress, ValidatorState>
     Stakes : Map<BlockchainAddress * BlockchainAddress, StakeState>
+    StakerRewards : Map<BlockchainAddress, ChxAmount>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

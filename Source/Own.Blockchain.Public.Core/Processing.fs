@@ -28,6 +28,7 @@ module Processing =
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
         stakes : ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>,
         totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not part of the blockchain state
+        stakerRewards : ConcurrentDictionary<BlockchainAddress, ChxAmount>,
         collectedReward : ChxAmount
         ) =
 
@@ -67,6 +68,7 @@ module Processing =
                 ConcurrentDictionary<BlockchainAddress, ValidatorState option>(),
                 ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
+                ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
                 ChxAmount 0m
             )
 
@@ -91,6 +93,7 @@ module Processing =
                 ConcurrentDictionary(validators),
                 ConcurrentDictionary(stakes),
                 ConcurrentDictionary(totalChxStaked),
+                ConcurrentDictionary(stakerRewards),
                 __.CollectedReward
             )
 
@@ -169,6 +172,13 @@ module Processing =
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
 
+        member __.SetStakerReward (stakerAddress : BlockchainAddress, amount : ChxAmount) =
+            stakerRewards.AddOrUpdate(
+                stakerAddress,
+                amount,
+                fun _ _ -> failwithf "Staker reward already set for %s" stakerAddress.Value
+            ) |> ignore
+
         member __.ToProcessingOutput () : ProcessingOutput =
             {
                 TxResults = txResults |> Map.ofDict
@@ -176,24 +186,30 @@ module Processing =
                 Holdings = holdings |> Map.ofDict
                 Votes =
                     votes
-                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
                 Accounts =
                     accounts
-                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
                 Assets =
                     assets
-                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
                 Validators =
                     validators
-                    |> Seq.choose (fun v -> v.Value |> Option.map (fun s -> v.Key, s))
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
                 Stakes =
                     stakes
-                    |> Seq.choose (fun x -> x.Value |> Option.map (fun s -> x.Key, s))
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
+                StakerRewards = stakerRewards |> Map.ofDict
             }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -680,17 +696,30 @@ module Processing =
             else
                 let sumOfStakes = stakers |> List.sumBy (fun s -> s.Amount)
                 let distributableReward = state.CollectedReward * sharedRewardPercent / 100m
-                let actions =
+                let rewards =
                     stakers
                     |> List.map (fun s ->
-                        TransferChx {
-                            RecipientAddress = s.StakerAddress
+                        {
+                            StakerReward.StakerAddress = s.StakerAddress
                             Amount = s.Amount / sumOfStakes * distributableReward
                         }
                     )
+
+                let actions =
+                    rewards
+                    |> List.map (fun r ->
+                        TransferChx {
+                            RecipientAddress = r.StakerAddress
+                            Amount = r.Amount
+                        }
+                    )
+
                 let nonce = state.GetChxBalance(validatorAddress).Nonce + 1
                 match processTxActions validatorAddress nonce actions state with
-                | Ok state -> state
+                | Ok (state : ProcessingState) ->
+                    for r in rewards do
+                        state.SetStakerReward(r.StakerAddress, r.Amount) |> ignore
+                    state
                 | Error err -> failwithf "Cannot process reward distribution (%A)." err
 
     let processTxSet

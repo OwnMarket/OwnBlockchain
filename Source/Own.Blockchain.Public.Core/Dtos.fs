@@ -164,7 +164,15 @@ type BlockHeaderDto = {
     [<Key(6)>] TxSetRoot : string
     [<Key(7)>] TxResultSetRoot : string
     [<Key(8)>] StateRoot : string
-    [<Key(9)>] ConfigurationRoot : string
+    [<Key(9)>] StakerRewardsRoot : string
+    [<Key(10)>] ConfigurationRoot : string
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type StakerRewardDto = {
+    [<Key(0)>] StakerAddress : string
+    [<Key(1)>] Amount : decimal
 }
 
 [<CLIMutable>]
@@ -172,7 +180,8 @@ type BlockHeaderDto = {
 type BlockDto = {
     [<Key(0)>] Header : BlockHeaderDto
     [<Key(1)>] TxSet : string list
-    [<Key(2)>] Configuration : BlockchainConfigurationDto
+    [<Key(2)>] StakerRewards : StakerRewardDto list
+    [<Key(3)>] Configuration : BlockchainConfigurationDto
 }
 
 [<CLIMutable>]

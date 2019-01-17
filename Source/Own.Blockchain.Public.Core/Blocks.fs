@@ -156,6 +156,19 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createStakerRewardHash
+        decodeHash
+        createHash
+        (stakerReward : StakerReward)
+        =
+
+        [
+            decodeHash stakerReward.StakerAddress.Value
+            decimalToBytes stakerReward.Amount.Value
+        ]
+        |> Array.concat
+        |> createHash
+
     let createBlockHash
         decodeHash
         createHash
@@ -166,6 +179,7 @@ module Blocks =
         (MerkleTreeRoot txSetRoot)
         (MerkleTreeRoot txResultSetRoot)
         (MerkleTreeRoot stateRoot)
+        (MerkleTreeRoot stakerRewardsRoot)
         (MerkleTreeRoot configurationRoot)
         =
 
@@ -177,6 +191,7 @@ module Blocks =
             txSetRoot |> decodeHash
             txResultSetRoot |> decodeHash
             stateRoot |> decodeHash
+            stakerRewardsRoot |> decodeHash
             configurationRoot |> decodeHash
         ]
         |> Array.concat
@@ -277,6 +292,22 @@ module Blocks =
             @ stakeHashes
             |> createMerkleTree
 
+        let stakerRewards =
+            output.StakerRewards
+            |> Map.toList
+            |> List.sortBy (fun (stakerAddress, amount) -> -amount.Value, stakerAddress) // Ensure a predictable order
+            |> List.map (fun (stakerAddress, amount) ->
+                {
+                    StakerReward.StakerAddress = stakerAddress
+                    Amount = amount
+                }
+            )
+
+        let stakerRewardsRoot =
+            stakerRewards
+            |> List.map (createStakerRewardHash decodeHash createHash)
+            |> createMerkleTree
+
         let configurationRoot =
             match blockchainConfiguration with
             | None -> []
@@ -299,6 +330,7 @@ module Blocks =
                 txSetRoot
                 txResultSetRoot
                 stateRoot
+                stakerRewardsRoot
                 configurationRoot
 
         let blockHeader =
@@ -312,12 +344,14 @@ module Blocks =
                 TxSetRoot = txSetRoot
                 TxResultSetRoot = txResultSetRoot
                 StateRoot = stateRoot
+                StakerRewardsRoot = stakerRewardsRoot
                 ConfigurationRoot = configurationRoot
             }
 
         {
             Header = blockHeader
             TxSet = txSet
+            StakerRewards = stakerRewards
             Configuration = blockchainConfiguration
         }
 
@@ -353,6 +387,7 @@ module Blocks =
             Assets = Map.empty
             Validators = genesisValidators
             Stakes = Map.empty
+            StakerRewards = Map.empty
         }
 
     let assembleGenesisBlock
@@ -462,6 +497,7 @@ module Blocks =
                 txSetRoot
                 block.Header.TxResultSetRoot
                 block.Header.StateRoot
+                block.Header.StakerRewardsRoot
                 block.Header.ConfigurationRoot
 
         block.Header.Hash = blockHash

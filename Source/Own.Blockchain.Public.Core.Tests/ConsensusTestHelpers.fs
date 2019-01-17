@@ -23,12 +23,14 @@ module ConsensusTestHelpers =
                     TxSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     TxResultSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     StateRoot = Helpers.randomString () |> MerkleTreeRoot
+                    StakerRewardsRoot = Helpers.randomString () |> MerkleTreeRoot
                     ConfigurationRoot = Helpers.randomString () |> MerkleTreeRoot
                 }
             TxSet =
                 [
                     Helpers.randomString () |> TxHash
                 ]
+            StakerRewards = []
             Configuration = None
         }
 

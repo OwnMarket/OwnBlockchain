@@ -199,6 +199,7 @@ module Mapping =
             TxSetRoot = MerkleTreeRoot dto.TxSetRoot
             TxResultSetRoot = MerkleTreeRoot dto.TxResultSetRoot
             StateRoot = MerkleTreeRoot dto.StateRoot
+            StakerRewardsRoot = MerkleTreeRoot dto.StakerRewardsRoot
             ConfigurationRoot = MerkleTreeRoot dto.ConfigurationRoot
         }
 
@@ -213,6 +214,7 @@ module Mapping =
             TxSetRoot = block.TxSetRoot.Value
             TxResultSetRoot = block.TxResultSetRoot.Value
             StateRoot = block.StateRoot.Value
+            StakerRewardsRoot = block.StakerRewardsRoot.Value
             ConfigurationRoot = block.ConfigurationRoot.Value
         }
 
@@ -230,6 +232,18 @@ module Mapping =
             NetworkAddress = snapshot.NetworkAddress.Value
             SharedRewardPercent = snapshot.SharedRewardPercent
             TotalStake = snapshot.TotalStake.Value
+        }
+
+    let stakerRewardFromDto (dto : StakerRewardDto) : StakerReward =
+        {
+            StakerReward.StakerAddress = BlockchainAddress dto.StakerAddress
+            Amount = ChxAmount dto.Amount
+        }
+
+    let stakerRewardToDto (stakerReward : StakerReward) : StakerRewardDto =
+        {
+            StakerRewardDto.StakerAddress = stakerReward.StakerAddress.Value
+            Amount = stakerReward.Amount.Value
         }
 
     let blockchainConfigurationFromDto (dto : BlockchainConfigurationDto) : BlockchainConfiguration =
@@ -252,6 +266,7 @@ module Mapping =
         {
             Header = blockHeaderFromDto dto.Header
             TxSet = dto.TxSet |> List.map TxHash
+            StakerRewards = dto.StakerRewards |> List.map stakerRewardFromDto
             Configuration = config
         }
 
@@ -259,6 +274,7 @@ module Mapping =
         {
             Header = blockHeaderToDto block.Header
             TxSet = block.TxSet |> List.map (fun (TxHash h) -> h)
+            StakerRewards = block.StakerRewards |> List.map stakerRewardToDto
             Configuration =
                 match block.Configuration with
                 | None -> Unchecked.defaultof<_>

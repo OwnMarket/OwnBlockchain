@@ -69,44 +69,62 @@ module BlockTests =
 
     [<Fact>]
     let ``Blocks.createHoldingStateHash`` () =
-        let account = AccountHash "HHH"
+        let accountHash = AccountHash "HHH"
         let assetHash = AssetHash "II"
         let state = {HoldingState.Amount = AssetAmount 7m}
 
         // ACT
-        let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (account, assetHash, state)
+        let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (accountHash, assetHash, state)
 
         // ASSERT
         test <@ stateHash = "HHHII...G............" @>
 
     [<Fact>]
+    let ``Blocks.createVoteStateHash`` () =
+        let accountHash = AccountHash "AAA"
+        let assetHash = AssetHash "BBB"
+        let resolutionHash = VotingResolutionHash "CCC"
+        let state =
+            {
+                VoteState.VoteHash = VoteHash "DDD"
+                VoteWeight = VoteWeight 5m |> Some
+            }
+
+        // ACT
+        let stateHash =
+            Blocks.createVoteStateHash DummyHash.decode DummyHash.create (accountHash, assetHash, resolutionHash, state)
+
+        // ASSERT
+        test <@ stateHash = "AAABBBCCCDDD...E............" @>
+
+    [<Fact>]
     let ``Blocks.createAccountStateHash`` () =
-        let account = AccountHash "AAA"
+        let accountHash = AccountHash "AAA"
         let controllerAddress = BlockchainAddress "CC"
         let state = {AccountState.ControllerAddress = controllerAddress}
 
         // ACT
-        let stateHash = Blocks.createAccountStateHash DummyHash.decode DummyHash.create (account, state)
+        let stateHash = Blocks.createAccountStateHash DummyHash.decode DummyHash.create (accountHash, state)
 
         // ASSERT
         test <@ stateHash = "AAACC" @>
 
     [<Fact>]
     let ``Blocks.createAssetStateHash`` () =
-        let asset = AssetHash "AAA"
+        let assetHash = AssetHash "AAA"
         let assetCode = AssetCode "XXX" |> Some // X = 88 = 8 = H
         let controllerAddress = BlockchainAddress "CC"
         let state = {AssetState.AssetCode = assetCode; ControllerAddress = controllerAddress}
 
         // ACT
-        let stateHash = Blocks.createAssetStateHash DummyHash.decode DummyHash.create (asset, state)
+        let stateHash = Blocks.createAssetStateHash DummyHash.decode DummyHash.create (assetHash, state)
 
         // ASSERT
         test <@ stateHash = "AAAHHHCC" @>
 
     [<Fact>]
     let ``Blocks.createValidatorStateHash`` () =
-        let validator = BlockchainAddress "AAA"
+        let validatorAddress = BlockchainAddress "AAA"
         let state =
             {
                 ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
@@ -114,7 +132,7 @@ module BlockTests =
             }
 
         // ACT
-        let stateHash = Blocks.createValidatorStateHash DummyHash.decode DummyHash.create (validator, state)
+        let stateHash = Blocks.createValidatorStateHash DummyHash.decode DummyHash.create (validatorAddress, state)
 
         // ASSERT
         test <@ stateHash = "AAAHHH...D............" @>
@@ -148,15 +166,30 @@ module BlockTests =
         test <@ stateHash = "AAABBB...E............" @>
 
     [<Fact>]
+    let ``Blocks.createStakerRewardHash`` () =
+        let stakerReward =
+            {
+                StakerReward.StakerAddress = BlockchainAddress "AAA"
+                Amount = ChxAmount 6m
+            }
+
+        // ACT
+        let stakerRewardHash = Blocks.createStakerRewardHash DummyHash.decode DummyHash.create stakerReward
+
+        // ASSERT
+        test <@ stakerRewardHash = "AAA...F............" @>
+
+    [<Fact>]
     let ``Blocks.createBlockHash`` () =
         let blockNumber = BlockNumber 1L
         let previousBlockHash = BlockHash "B"
         let timestamp = Timestamp 3L
-        let validator = BlockchainAddress "D"
+        let validatorAddress = BlockchainAddress "D"
         let txSetRoot = MerkleTreeRoot "E"
         let txResultSetRoot = MerkleTreeRoot "F"
         let stateRoot = MerkleTreeRoot "G"
-        let configurationRoot = MerkleTreeRoot "H"
+        let stakerRewardsRoot = MerkleTreeRoot "H"
+        let configurationRoot = MerkleTreeRoot "I"
 
         // ACT
         let (BlockHash blockHash) =
@@ -166,14 +199,15 @@ module BlockTests =
                 blockNumber
                 previousBlockHash
                 timestamp
-                validator
+                validatorAddress
                 txSetRoot
                 txResultSetRoot
                 stateRoot
+                stakerRewardsRoot
                 configurationRoot
 
         // ASSERT
-        test <@ blockHash = ".......AB.......CDEFGH" @>
+        test <@ blockHash = ".......AB.......CDEFGHI" @>
 
     [<Fact>]
     let ``Blocks.assembleBlock`` () =
@@ -309,6 +343,13 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let stakerRewards =
+            [
+                BlockchainAddress "HH", ChxAmount 1m
+                BlockchainAddress "II", ChxAmount 2m
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -319,6 +360,7 @@ module BlockTests =
                 Assets = assets
                 Validators = validators
                 Stakes = stakes
+                StakerRewards = stakerRewards
             }
 
         let config =
@@ -380,6 +422,14 @@ module BlockTests =
             ]
             |> String.Concat
 
+        let stakerRewardRoot =
+            [
+                // Descending order by reward, then ascending by address
+                "II...B............" // Staker reward 2
+                "HH...A............" // Staker reward 1
+            ]
+            |> String.Concat
+
         let configRoot =
             [
                 "AAAAAGGG...A...............D............" // Validator 1
@@ -397,6 +447,7 @@ module BlockTests =
                 txSetRoot
                 txResultSetRoot
                 stateRoot
+                stakerRewardRoot
                 configRoot
             ]
             |> String.Concat
@@ -424,6 +475,8 @@ module BlockTests =
         test <@ block.Header.TxSetRoot = MerkleTreeRoot txSetRoot @>
         test <@ block.Header.TxResultSetRoot = MerkleTreeRoot txResultSetRoot @>
         test <@ block.Header.StateRoot = MerkleTreeRoot stateRoot @>
+        test <@ block.Header.StakerRewardsRoot = MerkleTreeRoot stakerRewardRoot @>
+        test <@ block.Header.ConfigurationRoot = MerkleTreeRoot configRoot @>
         test <@ block.Header.Hash = BlockHash blockHash @>
         test <@ block.TxSet = [TxHash "AAA"; TxHash "BBB"; TxHash "CCC"] @>
 
@@ -567,6 +620,13 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let stakerRewards =
+            [
+                BlockchainAddress "CC", ChxAmount 1m
+                BlockchainAddress "DD", ChxAmount 2m
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -577,6 +637,7 @@ module BlockTests =
                 Assets = assets
                 Validators = validators
                 Stakes = stakes
+                StakerRewards = stakerRewards
             }
 
         // ACT
@@ -820,6 +881,13 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let stakerRewards =
+            [
+                BlockchainAddress "CC", ChxAmount 1m
+                BlockchainAddress "DD", ChxAmount 2m
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -830,6 +898,7 @@ module BlockTests =
                 Assets = assets
                 Validators = validators
                 Stakes = stakes
+                StakerRewards = stakerRewards
             }
 
         let assembledBlock =
