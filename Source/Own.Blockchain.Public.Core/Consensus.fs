@@ -440,12 +440,12 @@ module Consensus =
         | Vote blockHash ->
             [
                 [| 1uy |] // Message type discriminator
-                blockHash |> Option.map (fun h -> decodeHash h.Value) |? [| 0uy |]
+                blockHash |> Option.map (fun h -> decodeHash h.Value) |? Array.empty
             ]
         | Commit blockHash ->
             [
                 [| 2uy |] // Message type discriminator
-                blockHash |> Option.map (fun h -> decodeHash h.Value) |? [| 0uy |]
+                blockHash |> Option.map (fun h -> decodeHash h.Value) |? Array.empty
             ]
         |> List.append
             [
