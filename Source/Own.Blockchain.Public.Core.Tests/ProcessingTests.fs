@@ -204,6 +204,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -236,6 +239,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -325,6 +329,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -352,6 +359,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -426,6 +434,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -453,6 +464,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -528,6 +540,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -555,6 +570,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -630,6 +646,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -656,6 +675,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -721,6 +741,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -752,6 +775,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -841,6 +865,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -868,6 +895,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -953,6 +981,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -980,6 +1011,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1068,6 +1100,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState accountHash =
             if accountHash = recipientAccountHash then
                 Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1098,6 +1133,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1183,6 +1219,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState accountHash =
             if accountHash = senderAccountHash then
                 Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1213,6 +1252,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1295,6 +1335,9 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -1322,6 +1365,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1402,6 +1446,9 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             None
 
@@ -1429,6 +1476,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1499,6 +1547,9 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -1526,6 +1577,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1597,6 +1649,9 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = otherWallet.Address}
 
@@ -1624,6 +1679,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1746,6 +1802,9 @@ module ProcessingTests =
             else
                 None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -1773,6 +1832,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1860,6 +1920,9 @@ module ProcessingTests =
         let getVoteState _ =
             Some {VoteState.VoteHash = voteHash; VoteWeight = None}
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -1887,6 +1950,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1968,6 +2032,9 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             None
 
@@ -1995,6 +2062,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2066,6 +2134,9 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -2093,6 +2164,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2164,6 +2236,9 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -2191,6 +2266,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2314,6 +2390,9 @@ module ProcessingTests =
             else
                 None
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -2341,6 +2420,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2370,6 +2450,557 @@ module ProcessingTests =
             = {VoteHash = voteHashNo; VoteWeight = Some voteWeight} @>
         test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = rsh3}]
             = {VoteHash = voteHashNo; VoteWeight = Some voteWeight} @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SetEligibility
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processTxSet SetEligibility`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash1 = AccountHash "Acc1"
+        let accountHash2 = AccountHash "Acc2"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "SetEligibility"
+                    ActionData =
+                        {
+                            AccountHash = accountHash1.Value
+                            AssetHash = assetHash.Value
+                            IsEligible = true
+                            IsTransferable = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "SetEligibility"
+                    ActionData =
+                        {
+                            AccountHash = accountHash2.Value
+                            AssetHash = assetHash.Value
+                            IsEligible = true
+                            IsTransferable = false
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (nonce + 1) fee
+
+        let txSet = [txHash1; txHash2]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            else Result.appError "Invalid txHash"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState (accountHash, _) =
+            if accountHash = accountHash1
+                then None
+            elif accountHash = accountHash2
+                then
+                    {
+                        EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                        KycControllerAddress = senderWallet.Address
+                    }
+                    |> Some
+            else None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedEligibilityState1 =
+            {
+                EligibilityState.Eligibility =
+                    {
+                        IsEligible = true;
+                        IsTransferable = true
+                    }
+                KycControllerAddress = senderWallet.Address
+            }
+
+        let expectedEligibilityState2 =
+            {
+                EligibilityState.Eligibility =
+                    {
+                        IsEligible = true;
+                        IsTransferable = false
+                    }
+                KycControllerAddress = senderWallet.Address
+            }
+        test <@ output.TxResults.Count = 2 @>
+        test <@ output.TxResults.[txHash1].Status = Success @>
+        test <@ output.TxResults.[txHash2].Status = Success @>
+        test <@ output.Eligibilities.Count = 2 @>
+        test <@ output.Eligibilities.[(accountHash1, assetHash)] = expectedEligibilityState1 @>
+        test <@ output.Eligibilities.[(accountHash2, assetHash)] = expectedEligibilityState2 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetEligibility asset not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetEligibility"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            IsEligible = true
+                            IsTransferable = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            None
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.AssetNotFound) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Eligibilities.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetEligibility account not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetEligibility"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            IsEligible = true
+                            IsTransferable = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getAccountState _ =
+            None
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.AccountNotFound) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Eligibilities.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetEligibility sender is not asset controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetEligibility"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            IsEligible = true
+                            IsTransferable = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Eligibilities.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetEligibility sender is not current kyc controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetEligibility"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            IsEligible = true
+                            IsTransferable = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            {
+                EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                KycControllerAddress = otherWallet.Address
+            }
+            |> Some
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotCurrentKycController)
+            |> TxActionError
+            |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Eligibilities.Count = 0 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission
@@ -2426,6 +3057,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -2453,6 +3087,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2533,6 +3168,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -2560,6 +3198,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2636,6 +3275,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -2663,6 +3305,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2741,6 +3384,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
@@ -2768,6 +3414,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2845,6 +3492,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             None
 
@@ -2872,6 +3522,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2954,6 +3605,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             None
 
@@ -2981,6 +3635,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3061,6 +3716,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -3088,6 +3746,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3164,6 +3823,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
@@ -3191,6 +3853,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3262,6 +3925,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             None
 
@@ -3289,6 +3955,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3365,6 +4032,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             Some {AccountState.ControllerAddress = currentControllerWallet.Address}
 
@@ -3392,6 +4062,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3472,6 +4143,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -3499,6 +4173,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3570,6 +4245,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -3597,6 +4275,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3673,6 +4352,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountState _ =
             failwith "getAccountState should not be called"
 
@@ -3700,6 +4382,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3780,6 +4463,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -3807,6 +4493,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -3878,6 +4565,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -3905,6 +4595,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -3981,6 +4672,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4008,6 +4702,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -4087,6 +4782,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4117,6 +4815,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -4189,6 +4888,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4216,6 +4918,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -4299,6 +5002,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4326,6 +5032,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -4397,6 +5104,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4424,6 +5134,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -4495,6 +5206,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4522,6 +5236,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -4598,6 +5313,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4625,6 +5343,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState
@@ -4701,6 +5420,9 @@ module ProcessingTests =
         let getVoteState _ =
             failwith "getVoteState should not be called"
 
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
         let getAccountCode _ =
             failwith "getAccountCode should not be called"
 
@@ -4728,6 +5450,7 @@ module ProcessingTests =
                 getChxBalanceState
                 getHoldingState
                 getVoteState
+                getEligibilityState
                 getAccountCode
                 getAssetState
                 getValidatorState

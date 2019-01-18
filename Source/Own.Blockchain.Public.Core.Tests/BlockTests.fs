@@ -302,6 +302,30 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let eligibilities =
+            [
+                (AccountHash "DDD", AssetHash "EEE"),
+                {
+                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                    KycControllerAddress = BlockchainAddress "HH"
+                }
+                (AccountHash "FFF", AssetHash "GGG"),
+                {
+                    EligibilityState.Eligibility = {IsEligible = false; IsTransferable = false}
+                    KycControllerAddress = BlockchainAddress "HH"
+                }
+            ]
+            |> Map.ofList
+
+        let kycControllers =
+            [
+                {KycControllerState.AssetHash = AssetHash "EEE"; ControllerAddress = BlockchainAddress "AAA"}, Add
+                {KycControllerState.AssetHash = AssetHash "FFF"; ControllerAddress = BlockchainAddress "AAA"}, Add
+                {KycControllerState.AssetHash = AssetHash "EEE"; ControllerAddress = BlockchainAddress "BBB"}, Add
+                {KycControllerState.AssetHash = AssetHash "GGG"; ControllerAddress = BlockchainAddress "BBB"}, Remove
+            ]
+            |> Map.ofList
+
         let accounts =
             [
                 AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
@@ -356,6 +380,8 @@ module BlockTests =
                 ChxBalances = chxBalances
                 Holdings = holdings
                 Votes = votes
+                Eligibilities = eligibilities
+                KycControllers = kycControllers
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
@@ -410,6 +436,12 @@ module BlockTests =
                 "FFFGGGAAAAAD...B............" // Vote 1 Holding 2
                 "FFFGGGBBBBAD...B............" // Vote 2 Holding 2
                 "FFFGGGCCCCDA...B............" // Vote 3 Holding 2
+                "DDDEEEAA" // Eligibility 1
+                "FFFGGG.." // Eligibility 2
+                "EEEAAAA" // Add Kyc controllers 1 for Asset 1
+                "EEEBBBA" // Add Kyc controllers 2 For Asset 1
+                "FFFAAAA" // Add Kyc controllers 1 For Asset 2
+                "GGGBBB." // Remove Kyc controller 3 for Asset 1
                 "AAAABBBB" // Account controller 1
                 "CCCCDDDD" // Account controller 2
                 "EEEEFFFF" // Asset controller 1
@@ -579,6 +611,30 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let eligibilities =
+            [
+                (AccountHash "DDD", AssetHash "EEE"),
+                {
+                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                    KycControllerAddress = BlockchainAddress "KK"
+                }
+                (AccountHash "FFF", AssetHash "GGG"),
+                {
+                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = false}
+                    KycControllerAddress = BlockchainAddress "KK"
+                }
+            ]
+            |> Map.ofList
+
+        let kycControllers =
+            [
+                {KycControllerState.AssetHash = AssetHash "EEE"; ControllerAddress = BlockchainAddress "AAA"}, Add
+                {KycControllerState.AssetHash = AssetHash "FFF"; ControllerAddress = BlockchainAddress "AAA"}, Add
+                {KycControllerState.AssetHash = AssetHash "EEE"; ControllerAddress = BlockchainAddress "BBB"}, Add
+                {KycControllerState.AssetHash = AssetHash "GGG"; ControllerAddress = BlockchainAddress "BBB"}, Remove
+            ]
+            |> Map.ofList
+
         let accounts =
             [
                 AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
@@ -633,6 +689,8 @@ module BlockTests =
                 ChxBalances = chxBalances
                 Holdings = holdings
                 Votes = votes
+                Eligibilities = eligibilities
+                KycControllers = kycControllers
                 Accounts = accounts
                 Assets = assets
                 Validators = validators
@@ -698,6 +756,17 @@ module BlockTests =
                         (voteId.AccountHash, voteId.AssetHash, voteId.ResolutionHash, state)
                 )
 
+                eligibilities
+                |> Map.toList
+                |> List.map (fun ((accountHash, assetHash), state) ->
+                    Blocks.createEligibilityStateHash Hashing.decode Hashing.hash (accountHash, assetHash, state)
+                )
+
+                kycControllers
+                |> Map.toList
+                |> List.map (fun (state, change) ->
+                    Blocks.createKycControllerHash Hashing.decode Hashing.hash state change)
+
                 accounts
                 |> Map.toList
                 |> List.map (Blocks.createAccountStateHash Hashing.decode Hashing.hash)
@@ -720,7 +789,7 @@ module BlockTests =
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 19 true @>
+        test <@ stateMerkleProofs = List.replicate 25 true @>
 
     [<Theory>]
     [<InlineData ("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -824,6 +893,30 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let eligibilities =
+            [
+                (AccountHash "DDD", AssetHash "EEE"),
+                {
+                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                    KycControllerAddress = BlockchainAddress "KK"
+                }
+                (AccountHash "FFF", AssetHash "GGG"),
+                {
+                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = false}
+                    KycControllerAddress = BlockchainAddress "KK"
+                }
+            ]
+            |> Map.ofList
+
+        let kycControllers =
+            [
+                {KycControllerState.AssetHash = AssetHash "EEE"; ControllerAddress = BlockchainAddress "AAA"}, Add
+                {KycControllerState.AssetHash = AssetHash "FFF"; ControllerAddress = BlockchainAddress "AAA"}, Add
+                {KycControllerState.AssetHash = AssetHash "EEE"; ControllerAddress = BlockchainAddress "BBB"}, Add
+                {KycControllerState.AssetHash = AssetHash "EEE"; ControllerAddress = BlockchainAddress "BBB"}, Remove
+            ]
+            |> Map.ofList
+
         let accounts =
             [
                 AccountHash "AAAA", {AccountState.ControllerAddress = BlockchainAddress "BBBB"}
@@ -894,6 +987,8 @@ module BlockTests =
                 ChxBalances = chxBalances
                 Holdings = holdings
                 Votes = votes
+                Eligibilities = eligibilities
+                KycControllers = kycControllers
                 Accounts = accounts
                 Assets = assets
                 Validators = validators

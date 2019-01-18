@@ -27,6 +27,10 @@ module Helpers =
         | DelegateStake action -> box action :?> 'T
         | SubmitVote action -> box action :?> 'T
         | SubmitVoteWeight action -> box action :?> 'T
+        | SetEligibility action -> box action :?> 'T
+        | ChangeKycControllerAddress action -> box action :?> 'T
+        | AddKycController action -> box action :?> 'T
+        | RemoveKycController action -> box action :?> 'T
 
     let newPendingTxInfo
         (txHash : TxHash)
