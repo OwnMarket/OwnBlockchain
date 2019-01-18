@@ -1,6 +1,5 @@
 namespace Own.Blockchain.Public.IntegrationTests.Postgres
 
-open System
 open Xunit
 open Own.Blockchain.Public.Node
 open Own.Blockchain.Public.IntegrationTests.Common

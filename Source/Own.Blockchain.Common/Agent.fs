@@ -1,6 +1,5 @@
 namespace Own.Blockchain.Common
 
-open System
 open Own.Common
 
 module Agent =

@@ -1,6 +1,5 @@
 namespace Own.Blockchain.Public.Node
 
-open System
 open Own.Common
 open Own.Blockchain.Common
 

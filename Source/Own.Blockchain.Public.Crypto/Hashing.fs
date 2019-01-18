@@ -1,6 +1,5 @@
 ﻿namespace Own.Blockchain.Public.Crypto
 
-open System
 open System.Security.Cryptography
 open Base58Check
 open Own.Common

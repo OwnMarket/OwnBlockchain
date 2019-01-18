@@ -1,6 +1,5 @@
 namespace Own.Blockchain.Public.Core.Events
 
-open System
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 

@@ -1,7 +1,5 @@
 namespace Own.Blockchain.Public.Data
 
-open System
-
 type DbChange = {
     Number : int
     Script : string

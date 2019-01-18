@@ -1,6 +1,5 @@
 namespace Own.Blockchain.Public.Core.Tests
 
-open System
 open Xunit
 open Xunit.Abstractions
 open Swensen.Unquote

@@ -1,7 +1,5 @@
 namespace Own.Common
 
-open System
-
 module Result =
 
     let iter f = function

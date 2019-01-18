@@ -1,6 +1,5 @@
 namespace Own.Blockchain.Public.Core.Tests
 
-open System
 open System.Collections.Generic
 open Own.Common
 open Own.Blockchain.Common
