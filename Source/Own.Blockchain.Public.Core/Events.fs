@@ -18,3 +18,5 @@ type AppEvent =
     | BlockApplied of BlockNumber
     | ConsensusMessageReceived of ConsensusCommand
     | ConsensusCommandInvoked of ConsensusCommand
+    | EquivocationProofDetected of BlockchainAddress * EquivocationProof
+    | EquivocationProofReceived of BlockchainAddress * EquivocationProof

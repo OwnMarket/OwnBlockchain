@@ -397,6 +397,16 @@ type ConsensusCommand =
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
 
+type EquivocationProof = {
+    BlockNumber : BlockNumber
+    ConsensusRound : ConsensusRound
+    ConsensusStep : ConsensusStep
+    BlockHash1 : BlockHash option
+    BlockHash2 : BlockHash option
+    Signature1 : Signature
+    Signature2 : Signature
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////

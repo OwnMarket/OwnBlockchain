@@ -121,6 +121,12 @@ module Agents =
                     (unionCaseName consensusStep)
             |> formatMessage
             |> Log.info
+        | EquivocationProofDetected (validatorAddress, _)
+        | EquivocationProofReceived (validatorAddress, _) ->
+            validatorAddress.Value
+            |> sprintf "for validator %s"
+            |> formatMessage
+            |> Log.warning
 
     let publishEvent event =
         logEvent event
@@ -156,6 +162,9 @@ module Agents =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             invokeValidator c
+        | EquivocationProofDetected (validatorAddress, proof)
+        | EquivocationProofReceived (validatorAddress, proof) ->
+            Log.warning "EquivocationProof handler not implemented" // TODO: Implement
 
     let private startPeerMessageHandler () =
         if peerMessageHandler <> None then

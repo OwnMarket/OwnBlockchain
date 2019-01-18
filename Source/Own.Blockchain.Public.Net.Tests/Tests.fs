@@ -98,6 +98,9 @@ module PeerTests =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             ()
+        | EquivocationProofDetected (validatorAddress, proof)
+        | EquivocationProofReceived (validatorAddress, proof) ->
+            ()
 
     let startGossip (node : NetworkNode) =
         let processPeerMessage = WorkflowsMock.processPeerMessage (node.GetNetworkAddress()) (respondToPeer node)

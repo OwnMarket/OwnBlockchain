@@ -45,13 +45,13 @@ module Consensus =
         let mutable _validBlock = None
         let mutable _validRound = ConsensusRound -1
         let _proposals = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, Block * ConsensusRound>()
-        let _votes = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option>()
+        let _votes = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
         let _commits = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             match command with
             | Synchronize -> __.Synchronize()
-            | Message (senderAddress, message) -> __.ProcessConsensusMessage (senderAddress, message)
+            | Message (senderAddress, envelope) -> __.ProcessConsensusMessage (senderAddress, envelope)
             | RetryPropose (blockNumber, consensusRound) -> __.RetryPropose(blockNumber, consensusRound)
             | Timeout (blockNumber, consensusRound, consensusStep) ->
                 match consensusStep with
@@ -74,11 +74,15 @@ module Consensus =
                             missingTxs |> List.iter requestTx
                             scheduleMessage messageRetryingInterval (senderAddress, envelope)
                 | ConsensusMessage.Vote blockHash ->
-                    if _votes.TryAdd(key, blockHash) then
+                    if _votes.TryAdd(key, (blockHash, envelope.Signature)) then
                         __.UpdateState()
+                    else
+                        __.DetectEquivocation(envelope, senderAddress)
                 | ConsensusMessage.Commit blockHash ->
                     if _commits.TryAdd(key, (blockHash, envelope.Signature)) then
                         __.UpdateState()
+                    else
+                        __.DetectEquivocation(envelope, senderAddress)
 
         member private __.Synchronize() =
             let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -280,7 +284,7 @@ module Consensus =
             let count =
                 _votes
                 |> Seq.ofDict
-                |> Seq.filter (fun ((bn, r, _), bh) ->
+                |> Seq.filter (fun ((bn, r, _), (bh, _)) ->
                     bn = _blockNumber
                     && r = consensusRound
                     && (blockHash.IsNone || bh = blockHash.Value))
@@ -380,6 +384,44 @@ module Consensus =
                         block.Header.Number.Value
                         consensusRound.Value
                 )
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Equivocation
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        member __.DetectEquivocation(envelope, senderAddress) =
+            match envelope.ConsensusMessage with
+            | Propose _ -> failwith "Equivocation detection is not implemented for Propose messages."
+            | Vote blockHash2 ->
+                let blockHash1, signature1 = _votes.[envelope.BlockNumber, envelope.Round, senderAddress]
+                if blockHash2 <> blockHash1 then
+                    let equivocationProof =
+                        {
+                            BlockNumber = envelope.BlockNumber
+                            ConsensusRound = envelope.Round
+                            ConsensusStep = ConsensusStep.Vote
+                            BlockHash1 = blockHash1
+                            BlockHash2 = blockHash2
+                            Signature1 = signature1
+                            Signature2 = envelope.Signature
+                        }
+                    EquivocationProofDetected (senderAddress, equivocationProof)
+                    |> publishEvent
+            | Commit blockHash2 ->
+                let blockHash1, signature1 = _commits.[envelope.BlockNumber, envelope.Round, senderAddress]
+                if blockHash2 <> blockHash1 then
+                    let equivocationProof =
+                        {
+                            BlockNumber = envelope.BlockNumber
+                            ConsensusRound = envelope.Round
+                            ConsensusStep = ConsensusStep.Commit
+                            BlockHash1 = blockHash1
+                            BlockHash2 = blockHash2
+                            Signature1 = signature1
+                            Signature2 = envelope.Signature
+                        }
+                    EquivocationProofDetected (senderAddress, equivocationProof)
+                    |> publishEvent
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Test Helpers
