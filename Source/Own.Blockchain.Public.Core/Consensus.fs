@@ -433,18 +433,18 @@ module Consensus =
         match consensusMessage with
         | Propose (block, ConsensusRound validConsensusRound) ->
             [
-                [| ConsensusStep.Propose |> byte |]
+                [| 0uy |] // Message type discriminator
                 block.Header.Hash.Value |> decodeHash
                 validConsensusRound |> Conversion.int32ToBytes
             ]
         | Vote blockHash ->
             [
-                [| ConsensusStep.Vote |> byte |]
+                [| 1uy |] // Message type discriminator
                 blockHash |> Option.map (fun h -> decodeHash h.Value) |? Array.empty
             ]
         | Commit blockHash ->
             [
-                [| ConsensusStep.Commit |> byte |]
+                [| 2uy |] // Message type discriminator
                 blockHash |> Option.map (fun h -> decodeHash h.Value) |? Array.empty
             ]
         |> List.append
@@ -589,14 +589,14 @@ module Consensus =
                     Log.debugf "Timeout scheduled: %i / %i / %s"
                         blockNumber.Value
                         consensusRound.Value
-                        (consensusStep.ToString())
+                        (unionCaseName consensusStep)
 
                     do! Async.Sleep timeout
 
                     Log.debugf "Timeout elapsed: %i / %i / %s"
                         blockNumber.Value
                         consensusRound.Value
-                        (consensusStep.ToString())
+                        (unionCaseName consensusStep)
 
                     ConsensusCommand.Timeout (blockNumber, consensusRound, consensusStep)
                     |> ConsensusCommandInvoked
