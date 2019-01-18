@@ -52,6 +52,27 @@ type VoteInfo = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Eligibility
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type Eligibility = {
+    IsEligible : bool
+    IsTransferable : bool
+}
+
+type EligibilityInfo = {
+    AccountHash : AccountHash
+    AssetHash : AssetHash
+    Eligibility : Eligibility
+    KycControllerAddress : BlockchainAddress
+}
+
+type KycController = {
+    AssetHash : AssetHash
+    ControllerAddress : BlockchainAddress
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tx
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -110,6 +131,28 @@ type SubmitVoteWeightTxAction = {
     VoteWeight : VoteWeight
 }
 
+type SetEligibilityTxAction = {
+    AccountHash : AccountHash
+    AssetHash : AssetHash
+    Eligibility : Eligibility
+}
+
+type ChangeKycControllerAddressTxAction = {
+    AccountHash : AccountHash
+    AssetHash : AssetHash
+    KycControllerAddress : BlockchainAddress
+}
+
+type AddKycControllerTxAction = {
+    AssetHash : AssetHash
+    ControllerAddress : BlockchainAddress
+}
+
+type RemoveKycControllerTxAction = {
+    AssetHash : AssetHash
+    ControllerAddress : BlockchainAddress
+}
+
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
@@ -123,6 +166,10 @@ type TxAction =
     | DelegateStake of DelegateStakeTxAction
     | SubmitVote of SubmitVoteTxAction
     | SubmitVoteWeight of SubmitVoteWeightTxAction
+    | SetEligibility of SetEligibilityTxAction
+    | ChangeKycControllerAddress of ChangeKycControllerAddressTxAction
+    | AddKycController of AddKycControllerTxAction
+    | RemoveKycController of RemoveKycControllerTxAction
 
 type Tx = {
     TxHash : TxHash
@@ -227,6 +274,10 @@ type TxErrorCode =
     | VoteNotFound = 510s
     | VoteIsAlreadyWeighted = 520s
 
+    // Eligibility
+    | EligibilityNotFound = 610s
+    | SenderIsNotCurrentKycController = 620s
+
     // Validators
     | InsufficientStake = 910s
 
@@ -266,6 +317,20 @@ type VoteState = {
     VoteWeight : VoteWeight option
 }
 
+type EligibilityState = {
+    Eligibility: Eligibility
+    KycControllerAddress : BlockchainAddress
+}
+
+type KycControllerState = {
+    AssetHash : AssetHash
+    ControllerAddress : BlockchainAddress
+}
+
+type KycControllerChange =
+    | Add
+    | Remove
+
 type AccountState = {
     ControllerAddress : BlockchainAddress
 }
@@ -294,6 +359,8 @@ type ProcessingOutput = {
     ChxBalances : Map<BlockchainAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     Votes : Map<VoteId, VoteState>
+    Eligibilities : Map<AccountHash * AssetHash, EligibilityState>
+    KycControllers : Map<KycControllerState, KycControllerChange>
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
     Validators : Map<BlockchainAddress, ValidatorState>

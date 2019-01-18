@@ -42,6 +42,10 @@ module Serialization =
             "DelegateStake", tokenToAction<DelegateStakeTxActionDto>
             "SubmitVote", tokenToAction<SubmitVoteTxActionDto>
             "SubmitVoteWeight", tokenToAction<SubmitVoteWeightTxActionDto>
+            "SetEligibility", tokenToAction<SetEligibilityTxActionDto>
+            "ChangeKycControllerAddress", tokenToAction<ChangeKycControllerAddressTxActionDto>
+            "AddKycController", tokenToAction<AddKycControllerTxActionDto>
+            "RemoveKycController", tokenToAction<RemoveKycControllerTxActionDto>
         ] |> Map.ofList
 
     let private actionsConverter = {

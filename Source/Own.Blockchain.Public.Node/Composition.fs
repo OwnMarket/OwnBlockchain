@@ -67,6 +67,8 @@ module Composition =
 
     let getVoteState = Db.getVoteState Config.DbEngineType Config.DbConnectionString
 
+    let getEligibilityState = Db.getEligibilityState Config.DbEngineType Config.DbConnectionString
+
     let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
 
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
@@ -180,6 +182,7 @@ module Composition =
             getChxBalanceState
             getHoldingState
             getVoteState
+            getEligibilityState
             getAccountState
             getAssetState
             getValidatorState

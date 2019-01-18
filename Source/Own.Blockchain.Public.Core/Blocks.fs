@@ -76,6 +76,36 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createEligibilityStateHash
+        decodeHash
+        createHash
+        (AccountHash accountHash, AssetHash assetHash, state : EligibilityState)
+        =
+
+        [
+            decodeHash accountHash
+            decodeHash assetHash
+            boolToBytes state.Eligibility.IsEligible
+            boolToBytes state.Eligibility.IsTransferable
+        ]
+        |> Array.concat
+        |> createHash
+
+    let createKycControllerHash
+        decodeHash
+        createHash
+        (state : KycControllerState)
+        (change : KycControllerChange)
+        =
+
+        [
+            decodeHash state.AssetHash.Value
+            decodeHash state.ControllerAddress.Value
+            boolToBytes (change = Add)
+        ]
+        |> Array.concat
+        |> createHash
+
     let createAccountStateHash
         decodeHash
         createHash
@@ -256,6 +286,22 @@ module Blocks =
                     (voteId.AccountHash, voteId.AssetHash, voteId.ResolutionHash, state)
             )
 
+        let eligibilityHashes =
+            output.Eligibilities
+            |> Map.toList
+            |> List.sort // Ensure a predictable order
+            |> List.map (fun ((accountHash, assetHash), state) ->
+                createEligibilityStateHash decodeHash createHash (accountHash, assetHash, state)
+            )
+
+        let kycControllerHashes =
+            output.KycControllers
+            |> Map.toList
+            |> List.sort // Ensure a predictable order
+            |> List.map (fun (state, change) ->
+                createKycControllerHash decodeHash createHash state change
+            )
+
         let accountHashes =
             output.Accounts
             |> Map.toList
@@ -286,6 +332,8 @@ module Blocks =
             chxBalanceHashes
             @ holdingHashes
             @ voteHashes
+            @ eligibilityHashes
+            @ kycControllerHashes
             @ accountHashes
             @ assetHashes
             @ validatorHashes
@@ -383,6 +431,8 @@ module Blocks =
             ChxBalances = chxBalances
             Holdings = Map.empty
             Votes = Map.empty
+            Eligibilities = Map.empty
+            KycControllers = Map.empty
             Accounts = Map.empty
             Assets = Map.empty
             Validators = genesisValidators

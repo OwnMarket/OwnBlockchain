@@ -14,6 +14,7 @@ module Processing =
         getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option,
         getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
         getVoteStateFromStorage : VoteId -> VoteState option,
+        getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option,
         getAccountStateFromStorage : AccountHash -> AccountState option,
         getAssetStateFromStorage : AssetHash -> AssetState option,
         getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
@@ -23,6 +24,8 @@ module Processing =
         chxBalances : ConcurrentDictionary<BlockchainAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
         votes: ConcurrentDictionary<VoteId, VoteState option>,
+        eligibilities: ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>,
+        kycControllers: ConcurrentDictionary<KycControllerState, KycControllerChange>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
@@ -44,6 +47,7 @@ module Processing =
             getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option,
             getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
             getVoteStateFromStorage : VoteId -> VoteState option,
+            getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option,
             getAccountStateFromStorage : AccountHash -> AccountState option,
             getAssetStateFromStorage : AssetHash -> AssetState option,
             getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
@@ -54,6 +58,7 @@ module Processing =
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
+                getEligibilityStateFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
@@ -63,6 +68,8 @@ module Processing =
                 ConcurrentDictionary<BlockchainAddress, ChxBalanceState>(),
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
                 ConcurrentDictionary<VoteId, VoteState option>(),
+                ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>(),
+                ConcurrentDictionary<KycControllerState, KycControllerChange>(),
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
                 ConcurrentDictionary<BlockchainAddress, ValidatorState option>(),
@@ -79,6 +86,7 @@ module Processing =
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
+                getEligibilityStateFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
@@ -88,6 +96,8 @@ module Processing =
                 ConcurrentDictionary(chxBalances),
                 ConcurrentDictionary(holdings),
                 ConcurrentDictionary(votes),
+                ConcurrentDictionary(eligibilities),
+                ConcurrentDictionary(kycControllers),
                 ConcurrentDictionary(accounts),
                 ConcurrentDictionary(assets),
                 ConcurrentDictionary(validators),
@@ -123,6 +133,9 @@ module Processing =
         member __.GetVote (voteId : VoteId) =
             votes.GetOrAdd(voteId, getVoteStateFromStorage)
 
+        member __.GetEligibility (accountHash : AccountHash, assetHash : AssetHash) =
+            eligibilities.GetOrAdd((accountHash, assetHash), getEligibilityStateFromStorage)
+
         member __.GetAccount (accountHash : AccountHash) =
             accounts.GetOrAdd(accountHash, getAccountStateFromStorage)
 
@@ -148,6 +161,13 @@ module Processing =
         member __.SetVote (voteId, state : VoteState) =
             let state = Some state;
             votes.AddOrUpdate(voteId, state, fun _ _ -> state) |> ignore
+
+        member __.SetEligibility (accountHash, assetHash, state : EligibilityState) =
+            let state = Some state;
+            eligibilities.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
+
+        member __.SetKycController (state : KycControllerState, change : KycControllerChange) =
+            kycControllers.AddOrUpdate(state, change, fun _ _ -> change) |> ignore
 
         member __.SetAccount (accountHash, state : AccountState) =
             let state = Some state
@@ -189,6 +209,13 @@ module Processing =
                     |> Seq.ofDict
                     |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
+                Eligibilities =
+                    eligibilities
+                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Map.ofSeq
+                KycControllers =
+                    kycControllers
+                    |> Map.ofDict
                 Accounts =
                     accounts
                     |> Seq.ofDict
@@ -487,6 +514,103 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
+    let processSetEligibilityTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : SetEligibilityTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.AssetHash), state.GetAccount(action.AccountHash) with
+        | None, _ ->
+            Error TxErrorCode.AssetNotFound
+        | _, None ->
+            Error TxErrorCode.AccountNotFound
+        | Some assetState, Some _ ->
+            match state.GetEligibility(action.AccountHash, action.AssetHash) with
+            | None ->
+                if assetState.ControllerAddress = senderAddress then
+                    state.SetEligibility(
+                        action.AccountHash,
+                        action.AssetHash,
+                        {EligibilityState.Eligibility = action.Eligibility; KycControllerAddress = senderAddress}
+                    )
+                    Ok state
+                else
+                    Error TxErrorCode.SenderIsNotAssetController
+            | Some eligibilityState when eligibilityState.KycControllerAddress = senderAddress ->
+                state.SetEligibility(
+                    action.AccountHash,
+                    action.AssetHash,
+                    {eligibilityState with Eligibility = action.Eligibility}
+                )
+                Ok state
+            | _ ->
+                Error TxErrorCode.SenderIsNotCurrentKycController
+
+    let processChangeKycControllerAddressTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : ChangeKycControllerAddressTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.AssetHash), state.GetAccount(action.AccountHash) with
+        | None, _ ->
+            Error TxErrorCode.AssetNotFound
+        | _, None ->
+            Error TxErrorCode.AccountNotFound
+        | Some assetState, Some _ ->
+            match state.GetEligibility(action.AccountHash, action.AssetHash) with
+            | None -> Error TxErrorCode.EligibilityNotFound
+            | Some eligibilityState when eligibilityState.KycControllerAddress = senderAddress ->
+                state.SetEligibility(
+                    action.AccountHash,
+                    action.AssetHash,
+                    {eligibilityState with KycControllerAddress = action.KycControllerAddress}
+                )
+                Ok state
+            | _ ->
+                Error TxErrorCode.SenderIsNotCurrentKycController
+
+    let processAddKycControllerTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : AddKycControllerTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.AssetHash) with
+        | None ->
+            Error TxErrorCode.AssetNotFound
+        | Some assetState when assetState.ControllerAddress = senderAddress ->
+            state.SetKycController(
+                {KycControllerState.AssetHash = action.AssetHash; ControllerAddress = action.ControllerAddress},
+                KycControllerChange.Add
+            )
+            Ok state
+        | _ ->
+            Error TxErrorCode.SenderIsNotAssetController
+
+    let processRemoveKycControllerTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : RemoveKycControllerTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.AssetHash) with
+        | None ->
+            Error TxErrorCode.AssetNotFound
+        | Some assetState when assetState.ControllerAddress = senderAddress ->
+            state.SetKycController(
+                {KycControllerState.AssetHash = action.AssetHash; ControllerAddress = action.ControllerAddress},
+                KycControllerChange.Remove
+            )
+            Ok state
+        | _ ->
+            Error TxErrorCode.SenderIsNotAssetController
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -654,6 +778,10 @@ module Processing =
         | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
+        | SetEligibility action -> processSetEligibilityTxAction state senderAddress action
+        | ChangeKycControllerAddress action -> processChangeKycControllerAddressTxAction state senderAddress action
+        | AddKycController action -> processAddKycControllerTxAction state senderAddress action
+        | RemoveKycController action -> processRemoveKycControllerTxAction state senderAddress action
 
     let processTxActions
         deriveHash
@@ -731,6 +859,7 @@ module Processing =
         (getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option)
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
         (getVoteStateFromStorage : VoteId -> VoteState option)
+        (getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option)
         (getAccountStateFromStorage : AccountHash -> AccountState option)
         (getAssetStateFromStorage : AssetHash -> AssetState option)
         (getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option)
@@ -777,6 +906,7 @@ module Processing =
                 getChxBalanceStateFromStorage,
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
+                getEligibilityStateFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,

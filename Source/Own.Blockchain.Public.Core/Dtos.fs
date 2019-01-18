@@ -81,6 +81,33 @@ type SubmitVoteWeightTxActionDto = {
 }
 
 [<CLIMutable>]
+type SetEligibilityTxActionDto = {
+    AccountHash : string
+    AssetHash : string
+    IsEligible : bool
+    IsTransferable : bool
+}
+
+[<CLIMutable>]
+type ChangeKycControllerAddressTxActionDto = {
+    AccountHash : string
+    AssetHash : string
+    KycControllerAddress : string
+}
+
+[<CLIMutable>]
+type AddKycControllerTxActionDto = {
+    AssetHash : string
+    ControllerAddress : string
+}
+
+[<CLIMutable>]
+type RemoveKycControllerTxActionDto = {
+    AssetHash : string
+    ControllerAddress : string
+}
+
+[<CLIMutable>]
 type TxActionDto = {
     ActionType : string
     ActionData : obj
@@ -222,6 +249,19 @@ type VoteStateDto = {
 }
 
 [<CLIMutable>]
+type EligibilityStateDto = {
+    IsEligible : bool
+    IsTransferable : bool
+    KycControllerAddress : string
+}
+
+[<CLIMutable>]
+type KycControllerStateDto = {
+    AssetHash : string
+    ControllerAddress : string
+}
+
+[<CLIMutable>]
 type AccountStateDto = {
     ControllerAddress : string
 }
@@ -248,6 +288,8 @@ type ProcessingOutputDto = {
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
     Votes : Map<string * string * string, VoteStateDto>
+    Eligibilities : Map<string * string, EligibilityStateDto>
+    KycControllers : Map<KycControllerStateDto, bool>
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto>
@@ -273,6 +315,13 @@ type VoteInfoDto = {
     AssetHash : string
     ResolutionHash : string
     VoteState : VoteStateDto
+}
+
+[<CLIMutable>]
+type EligibilityInfoDto = {
+    AccountHash : string
+    AssetHash : string
+    EligibilityState : EligibilityStateDto
 }
 
 [<CLIMutable>]

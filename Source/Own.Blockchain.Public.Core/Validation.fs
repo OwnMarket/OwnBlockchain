@@ -195,6 +195,51 @@ module Validation =
                 yield AppError "Vote weight cannot be negative."
         ]
 
+    let private validateSetEligibility (action : SetEligibilityTxActionDto) =
+        [
+            if action.AccountHash.IsNullOrWhiteSpace() then
+                yield AppError "AccountHash value is not provided."
+
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "AssetHash is not provided."
+        ]
+
+    let private validateSetKycController
+        isValidAddress
+        (assetHash : string)
+        (controllerAddress : string)
+        =
+
+        [
+            if assetHash.IsNullOrWhiteSpace() then
+                yield AppError "AssetHash is not provided."
+
+            if controllerAddress.IsNullOrWhiteSpace() then
+                yield AppError "ValidatorAddress is not provided."
+            elif controllerAddress |> BlockchainAddress |> isValidAddress |> not then
+                yield AppError "ValidatorAddress is not valid."
+        ]
+
+    let private validateChangeKycControllerAddress isValidAddress (action : ChangeKycControllerAddressTxActionDto) =
+        [
+            if action.AccountHash.IsNullOrWhiteSpace() then
+                yield AppError "AccountHash value is not provided."
+
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "AssetHash is not provided."
+
+            if action.KycControllerAddress.IsNullOrWhiteSpace() then
+                yield AppError "ValidatorAddress is not provided."
+            elif action.KycControllerAddress |> BlockchainAddress |> isValidAddress |> not then
+                yield AppError "ValidatorAddress is not valid."
+        ]
+
+    let private validateAddKycController isValidAddress (action : AddKycControllerTxActionDto) =
+        validateSetKycController isValidAddress action.AssetHash action.ControllerAddress
+
+    let private validateRemoveKycController isValidAddress (action : RemoveKycControllerTxActionDto) =
+        validateSetKycController isValidAddress action.AssetHash action.ControllerAddress
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -238,6 +283,14 @@ module Validation =
                 validateSubmitVote a
             | :? SubmitVoteWeightTxActionDto as a ->
                 validateSubmitVoteWeight a
+            | :? SetEligibilityTxActionDto as a ->
+                validateSetEligibility a
+            | :? ChangeKycControllerAddressTxActionDto as a ->
+                validateChangeKycControllerAddress isValidAddress a
+            | :? AddKycControllerTxActionDto as a ->
+                validateAddKycController isValidAddress a
+            | :? RemoveKycControllerTxActionDto as a ->
+                validateRemoveKycController isValidAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

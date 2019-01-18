@@ -334,7 +334,9 @@ module Db =
         dbEngineType
         (dbConnectionString : string)
         (AccountHash accountHash, AssetHash assetHash)
-        : HoldingStateDto option =
+        : HoldingStateDto option
+        =
+
         let sql =
             """
             SELECT h.amount
@@ -359,7 +361,9 @@ module Db =
         dbEngineType
         (dbConnectionString : string)
         (voteId : VoteId)
-        : VoteStateDto option =
+        : VoteStateDto option
+        =
+
         let sql =
             """
             SELECT vote_hash, vote_weight
@@ -387,6 +391,36 @@ module Db =
                 voteId.ResolutionHash.Value
                 voteId.AccountHash.Value
                 voteId.AssetHash.Value
+
+    let getEligibilityState
+        dbEngineType
+        (dbConnectionString : string)
+        (AccountHash accountHash, AssetHash assetHash)
+        : EligibilityStateDto option
+        =
+
+        let sql =
+            """
+            SELECT is_eligible, is_transferable, kyc_controller_address
+            FROM eligibility
+            WHERE account_hash = @accountHash
+            AND asset_hash = @assetHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+                "@assetHash", assetHash |> box
+            ]
+
+        match DbTools.query<EligibilityStateDto> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | [eligibility] -> Some eligibility
+        | _ ->
+            failwithf
+                "Multiple eligibility entries found for account hash %s and asset hash %s"
+                accountHash
+                assetHash
 
     let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
@@ -1001,6 +1035,157 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private addEligibility conn transaction (eligibilityInfo : EligibilityInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            INSERT INTO eligibility (account_id, asset_id, is_eligible, is_transferable, kyc_controller_address)
+            SELECT account_id, account_id, @isEligible, @isTransferable, @kycControllerAddress
+            FROM account, asset
+            WHERE account_hash = @accountHash
+            AND asset_hash = @assetHash
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", eligibilityInfo.AccountHash |> box
+                "@assetHash", eligibilityInfo.AssetHash |> box
+                "@isEligible", eligibilityInfo.EligibilityState.IsEligible |> box
+                "@isTransferable", eligibilityInfo.EligibilityState.IsTransferable |> box
+                "@kycControllerAddress", eligibilityInfo.EligibilityState.KycControllerAddress |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert eligibility state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert eligibility state."
+
+    let private updateEligibility conn transaction (eligibilityInfo : EligibilityInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            UPDATE eligibility
+            SET is_eligible = @isEligible,
+                is_transferable = @isTransferable,
+                kyc_controller_address = @kycControllerAddress
+            WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
+            AND asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
+            """
+
+        let sqlParams =
+            [
+                "@accountHash", eligibilityInfo.AccountHash |> box
+                "@assetHash", eligibilityInfo.AssetHash |> box
+                "@isEligible", eligibilityInfo.EligibilityState.IsEligible |> box
+                "@isTransferable", eligibilityInfo.EligibilityState.IsTransferable |> box
+                "@kycControllerAddress", eligibilityInfo.EligibilityState.KycControllerAddress |> box
+            ]
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addEligibility conn transaction eligibilityInfo
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update vote state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update vote state."
+
+    let private updateEligibilities
+        conn
+        transaction
+        (eligibilities : Map<string * string, EligibilityStateDto>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result ((accountHash, assetHash), eligibilityState : EligibilityStateDto) =
+            result
+            >>= fun _ ->
+                {
+                    AccountHash = accountHash
+                    AssetHash = assetHash
+                    EligibilityState =
+                        {
+                            IsEligible = eligibilityState.IsEligible
+                            IsTransferable = eligibilityState.IsTransferable
+                            KycControllerAddress = eligibilityState.KycControllerAddress
+                        }
+                }
+                |> updateEligibility conn transaction
+
+        eligibilities
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
+    let private addKycController conn transaction (kycController : KycControllerStateDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            INSERT INTO kyc_controller (asset_id, controller_address)
+            SELECT asset_id, @controllerAddress
+            FROM asset
+            WHERE asset_hash = @asssetHash
+            """
+
+        let sqlParams =
+            [
+                "@assetHash", kycController.AssetHash |> box
+                "@controllerAddress", kycController.ControllerAddress|> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert KYC controller."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert KYC controller."
+
+    let private removeKycController conn transaction (kycController : KycControllerStateDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            DELETE FROM kyc_controller
+            WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
+            AND controller_address = @controllerAddress
+            """
+
+        let sqlParams =
+            [
+                "@assetHash", kycController.AssetHash |> box
+                "@controllerAddress", kycController.ControllerAddress |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0
+            | 1 -> Ok ()
+            | _ ->
+                sprintf "Didn't remove KYC controller: %s" kycController.ControllerAddress
+                |> Result.appError
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            sprintf "Failed to remove KYC controller: %s" kycController.ControllerAddress
+            |> Result.appError
+
+    let private updateKycControllers
+        conn
+        transaction
+        (kycControllers : Map<KycControllerStateDto, bool>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result (kycController, isAdded) =
+            result
+            >>= fun _ ->
+                if isAdded then addKycController conn transaction kycController
+                else removeKycController conn transaction kycController
+
+        kycControllers
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
     let private addAccount
         conn
         transaction
@@ -1354,6 +1539,8 @@ module Db =
                 do! updateAccounts conn transaction state.Accounts
                 do! updateHoldings conn transaction state.Holdings
                 do! updateVotes conn transaction state.Votes
+                do! updateKycControllers conn transaction state.KycControllers
+                do! updateEligibilities conn transaction state.Eligibilities
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber
             }

@@ -113,6 +113,36 @@ module Mapping =
                 VoteWeight = VoteWeight a.VoteWeight
             }
             |> SubmitVoteWeight
+        | :? SetEligibilityTxActionDto as a ->
+            {
+                AccountHash = AccountHash a.AccountHash
+                AssetHash = AssetHash a.AssetHash
+                Eligibility =
+                    {
+                        IsEligible = a.IsEligible
+                        IsTransferable = a.IsTransferable
+                    }
+            }
+            |> SetEligibility
+        | :? AddKycControllerTxActionDto as a ->
+            {
+                AddKycControllerTxAction.AssetHash = AssetHash a.AssetHash
+                ControllerAddress = BlockchainAddress a.ControllerAddress
+            }
+            |> AddKycController
+        | :? ChangeKycControllerAddressTxActionDto as a ->
+            {
+                ChangeKycControllerAddressTxAction.AccountHash = AccountHash a.AccountHash
+                AssetHash = AssetHash a.AssetHash
+                KycControllerAddress = BlockchainAddress a.KycControllerAddress
+            }
+            |> ChangeKycControllerAddress
+        | :? RemoveKycControllerTxActionDto as a ->
+            {
+                RemoveKycControllerTxAction.AssetHash = AssetHash a.AssetHash
+                ControllerAddress = BlockchainAddress a.ControllerAddress
+            }
+            |> RemoveKycController
         | _ ->
             failwith "Invalid action type to map."
 
@@ -339,6 +369,35 @@ module Mapping =
                 | Some (VoteWeight voteWeight) -> Nullable voteWeight;
         }
 
+    let eligibilityStateFromDto (dto : EligibilityStateDto) =
+        {
+            Eligibility =
+                {
+                    IsEligible = dto.IsEligible
+                    IsTransferable = dto.IsTransferable
+                }
+            KycControllerAddress = BlockchainAddress dto.KycControllerAddress
+        }
+
+    let eligibilityStateToDto (state : EligibilityState) =
+        {
+            IsEligible = state.Eligibility.IsEligible
+            IsTransferable = state.Eligibility.IsTransferable
+            KycControllerAddress = state.KycControllerAddress.Value
+        }
+
+    let kycControllerStateFromDto (dto : KycControllerStateDto) : KycControllerState =
+        {
+            AssetHash = AssetHash dto.AssetHash
+            ControllerAddress = BlockchainAddress dto.ControllerAddress
+        }
+
+    let kycControllerStateToDto (state : KycControllerState) =
+        {
+            AssetHash = state.AssetHash.Value
+            ControllerAddress = state.ControllerAddress.Value
+        }
+
     let accountStateFromDto (dto : AccountStateDto) : AccountState =
         {
             ControllerAddress = BlockchainAddress dto.ControllerAddress
@@ -420,6 +479,19 @@ module Mapping =
             )
             |> Map.ofList
 
+        let eligibilities =
+            output.Eligibilities
+            |> Map.toList
+            |> List.map (fun ((AccountHash ah, AssetHash ac), s : EligibilityState) ->
+                (ah, ac), eligibilityStateToDto s)
+            |> Map.ofList
+
+        let kycControllers =
+            output.KycControllers
+            |> Map.toList
+            |> List.map (fun (s : KycControllerState, c : KycControllerChange) -> kycControllerStateToDto s, c = Add)
+            |> Map.ofList
+
         let accounts =
             output.Accounts
             |> Map.toList
@@ -451,6 +523,8 @@ module Mapping =
             ChxBalances = chxBalances
             Holdings = holdings
             Votes = votes
+            Eligibilities = eligibilities
+            KycControllers = kycControllers
             Accounts = accounts
             Assets = assets
             Validators = validators
