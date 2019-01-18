@@ -306,9 +306,9 @@ type ProcessingOutput = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type ConsensusStep =
-    | Propose
-    | Vote
-    | Commit
+    | Propose = 0uy
+    | Vote = 1uy
+    | Commit = 2uy
 
 type ConsensusMessage =
     | Propose of Block * ConsensusRound

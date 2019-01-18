@@ -118,7 +118,7 @@ module Agents =
                 sprintf "Timeout %i / %i / %s"
                     blockNumber.Value
                     consensusRound.Value
-                    (unionCaseName consensusStep)
+                    (consensusStep.ToString())
             |> formatMessage
             |> Log.info
 
