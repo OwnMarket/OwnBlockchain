@@ -23,7 +23,7 @@ module MerkleTree =
     let private nodeHash node =
         match node with
         | Some n -> n.Hash
-        | None -> Array.zeroCreate 0
+        | None -> Array.empty
 
     let private buildParentNode
         hashFunc
@@ -140,7 +140,7 @@ module MerkleTree =
             elif rightHash = node.Hash then
                 LeftHash leftHash
             else
-                LeftHash (Array.zeroCreate 0)
+                LeftHash Array.empty
             |> Some
         )
 
