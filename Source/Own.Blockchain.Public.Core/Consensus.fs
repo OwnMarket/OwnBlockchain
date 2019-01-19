@@ -61,7 +61,7 @@ module Consensus =
 
         member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope) =
             if envelope.BlockNumber >= _blockNumber then
-                let key = (envelope.BlockNumber, envelope.Round, senderAddress)
+                let key = envelope.BlockNumber, envelope.Round, senderAddress
 
                 match envelope.ConsensusMessage with
                 | ConsensusMessage.Propose (block, vr) ->

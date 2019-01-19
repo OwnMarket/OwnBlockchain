@@ -121,10 +121,9 @@ module Agents =
                     (unionCaseName consensusStep)
             |> formatMessage
             |> Log.info
-        | EquivocationProofDetected (validatorAddress, _)
-        | EquivocationProofReceived (validatorAddress, _) ->
-            validatorAddress.Value
-            |> sprintf "for validator %s"
+        | EquivocationProofDetected (validatorAddress, proof)
+        | EquivocationProofReceived (validatorAddress, proof) ->
+            sprintf "for validator %s:\n%A" validatorAddress.Value proof
             |> formatMessage
             |> Log.warning
 
