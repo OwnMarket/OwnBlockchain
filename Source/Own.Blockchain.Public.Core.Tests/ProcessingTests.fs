@@ -3310,7 +3310,7 @@ module ProcessingTests =
 
         // COMPOSE
         let getTx _ =
-           Ok txEnvelope
+            Ok txEnvelope
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
