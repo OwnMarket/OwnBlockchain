@@ -3002,6 +3002,278 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
         test <@ output.Eligibilities.Count = 0 @>
 
+    [<Fact>]
+    let ``Processing.processTxSet ChangeKycControllerAddress`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "ChangeKycControllerAddress"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            KycControllerAddress = otherWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            {
+                EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                KycControllerAddress = senderWallet.Address
+            }
+            |> Some
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedEligibilityState =
+            {
+                EligibilityState.Eligibility =
+                    {
+                        IsEligible = true;
+                        IsTransferable = true
+                    }
+                KycControllerAddress = otherWallet.Address
+            }
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.Eligibilities.Count = 1 @>
+        test <@ output.Eligibilities.[(accountHash, assetHash)] = expectedEligibilityState @>
+
+    [<Fact>]
+    let ``Processing.processTxSet ChangeKycControllerAddress various errors`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet()
+
+        let (accountHash1, accountHash2, accountHash3) =
+            (AccountHash "Acc1", AccountHash "Acc2", AccountHash "Acc3")
+        let (assetHash1, assetHash2, assetHash3) =
+            (AssetHash "EQ1", AssetHash "EQ2", AssetHash "EQ3")
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "ChangeKycControllerAddress"
+                    ActionData =
+                        {
+                            AccountHash = accountHash1.Value
+                            AssetHash = assetHash1.Value
+                            KycControllerAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "ChangeKycControllerAddress"
+                    ActionData =
+                        {
+                            AccountHash = accountHash2.Value
+                            AssetHash = assetHash2.Value
+                            KycControllerAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (nonce + 1) fee
+
+        let txHash3, txEnvelope3 =
+            [
+                {
+                    ActionType = "ChangeKycControllerAddress"
+                    ActionData =
+                        {
+                            AccountHash = accountHash3.Value
+                            AssetHash = assetHash3.Value
+                            KycControllerAddress = otherWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (nonce + 2) fee
+
+        let txSet = [txHash1; txHash2; txHash3]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            elif txHash = txHash3 then Ok txEnvelope3
+            else Result.appError "Invalid txHash"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState (accountHash, _) =
+            if accountHash = accountHash3
+                then
+                    {
+                        EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                        KycControllerAddress = otherWallet.Address
+                    }
+                    |> Some
+            else None
+
+        let getAccountState accountHash =
+            if (accountHash = accountHash1) then
+                None
+            else
+                Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState assetHash =
+            if assetHash = assetHash2
+                then None
+            else
+                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash1 =
+            (TxActionNumber 1s, TxErrorCode.AccountNotFound)
+            |> TxActionError
+            |> Failure
+        let expectedSatusTxHash2 =
+            (TxActionNumber 1s, TxErrorCode.AssetNotFound)
+            |> TxActionError
+            |> Failure
+        let expectedStatusTxHash3 =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotCurrentKycController)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 3 @>
+        test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
+        test <@ output.TxResults.[txHash2].Status = expectedSatusTxHash2 @>
+        test <@ output.TxResults.[txHash3].Status = expectedStatusTxHash3 @>
+
+        test <@ output.Eligibilities.Count = 0 @>
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission
     ////////////////////////////////////////////////////////////////////////////////////////////////////
