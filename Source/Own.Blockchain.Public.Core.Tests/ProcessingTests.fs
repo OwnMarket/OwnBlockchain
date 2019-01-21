@@ -3367,7 +3367,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.KycControllers.Count = 1 @>
-        test <@ output.KycControllers.[{AssetHash = AssetHash "EQ1"; ControllerAddress = senderWallet.Address}] = Add @>
+        test <@ output.KycControllers.[{AssetHash = assetHash; ControllerAddress = senderWallet.Address}] = Add @>
 
     [<Fact>]
     let ``Processing.processTxSet AddKycController various errors`` () =
@@ -3491,6 +3491,337 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
         test <@ output.KycControllers.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet RemoveKycController`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "RemoveKycController"
+                    ActionData =
+                        {
+                            AssetHash = assetHash.Value
+                            ControllerAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.KycControllers.Count = 1 @>
+        test <@ output.KycControllers.[{AssetHash = assetHash; ControllerAddress = senderWallet.Address}] = Remove @>
+
+    [<Fact>]
+    let ``Processing.processTxSet RemoveKycController various errors`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "RemoveKycController"
+                    ActionData =
+                        {
+                            AssetHash = assetHash1.Value
+                            ControllerAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "RemoveKycController"
+                    ActionData =
+                        {
+                            AssetHash = assetHash2.Value
+                            ControllerAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (nonce + 1) fee
+
+        let txSet = [txHash1; txHash2]
+
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            else Result.appError "Invalid TxHash"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState assetHash =
+            if assetHash = assetHash1 then None
+            else Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatusTxHash1 =
+            (TxActionNumber 1s, TxErrorCode.AssetNotFound)
+            |> TxActionError
+            |> Failure
+
+        let expectedStatusTxHash2 =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 2 @>
+        test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
+        test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
+        test <@ output.KycControllers.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet Add and RemoveKycController mixed`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "AddKycController"
+                    ActionData =
+                        {
+                            AssetHash = assetHash1.Value
+                            ControllerAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "RemoveKycController"
+                    ActionData =
+                        {
+                            AssetHash = assetHash2.Value
+                            ControllerAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (nonce + 1) fee
+
+        let txSet = [txHash1; txHash2]
+
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            else Result.appError "Invalid TxHash"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        test <@ output.TxResults.Count = 2 @>
+        test <@ output.TxResults.[txHash1].Status = Success @>
+        test <@ output.TxResults.[txHash2].Status = Success @>
+        test <@ output.KycControllers.Count = 2 @>
+        test <@ output.KycControllers.[{AssetHash = assetHash1; ControllerAddress = senderWallet.Address}] = Add @>
+        test <@ output.KycControllers.[{AssetHash = assetHash2; ControllerAddress = senderWallet.Address}] = Remove @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission
