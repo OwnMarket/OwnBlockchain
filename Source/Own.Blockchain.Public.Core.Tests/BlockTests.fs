@@ -119,6 +119,22 @@ module BlockTests =
         test <@ stateHash = "AAABBBA.CC" @>
 
     [<Fact>]
+    let ``Blocks.createKycControllerStateHash`` () =
+        let assetHash = AssetHash "AAA"
+        let state =
+            {
+                AssetHash = assetHash
+                ControllerAddress = BlockchainAddress "CC"
+            }
+
+        // ACT
+        let stateHash =
+            Blocks.createKycControllerStateHash DummyHash.decode DummyHash.create (state, Add)
+
+        // ASSERT
+        test <@ stateHash = "AAACCA" @>
+
+    [<Fact>]
     let ``Blocks.createAccountStateHash`` () =
         let accountHash = AccountHash "AAA"
         let controllerAddress = BlockchainAddress "CC"
@@ -786,7 +802,8 @@ module BlockTests =
                 kycControllers
                 |> Map.toList
                 |> List.map (fun (state, change) ->
-                    Blocks.createKycControllerHash Hashing.decode Hashing.hash state change)
+                    Blocks.createKycControllerStateHash Hashing.decode Hashing.hash (state, change)
+                )
 
                 accounts
                 |> Map.toList

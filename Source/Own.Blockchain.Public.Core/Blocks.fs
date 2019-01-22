@@ -92,11 +92,10 @@ module Blocks =
         |> Array.concat
         |> createHash
 
-    let createKycControllerHash
+    let createKycControllerStateHash
         decodeHash
         createHash
-        (state : KycControllerState)
-        (change : KycControllerChange)
+        (state : KycControllerState, change : KycControllerChange)
         =
 
         [
@@ -300,7 +299,7 @@ module Blocks =
             |> Map.toList
             |> List.sort // Ensure a predictable order
             |> List.map (fun (state, change) ->
-                createKycControllerHash decodeHash createHash state change
+                createKycControllerStateHash decodeHash createHash (state, change)
             )
 
         let accountHashes =
