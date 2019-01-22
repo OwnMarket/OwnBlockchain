@@ -256,7 +256,8 @@ type TxErrorCode =
     | InsufficientChxBalance = 110s
 
     // Holding
-    | InsufficientAssetHoldingBalance = 210s
+    | HoldingNotFound = 210s
+    | InsufficientAssetHoldingBalance = 220s
 
     // Account
     | AccountNotFound = 310s

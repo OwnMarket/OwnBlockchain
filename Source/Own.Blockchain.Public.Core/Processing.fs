@@ -480,16 +480,20 @@ module Processing =
         | _, None ->
             Error TxErrorCode.AccountNotFound
         | Some _, Some accountState when accountState.ControllerAddress = senderAddress ->
-            match state.GetVote(action.VoteId) with
-            | None ->
-                state.SetVote(action.VoteId, { VoteHash = action.VoteHash; VoteWeight = None })
-                Ok state
-            | Some vote ->
-                match vote.VoteWeight with
+            let holding = state.GetHolding(action.VoteId.AccountHash, action.VoteId.AssetHash)
+            if holding.Amount.Value <= 0m then
+                Error TxErrorCode.HoldingNotFound
+            else
+                match state.GetVote(action.VoteId) with
                 | None ->
-                    state.SetVote(action.VoteId, { vote with VoteHash = action.VoteHash })
+                    state.SetVote(action.VoteId, { VoteHash = action.VoteHash; VoteWeight = None })
                     Ok state
-                | Some _ -> Error TxErrorCode.VoteIsAlreadyWeighted
+                | Some vote ->
+                    match vote.VoteWeight with
+                    | None ->
+                        state.SetVote(action.VoteId, { vote with VoteHash = action.VoteHash })
+                        Ok state
+                    | Some _ -> Error TxErrorCode.VoteIsAlreadyWeighted
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
 
