@@ -417,6 +417,7 @@ type EquivocationProof = {
 
 type NetworkMessageId =
     | Tx of TxHash
+    | EquivocationProof of EquivocationProofHash
     | Block of BlockNumber
     | Consensus of ConsensusMessageId
 

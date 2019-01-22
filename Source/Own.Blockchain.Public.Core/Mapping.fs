@@ -718,12 +718,14 @@ module Mapping =
     let private networkMessageIdToIdTypeTuple networkMessageId =
         match networkMessageId with
         | Tx (TxHash txHash) -> "Tx", txHash
+        | EquivocationProof (EquivocationProofHash proofHash) -> "EquivocationProof", proofHash
         | Block (BlockNumber blockNr) -> "Block", blockNr |> Convert.ToString
         | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId
 
     let private messageTypeToNetworkMessageId (messageType : string) (messageId : string) =
         match messageType with
         | "Tx" -> messageId |> TxHash |> Tx
+        | "EquivocationProof" -> messageId |> EquivocationProofHash |> EquivocationProof
         | "Block" -> messageId |> Convert.ToInt64 |> BlockNumber |> Block
         | "Consensus" -> messageId |> ConsensusMessageId |> Consensus
         | _ -> failwithf "Invalid network message type %s" messageType

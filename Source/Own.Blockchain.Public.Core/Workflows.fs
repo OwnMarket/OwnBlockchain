@@ -529,7 +529,6 @@ module Workflows =
             return equivocationProof.EquivocationProofHash
         }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -539,12 +538,28 @@ module Workflows =
         | Ok (txEnvelopeDto : TxEnvelopeDto) ->
             GossipMessage {
                 MessageId = Tx txHash
-                // TODO: move it into network code
-                SenderAddress = NetworkAddress networkAddress
+                SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
                 Data = txEnvelopeDto
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" txHash.Value
+
+    let propagateEquivocationProof
+        sendMessageToPeers
+        networkAddress
+        getEquivocationProof
+        (equivocationProofHash : EquivocationProofHash)
+        =
+
+        match getEquivocationProof equivocationProofHash with
+        | Ok (equivocationProofDto : EquivocationProofDto) ->
+            GossipMessage {
+                MessageId = EquivocationProof equivocationProofHash
+                SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
+                Data = equivocationProofDto
+            }
+            |> sendMessageToPeers
+        | _ -> Log.errorf "EquivocationProof %s does not exist" equivocationProofHash.Value
 
     let propagateBlock
         sendMessageToPeers
@@ -557,8 +572,7 @@ module Workflows =
         | Ok (blockEnvelopeDto : BlockEnvelopeDto) ->
             GossipMessage {
                 MessageId = Block blockNumber
-                // TODO: move it into network code
-                SenderAddress = NetworkAddress networkAddress
+                SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
                 Data = blockEnvelopeDto
             }
             |> sendMessageToPeers
@@ -566,6 +580,7 @@ module Workflows =
 
     let processPeerMessage
         getTx
+        getEquivocationProof
         getBlock
         getLastAppliedBlockNumber
         handleReceivedConsensusMessage
@@ -582,6 +597,18 @@ module Workflows =
                 |> fun txEnvelopeDto ->
                     (txHash, txEnvelopeDto)
                     |> (if isResponse then TxFetched else TxReceived)
+                    |> Some
+            |> Ok
+
+        let processEquivocationProofFromPeer isResponse equivocationProofHash data =
+            match getEquivocationProof equivocationProofHash with
+            | Ok _ -> None
+            | _ ->
+                data
+                |> Serialization.deserializeJObject
+                |> fun equivocationProofDto ->
+                    equivocationProofDto
+                    |> (if isResponse then EquivocationProofFetched else EquivocationProofReceived)
                     |> Some
             |> Ok
 
@@ -609,6 +636,7 @@ module Workflows =
         let processData isResponse messageId (data : obj) =
             match messageId with
             | Tx txHash -> processTxFromPeer isResponse txHash data
+            | EquivocationProof proofHash -> processEquivocationProofFromPeer isResponse proofHash data
             | Block blockNr -> processBlockFromPeer isResponse blockNr data
             | Consensus consensusMessageId -> processConsensusMessageFromPeer consensusMessageId data
 
@@ -624,6 +652,17 @@ module Workflows =
                     |> respondToPeer senderAddress
                     Ok None
                 | _ -> Result.appError (sprintf "Requested tx %s not found" txHash.Value)
+
+            | EquivocationProof equivocationProofHash ->
+                match getEquivocationProof equivocationProofHash with
+                | Ok equivocationProofDto ->
+                    ResponseDataMessage {
+                        MessageId = messageId
+                        Data = equivocationProofDto
+                    }
+                    |> respondToPeer senderAddress
+                    Ok None
+                | _ -> Result.appError (sprintf "Requested equivocation proof %s not found" equivocationProofHash.Value)
 
             | Block blockNr ->
                 let blockNr =

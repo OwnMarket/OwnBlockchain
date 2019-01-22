@@ -27,6 +27,8 @@ module Composition =
 
     let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir
 
+    let getEquivocationProof = Raw.getEquivocationProof Config.DataDir
+
     let saveBlock = Raw.saveBlock Config.DataDir
 
     let getBlock = Raw.getBlock Config.DataDir
@@ -357,6 +359,12 @@ module Composition =
             Config.NetworkAddress
             getTx
 
+    let propagateEquivocationProof =
+        Workflows.propagateEquivocationProof
+            Peers.sendMessage
+            Config.NetworkAddress
+            getEquivocationProof
+
     let propagateBlock =
         Workflows.propagateBlock
             Peers.sendMessage
@@ -368,6 +376,7 @@ module Composition =
     let processPeerMessage (peerMessage : PeerMessage) =
         Workflows.processPeerMessage
             getTx
+            getEquivocationProof
             getBlock
             getLastAppliedBlockNumber
             handleReceivedConsensusMessage

@@ -100,6 +100,14 @@ module Raw =
 
         saveData dataDir EquivocationProof equivocationProofHash equivocationProofDto
 
+    let getEquivocationProof
+        (dataDir : string)
+        (EquivocationProofHash equivocationProofHash)
+        : Result<EquivocationProofDto, AppErrors>
+        =
+
+        loadData<EquivocationProofDto> dataDir EquivocationProof equivocationProofHash
+
     let saveBlock
         (dataDir : string)
         (BlockNumber blockNr)

@@ -16,6 +16,12 @@ module Agents =
             Composition.propagateTx txHash
         }
 
+    let private equivocationProofPropagator = Agent.start <| fun (equivocationProofHash : EquivocationProofHash) ->
+        async {
+            Log.debugf "Propagating EquivocationProof %s" equivocationProofHash.Value
+            Composition.propagateEquivocationProof equivocationProofHash
+        }
+
     let private blockPropagator = Agent.start <| fun (blockNumber : BlockNumber) ->
         async {
             Log.debugf "Propagating block %i" blockNumber.Value
@@ -80,6 +86,19 @@ module Agents =
             h.Value
             |> formatMessage
             |> Log.info
+        | EquivocationProofDetected (proof, validatorAddress) ->
+            sprintf "Validator %s:\n%A" validatorAddress.Value proof
+            |> formatMessage
+            |> Log.warning
+        | EquivocationProofReceived (proof)
+        | EquivocationProofFetched (proof) ->
+            sprintf "%A" proof
+            |> formatMessage
+            |> Log.warning
+        | EquivocationProofStored (equivocationProofHash, isFetched) ->
+            equivocationProofHash.Value
+            |> formatMessage
+            |> Log.info
         | BlockCommitted (bn, _) ->
             bn.Value
             |> string
@@ -127,19 +146,6 @@ module Agents =
                     (unionCaseName consensusStep)
             |> formatMessage
             |> Log.info
-        | EquivocationProofDetected (proof, validatorAddress) ->
-            sprintf "Validator %s:\n%A" validatorAddress.Value proof
-            |> formatMessage
-            |> Log.warning
-        | EquivocationProofReceived (proof)
-        | EquivocationProofFetched (proof) ->
-            sprintf "%A" proof
-            |> formatMessage
-            |> Log.warning
-        | EquivocationProofStored (equivocationProofHash, isFetched) ->
-            equivocationProofHash.Value
-            |> formatMessage
-            |> Log.info
 
     let publishEvent event =
         logEvent event
@@ -158,6 +164,16 @@ module Agents =
             invokeApplier ()
             if not isFetched then
                 txPropagator.Post txHash
+        | EquivocationProofDetected (proof, validatorAddress) ->
+            invokeEquivocationProofVerifier (proof, false)
+        | EquivocationProofReceived (proof) ->
+            invokeEquivocationProofVerifier (proof, false)
+        | EquivocationProofFetched (proof) ->
+            invokeEquivocationProofVerifier (proof, true)
+        | EquivocationProofStored (equivocationProofHash, isFetched) ->
+            invokeApplier ()
+            if not isFetched then
+                equivocationProofPropagator.Post equivocationProofHash
         | BlockCommitted (blockNumber, blockEnvelopeDto)
         | BlockReceived (blockNumber, blockEnvelopeDto) ->
             invokeBlockVerifier (blockEnvelopeDto, false)
@@ -175,14 +191,6 @@ module Agents =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             invokeValidator c
-        | EquivocationProofDetected (proof, validatorAddress) ->
-            invokeEquivocationProofVerifier (proof, false)
-        | EquivocationProofReceived (proof) ->
-            invokeEquivocationProofVerifier (proof, false)
-        | EquivocationProofFetched (proof) ->
-            invokeEquivocationProofVerifier (proof, true)
-        | EquivocationProofStored (equivocationProofHash, isFetched) ->
-            Log.warning "EquivocationProofStored handler not implemented" // TODO: Call propagator
 
     let private startPeerMessageHandler () =
         if peerMessageHandler <> None then

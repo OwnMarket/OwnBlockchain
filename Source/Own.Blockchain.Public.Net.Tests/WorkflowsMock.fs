@@ -20,6 +20,17 @@ module WorkflowsMock =
                     None
                 else
                     Result.appError (sprintf "Error Tx %A not found" txHash) |> Some
+            | EquivocationProof equivocationProofHash ->
+                if RawMock.hasData address messageId then
+                    let peerMessage = ResponseDataMessage {
+                        MessageId = messageId
+                        Data = "equivocationProof" |> box
+                    }
+                    peerMessage
+                    |> respondToPeer targetAddress
+                    None
+                else
+                    Result.appError (sprintf "Error EquivocationProof %A not found" equivocationProofHash) |> Some
             | Block blockNr ->
                 if RawMock.hasData address messageId then
                     let peerMessage = ResponseDataMessage {
