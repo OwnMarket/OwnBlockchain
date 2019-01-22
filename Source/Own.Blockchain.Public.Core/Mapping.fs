@@ -215,6 +215,32 @@ module Mapping =
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Equivocation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let consensusStepToCode consensusStep =
+        match consensusStep with
+        | ConsensusStep.Propose -> 0uy
+        | ConsensusStep.Vote -> 1uy
+        | ConsensusStep.Commit -> 2uy
+
+    let consensusStepFromCode consensusStepCode =
+        match consensusStepCode with
+        | 0uy -> ConsensusStep.Propose
+        | 1uy -> ConsensusStep.Vote
+        | 2uy -> ConsensusStep.Commit
+        | c -> failwithf "Unknown consensus step code %i" c
+
+    let equivocationProofToEquivocationInfoDto (equivocationProof : EquivocationProof) =
+        {
+            EquivocationProofHash = equivocationProof.EquivocationProofHash.Value
+            ValidatorAddress = equivocationProof.ValidatorAddress.Value
+            BlockNumber = equivocationProof.BlockNumber.Value
+            ConsensusRound = equivocationProof.ConsensusRound.Value
+            ConsensusStep = equivocationProof.ConsensusStep |> consensusStepToCode
+        }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 

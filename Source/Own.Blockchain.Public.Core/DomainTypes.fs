@@ -397,7 +397,11 @@ type ConsensusCommand =
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
 
+type EquivocationProofHash = EquivocationProofHash of string
+
 type EquivocationProof = {
+    EquivocationProofHash : EquivocationProofHash
+    ValidatorAddress : BlockchainAddress
     BlockNumber : BlockNumber
     ConsensusRound : ConsensusRound
     ConsensusStep : ConsensusStep
@@ -505,6 +509,10 @@ type TxHash with
 type TxActionNumber with
     member __.Value =
         __ |> fun (TxActionNumber v) -> v
+
+type EquivocationProofHash with
+    member __.Value =
+        __ |> fun (EquivocationProofHash v) -> v
 
 type Timestamp with
     member __.Value =

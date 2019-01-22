@@ -34,6 +34,12 @@ module Agents =
         | Some v -> v.Post e
         | None -> Log.error "TxVerifier agent not started."
 
+    let mutable private equivocationProofVerifier : MailboxProcessor<EquivocationProofDto * bool> option = None
+    let private invokeEquivocationProofVerifier e =
+        match equivocationProofVerifier with
+        | Some v -> v.Post e
+        | None -> Log.error "EquivocationProofVerifier agent not started."
+
     let mutable private blockVerifier : MailboxProcessor<BlockEnvelopeDto * bool> option = None
     let private invokeBlockVerifier e =
         match blockVerifier with
@@ -121,11 +127,19 @@ module Agents =
                     (unionCaseName consensusStep)
             |> formatMessage
             |> Log.info
-        | EquivocationProofDetected (validatorAddress, proof)
-        | EquivocationProofReceived (validatorAddress, proof) ->
-            sprintf "for validator %s:\n%A" validatorAddress.Value proof
+        | EquivocationProofDetected (proof, validatorAddress) ->
+            sprintf "Validator %s:\n%A" validatorAddress.Value proof
             |> formatMessage
             |> Log.warning
+        | EquivocationProofReceived (proof)
+        | EquivocationProofFetched (proof) ->
+            sprintf "%A" proof
+            |> formatMessage
+            |> Log.warning
+        | EquivocationProofStored (equivocationProofHash, isFetched) ->
+            equivocationProofHash.Value
+            |> formatMessage
+            |> Log.info
 
     let publishEvent event =
         logEvent event
@@ -161,9 +175,14 @@ module Agents =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             invokeValidator c
-        | EquivocationProofDetected (validatorAddress, proof)
-        | EquivocationProofReceived (validatorAddress, proof) ->
-            Log.warning "EquivocationProof handler not implemented" // TODO: Implement
+        | EquivocationProofDetected (proof, validatorAddress) ->
+            invokeEquivocationProofVerifier (proof, false)
+        | EquivocationProofReceived (proof) ->
+            invokeEquivocationProofVerifier (proof, false)
+        | EquivocationProofFetched (proof) ->
+            invokeEquivocationProofVerifier (proof, true)
+        | EquivocationProofStored (equivocationProofHash, isFetched) ->
+            Log.warning "EquivocationProofStored handler not implemented" // TODO: Call propagator
 
     let private startPeerMessageHandler () =
         if peerMessageHandler <> None then
@@ -191,6 +210,22 @@ module Agents =
                     Composition.submitTx isFetched txEnvelopeDto
                     |> Result.handle
                         (fun txHash -> (txHash, isFetched) |> TxStored |> publishEvent)
+                        Log.appErrors
+                }
+            |> Some
+
+    let private startEquivocationProofVerifier () =
+        if equivocationProofVerifier <> None then
+            failwith "EquivocationProofVerifier agent is already started."
+
+        equivocationProofVerifier <-
+            Agent.start <| fun (equivocationProofDto, isFetched) ->
+                async {
+                    Composition.storeEquivocationProof equivocationProofDto
+                    |> Result.handle
+                        (fun equivocationProofHash ->
+                            (equivocationProofHash, isFetched) |> EquivocationProofStored |> publishEvent
+                        )
                         Log.appErrors
                 }
             |> Some
@@ -256,6 +291,7 @@ module Agents =
     let startAgents () =
         startPeerMessageHandler ()
         startTxVerifier ()
+        startEquivocationProofVerifier ()
         startBlockVerifier ()
         startApplier ()
         startValidator ()

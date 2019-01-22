@@ -502,6 +502,34 @@ module Workflows =
             return ConsensusCommand.Message (senderAddress, envelope)
         }
 
+    let storeEquivocationProof
+        verifySignature
+        createConsensusMessageHash
+        decodeHash
+        createHash
+        saveEquivocationProof
+        saveEquivocationProofToDb
+        equivocationProofDto
+        =
+
+        result {
+            let! equivocationProof =
+                Validation.validateEquivocationProof
+                    verifySignature
+                    createConsensusMessageHash
+                    decodeHash
+                    createHash
+                    equivocationProofDto
+
+            do! saveEquivocationProof equivocationProof.EquivocationProofHash equivocationProofDto
+            do! equivocationProof
+                |> Mapping.equivocationProofToEquivocationInfoDto
+                |> saveEquivocationProofToDb
+
+            return equivocationProof.EquivocationProofHash
+        }
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////

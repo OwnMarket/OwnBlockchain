@@ -322,3 +322,98 @@ module Validation =
                 Result.appError "Available CHX balance is insufficient to cover the fee for all pending transactions."
             else
                 Ok ()
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // EquivocationProof validation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let verifyEquivocationProofSignature
+        (verifySignature : Signature -> string -> BlockchainAddress option)
+        createConsensusMessageHash
+        blockNumber
+        consensusRound
+        consensusStep
+        (blockHash : string)
+        signature
+        =
+
+        let consensusMessage =
+            match consensusStep with
+            | 0uy -> failwith "Equivocation is not checked on Propose messages."
+            | 1uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> ConsensusMessage.Vote
+            | 2uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> ConsensusMessage.Commit
+            | c -> failwithf "Unknown consensus step code: %i" c
+
+        let consensusMessageHash =
+            createConsensusMessageHash
+                (blockNumber |> BlockNumber)
+                (consensusRound |> ConsensusRound)
+                consensusMessage
+
+        verifySignature (Signature signature) consensusMessageHash
+
+    let validateEquivocationProof
+        (verifySignature : Signature -> string -> BlockchainAddress option)
+        createConsensusMessageHash
+        decodeHash
+        createHash
+        (equivocationProofDto : EquivocationProofDto)
+        : Result<EquivocationProof, AppErrors>
+        =
+
+        let signer1 =
+            verifyEquivocationProofSignature
+                verifySignature
+                createConsensusMessageHash
+                equivocationProofDto.BlockNumber
+                equivocationProofDto.ConsensusRound
+                equivocationProofDto.ConsensusStep
+                equivocationProofDto.BlockHash1
+                equivocationProofDto.Signature1
+        let signer2 =
+            verifyEquivocationProofSignature
+                verifySignature
+                createConsensusMessageHash
+                equivocationProofDto.BlockNumber
+                equivocationProofDto.ConsensusRound
+                equivocationProofDto.ConsensusStep
+                equivocationProofDto.BlockHash2
+                equivocationProofDto.Signature2
+
+        match signer1, signer2 with
+        | None, _ ->
+            Result.appError "Cannot verify signature 1."
+        | _, None ->
+            Result.appError "Cannot verify signature 2."
+        | Some s1, Some s2 ->
+            if s1 <> s2 then
+                sprintf "Signatures are not from the same address (%s / %s)" s1.Value s2.Value
+                |> Result.appError
+            else
+                let validatorAddress = s1
+                let equivocationProofHash =
+                    [
+                        equivocationProofDto.BlockNumber |> Conversion.int64ToBytes
+                        equivocationProofDto.ConsensusRound |> Conversion.int32ToBytes
+                        [| equivocationProofDto.ConsensusStep |]
+                        equivocationProofDto.BlockHash1 |> Option.ofObj |> Option.map decodeHash |? Array.empty
+                        equivocationProofDto.BlockHash2 |> Option.ofObj |> Option.map decodeHash |? Array.empty
+                        equivocationProofDto.Signature1 |> decodeHash
+                        equivocationProofDto.Signature2 |> decodeHash
+                    ]
+                    |> Array.concat
+                    |> createHash
+                    |> EquivocationProofHash
+
+                {
+                    EquivocationProofHash = equivocationProofHash
+                    ValidatorAddress = validatorAddress
+                    BlockNumber = equivocationProofDto.BlockNumber |> BlockNumber
+                    ConsensusRound = equivocationProofDto.ConsensusRound |> ConsensusRound
+                    ConsensusStep = equivocationProofDto.ConsensusStep |> Mapping.consensusStepFromCode
+                    BlockHash1 = equivocationProofDto.BlockHash1 |> Option.ofObj |> Option.map BlockHash
+                    BlockHash2 = equivocationProofDto.BlockHash2 |> Option.ofObj |> Option.map BlockHash
+                    Signature1 = equivocationProofDto.Signature1 |> Signature
+                    Signature2 = equivocationProofDto.Signature2 |> Signature
+                }
+                |> Ok

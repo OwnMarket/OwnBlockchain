@@ -16,6 +16,7 @@ module Raw =
     type RawDataType =
         | Tx
         | TxResult
+        | EquivocationProof
         | Block
 
     let private createFileName (dataType : RawDataType) (key : string) =
@@ -89,6 +90,15 @@ module Raw =
         |> createFileName TxResult
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
+
+    let saveEquivocationProof
+        (dataDir : string)
+        (EquivocationProofHash equivocationProofHash)
+        (equivocationProofDto : EquivocationProofDto)
+        : Result<unit, AppErrors>
+        =
+
+        saveData dataDir EquivocationProof equivocationProofHash equivocationProofDto
 
     let saveBlock
         (dataDir : string)

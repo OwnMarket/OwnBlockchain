@@ -389,38 +389,56 @@ module Consensus =
         // Equivocation
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        member private __.CreateEquivocationProof
+            (BlockNumber blockNumber)
+            (ConsensusRound consensusRound)
+            (consensusStep : ConsensusStep)
+            (blockHash1 : BlockHash option)
+            (blockHash2 : BlockHash option)
+            (Signature signature1)
+            (Signature signature2)
+            =
+
+            {
+                BlockNumber = blockNumber
+                ConsensusRound = consensusRound
+                ConsensusStep = ConsensusStep.Vote |> Mapping.consensusStepToCode
+                BlockHash1 = blockHash1 |> Option.map (fun h -> h.Value) |> Option.toObj
+                BlockHash2 = blockHash2 |> Option.map (fun h -> h.Value) |> Option.toObj
+                Signature1 = signature1
+                Signature2 = signature2
+            }
+
         member __.DetectEquivocation(envelope, senderAddress) =
             match envelope.ConsensusMessage with
             | Propose _ -> failwith "Equivocation detection is not implemented for Propose messages."
             | Vote blockHash2 ->
                 let blockHash1, signature1 = _votes.[envelope.BlockNumber, envelope.Round, senderAddress]
                 if blockHash2 <> blockHash1 then
-                    let equivocationProof =
-                        {
-                            BlockNumber = envelope.BlockNumber
-                            ConsensusRound = envelope.Round
-                            ConsensusStep = ConsensusStep.Vote
-                            BlockHash1 = blockHash1
-                            BlockHash2 = blockHash2
-                            Signature1 = signature1
-                            Signature2 = envelope.Signature
-                        }
-                    EquivocationProofDetected (senderAddress, equivocationProof)
+                    let equivocationProofDto =
+                        __.CreateEquivocationProof
+                            envelope.BlockNumber
+                            envelope.Round
+                            ConsensusStep.Vote
+                            blockHash1
+                            blockHash2
+                            signature1
+                            envelope.Signature
+                    EquivocationProofDetected (equivocationProofDto, senderAddress)
                     |> publishEvent
             | Commit blockHash2 ->
                 let blockHash1, signature1 = _commits.[envelope.BlockNumber, envelope.Round, senderAddress]
                 if blockHash2 <> blockHash1 then
-                    let equivocationProof =
-                        {
-                            BlockNumber = envelope.BlockNumber
-                            ConsensusRound = envelope.Round
-                            ConsensusStep = ConsensusStep.Commit
-                            BlockHash1 = blockHash1
-                            BlockHash2 = blockHash2
-                            Signature1 = signature1
-                            Signature2 = envelope.Signature
-                        }
-                    EquivocationProofDetected (senderAddress, equivocationProof)
+                    let equivocationProofDto =
+                        __.CreateEquivocationProof
+                            envelope.BlockNumber
+                            envelope.Round
+                            ConsensusStep.Commit
+                            blockHash1
+                            blockHash2
+                            signature1
+                            envelope.Signature
+                    EquivocationProofDetected (equivocationProofDto, senderAddress)
                     |> publishEvent
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////

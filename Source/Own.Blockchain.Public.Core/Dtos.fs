@@ -382,6 +382,26 @@ type ConsensusMessageEnvelopeDto = {
     Signature : string
 }
 
+[<CLIMutable>]
+[<MessagePackObject>]
+type EquivocationProofDto = {
+    [<Key(0)>] BlockNumber : int64
+    [<Key(1)>] ConsensusRound : int
+    [<Key(2)>] ConsensusStep : byte
+    [<Key(3)>] BlockHash1 : string
+    [<Key(4)>] BlockHash2 : string
+    [<Key(5)>] Signature1 : string
+    [<Key(6)>] Signature2 : string
+}
+
+type EquivocationInfoDto = {
+    EquivocationProofHash : string
+    ValidatorAddress : string
+    BlockNumber : int64
+    ConsensusRound : int
+    ConsensusStep : byte
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////

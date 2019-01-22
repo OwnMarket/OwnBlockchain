@@ -98,8 +98,12 @@ module PeerTests =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             ()
-        | EquivocationProofDetected (validatorAddress, proof)
-        | EquivocationProofReceived (validatorAddress, proof) ->
+        | EquivocationProofDetected (proof, validatorAddress) ->
+            ()
+        | EquivocationProofReceived (proof)
+        | EquivocationProofFetched (proof) ->
+            ()
+        | EquivocationProofStored (equivocationProofHash, isFetched) ->
             ()
 
     let startGossip (node : NetworkNode) =

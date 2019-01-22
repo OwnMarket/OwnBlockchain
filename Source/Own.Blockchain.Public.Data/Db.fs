@@ -147,6 +147,49 @@ module Db =
         |> ChxAmount
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // EquivocationProof
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let saveEquivocationProof
+        dbEngineType
+        (dbConnectionString : string)
+        (equivocationInfoDto : EquivocationInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        try
+            let equivocationProofParams =
+                [
+                    "@equivocation_proof_hash", equivocationInfoDto.EquivocationProofHash |> box
+                    "@validator_address", equivocationInfoDto.ValidatorAddress |> box
+                    "@block_number", equivocationInfoDto.BlockNumber |> box
+                    "@consensus_round", equivocationInfoDto.ConsensusRound |> box
+                    "@consensus_step", equivocationInfoDto.ConsensusStep |> box
+                ]
+
+            let paramData = createInsertParams equivocationProofParams
+
+            let insertSql =
+                sprintf
+                    """
+                    INSERT INTO equivocation (%s)
+                    VALUES (%s)
+                    """
+                    (snd paramData)
+                    (fst paramData)
+
+            let result = DbTools.execute dbEngineType dbConnectionString insertSql equivocationProofParams
+
+            if result < 0 then
+                failwith "Unknown DB error"
+            else
+                Ok ()
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "DB operation error"
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 

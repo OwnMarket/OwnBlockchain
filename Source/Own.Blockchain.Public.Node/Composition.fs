@@ -25,6 +25,8 @@ module Composition =
 
     let txResultExists = Raw.txResultExists Config.DataDir
 
+    let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir
+
     let saveBlock = Raw.saveBlock Config.DataDir
 
     let getBlock = Raw.getBlock Config.DataDir
@@ -44,6 +46,8 @@ module Composition =
     let getPendingTxs = Db.getPendingTxs Config.DbEngineType Config.DbConnectionString
 
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
+
+    let saveEquivocationProofToDb = Db.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
 
     let saveBlockToDb = Db.saveBlock Config.DbEngineType Config.DbConnectionString
 
@@ -308,6 +312,15 @@ module Composition =
             Hashing.hash
             getCurrentValidators
             Signing.verifySignature
+
+    let storeEquivocationProof =
+        Workflows.storeEquivocationProof
+            Signing.verifySignature
+            createConsensusMessageHash
+            Hashing.decode
+            Hashing.hash
+            saveEquivocationProof
+            saveEquivocationProofToDb
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API
