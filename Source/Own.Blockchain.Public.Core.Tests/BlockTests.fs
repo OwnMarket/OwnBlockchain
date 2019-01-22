@@ -98,6 +98,27 @@ module BlockTests =
         test <@ stateHash = "AAABBBCCCDDD...E............" @>
 
     [<Fact>]
+    let ``Blocks.createEligibilityStateHash`` () =
+        let accountHash = AccountHash "AAA"
+        let assetHash = AssetHash "BBB"
+        let state =
+            {
+                EligibilityState.Eligibility =
+                    {
+                        IsPrimaryEligible = true
+                        IsSecondaryEligible = false
+                    }
+                KycControllerAddress = BlockchainAddress "CC"
+            }
+
+        // ACT
+        let stateHash =
+            Blocks.createEligibilityStateHash DummyHash.decode DummyHash.create (accountHash, assetHash, state)
+
+        // ASSERT
+        test <@ stateHash = "AAABBBA.CC" @>
+
+    [<Fact>]
     let ``Blocks.createAccountStateHash`` () =
         let accountHash = AccountHash "AAA"
         let controllerAddress = BlockchainAddress "CC"
@@ -436,8 +457,8 @@ module BlockTests =
                 "FFFGGGAAAAAD...B............" // Vote 1 Holding 2
                 "FFFGGGBBBBAD...B............" // Vote 2 Holding 2
                 "FFFGGGCCCCDA...B............" // Vote 3 Holding 2
-                "DDDEEEAA" // Eligibility 1
-                "FFFGGG.." // Eligibility 2
+                "DDDEEEAAHH" // Eligibility 1
+                "FFFGGG..HH" // Eligibility 2
                 "EEEAAAA" // Add Kyc controllers 1 for Asset 1
                 "EEEBBBA" // Add Kyc controllers 2 For Asset 1
                 "FFFAAAA" // Add Kyc controllers 1 For Asset 2

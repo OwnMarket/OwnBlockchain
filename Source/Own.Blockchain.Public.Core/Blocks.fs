@@ -87,6 +87,7 @@ module Blocks =
             decodeHash assetHash
             boolToBytes state.Eligibility.IsPrimaryEligible
             boolToBytes state.Eligibility.IsSecondaryEligible
+            decodeHash state.KycControllerAddress.Value
         ]
         |> Array.concat
         |> createHash
