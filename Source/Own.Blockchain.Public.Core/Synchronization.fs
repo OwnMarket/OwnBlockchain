@@ -90,6 +90,7 @@ module Synchronization =
         getBlock
         applyBlock
         txExists
+        removeOrphanTxResults
         publishEvent
         =
 
@@ -108,5 +109,8 @@ module Synchronization =
                 }
                 |> Result.handle
                     (Option.iter publishEvent)
-                    Log.appErrors
+                    (fun errors ->
+                        Log.appErrors errors
+                        removeOrphanTxResults ()
+                    )
             )

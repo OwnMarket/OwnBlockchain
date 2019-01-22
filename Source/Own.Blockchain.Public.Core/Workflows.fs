@@ -460,6 +460,14 @@ module Workflows =
             do! persistStateChanges blockNumber outputDto
         }
 
+    let removeOrphanTxResults getAllPendingTxHashes txResultExists deleteTxResult =
+        let pendingTxHashes = getAllPendingTxHashes ()
+        for (h : TxHash) in pendingTxHashes do
+            if txResultExists h then
+                Log.warningf "Deleting orphan TxResult: %s" h.Value
+                deleteTxResult h
+                |> Result.iterError Log.appErrors
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -61,6 +61,22 @@ module Raw =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError (sprintf "Loading %s %s failed" dataTypeName key)
 
+    let private deleteData (dataDir : string) (dataType : RawDataType) (key : string) : Result<unit, AppErrors> =
+        let dataTypeName = unionCaseName dataType
+        try
+            let fileName = createFileName dataType key
+            let path = Path.Combine(dataDir, fileName)
+
+            if File.Exists(path) then
+                File.Delete path
+                Ok ()
+            else
+                Result.appError (sprintf "%s %s not found in storage." dataTypeName key)
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError (sprintf "Deleting %s %s failed" dataTypeName key)
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Specific
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,6 +106,9 @@ module Raw =
         |> createFileName TxResult
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
+
+    let deleteTxResult (dataDir : string) (TxHash txHash) : Result<unit, AppErrors> =
+        deleteData dataDir TxResult txHash
 
     let saveEquivocationProof
         (dataDir : string)

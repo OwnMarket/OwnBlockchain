@@ -25,6 +25,8 @@ module Composition =
 
     let txResultExists = Raw.txResultExists Config.DataDir
 
+    let deleteTxResult = Raw.deleteTxResult Config.DataDir
+
     let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir
 
     let getEquivocationProof = Raw.getEquivocationProof Config.DataDir
@@ -46,6 +48,8 @@ module Composition =
     let getTxInfo = Db.getTx Config.DbEngineType Config.DbConnectionString
 
     let getPendingTxs = Db.getPendingTxs Config.DbEngineType Config.DbConnectionString
+
+    let getAllPendingTxHashes () = Db.getAllPendingTxHashes Config.DbEngineType Config.DbConnectionString
 
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
 
@@ -237,6 +241,12 @@ module Composition =
         Workflows.persistTxResults
             saveTxResult
 
+    let removeOrphanTxResults () =
+        Workflows.removeOrphanTxResults
+            getAllPendingTxHashes
+            txResultExists
+            deleteTxResult
+
     let isValidSuccessorBlock =
         Blocks.isValidSuccessorBlock
             Hashing.decode
@@ -267,6 +277,7 @@ module Composition =
             getBlock
             applyBlock
             txExists
+            removeOrphanTxResults
             publishEvent
 
     let fetchMissingBlocks publishEvent =

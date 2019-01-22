@@ -105,6 +105,21 @@ module Db =
 
         DbTools.query dbEngineType dbConnectionString sql sqlParams
 
+    let getAllPendingTxHashes
+        dbEngineType
+        (dbConnectionString : string)
+        : TxHash list
+        =
+
+        let sql =
+            """
+            SELECT tx_hash
+            FROM tx
+            """
+
+        DbTools.query<string> dbEngineType dbConnectionString sql []
+        |> List.map TxHash
+
     let getTx dbEngineType (dbConnectionString : string) (TxHash txHash) : TxInfoDto option =
         let sql =
             """
