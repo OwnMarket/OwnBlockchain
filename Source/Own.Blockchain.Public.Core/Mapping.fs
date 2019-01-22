@@ -119,8 +119,8 @@ module Mapping =
                 AssetHash = AssetHash a.AssetHash
                 Eligibility =
                     {
-                        IsEligible = a.IsEligible
-                        IsTransferable = a.IsTransferable
+                        IsPrimaryEligible = a.IsPrimaryEligible
+                        IsSecondaryEligible = a.IsSecondaryEligible
                     }
             }
             |> SetEligibility
@@ -373,16 +373,16 @@ module Mapping =
         {
             Eligibility =
                 {
-                    IsEligible = dto.IsEligible
-                    IsTransferable = dto.IsTransferable
+                    IsPrimaryEligible = dto.IsPrimaryEligible
+                    IsSecondaryEligible = dto.IsSecondaryEligible
                 }
             KycControllerAddress = BlockchainAddress dto.KycControllerAddress
         }
 
     let eligibilityStateToDto (state : EligibilityState) =
         {
-            IsEligible = state.Eligibility.IsEligible
-            IsTransferable = state.Eligibility.IsTransferable
+            IsPrimaryEligible = state.Eligibility.IsPrimaryEligible
+            IsSecondaryEligible = state.Eligibility.IsSecondaryEligible
             KycControllerAddress = state.KycControllerAddress.Value
         }
 

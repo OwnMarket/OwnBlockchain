@@ -84,8 +84,8 @@ type SubmitVoteWeightTxActionDto = {
 type SetEligibilityTxActionDto = {
     AccountHash : string
     AssetHash : string
-    IsEligible : bool
-    IsTransferable : bool
+    IsPrimaryEligible : bool
+    IsSecondaryEligible : bool
 }
 
 [<CLIMutable>]
@@ -250,8 +250,8 @@ type VoteStateDto = {
 
 [<CLIMutable>]
 type EligibilityStateDto = {
-    IsEligible : bool
-    IsTransferable : bool
+    IsPrimaryEligible : bool
+    IsSecondaryEligible : bool
     KycControllerAddress : string
 }
 

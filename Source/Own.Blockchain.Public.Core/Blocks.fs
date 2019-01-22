@@ -85,8 +85,8 @@ module Blocks =
         [
             decodeHash accountHash
             decodeHash assetHash
-            boolToBytes state.Eligibility.IsEligible
-            boolToBytes state.Eligibility.IsTransferable
+            boolToBytes state.Eligibility.IsPrimaryEligible
+            boolToBytes state.Eligibility.IsSecondaryEligible
         ]
         |> Array.concat
         |> createHash

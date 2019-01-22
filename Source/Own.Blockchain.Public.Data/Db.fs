@@ -401,7 +401,7 @@ module Db =
 
         let sql =
             """
-            SELECT is_eligible, is_transferable, kyc_controller_address
+            SELECT is_primary_eligible, is_secondary_eligible, kyc_controller_address
             FROM eligibility
             WHERE account_hash = @accountHash
             AND asset_hash = @assetHash
@@ -1038,8 +1038,9 @@ module Db =
     let private addEligibility conn transaction (eligibilityInfo : EligibilityInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO eligibility (account_id, asset_id, is_eligible, is_transferable, kyc_controller_address)
-            SELECT account_id, account_id, @isEligible, @isTransferable, @kycControllerAddress
+            INSERT INTO eligibility (
+                account_id, asset_id, is_primary_eligible, is_secondary_eligible, kyc_controller_address)
+            SELECT account_id, account_id, @isPrimaryEligible, @isSecondaryEligible, @kycControllerAddress
             FROM account, asset
             WHERE account_hash = @accountHash
             AND asset_hash = @assetHash
@@ -1049,8 +1050,8 @@ module Db =
             [
                 "@accountHash", eligibilityInfo.AccountHash |> box
                 "@assetHash", eligibilityInfo.AssetHash |> box
-                "@isEligible", eligibilityInfo.EligibilityState.IsEligible |> box
-                "@isTransferable", eligibilityInfo.EligibilityState.IsTransferable |> box
+                "@isPrimaryEligible", eligibilityInfo.EligibilityState.IsPrimaryEligible |> box
+                "@isSecondaryEligible", eligibilityInfo.EligibilityState.IsSecondaryEligible |> box
                 "@kycControllerAddress", eligibilityInfo.EligibilityState.KycControllerAddress |> box
             ]
 
@@ -1067,8 +1068,8 @@ module Db =
         let sql =
             """
             UPDATE eligibility
-            SET is_eligible = @isEligible,
-                is_transferable = @isTransferable,
+            SET is_primary_eligible = @isPrimaryEligible,
+                is_secondary_eligible = @isSecondaryEligible,
                 kyc_controller_address = @kycControllerAddress
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
             AND asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
@@ -1078,8 +1079,8 @@ module Db =
             [
                 "@accountHash", eligibilityInfo.AccountHash |> box
                 "@assetHash", eligibilityInfo.AssetHash |> box
-                "@isEligible", eligibilityInfo.EligibilityState.IsEligible |> box
-                "@isTransferable", eligibilityInfo.EligibilityState.IsTransferable |> box
+                "@isPrimaryEligible", eligibilityInfo.EligibilityState.IsPrimaryEligible |> box
+                "@isSecondaryEligible", eligibilityInfo.EligibilityState.IsSecondaryEligible |> box
                 "@kycControllerAddress", eligibilityInfo.EligibilityState.KycControllerAddress |> box
             ]
         try
@@ -1107,8 +1108,8 @@ module Db =
                     AssetHash = assetHash
                     EligibilityState =
                         {
-                            IsEligible = eligibilityState.IsEligible
-                            IsTransferable = eligibilityState.IsTransferable
+                            IsPrimaryEligible = eligibilityState.IsPrimaryEligible
+                            IsSecondaryEligible = eligibilityState.IsSecondaryEligible
                             KycControllerAddress = eligibilityState.KycControllerAddress
                         }
                 }

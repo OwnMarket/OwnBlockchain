@@ -306,12 +306,12 @@ module BlockTests =
             [
                 (AccountHash "DDD", AssetHash "EEE"),
                 {
-                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
                     KycControllerAddress = BlockchainAddress "HH"
                 }
                 (AccountHash "FFF", AssetHash "GGG"),
                 {
-                    EligibilityState.Eligibility = {IsEligible = false; IsTransferable = false}
+                    EligibilityState.Eligibility = {IsPrimaryEligible = false; IsSecondaryEligible = false}
                     KycControllerAddress = BlockchainAddress "HH"
                 }
             ]
@@ -615,12 +615,12 @@ module BlockTests =
             [
                 (AccountHash "DDD", AssetHash "EEE"),
                 {
-                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
                     KycControllerAddress = BlockchainAddress "KK"
                 }
                 (AccountHash "FFF", AssetHash "GGG"),
                 {
-                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = false}
+                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
                     KycControllerAddress = BlockchainAddress "KK"
                 }
             ]
@@ -897,12 +897,12 @@ module BlockTests =
             [
                 (AccountHash "DDD", AssetHash "EEE"),
                 {
-                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
                     KycControllerAddress = BlockchainAddress "KK"
                 }
                 (AccountHash "FFF", AssetHash "GGG"),
                 {
-                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = false}
+                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
                     KycControllerAddress = BlockchainAddress "KK"
                 }
             ]

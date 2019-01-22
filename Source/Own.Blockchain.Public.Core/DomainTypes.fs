@@ -56,8 +56,8 @@ type VoteInfo = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type Eligibility = {
-    IsEligible : bool
-    IsTransferable : bool
+    IsPrimaryEligible : bool
+    IsSecondaryEligible : bool
 }
 
 type EligibilityInfo = {

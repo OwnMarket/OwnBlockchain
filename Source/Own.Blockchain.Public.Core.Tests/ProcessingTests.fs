@@ -2174,8 +2174,8 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash1.Value
                             AssetHash = assetHash.Value
-                            IsEligible = true
-                            IsTransferable = true
+                            IsPrimaryEligible = true
+                            IsSecondaryEligible = true
                         }
                 } :> obj
             ]
@@ -2189,8 +2189,8 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash2.Value
                             AssetHash = assetHash.Value
-                            IsEligible = true
-                            IsTransferable = false
+                            IsPrimaryEligible = true
+                            IsSecondaryEligible = false
                         }
                 } :> obj
             ]
@@ -2220,7 +2220,7 @@ module ProcessingTests =
             elif accountHash = accountHash2
                 then
                     {
-                        EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                        EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
                         KycControllerAddress = senderWallet.Address
                     }
                     |> Some
@@ -2270,8 +2270,8 @@ module ProcessingTests =
             {
                 EligibilityState.Eligibility =
                     {
-                        IsEligible = true;
-                        IsTransferable = true
+                        IsPrimaryEligible = true;
+                        IsSecondaryEligible = true
                     }
                 KycControllerAddress = senderWallet.Address
             }
@@ -2280,8 +2280,8 @@ module ProcessingTests =
             {
                 EligibilityState.Eligibility =
                     {
-                        IsEligible = true;
-                        IsTransferable = false
+                        IsPrimaryEligible = true;
+                        IsSecondaryEligible = false
                     }
                 KycControllerAddress = senderWallet.Address
             }
@@ -2322,8 +2322,8 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash1.Value
                             AssetHash = assetHash1.Value
-                            IsEligible = true
-                            IsTransferable = true
+                            IsPrimaryEligible = true
+                            IsSecondaryEligible = true
                         }
                 } :> obj
             ]
@@ -2337,8 +2337,8 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash2.Value
                             AssetHash = assetHash2.Value
-                            IsEligible = true
-                            IsTransferable = true
+                            IsPrimaryEligible = true
+                            IsSecondaryEligible = true
                         }
                 } :> obj
             ]
@@ -2352,8 +2352,8 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash3.Value
                             AssetHash = assetHash3.Value
-                            IsEligible = true
-                            IsTransferable = true
+                            IsPrimaryEligible = true
+                            IsSecondaryEligible = true
                         }
                 } :> obj
             ]
@@ -2367,8 +2367,8 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash4.Value
                             AssetHash = assetHash4.Value
-                            IsEligible = true
-                            IsTransferable = true
+                            IsPrimaryEligible = true
+                            IsSecondaryEligible = true
                         }
                 } :> obj
             ]
@@ -2397,7 +2397,7 @@ module ProcessingTests =
         let getEligibilityState (accountHash, _) =
             if accountHash = accountHash4 then
                 {
-                    EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
                     KycControllerAddress = otherWallet.Address
                 }
                 |> Some
@@ -2525,7 +2525,7 @@ module ProcessingTests =
 
         let getEligibilityState _ =
             {
-                EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
                 KycControllerAddress = senderWallet.Address
             }
             |> Some
@@ -2574,8 +2574,8 @@ module ProcessingTests =
             {
                 EligibilityState.Eligibility =
                     {
-                        IsEligible = true;
-                        IsTransferable = true
+                        IsPrimaryEligible = true;
+                        IsSecondaryEligible = true
                     }
                 KycControllerAddress = otherWallet.Address
             }
@@ -2673,7 +2673,7 @@ module ProcessingTests =
             if accountHash = accountHash3
                 then
                     {
-                        EligibilityState.Eligibility = {IsEligible = true; IsTransferable = true}
+                        EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
                         KycControllerAddress = otherWallet.Address
                     }
                     |> Some
