@@ -402,7 +402,7 @@ module Consensus =
             {
                 BlockNumber = blockNumber
                 ConsensusRound = consensusRound
-                ConsensusStep = ConsensusStep.Vote |> Mapping.consensusStepToCode
+                ConsensusStep = consensusStep |> Mapping.consensusStepToCode
                 BlockHash1 = blockHash1 |> Option.map (fun h -> h.Value) |> Option.toObj
                 BlockHash2 = blockHash2 |> Option.map (fun h -> h.Value) |> Option.toObj
                 Signature1 = signature1
