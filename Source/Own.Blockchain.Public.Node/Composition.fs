@@ -17,19 +17,19 @@ module Composition =
 
     let getTx = Raw.getTx Config.DataDir
 
+    let txExists = Raw.txExists Config.DataDir
+
     let saveTxResult = Raw.saveTxResult Config.DataDir
 
     let getTxResult = Raw.getTxResult Config.DataDir
+
+    let txResultExists = Raw.txResultExists Config.DataDir
 
     let saveBlock = Raw.saveBlock Config.DataDir
 
     let getBlock = Raw.getBlock Config.DataDir
 
     let blockExists = Raw.blockExists Config.DataDir
-
-    let txExists = Raw.txExists Config.DataDir
-
-    let txResultExists = Raw.txResultExists Config.DataDir
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Database

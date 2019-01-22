@@ -70,11 +70,25 @@ module Raw =
     let getTx (dataDir : string) (TxHash txHash) : Result<TxEnvelopeDto, AppErrors> =
         loadData<TxEnvelopeDto> dataDir Tx txHash
 
+    let txExists (dataDir : string) (TxHash txHash) =
+        txHash
+        |> string
+        |> createFileName Tx
+        |> fun fileName -> Path.Combine (dataDir, fileName)
+        |> File.Exists
+
     let saveTxResult (dataDir : string) (TxHash txHash) (txResultDto : TxResultDto) : Result<unit, AppErrors> =
         saveData dataDir TxResult txHash txResultDto
 
     let getTxResult (dataDir : string) (TxHash txHash) : Result<TxResultDto, AppErrors> =
         loadData<TxResultDto> dataDir TxResult txHash
+
+    let txResultExists (dataDir : string) (TxHash txHash) =
+        txHash
+        |> string
+        |> createFileName TxResult
+        |> fun fileName -> Path.Combine (dataDir, fileName)
+        |> File.Exists
 
     let saveBlock
         (dataDir : string)
@@ -92,19 +106,5 @@ module Raw =
         blockNumber
         |> string
         |> createFileName Block
-        |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> File.Exists
-
-    let txExists (dataDir : string) (TxHash txHash) =
-        txHash
-        |> string
-        |> createFileName Tx
-        |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> File.Exists
-
-    let txResultExists (dataDir : string) (TxHash txHash) =
-        txHash
-        |> string
-        |> createFileName TxResult
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
