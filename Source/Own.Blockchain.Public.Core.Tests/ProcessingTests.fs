@@ -1300,6 +1300,12 @@ module ProcessingTests =
             ]
             |> Map.ofList
 
+        let initialHoldingState =
+            [
+                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m}
+            ]
+            |> Map.ofList
+
         // PREPARE TX
         let nonce = Nonce 11L
         let fee = ChxAmount 1m
@@ -1329,8 +1335,8 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
 
         let getVoteState _ =
             None
@@ -1393,6 +1399,108 @@ module ProcessingTests =
         test <@ output.Votes.Count = 1 @>
         test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash}]
             = {VoteHash = voteHash; VoteWeight = None} @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SubmitVote no holding`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = AccountHash "Acc1"
+        let assetHash = AssetHash "EQ1"
+        let resolutionHash = VotingResolutionHash "RS1"
+        let voteHash = VoteHash "Yes"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash.Value
+                            VoteHash = voteHash.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            None
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.hash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                validatorWallet.Address
+                0m
+                blockNumber
+                txSet
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.HoldingNotFound) |> TxActionError |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+
+        test <@ output.Votes.Count = 0 @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVote various errors`` () =
@@ -1562,6 +1670,12 @@ module ProcessingTests =
             ]
             |> Map.ofList
 
+        let initialHoldingState =
+            [
+                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m}
+            ]
+            |> Map.ofList
+
         // PREPARE TX
         let nonce1 = Nonce 11L
         let nonce2 = nonce1 + 1L
@@ -1630,8 +1744,8 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
 
         let getVoteState (voteId: VoteId) =
             // No vote for rsh1
