@@ -446,8 +446,8 @@ module Db =
             """
             SELECT is_primary_eligible, is_secondary_eligible, kyc_controller_address
             FROM eligibility
-            WHERE account_hash = @accountHash
-            AND asset_hash = @assetHash
+            WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
+            AND asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
             """
 
         let sqlParams =
@@ -1168,7 +1168,7 @@ module Db =
             INSERT INTO kyc_controller (asset_id, controller_address)
             SELECT asset_id, @controllerAddress
             FROM asset
-            WHERE asset_hash = @asssetHash
+            WHERE asset_hash = @assetHash
             """
 
         let sqlParams =
