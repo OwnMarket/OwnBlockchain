@@ -328,14 +328,14 @@ module Consensus =
             |> sendConsensusMessage _blockNumber consensusRound
 
         member private __.SendVote(consensusRound, blockHash) =
-            blockHash
-            |> ConsensusMessage.Vote
-            |> sendConsensusMessage _blockNumber consensusRound
+            let message = ConsensusMessage.Vote blockHash
+            if not (__.IsTryingToEquivocate(consensusRound, message)) then
+                sendConsensusMessage _blockNumber consensusRound message
 
         member private __.SendCommit(consensusRound, blockHash) =
-            blockHash
-            |> ConsensusMessage.Commit
-            |> sendConsensusMessage _blockNumber consensusRound
+            let message = ConsensusMessage.Commit blockHash
+            if not (__.IsTryingToEquivocate(consensusRound, message)) then
+                sendConsensusMessage _blockNumber consensusRound message
 
         member private __.SaveBlock(block, consensusRound) =
             let signatures =
@@ -389,6 +389,26 @@ module Consensus =
         // Equivocation
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// This is a safety measure to prevent accidental equivocation in outgoing messages for honest nodes.
+        member private __.IsTryingToEquivocate(consensusRound, consensusMessage) =
+            let blockHash, messages =
+                match consensusMessage with
+                | ConsensusMessage.Propose _ -> failwith "IsTryingToEquivocate should not be called for Propose messages."
+                | ConsensusMessage.Vote hash -> hash, _votes
+                | ConsensusMessage.Commit hash -> hash, _commits
+
+            match messages.TryGetValue((_blockNumber, consensusRound, validatorAddress)) with
+            | true, (foundBlockHash, _) when foundBlockHash <> blockHash ->
+                Log.warningf "EQUIVOCATION: This node tries to %s %A in round %i on hight %i, while already did for %A."
+                    (unionCaseName consensusMessage)
+                    blockHash
+                    consensusRound.Value
+                    _blockNumber.Value
+                    foundBlockHash
+                true
+            | _ ->
+                false
+
         member private __.CreateEquivocationProof
             (BlockNumber blockNumber)
             (ConsensusRound consensusRound)
@@ -409,9 +429,10 @@ module Consensus =
                 Signature2 = signature2
             }
 
+        /// Detects equivocation for incomming messages.
         member __.DetectEquivocation(envelope, senderAddress) =
             match envelope.ConsensusMessage with
-            | Propose _ -> failwith "Equivocation detection is not implemented for Propose messages."
+            | Propose _ -> failwith "DetectEquivocation should not be called for Propose messages."
             | Vote blockHash2 ->
                 let blockHash1, signature1 = _votes.[envelope.BlockNumber, envelope.Round, senderAddress]
                 if blockHash2 <> blockHash1 then
