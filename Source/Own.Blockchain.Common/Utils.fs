@@ -1,9 +1,11 @@
 namespace Own.Blockchain.Common
 
+open System
+
 module Utils =
 
     let getUnixTimestamp () =
         System.DateTimeOffset.UtcNow.ToUnixTimeSeconds()
 
     let isRounded dec =
-        dec = System.Decimal.Round(dec, 7)
+        dec = Decimal.Round(dec, 7)
