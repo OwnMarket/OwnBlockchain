@@ -827,13 +827,19 @@ module Processing =
                 state
             else
                 let sumOfStakes = stakers |> List.sumBy (fun s -> s.Amount)
-                let distributableReward = state.CollectedReward * sharedRewardPercent / 100m
+                let distributableReward =
+                    (state.CollectedReward * sharedRewardPercent / 100m)
+                    |> fun (ChxAmount reward) -> Decimal.Round(reward, 7) |> ChxAmount
+
                 let rewards =
                     stakers
                     |> List.map (fun s ->
                         {
                             StakerReward.StakerAddress = s.StakerAddress
-                            Amount = s.Amount / sumOfStakes * distributableReward
+                            Amount =
+                                s.Amount / sumOfStakes * distributableReward
+                                |> fun (ChxAmount amount) -> Decimal.Round(amount, 7) |> ChxAmount
+
                         }
                     )
 

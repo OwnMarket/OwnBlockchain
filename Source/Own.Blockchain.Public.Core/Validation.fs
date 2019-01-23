@@ -1,11 +1,28 @@
 ﻿namespace Own.Blockchain.Public.Core
 
+open System
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 
 module Validation =
+
+    let private validateDecimalCount dec count =
+        let countDecimals dec =
+            if dec = 0m then 0
+            else
+                let bits = Decimal.GetBits dec
+                let exponent = bits.[3] >>> 16;
+                let mutable result = exponent
+                let mutable lowDecimal = bits.[0] ||| (bits.[1] >>> 8)
+                while lowDecimal % 10 = 0 do
+                    result <- result - 1
+                    lowDecimal <- lowDecimal / 10
+                result
+        countDecimals dec <= count
+
+    let validateDecimals dec = validateDecimalCount dec 7
 
     let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
         [
@@ -83,6 +100,9 @@ module Validation =
 
             if action.Amount <= 0m then
                 yield AppError "CHX amount must be larger than zero."
+
+            if not (validateDecimals action.Amount) then
+                yield AppError "CHX amount must have at most 7 decimals."
         ]
 
     let private validateTransferAsset (action : TransferAssetTxActionDto) =
@@ -98,6 +118,9 @@ module Validation =
 
             if action.Amount <= 0m then
                 yield AppError "Asset amount must be larger than zero."
+
+            if not (validateDecimals action.Amount) then
+                yield AppError "Asset amount must have at most 7 decimals."
         ]
 
     let private validateCreateAssetEmission (action : CreateAssetEmissionTxActionDto) =
@@ -110,6 +133,9 @@ module Validation =
 
             if action.Amount <= 0m then
                 yield AppError "Asset amount must be larger than zero."
+
+            if not (validateDecimals action.Amount) then
+                yield AppError "Asset amount must have at most 7 decimals."
         ]
 
     let private validateSetAccountController isValidAddress (action : SetAccountControllerTxActionDto) =
@@ -163,6 +189,9 @@ module Validation =
 
             if action.Amount = 0m then
                 yield AppError "CHX amount cannot be zero."
+
+            if not (validateDecimals action.Amount) then
+                yield AppError "CHX amount must have at most 7 decimals."
         ]
 
     let private validateSubmitVote (action : SubmitVoteTxActionDto) =
@@ -193,6 +222,9 @@ module Validation =
 
             if action.VoteWeight < 0m then
                 yield AppError "Vote weight cannot be negative."
+
+            if not (validateDecimals action.VoteWeight) then
+                yield AppError "Vote weight must have at most 7 decimals."
         ]
 
     let private validateSetEligibility (action : SetEligibilityTxActionDto) =
@@ -252,6 +284,8 @@ module Validation =
                 yield AppError "Nonce must be positive."
             if t.Fee <= 0m then
                 yield AppError "Fee must be positive."
+            if not (validateDecimals t.Fee) then
+                yield AppError "Fee must be at most 7 decimal places."
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
         ]
