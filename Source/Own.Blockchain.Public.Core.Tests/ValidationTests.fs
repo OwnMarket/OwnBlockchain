@@ -154,6 +154,34 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
+    let ``Validation.validateTx TransferChx invalid Amount, too many decimals`` () =
+        let recipientWallet = Signing.generateWallet ()
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            Fee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = transferChxActionType
+                        ActionData =
+                            {
+                                TransferChxTxActionDto.RecipientAddress = recipientWallet.Address.Value
+                                Amount = 12.12345678m
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress chAddress txHash testTx
+
+        match result with
+        | Ok t -> failwith "Validation should fail in case of this test."
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+
+    [<Fact>]
     let ``Validation.validateTx TransferChx invalid RecipientAddress`` () =
         let testTx = {
             SenderAddress = chAddress.Value
@@ -283,6 +311,35 @@ module ValidationTests =
                                 ToAccountHash = "B"
                                 AssetHash = "asset"
                                 Amount = 0m
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress chAddress txHash testTx
+
+        match result with
+        | Ok t -> failwith "Validation should fail in case of this test."
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+
+    [<Fact>]
+    let ``Validation.validateTx TransferAsset invalid Amount, too many decimals`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            Fee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = transferAssetActionType
+                        ActionData =
+                            {
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = "B"
+                                AssetHash = "asset"
+                                Amount = 10.12345678m
                             }
                     }
                 ]
