@@ -15,6 +15,7 @@ module Processing =
         getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
         getVoteStateFromStorage : VoteId -> VoteState option,
         getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option,
+        getKycControllersFromStorage : AssetHash -> BlockchainAddress list,
         getAccountStateFromStorage : AccountHash -> AccountState option,
         getAssetStateFromStorage : AssetHash -> AssetState option,
         getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
@@ -48,6 +49,7 @@ module Processing =
             getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
             getVoteStateFromStorage : VoteId -> VoteState option,
             getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option,
+            getKycControllersFromStorage : AssetHash -> BlockchainAddress list,
             getAccountStateFromStorage : AccountHash -> AccountState option,
             getAssetStateFromStorage : AssetHash -> AssetState option,
             getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
@@ -59,6 +61,7 @@ module Processing =
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
                 getEligibilityStateFromStorage,
+                getKycControllersFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
@@ -87,6 +90,7 @@ module Processing =
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
                 getEligibilityStateFromStorage,
+                getKycControllersFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,
@@ -135,6 +139,19 @@ module Processing =
 
         member __.GetEligibility (accountHash : AccountHash, assetHash : AssetHash) =
             eligibilities.GetOrAdd((accountHash, assetHash), getEligibilityStateFromStorage)
+
+        member __.GetKycControllers (assetHash) =
+            getKycControllersFromStorage assetHash
+            |> List.iter(fun address ->
+                let kycController = {KycControllerState.ControllerAddress = address; AssetHash = assetHash};
+                kycControllers.GetOrAdd (kycController, Add) |> ignore
+            )
+
+            kycControllers
+            |> Map.ofDict
+            |> Map.filter (fun key _ -> key.AssetHash = assetHash)
+            |> Map.keys
+            |> List.map (fun key -> key.ControllerAddress)
 
         member __.GetAccount (accountHash : AccountHash) =
             accounts.GetOrAdd(accountHash, getAccountStateFromStorage)
@@ -530,27 +547,32 @@ module Processing =
             Error TxErrorCode.AssetNotFound
         | _, None ->
             Error TxErrorCode.AccountNotFound
-        | Some assetState, Some _ ->
-            match state.GetEligibility(action.AccountHash, action.AssetHash) with
-            | None ->
-                if assetState.ControllerAddress = senderAddress then
+        | Some _, Some _ ->
+            let isApprovedKycProvider =
+                state.GetKycControllers action.AssetHash
+                |> List.contains senderAddress
+
+            if isApprovedKycProvider then
+                match state.GetEligibility(action.AccountHash, action.AssetHash) with
+                | None ->
                     state.SetEligibility(
                         action.AccountHash,
                         action.AssetHash,
                         {EligibilityState.Eligibility = action.Eligibility; KycControllerAddress = senderAddress}
                     )
                     Ok state
-                else
-                    Error TxErrorCode.SenderIsNotAssetController
-            | Some eligibilityState when eligibilityState.KycControllerAddress = senderAddress ->
-                state.SetEligibility(
-                    action.AccountHash,
-                    action.AssetHash,
-                    {eligibilityState with Eligibility = action.Eligibility}
-                )
-                Ok state
-            | _ ->
-                Error TxErrorCode.SenderIsNotCurrentKycController
+                | Some eligibilityState ->
+                    if eligibilityState.KycControllerAddress = senderAddress then
+                        state.SetEligibility(
+                            action.AccountHash,
+                            action.AssetHash,
+                            {eligibilityState with Eligibility = action.Eligibility}
+                        )
+                        Ok state
+                    else
+                        Error TxErrorCode.SenderIsNotCurrentKycController
+            else
+                Error TxErrorCode.SenderIsNotApprovedKycProvider
 
     let processChangeKycControllerAddressTxAction
         (state : ProcessingState)
@@ -567,15 +589,21 @@ module Processing =
         | Some assetState, Some _ ->
             match state.GetEligibility(action.AccountHash, action.AssetHash) with
             | None -> Error TxErrorCode.EligibilityNotFound
-            | Some eligibilityState when eligibilityState.KycControllerAddress = senderAddress ->
-                state.SetEligibility(
-                    action.AccountHash,
-                    action.AssetHash,
-                    {eligibilityState with KycControllerAddress = action.KycControllerAddress}
-                )
-                Ok state
-            | _ ->
-                Error TxErrorCode.SenderIsNotCurrentKycController
+            | Some eligibilityState ->
+                let isApprovedKycProvider =
+                    state.GetKycControllers action.AssetHash
+                    |> List.contains senderAddress
+
+                if eligibilityState.KycControllerAddress = senderAddress && isApprovedKycProvider
+                    || assetState.ControllerAddress = senderAddress then
+                    state.SetEligibility(
+                        action.AccountHash,
+                        action.AssetHash,
+                        {eligibilityState with KycControllerAddress = action.KycControllerAddress}
+                    )
+                    Ok state
+                else
+                    Error TxErrorCode.SenderIsNotAssetControllerOrApprovedKycProvider
 
     let processAddKycControllerTxAction
         (state : ProcessingState)
@@ -865,6 +893,7 @@ module Processing =
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
         (getVoteStateFromStorage : VoteId -> VoteState option)
         (getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option)
+        (getKycControllersFromStorage : AssetHash -> BlockchainAddress list)
         (getAccountStateFromStorage : AccountHash -> AccountState option)
         (getAssetStateFromStorage : AssetHash -> AssetState option)
         (getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option)
@@ -912,6 +941,7 @@ module Processing =
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
                 getEligibilityStateFromStorage,
+                getKycControllersFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
                 getValidatorStateFromStorage,

@@ -143,6 +143,7 @@ module Workflows =
         getHoldingStateFromStorage
         getVoteStateFromStorage
         getEligibilityStateFromStorage
+        getKycControllersStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
         getValidatorStateFromStorage
@@ -168,6 +169,8 @@ module Workflows =
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getVoteState = memoize (getVoteStateFromStorage >> Option.map Mapping.voteStateFromDto)
         let getEligibilityState = memoize (getEligibilityStateFromStorage >> Option.map Mapping.eligibilityStateFromDto)
+        let getKycControllersState =
+            memoize (getKycControllersStateFromStorage >> List.map (fun a -> BlockchainAddress a))
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
@@ -207,6 +210,7 @@ module Workflows =
                 getHoldingState
                 getVoteState
                 getEligibilityState
+                getKycControllersState
                 getAccountState
                 getAssetState
                 getValidatorState

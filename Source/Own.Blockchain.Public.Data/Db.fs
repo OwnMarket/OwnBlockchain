@@ -480,6 +480,27 @@ module Db =
                 accountHash
                 assetHash
 
+    let getKycControllersState
+        dbEngineType
+        (dbConnectionString : string)
+        (AssetHash assetHash)
+        : string list
+        =
+
+        let sql =
+            """
+            SELECT controller_address
+            FROM kyc_controller
+            WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
+            """
+
+        let sqlParams =
+            [
+                "@assetHash", assetHash |> box
+            ]
+
+        DbTools.query<string> dbEngineType dbConnectionString sql sqlParams
+
     let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
             """

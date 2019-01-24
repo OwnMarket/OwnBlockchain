@@ -66,3 +66,6 @@ module Map =
         dictionary
         |> Seq.ofDict
         |> Map.ofSeq
+
+    let inline keys (map : Map<'Key, 'Value>) =
+        Map.fold (fun keys key _ -> key :: keys) [] map

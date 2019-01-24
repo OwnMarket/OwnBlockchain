@@ -278,6 +278,8 @@ type TxErrorCode =
     // Eligibility
     | EligibilityNotFound = 610s
     | SenderIsNotCurrentKycController = 620s
+    | SenderIsNotApprovedKycProvider = 630s
+    | SenderIsNotAssetControllerOrApprovedKycProvider = 640s
 
     // Validators
     | InsufficientStake = 910s
