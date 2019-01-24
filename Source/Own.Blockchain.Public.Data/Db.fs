@@ -1623,7 +1623,7 @@ module Db =
         dbEngineType
         (dbConnectionString : string)
         (blockNumber : BlockNumber)
-        (state : ProcessingOutputDto)
+        (stateChanges : ProcessingOutputDto)
         : Result<unit, AppErrors>
         =
 
@@ -1634,16 +1634,16 @@ module Db =
 
         let result =
             result {
-                do! removeProcessedTxs conn transaction state.TxResults
-                do! updateChxBalances conn transaction state.ChxBalances
-                do! updateValidators conn transaction state.Validators
-                do! updateStakes conn transaction state.Stakes
-                do! updateAssets conn transaction state.Assets
-                do! updateAccounts conn transaction state.Accounts
-                do! updateHoldings conn transaction state.Holdings
-                do! updateVotes conn transaction state.Votes
-                do! updateKycControllers conn transaction state.KycControllers
-                do! updateEligibilities conn transaction state.Eligibilities
+                do! removeProcessedTxs conn transaction stateChanges.TxResults
+                do! updateChxBalances conn transaction stateChanges.ChxBalances
+                do! updateValidators conn transaction stateChanges.Validators
+                do! updateStakes conn transaction stateChanges.Stakes
+                do! updateAssets conn transaction stateChanges.Assets
+                do! updateAccounts conn transaction stateChanges.Accounts
+                do! updateHoldings conn transaction stateChanges.Holdings
+                do! updateVotes conn transaction stateChanges.Votes
+                do! updateKycControllers conn transaction stateChanges.KycControllers
+                do! updateEligibilities conn transaction stateChanges.Eligibilities
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber
             }
