@@ -275,7 +275,7 @@ Parameter | Data Type | Description
 `KycControllerAddress` | string | The address of the new KYC controller who will manage the eligibility for the account until changed.
 
 **NOTE:**
-The transaction must be signed using the private key of the address currently set as the KYC controller for the account.
+The transaction must be signed using the private key of the address currently set as the KYC controller for the account (and must be approved KYC provider) or using the private key of the address currently set as the asset controller (see `SetAssetController` action).
 
 ### `AddKycController`
 
