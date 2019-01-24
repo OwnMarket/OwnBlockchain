@@ -348,15 +348,15 @@ module BlockTests =
         let eligibilities =
             [
                 (AccountHash "DDD", AssetHash "EEE"),
-                {
-                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
-                    KycControllerAddress = BlockchainAddress "HH"
-                }
+                    {
+                        EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
+                        KycControllerAddress = BlockchainAddress "HH"
+                    }
                 (AccountHash "FFF", AssetHash "GGG"),
-                {
-                    EligibilityState.Eligibility = {IsPrimaryEligible = false; IsSecondaryEligible = false}
-                    KycControllerAddress = BlockchainAddress "HH"
-                }
+                    {
+                        EligibilityState.Eligibility = {IsPrimaryEligible = false; IsSecondaryEligible = false}
+                        KycControllerAddress = BlockchainAddress "HH"
+                    }
             ]
             |> Map.ofList
 
@@ -665,15 +665,15 @@ module BlockTests =
         let eligibilities =
             [
                 (AccountHash "DDD", AssetHash "EEE"),
-                {
-                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
-                    KycControllerAddress = BlockchainAddress "KK"
-                }
+                    {
+                        EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
+                        KycControllerAddress = BlockchainAddress "KK"
+                    }
                 (AccountHash "FFF", AssetHash "GGG"),
-                {
-                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
-                    KycControllerAddress = BlockchainAddress "KK"
-                }
+                    {
+                        EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
+                        KycControllerAddress = BlockchainAddress "KK"
+                    }
             ]
             |> Map.ofList
 
@@ -953,15 +953,15 @@ module BlockTests =
         let eligibilities =
             [
                 (AccountHash "DDD", AssetHash "EEE"),
-                {
-                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
-                    KycControllerAddress = BlockchainAddress "KK"
-                }
+                    {
+                        EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
+                        KycControllerAddress = BlockchainAddress "KK"
+                    }
                 (AccountHash "FFF", AssetHash "GGG"),
-                {
-                    EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
-                    KycControllerAddress = BlockchainAddress "KK"
-                }
+                    {
+                        EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
+                        KycControllerAddress = BlockchainAddress "KK"
+                    }
             ]
             |> Map.ofList
 
