@@ -261,7 +261,7 @@ Parameter | Data Type | Description
 `IsSecondaryEligible` | bool | Is eligible in the secondary market, i.e. can the account (`AccountHash`) acquire the asset (`AssetHash`) in the secondary market, e.g. by buying it on exchange or getting it transferred from another account.
 
 **NOTE:**
-- For new eligibility (i.e. there is no existing eligibility for the (`AccountHash`, `AssetHash`) pair) the transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action) or one of the addresses from the approved list of KYC providers.
+- For new eligibility (i.e. there is no existing eligibility for the (`AccountHash`, `AssetHash`) pair) the transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action) or one of the addresses from the approved list of KYC providers for the asset.
 - If eligibility exists, then the transaction must be signed using the private key of the address currently set as the KYC controller for the account.
 
 ### `ChangeKycControllerAddress`
