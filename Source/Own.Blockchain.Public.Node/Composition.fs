@@ -55,6 +55,8 @@ module Composition =
 
     let saveEquivocationProofToDb = Db.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
 
+    let getPendingEquivocationProofs = Db.getPendingEquivocationProofs Config.DbEngineType Config.DbConnectionString
+
     let saveBlockToDb = Db.saveBlock Config.DbEngineType Config.DbConnectionString
 
     let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbEngineType Config.DbConnectionString
@@ -223,6 +225,7 @@ module Composition =
             createNewBlockchainConfiguration
             getBlock
             getPendingTxs
+            getPendingEquivocationProofs
             getChxBalanceState
             getAvailableChxBalance
             Config.MaxTxCountPerBlock

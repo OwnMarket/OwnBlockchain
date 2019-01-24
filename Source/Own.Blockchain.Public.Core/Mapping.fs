@@ -254,6 +254,7 @@ module Mapping =
             ProposerAddress = BlockchainAddress dto.ProposerAddress
             TxSetRoot = MerkleTreeRoot dto.TxSetRoot
             TxResultSetRoot = MerkleTreeRoot dto.TxResultSetRoot
+            EquivocationProofsRoot = MerkleTreeRoot dto.EquivocationProofsRoot
             StateRoot = MerkleTreeRoot dto.StateRoot
             StakerRewardsRoot = MerkleTreeRoot dto.StakerRewardsRoot
             ConfigurationRoot = MerkleTreeRoot dto.ConfigurationRoot
@@ -269,6 +270,7 @@ module Mapping =
             ProposerAddress = block.ProposerAddress.Value
             TxSetRoot = block.TxSetRoot.Value
             TxResultSetRoot = block.TxResultSetRoot.Value
+            EquivocationProofsRoot = block.EquivocationProofsRoot.Value
             StateRoot = block.StateRoot.Value
             StakerRewardsRoot = block.StakerRewardsRoot.Value
             ConfigurationRoot = block.ConfigurationRoot.Value
@@ -322,6 +324,7 @@ module Mapping =
         {
             Header = blockHeaderFromDto dto.Header
             TxSet = dto.TxSet |> List.map TxHash
+            EquivocationProofs = dto.EquivocationProofs |> List.map EquivocationProofHash
             StakerRewards = dto.StakerRewards |> List.map stakerRewardFromDto
             Configuration = config
         }
@@ -330,6 +333,7 @@ module Mapping =
         {
             Header = blockHeaderToDto block.Header
             TxSet = block.TxSet |> List.map (fun (TxHash h) -> h)
+            EquivocationProofs = block.EquivocationProofs |> List.map (fun (EquivocationProofHash h) -> h)
             StakerRewards = block.StakerRewards |> List.map stakerRewardToDto
             Configuration =
                 match block.Configuration with
@@ -604,10 +608,12 @@ module Mapping =
             GetBlockApiResponseDto.ProposerAddress = blockDto.Header.ProposerAddress
             GetBlockApiResponseDto.TxSetRoot = blockDto.Header.TxSetRoot
             GetBlockApiResponseDto.TxResultSetRoot = blockDto.Header.TxResultSetRoot
+            GetBlockApiResponseDto.EquivocationProofsRoot = blockDto.Header.EquivocationProofsRoot
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
             GetBlockApiResponseDto.StakerRewardsRoot = blockDto.Header.StakerRewardsRoot
             GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
             GetBlockApiResponseDto.TxSet = blockDto.TxSet
+            GetBlockApiResponseDto.EquivocationProofs = blockDto.EquivocationProofs
             GetBlockApiResponseDto.StakerRewards = blockDto.StakerRewards
             GetBlockApiResponseDto.Configuration = blockDto.Configuration
             GetBlockApiResponseDto.ConsensusRound = blockEnvelopeDto.ConsensusRound

@@ -208,6 +208,7 @@ module Blocks =
         (BlockchainAddress proposerAddress)
         (MerkleTreeRoot txSetRoot)
         (MerkleTreeRoot txResultSetRoot)
+        (MerkleTreeRoot equivocationProofsRoot)
         (MerkleTreeRoot stateRoot)
         (MerkleTreeRoot stakerRewardsRoot)
         (MerkleTreeRoot configurationRoot)
@@ -220,6 +221,7 @@ module Blocks =
             proposerAddress |> decodeHash
             txSetRoot |> decodeHash
             txResultSetRoot |> decodeHash
+            equivocationProofsRoot |> decodeHash
             stateRoot |> decodeHash
             stakerRewardsRoot |> decodeHash
             configurationRoot |> decodeHash
@@ -238,6 +240,7 @@ module Blocks =
         (previousBlockHash : BlockHash)
         (configurationBlockNumber : BlockNumber)
         (txSet : TxHash list)
+        (equivocationProofs : EquivocationProofHash list)
         (output : ProcessingOutput)
         (blockchainConfiguration : BlockchainConfiguration option)
         : Block
@@ -259,6 +262,11 @@ module Blocks =
                     createHash
                     (txHash, output.TxResults.[txHash])
             )
+            |> createMerkleTree
+
+        let equivocationProofsRoot =
+            equivocationProofs
+            |> List.map (fun (EquivocationProofHash hash) -> hash)
             |> createMerkleTree
 
         let chxBalanceHashes =
@@ -377,6 +385,7 @@ module Blocks =
                 proposerAddress
                 txSetRoot
                 txResultSetRoot
+                equivocationProofsRoot
                 stateRoot
                 stakerRewardsRoot
                 configurationRoot
@@ -391,6 +400,7 @@ module Blocks =
                 ProposerAddress = proposerAddress
                 TxSetRoot = txSetRoot
                 TxResultSetRoot = txResultSetRoot
+                EquivocationProofsRoot = equivocationProofsRoot
                 StateRoot = stateRoot
                 StakerRewardsRoot = stakerRewardsRoot
                 ConfigurationRoot = configurationRoot
@@ -399,6 +409,7 @@ module Blocks =
         {
             Header = blockHeader
             TxSet = txSet
+            EquivocationProofs = equivocationProofs
             StakerRewards = stakerRewards
             Configuration = blockchainConfiguration
         }
@@ -454,6 +465,7 @@ module Blocks =
         let timestamp = Timestamp 0L
         let previousBlockHash = zeroHash |> BlockHash
         let txSet = []
+        let equivocationProofs = []
 
         let validatorSnapshots =
             output.Validators
@@ -483,6 +495,7 @@ module Blocks =
             previousBlockHash
             blockNumber
             txSet
+            equivocationProofs
             output
             blockchainConfiguration
 
@@ -546,6 +559,7 @@ module Blocks =
                 block.Header.ProposerAddress
                 txSetRoot
                 block.Header.TxResultSetRoot
+                block.Header.EquivocationProofsRoot
                 block.Header.StateRoot
                 block.Header.StakerRewardsRoot
                 block.Header.ConfigurationRoot

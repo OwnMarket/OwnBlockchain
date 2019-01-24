@@ -21,6 +21,7 @@ module ConsensusTestHelpers =
                     ProposerAddress = proposerAddress
                     TxSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     TxResultSetRoot = Helpers.randomString () |> MerkleTreeRoot
+                    EquivocationProofsRoot = Helpers.randomString () |> MerkleTreeRoot
                     StateRoot = Helpers.randomString () |> MerkleTreeRoot
                     StakerRewardsRoot = Helpers.randomString () |> MerkleTreeRoot
                     ConfigurationRoot = Helpers.randomString () |> MerkleTreeRoot
@@ -29,6 +30,7 @@ module ConsensusTestHelpers =
                 [
                     Helpers.randomString () |> TxHash
                 ]
+            EquivocationProofs = []
             StakerRewards = []
             Configuration = None
         }

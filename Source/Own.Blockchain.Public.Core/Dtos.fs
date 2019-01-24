@@ -190,9 +190,10 @@ type BlockHeaderDto = {
     [<Key(5)>] ProposerAddress : string
     [<Key(6)>] TxSetRoot : string
     [<Key(7)>] TxResultSetRoot : string
-    [<Key(8)>] StateRoot : string
-    [<Key(9)>] StakerRewardsRoot : string
-    [<Key(10)>] ConfigurationRoot : string
+    [<Key(8)>] EquivocationProofsRoot : string
+    [<Key(9)>] StateRoot : string
+    [<Key(10)>] StakerRewardsRoot : string
+    [<Key(11)>] ConfigurationRoot : string
 }
 
 [<CLIMutable>]
@@ -207,8 +208,9 @@ type StakerRewardDto = {
 type BlockDto = {
     [<Key(0)>] Header : BlockHeaderDto
     [<Key(1)>] TxSet : string list
-    [<Key(2)>] StakerRewards : StakerRewardDto list
-    [<Key(3)>] Configuration : BlockchainConfigurationDto
+    [<Key(2)>] EquivocationProofs : string list
+    [<Key(3)>] StakerRewards : StakerRewardDto list
+    [<Key(4)>] Configuration : BlockchainConfigurationDto
 }
 
 [<CLIMutable>]
@@ -394,6 +396,7 @@ type EquivocationProofDto = {
     [<Key(6)>] Signature2 : string
 }
 
+[<CLIMutable>]
 type EquivocationInfoDto = {
     EquivocationProofHash : string
     ValidatorAddress : string
@@ -485,10 +488,12 @@ type GetBlockApiResponseDto = {
     ProposerAddress : string
     TxSetRoot : string
     TxResultSetRoot : string
+    EquivocationProofsRoot : string
     StateRoot : string
     StakerRewardsRoot : string
     ConfigurationRoot : string
     TxSet : string list
+    EquivocationProofs : string list
     StakerRewards : StakerRewardDto list
     Configuration : BlockchainConfigurationDto
     ConsensusRound : int

@@ -224,9 +224,10 @@ module BlockTests =
         let validatorAddress = BlockchainAddress "D"
         let txSetRoot = MerkleTreeRoot "E"
         let txResultSetRoot = MerkleTreeRoot "F"
-        let stateRoot = MerkleTreeRoot "G"
-        let stakerRewardsRoot = MerkleTreeRoot "H"
-        let configurationRoot = MerkleTreeRoot "I"
+        let equivocationProofsRoot = MerkleTreeRoot "G"
+        let stateRoot = MerkleTreeRoot "H"
+        let stakerRewardsRoot = MerkleTreeRoot "I"
+        let configurationRoot = MerkleTreeRoot "A"
 
         // ACT
         let (BlockHash blockHash) =
@@ -239,12 +240,13 @@ module BlockTests =
                 validatorAddress
                 txSetRoot
                 txResultSetRoot
+                equivocationProofsRoot
                 stateRoot
                 stakerRewardsRoot
                 configurationRoot
 
         // ASSERT
-        test <@ blockHash = ".......AB.......CDEFGHI" @>
+        test <@ blockHash = ".......AB.......CDEFGHIA" @>
 
     [<Fact>]
     let ``Blocks.assembleBlock`` () =
@@ -277,6 +279,10 @@ module BlockTests =
             [txResult1; txResult2; txResult3]
             |> List.zip txSet
             |> Map.ofList
+
+        let equivocationProofs =
+            ["DDD"; "EEE"; "FFF"]
+            |> List.map EquivocationProofHash
 
         let chxBalances =
             [
@@ -461,6 +467,8 @@ module BlockTests =
             ]
             |> String.Concat
 
+        let equivocationProofsRoot = "DDDEEEFFF"
+
         let stateRoot =
             [
                 "HH...E...................G" // CHX balance 1
@@ -515,6 +523,7 @@ module BlockTests =
                 "D" // validator
                 txSetRoot
                 txResultSetRoot
+                equivocationProofsRoot
                 stateRoot
                 stakerRewardRoot
                 configRoot
@@ -533,6 +542,7 @@ module BlockTests =
                 previousBlockHash
                 configurationBlockNumber
                 txSet
+                equivocationProofs
                 processingOutput
                 (Some config)
 
@@ -586,6 +596,10 @@ module BlockTests =
             [txResult1; txResult2; txResult3]
             |> List.zip txSet
             |> Map.ofList
+
+        let equivocationProofs =
+            ["Proof1"; "Proof2"; "Proof3"]
+            |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
         let chxBalances =
             [
@@ -747,6 +761,7 @@ module BlockTests =
                 previousBlockHash
                 configurationBlockNumber
                 txSet
+                equivocationProofs
                 processingOutput
                 None
 
@@ -869,6 +884,10 @@ module BlockTests =
             [txResult1; txResult2; txResult3]
             |> List.zip txSet
             |> Map.ofList
+
+        let equivocationProofs =
+            ["Proof1"; "Proof2"; "Proof3"]
+            |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
         let chxBalances =
             [
@@ -1045,6 +1064,7 @@ module BlockTests =
                 previousBlockHash
                 configurationBlockNumber
                 txSet
+                equivocationProofs
                 processingOutput
                 None
 
@@ -1059,6 +1079,7 @@ module BlockTests =
                 (previousBlockHashInTestedBlock |> Conversion.stringToBytes |> Hashing.hash |> BlockHash)
                 configurationBlockNumber
                 txSet
+                equivocationProofs
                 processingOutput
                 None
 

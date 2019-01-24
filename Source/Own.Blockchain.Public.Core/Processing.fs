@@ -903,6 +903,7 @@ module Processing =
         (validatorAddress : BlockchainAddress)
         (sharedRewardPercent : decimal)
         (blockNumber : BlockNumber)
+        (equivocationProofs : EquivocationProofHash list)
         (txSet : TxHash list)
         =
 

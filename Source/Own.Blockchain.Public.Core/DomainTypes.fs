@@ -217,10 +217,13 @@ type BlockHeader = {
     ProposerAddress : BlockchainAddress // Fee beneficiary
     TxSetRoot : MerkleTreeRoot
     TxResultSetRoot : MerkleTreeRoot
+    EquivocationProofsRoot : MerkleTreeRoot
     StateRoot : MerkleTreeRoot
     StakerRewardsRoot : MerkleTreeRoot
     ConfigurationRoot : MerkleTreeRoot
 }
+
+type EquivocationProofHash = EquivocationProofHash of string
 
 type StakerReward = {
     StakerAddress : BlockchainAddress
@@ -230,6 +233,7 @@ type StakerReward = {
 type Block = {
     Header : BlockHeader
     TxSet : TxHash list
+    EquivocationProofs : EquivocationProofHash list
     StakerRewards : StakerReward list
     Configuration : BlockchainConfiguration option
 }
@@ -399,8 +403,6 @@ type ConsensusCommand =
     | Timeout of BlockNumber * ConsensusRound * ConsensusStep
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
-
-type EquivocationProofHash = EquivocationProofHash of string
 
 type EquivocationProof = {
     EquivocationProofHash : EquivocationProofHash

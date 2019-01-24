@@ -253,6 +253,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 sharedRewardPercent
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -377,6 +378,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -486,6 +488,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -596,6 +599,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -705,6 +709,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -809,6 +814,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -933,6 +939,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1053,6 +1060,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1179,6 +1187,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1302,6 +1311,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1425,6 +1435,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1574,6 +1585,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1682,6 +1694,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1819,6 +1832,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -1930,6 +1944,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2045,6 +2060,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2156,6 +2172,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2272,6 +2289,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2378,6 +2396,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2513,6 +2532,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2624,6 +2644,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2739,6 +2760,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2877,6 +2899,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -2989,6 +3012,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3123,6 +3147,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3238,6 +3263,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3379,6 +3405,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3490,6 +3517,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3600,6 +3628,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3710,6 +3739,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3826,6 +3856,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -3929,6 +3960,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4046,6 +4078,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4155,6 +4188,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4272,6 +4306,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4398,6 +4433,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         test <@ output.TxResults.Count = 2 @>
@@ -4506,6 +4542,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4621,6 +4658,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4732,6 +4770,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4845,6 +4884,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -4957,6 +4997,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5074,6 +5115,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5189,6 +5231,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5300,6 +5343,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5406,6 +5450,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5517,6 +5562,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5632,6 +5678,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5738,6 +5785,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5849,6 +5897,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -5964,6 +6013,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6070,6 +6120,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6181,6 +6232,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6298,6 +6350,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6405,6 +6458,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6523,6 +6577,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6629,6 +6684,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6735,6 +6791,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6846,6 +6903,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT
@@ -6957,6 +7015,7 @@ module ProcessingTests =
                 validatorWallet.Address
                 0m
                 blockNumber
+                []
                 txSet
 
         // ASSERT

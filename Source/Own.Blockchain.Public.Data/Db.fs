@@ -204,6 +204,29 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "DB operation error"
 
+    let getPendingEquivocationProofs
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockNumber blockNumber)
+        : EquivocationInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                equivocation_proof_hash,
+                validator_address,
+                block_number,
+                consensus_round,
+                consensus_step
+            FROM equivocation
+            WHERE block_number <= @blockNumber
+            """
+        [
+            "@blockNumber", blockNumber |> box
+        ]
+        |> DbTools.query<EquivocationInfoDto> dbEngineType dbConnectionString sql
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -162,6 +162,7 @@ module Workflows =
         (blockNumber : BlockNumber)
         timestamp
         txSet
+        equivocationProofs
         blockchainConfiguration
         =
 
@@ -199,8 +200,7 @@ module Workflows =
                     blockNumber.Value
 
         let output =
-            txSet
-            |> Processing.processTxSet
+            Processing.processTxSet
                 getTx
                 verifySignature
                 isValidAddress
@@ -220,6 +220,8 @@ module Workflows =
                 validatorAddress
                 sharedRewardPercent
                 blockNumber
+                equivocationProofs
+                txSet
 
         let configurationBlockNumber =
             calculateConfigurationBlockNumberForNewBlock blockNumber
@@ -235,6 +237,7 @@ module Workflows =
                 previousBlockHash
                 configurationBlockNumber
                 txSet
+                equivocationProofs
                 output
                 blockchainConfiguration
 
@@ -247,6 +250,7 @@ module Workflows =
         createNewBlockchainConfiguration
         getBlock
         getPendingTxs
+        (getPendingEquivocationProofs : BlockNumber -> EquivocationInfoDto list)
         getChxBalanceStateFromStorage
         getAvailableChxBalanceFromStorage
         maxTxCountPerBlock
@@ -289,6 +293,13 @@ module Workflows =
                     txSet
                     |> Processing.orderTxSet
 
+                let equivocationProofs =
+                    getPendingEquivocationProofs blockNumber
+                    |> List.sortBy (fun p ->
+                        p.BlockNumber, p.ConsensusRound, p.ConsensusStep, p.ValidatorAddress, p.EquivocationProofHash
+                    )
+                    |> List.map (fun p -> p.EquivocationProofHash |> EquivocationProofHash)
+
                 let blockchainConfiguration =
                     if isConfigurationBlock blockNumber then
                         createNewBlockchainConfiguration ()
@@ -303,6 +314,7 @@ module Workflows =
                         blockNumber
                         timestamp
                         txSet
+                        equivocationProofs
                         blockchainConfiguration
 
                 return block
@@ -427,6 +439,7 @@ module Workflows =
                     block.Header.Number
                     block.Header.Timestamp
                     block.TxSet
+                    block.EquivocationProofs
                     block.Configuration
 
             if block <> createdBlock then
