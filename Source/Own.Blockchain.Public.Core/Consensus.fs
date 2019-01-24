@@ -393,7 +393,7 @@ module Consensus =
         member private __.IsTryingToEquivocate(consensusRound, consensusMessage) =
             let blockHash, messages =
                 match consensusMessage with
-                | ConsensusMessage.Propose _ -> failwith "IsTryingToEquivocate should not be called for Propose messages."
+                | ConsensusMessage.Propose _ -> failwith "Don't call IsTryingToEquivocate for Propose messages."
                 | ConsensusMessage.Vote hash -> hash, _votes
                 | ConsensusMessage.Commit hash -> hash, _commits
 
@@ -432,7 +432,7 @@ module Consensus =
         /// Detects equivocation for incomming messages.
         member __.DetectEquivocation(envelope, senderAddress) =
             match envelope.ConsensusMessage with
-            | Propose _ -> failwith "DetectEquivocation should not be called for Propose messages."
+            | Propose _ -> failwith "Don't call DetectEquivocation for Propose messages."
             | Vote blockHash2 ->
                 let blockHash1, signature1 = _votes.[envelope.BlockNumber, envelope.Round, senderAddress]
                 if blockHash2 <> blockHash1 then
