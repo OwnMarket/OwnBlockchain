@@ -262,7 +262,7 @@ Parameter | Data Type | Description
 
 **NOTE:**
 - For new eligibility (i.e. there is no existing eligibility for the (`AccountHash`, `AssetHash`) pair) the transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action) or one of the addresses from the approved list of KYC providers.
-- If eligibility exists, then the transaction must be signed using the private key of the address currently set as the KYC controller (see `AddKycController` action)
+- If eligibility exists, then the transaction must be signed using the private key of the address currently set as the KYC controller for the account.
 
 ### `ChangeKycControllerAddress`
 
