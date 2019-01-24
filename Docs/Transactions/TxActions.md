@@ -19,6 +19,11 @@ An action is a single command that changes the state. The action types supported
 - Voting Actions
     - [`SubmitVote`](#submitvote)
     - [`SubmitVoteWeight`](#submitvoteweight)
+- Eligibility and KYC Actions
+    - [`SetEligibility`](#seteligibility)
+    - [`ChangeKycControllerAddress`](#changekyccontrolleraddress)
+    - [`AddKycController`](#addkyccontroller)
+    - [`RemoveKycController`](#removekyccontroller)
 
 ## Network Management Actions
 
@@ -199,98 +204,99 @@ Parameter | Data Type | Description
 
 ## Voting Actions
 
-Voting actions are actions related to voting process: vote submission and vote weighting. Vote weighting transaction action should be used to mark the end of the voting event (i.e when the voting event has been stopped). Once there is a weight on a vote, the vote value cannot be altered anymore.
+Voting actions are actions related to voting process: vote submission and vote weighting. Vote weighting transaction action should be used to mark the end of the voting event (i.e. when the voting event has been stopped). Once there is a weight on a vote, the vote value cannot be altered anymore.
 
-**NOTE:** 
-Voting resolution hash is generated in a predictable way and is known before submitting a transaction to the blockchain. It is calculated as the hash of asset hash, event name, resolution text, end date of voting event.
+**NOTE:**
+Resolution hash is usually a hash of the related data stored in the application using the blockchain. For example, Own's [FAST Platform](https://platform.weown.com) is generating the resolution hash (before submitting a transaction to the blockchain) by calculating it from following components:
+
+- Asset hash
+- Event name
+- Resolution text
+- End date of voting event
 
 
 ### `SubmitVote`
 
-SubmitVote submits an unweighted vote to the blockchain.
-There must be a holding on the account and asset in place, prior to a `SubmitVote` action
+`SubmitVote` action submits an unweighted vote to the blockchain.
+For the action to succeed, there must be a holding on the account and asset in place, prior to the execution of a `SubmitVote` action.
 
 Parameter | Data Type | Description
 --- | --- | ---
-`AccountHash` | string | AccountHash of the account submitting the vote.
-`AssetHash` | string | AssetHash of the asset owned by the account represented by `AccountHash` and participating in the voting event
-`ResolutionHash` | string | ResolutionHash of the voting resolution
-`VoteHash` | string | VoteHash of the vote value
+`AccountHash` | string | Hash of the account submitting the vote.
+`AssetHash` | string | Hash of the asset owned by the account represented by `AccountHash` and participating in the voting event.
+`ResolutionHash` | string | Hash of the voting resolution.
+`VoteHash` | string | Hash of the vote value.
 
-**NOTES:** 
-- Vote hash is generated in a predictable way and is known before sumbmitting a transaction to the blockchain. It is calculated as the hash of the voting option ("Yes", "No" or similar "Agree", "Disagree")
+**NOTES:**
+- Value for the `VoteHash` is usually a hash of the related data stored in the application using the blockchain. For example, Own's [FAST Platform](https://platform.weown.com) is generating the vote hash as the hash of the voting option ("Yes", "No" or similar "Agree", "Disagree").
 - The transaction must be signed using the private key of the address currently set as the account controller (see `SetAccountController` action).
 
 
 ### `SubmitVoteWeight`
 
-SubmitVoteWeight weights a vote. Once weighted, a vote cannot be changed anymore.
+`SubmitVoteWeight` action assigns the weight to a vote submitted through `SubmitVote` action. Once weighted, a vote cannot be changed anymore.
 
 Parameter | Data Type | Description
 --- | --- | ---
-`AccountHash` | string | AccountHash of the account submitting the vote.
-`AssetHash` | string | AssetHash of the asset owned by account represented by `AccountHash` and participating in the voting event
-`ResolutionHash` | string | ResolutionHash of the voting resolution
+`AccountHash` | string | Hash of the account submitting the vote.
+`AssetHash` | string | Hash of the asset owned by account represented by `AccountHash` and participating in the voting event.
+`ResolutionHash` | string | Hash of the voting resolution.
 `VoteWeight` | decimal number | The weight of the vote.
 
 **NOTE:**
 The transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action).
 
+
 ## Eligibility Actions
 
 ### `SetEligibility`
 
-SetEligibility sets the account eligibilty in the primary and secondary market for an asset.
+`SetEligibility` action sets the account eligibility in the context of primary and secondary market for an asset.
 
 Parameter | Data Type | Description
 --- | --- | ---
-`AccountHash` | string | AccountHash of the account for which the eligibility is applied
-`AssetHash` | string | AssetHash of the asset for which the eligibility is applied
-`IsPrimaryEligible` | bool | Is eligible in the primary market, i.e can the account (`AccountHash`) use (buy) the asset (`AssetHash`).
-`IsSecondaryEligible` | bool | Is eligible in the secondary market, i.e can the account (`AccountHash`) use (transfer) the asset (`AssetHash`)
+`AccountHash` | string | Hash of the account for which the eligibility is applied.
+`AssetHash` | string | Hash of the asset for which the eligibility is applied.
+`IsPrimaryEligible` | bool | Is eligible in the primary market, i.e. can the account (`AccountHash`) buy the asset (`AssetHash`) from primary offer.
+`IsSecondaryEligible` | bool | Is eligible in the secondary market, i.e. can the account (`AccountHash`) acquire the asset (`AssetHash`) in the secondary market, e.g. by buying it on exchange or getting it transferred from another account.
 
 **NOTE:**
-- For new eligibility (i.e there is no eligibility for the (`AccountHash`, `AssetHash`) pair) the transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action).
+- For new eligibility (i.e. there is no existing eligibility for the (`AccountHash`, `AssetHash`) pair) the transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action) or one of the addresses from the approved list of KYC providers.
 - If eligibility exists, then the transaction must be signed using the private key of the address currently set as the KYC controller (see `AddKycController` action)
 
 ### `ChangeKycControllerAddress`
 
-ChangeKycControllerAddress changes the KYC controller responsible with the account eligibility for an asset.
+`ChangeKycControllerAddress` action changes the KYC controller responsible for maintaining the account eligibility flags in the context of a certain asset.
 
 Parameter | Data Type | Description
 --- | --- | ---
-`AccountHash` | string | AccountHash of the account for which the eligibility is applied
-`AssetHash` | string | AssetHash of the asset for which the eligibility is applied
-`KycControllerAddress` | string | The address of the KYC controller
+`AccountHash` | string | Hash of the account for which the eligibility is applied.
+`AssetHash` | string | Hash of the asset for which the eligibility is applied.
+`KycControllerAddress` | string | The address of the new KYC controller who will manage the eligibility for the account until changed.
 
 **NOTE:**
-The transaction must be signed using the private key of the address currently set as the KYC controller (see `AddKycController` action)
+The transaction must be signed using the private key of the address currently set as the KYC controller for the account.
 
 ### `AddKycController`
 
-AddKycController adds a new KYC controller for an existing asset (represented by `AssetHash`). 
+`AddKycController` action adds a new KYC controller for an existing asset (represented by `AssetHash`).
 
 Parameter | Data Type | Description
 --- | --- | ---
-`AssetHash` | string | AssetHash of the asset 
+`AssetHash` | string | Hash of the asset.
 `ControllerAddress` | string | Address of the KYC controller.
 
 **NOTE:**
 The transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action).
-
 
 ### `RemoveKycController`
 
-RemoveKycController removes the KYC controller for an existing asset (represented by `AssetHash`)
+`RemoveKycController` action removes the KYC controller for an existing asset (represented by `AssetHash`)
 
 Parameter | Data Type | Description
 --- | --- | ---
-`AssetHash` | string | AssetHash of the asset 
+`AssetHash` | string | Hash of the asset.
 `ControllerAddress` | string | Address of the KYC controller.
 
 **NOTE:**
 The transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action).
-
-
-
-
