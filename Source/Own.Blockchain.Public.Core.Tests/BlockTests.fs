@@ -57,6 +57,63 @@ module BlockTests =
         test <@ txResultHash = "ABCB...C.......D" @>
 
     [<Fact>]
+    let ``Blocks.createEquivocationProofResultHash for DepositTaken`` () =
+        let equivocationProofHash = EquivocationProofHash "ABC"
+        let equivocationProofStatus =
+            {
+                Status = EquivocationProofStatus.DepositTaken (ChxAmount 1m)
+                BlockNumber = BlockNumber 4L
+            }
+
+        // ACT
+        let equivocationProofResultHash =
+            Blocks.createEquivocationProofResultHash
+                DummyHash.decode
+                DummyHash.create
+                (equivocationProofHash, equivocationProofStatus)
+
+        // ASSERT
+        test <@ equivocationProofResultHash = "ABCA...A...................D" @>
+
+    [<Fact>]
+    let ``Blocks.createEquivocationProofResultHash for DepositAlreadyTaken`` () =
+        let equivocationProofHash = EquivocationProofHash "ABC"
+        let equivocationProofStatus =
+            {
+                Status = EquivocationProofStatus.DepositAlreadyTaken
+                BlockNumber = BlockNumber 4L
+            }
+
+        // ACT
+        let equivocationProofResultHash =
+            Blocks.createEquivocationProofResultHash
+                DummyHash.decode
+                DummyHash.create
+                (equivocationProofHash, equivocationProofStatus)
+
+        // ASSERT
+        test <@ equivocationProofResultHash = "ABCB.......................D" @>
+
+    [<Fact>]
+    let ``Blocks.createEquivocationProofResultHash for DepositNotAvailable`` () =
+        let equivocationProofHash = EquivocationProofHash "ABC"
+        let equivocationProofStatus =
+            {
+                Status = EquivocationProofStatus.DepositNotAvailable
+                BlockNumber = BlockNumber 4L
+            }
+
+        // ACT
+        let equivocationProofResultHash =
+            Blocks.createEquivocationProofResultHash
+                DummyHash.decode
+                DummyHash.create
+                (equivocationProofHash, equivocationProofStatus)
+
+        // ASSERT
+        test <@ equivocationProofResultHash = "ABCC.......................D" @>
+
+    [<Fact>]
     let ``Blocks.createChxBalanceStateHash`` () =
         let address = BlockchainAddress "ABC"
         let state = {ChxBalanceState.Amount = ChxAmount 1m; Nonce = Nonce 2L}
@@ -256,6 +313,7 @@ module BlockTests =
         let timestamp = Timestamp 3L
         let proposerAddress = BlockchainAddress "D"
 
+        // TXs
         let txSet =
             ["AAA"; "BBB"; "CCC"]
             |> List.map TxHash
@@ -280,10 +338,32 @@ module BlockTests =
             |> List.zip txSet
             |> Map.ofList
 
+        // Equivocation Proofs
         let equivocationProofs =
             ["DDD"; "EEE"; "FFF"]
             |> List.map EquivocationProofHash
 
+        let equivocationProofResult1 : EquivocationProofResult = {
+            Status = DepositTaken (ChxAmount 7m)
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResult2 : EquivocationProofResult = {
+            Status = DepositAlreadyTaken
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResult3 : EquivocationProofResult = {
+            Status = DepositNotAvailable
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResults =
+            [equivocationProofResult1; equivocationProofResult2; equivocationProofResult3]
+            |> List.zip equivocationProofs
+            |> Map.ofList
+
+        // State Changes
         let chxBalances =
             [
                 BlockchainAddress "HH", {ChxBalanceState.Amount = ChxAmount 5m; Nonce = Nonce 7L}
@@ -420,6 +500,7 @@ module BlockTests =
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
+                EquivocationProofResults = equivocationProofResults
                 ChxBalances = chxBalances
                 Holdings = holdings
                 Votes = votes
@@ -432,6 +513,7 @@ module BlockTests =
                 StakingRewards = stakingRewards
             }
 
+        // Blockchain Configuration
         let config =
             {
                 BlockchainConfiguration.Validators =
@@ -457,6 +539,7 @@ module BlockTests =
                     ]
             }
 
+        // Merkle Roots
         let txSetRoot = "AAABBBCCC"
 
         let txResultSetRoot =
@@ -573,6 +656,7 @@ module BlockTests =
             |> Hashing.hash
             |> BlockHash
 
+        // TXs
         let txSet =
             ["Tx1"; "Tx2"; "Tx3"]
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> TxHash)
@@ -597,10 +681,32 @@ module BlockTests =
             |> List.zip txSet
             |> Map.ofList
 
+        // Equivocation Proofs
         let equivocationProofs =
             ["Proof1"; "Proof2"; "Proof3"]
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
+        let equivocationProofResult1 : EquivocationProofResult = {
+            Status = DepositTaken (ChxAmount 7m)
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResult2 : EquivocationProofResult = {
+            Status = DepositAlreadyTaken
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResult3 : EquivocationProofResult = {
+            Status = DepositNotAvailable
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResults =
+            [equivocationProofResult1; equivocationProofResult2; equivocationProofResult3]
+            |> List.zip equivocationProofs
+            |> Map.ofList
+
+        // State Changes
         let chxBalances =
             [
                 wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10m; Nonce = Nonce 1L}
@@ -737,6 +843,7 @@ module BlockTests =
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
+                EquivocationProofResults = equivocationProofResults
                 ChxBalances = chxBalances
                 Holdings = holdings
                 Votes = votes
@@ -861,6 +968,7 @@ module BlockTests =
             |> Hashing.hash
             |> BlockHash
 
+        // TXs
         let txSet =
             ["Tx1"; "Tx2"; "Tx3"]
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> TxHash)
@@ -885,10 +993,32 @@ module BlockTests =
             |> List.zip txSet
             |> Map.ofList
 
+        // Equivocation Proofs
         let equivocationProofs =
             ["Proof1"; "Proof2"; "Proof3"]
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
+        let equivocationProofResult1 : EquivocationProofResult = {
+            Status = DepositTaken (ChxAmount 7m)
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResult2 : EquivocationProofResult = {
+            Status = DepositAlreadyTaken
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResult3 : EquivocationProofResult = {
+            Status = DepositNotAvailable
+            BlockNumber = BlockNumber 5L
+        }
+
+        let equivocationProofResults =
+            [equivocationProofResult1; equivocationProofResult2; equivocationProofResult3]
+            |> List.zip equivocationProofs
+            |> Map.ofList
+
+        // State Changes
         let chxBalances =
             [
                 wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10m; Nonce = Nonce 1L}
@@ -1041,6 +1171,7 @@ module BlockTests =
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
+                EquivocationProofResults = equivocationProofResults
                 ChxBalances = chxBalances
                 Holdings = holdings
                 Votes = votes

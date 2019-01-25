@@ -22,6 +22,7 @@ module Processing =
         getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option,
         getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
+        equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
         chxBalances : ConcurrentDictionary<BlockchainAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
         votes: ConcurrentDictionary<VoteId, VoteState option>,
@@ -68,6 +69,7 @@ module Processing =
                 getStakeStateFromStorage,
                 getTotalChxStakedFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
+                ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
                 ConcurrentDictionary<BlockchainAddress, ChxBalanceState>(),
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
                 ConcurrentDictionary<VoteId, VoteState option>(),
@@ -97,6 +99,7 @@ module Processing =
                 getStakeStateFromStorage,
                 getTotalChxStakedFromStorage,
                 ConcurrentDictionary(txResults),
+                ConcurrentDictionary(equivocationProofResults),
                 ConcurrentDictionary(chxBalances),
                 ConcurrentDictionary(holdings),
                 ConcurrentDictionary(votes),
@@ -209,6 +212,9 @@ module Processing =
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
 
+        member __.SetEquivocationProofResult (hash : EquivocationProofHash, result : EquivocationProofResult) =
+            equivocationProofResults.AddOrUpdate(hash, result, fun _ _ -> result) |> ignore
+
         member __.SetStakingReward (stakerAddress : BlockchainAddress, amount : ChxAmount) =
             stakingRewards.AddOrUpdate(
                 stakerAddress,
@@ -219,6 +225,7 @@ module Processing =
         member __.ToProcessingOutput () : ProcessingOutput =
             {
                 TxResults = txResults |> Map.ofDict
+                EquivocationProofResults = equivocationProofResults |> Map.ofDict
                 ChxBalances = chxBalances |> Map.ofDict
                 Holdings = holdings |> Map.ofDict
                 Votes =

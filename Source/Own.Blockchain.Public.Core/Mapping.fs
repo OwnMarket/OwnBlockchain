@@ -196,21 +196,23 @@ module Mapping =
         }
 
     let txResultFromDto (dto : TxResultDto) : TxResult =
+        let status =
+            match dto.Status with
+            | 1uy -> Success
+            | 2uy ->
+                match dto.ErrorCode.HasValue, dto.FailedActionNumber.HasValue with
+                | true, false ->
+                    let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
+                    TxError errorCode
+                | true, true ->
+                    let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
+                    TxActionError (TxActionNumber dto.FailedActionNumber.Value, errorCode)
+                | _, _ -> failwith "Invalid error code and action number state in TxResult."
+                |> Failure
+            | c -> failwithf "Unknown TxStatus code %i" c
+
         {
-            Status =
-                match dto.Status with
-                | 1uy -> Success
-                | 2uy ->
-                    match dto.ErrorCode.HasValue, dto.FailedActionNumber.HasValue with
-                    | true, false ->
-                        let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
-                        TxError errorCode
-                    | true, true ->
-                        let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
-                        TxActionError (TxActionNumber dto.FailedActionNumber.Value, errorCode)
-                    | _, _ -> failwith "Invalid error code and action number state in TxResult."
-                    |> Failure
-                | c -> failwithf "Unknown TxStatus code %i" c
+            Status = status
             BlockNumber = BlockNumber dto.BlockNumber
         }
 
@@ -238,6 +240,36 @@ module Mapping =
             BlockNumber = equivocationProof.BlockNumber.Value
             ConsensusRound = equivocationProof.ConsensusRound.Value
             ConsensusStep = equivocationProof.ConsensusStep |> consensusStepToCode
+        }
+
+    let equivocationProofResultToDto (equivocationProofResult : EquivocationProofResult) =
+        let status, amountTaken =
+            match equivocationProofResult.Status with
+            | DepositTaken amount -> 1uy, Nullable amount.Value
+            | DepositAlreadyTaken -> 2uy, Nullable ()
+            | DepositNotAvailable -> 3uy, Nullable ()
+
+        {
+            Status = status
+            AmountTaken = amountTaken
+            BlockNumber = equivocationProofResult.BlockNumber.Value
+        }
+
+    let equivocationProofResultFromDto (dto : EquivocationProofResultDto) : EquivocationProofResult =
+        let status =
+            match dto.Status with
+            | 1uy ->
+                if dto.AmountTaken.HasValue then
+                    dto.AmountTaken.Value |> ChxAmount |> DepositTaken
+                else
+                    failwith "AmountTaken cannot be NULL for EquivocationProofStatus.DepositTaken."
+            | 2uy -> DepositAlreadyTaken
+            | 3uy -> DepositNotAvailable
+            | c -> failwithf "Unknown EquivocationProofStatus code %i" c
+
+        {
+            Status = status
+            BlockNumber = BlockNumber dto.BlockNumber
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -489,6 +521,12 @@ module Mapping =
             |> List.map (fun (TxHash h, s : TxResult) -> h, txResultToDto s)
             |> Map.ofList
 
+        let equivocationProofResults =
+            output.EquivocationProofResults
+            |> Map.toList
+            |> List.map (fun (EquivocationProofHash h, s : EquivocationProofResult) -> h, equivocationProofResultToDto s)
+            |> Map.ofList
+
         let chxBalances =
             output.ChxBalances
             |> Map.toList
@@ -550,6 +588,7 @@ module Mapping =
 
         {
             ProcessingOutputDto.TxResults = txResults
+            EquivocationProofResults = equivocationProofResults
             ChxBalances = chxBalances
             Holdings = holdings
             Votes = votes

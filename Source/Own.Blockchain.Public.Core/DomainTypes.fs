@@ -301,6 +301,16 @@ type TxResult = {
     BlockNumber : BlockNumber
 }
 
+type EquivocationProofStatus =
+    | DepositTaken of ChxAmount
+    | DepositAlreadyTaken // Multiple proofs for same block/validator.
+    | DepositNotAvailable // Proof included in the block too late - validator escaped.
+
+type EquivocationProofResult = {
+    Status : EquivocationProofStatus
+    BlockNumber : BlockNumber
+}
+
 type PendingTxInfo = {
     TxHash : TxHash
     Sender : BlockchainAddress
@@ -363,6 +373,7 @@ type StakerInfo = {
 
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
+    EquivocationProofResults : Map<EquivocationProofHash, EquivocationProofResult>
     ChxBalances : Map<BlockchainAddress, ChxBalanceState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     Votes : Map<VoteId, VoteState>

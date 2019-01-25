@@ -26,6 +26,23 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createEquivocationProofResultHash
+        decodeHash
+        createHash
+        (EquivocationProofHash equivocationProofHash, equivocationProofResult : EquivocationProofResult)
+        =
+
+        let equivocationProofResult = Mapping.equivocationProofResultToDto equivocationProofResult
+
+        [
+            decodeHash equivocationProofHash
+            [| equivocationProofResult.Status |]
+            equivocationProofResult.AmountTaken |?? 0m |> decimalToBytes
+            equivocationProofResult.BlockNumber |> int64ToBytes
+        ]
+        |> Array.concat
+        |> createHash
+
     let createChxBalanceStateHash decodeHash createHash (BlockchainAddress address, state : ChxBalanceState) =
         let (ChxAmount amount) = state.Amount
         let (Nonce nonce) = state.Nonce
@@ -269,6 +286,16 @@ module Blocks =
             |> List.map (fun (EquivocationProofHash hash) -> hash)
             |> createMerkleTree
 
+        let equivocationProofsResultsRoot =
+            equivocationProofs
+            |> List.map (fun equivocationProofHash ->
+                createEquivocationProofResultHash
+                    decodeHash
+                    createHash
+                    (equivocationProofHash, output.EquivocationProofResults.[equivocationProofHash])
+            )
+            |> createMerkleTree
+
         let chxBalanceHashes =
             output.ChxBalances
             |> Map.toList
@@ -439,6 +466,7 @@ module Blocks =
 
         {
             TxResults = Map.empty
+            EquivocationProofResults = Map.empty
             ChxBalances = chxBalances
             Holdings = Map.empty
             Votes = Map.empty

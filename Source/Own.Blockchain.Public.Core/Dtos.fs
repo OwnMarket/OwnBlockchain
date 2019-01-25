@@ -156,6 +156,14 @@ type TxResultDto = {
     [<Key(3)>] BlockNumber : int64
 }
 
+[<CLIMutable>]
+[<MessagePackObject>]
+type EquivocationProofResultDto = {
+    [<Key(0)>] Status : byte
+    [<Key(1)>] AmountTaken : Nullable<decimal>
+    [<Key(2)>] BlockNumber : int64
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blockchain Configuration
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -287,6 +295,7 @@ type StakeStateDto = {
 
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
+    EquivocationProofResults : Map<string, EquivocationProofResultDto>
     ChxBalances : Map<string, ChxBalanceStateDto>
     Holdings : Map<string * string, HoldingStateDto>
     Votes : Map<string * string * string, VoteStateDto>

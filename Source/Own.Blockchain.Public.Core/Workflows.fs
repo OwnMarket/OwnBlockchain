@@ -1,6 +1,5 @@
 ﻿namespace Own.Blockchain.Public.Core
 
-open System
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
