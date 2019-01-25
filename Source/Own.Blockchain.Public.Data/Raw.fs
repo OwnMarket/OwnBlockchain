@@ -17,6 +17,7 @@ module Raw =
         | Tx
         | TxResult
         | EquivocationProof
+        | EquivocationProofResult
         | Block
 
     let private createFileName (dataType : RawDataType) (key : string) =
@@ -81,6 +82,7 @@ module Raw =
     // Specific
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Tx
     let saveTx (dataDir : string) (TxHash txHash) (txEnvelopeDto : TxEnvelopeDto) : Result<unit, AppErrors> =
         saveData dataDir Tx txHash txEnvelopeDto
 
@@ -94,6 +96,7 @@ module Raw =
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
 
+    // TxResult
     let saveTxResult (dataDir : string) (TxHash txHash) (txResultDto : TxResultDto) : Result<unit, AppErrors> =
         saveData dataDir TxResult txHash txResultDto
 
@@ -110,6 +113,7 @@ module Raw =
     let deleteTxResult (dataDir : string) (TxHash txHash) : Result<unit, AppErrors> =
         deleteData dataDir TxResult txHash
 
+    // EquivocationProof
     let saveEquivocationProof
         (dataDir : string)
         (EquivocationProofHash equivocationProofHash)
@@ -127,6 +131,40 @@ module Raw =
 
         loadData<EquivocationProofDto> dataDir EquivocationProof equivocationProofHash
 
+    // EquivocationProofResult
+    let saveEquivocationProofResult
+        (dataDir : string)
+        (EquivocationProofHash equivocationProofHash)
+        (equivocationProofResultDto : EquivocationProofResultDto)
+        : Result<unit, AppErrors>
+        =
+
+        saveData dataDir EquivocationProofResult equivocationProofHash equivocationProofResultDto
+
+    let getEquivocationProofResult
+        (dataDir : string)
+        (EquivocationProofHash equivocationProofHash)
+        : Result<EquivocationProofResultDto, AppErrors>
+        =
+
+        loadData<EquivocationProofResultDto> dataDir EquivocationProofResult equivocationProofHash
+
+    let equivocationProofResultExists (dataDir : string) (EquivocationProofHash equivocationProofHash) =
+        equivocationProofHash
+        |> string
+        |> createFileName EquivocationProofResult
+        |> fun fileName -> Path.Combine (dataDir, fileName)
+        |> File.Exists
+
+    let deleteEquivocationProofResult
+        (dataDir : string)
+        (EquivocationProofHash equivocationProofHash)
+        : Result<unit, AppErrors>
+        =
+
+        deleteData dataDir EquivocationProofResult equivocationProofHash
+
+    // Block
     let saveBlock
         (dataDir : string)
         (BlockNumber blockNr)

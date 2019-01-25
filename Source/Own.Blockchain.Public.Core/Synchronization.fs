@@ -91,6 +91,7 @@ module Synchronization =
         applyBlock
         txExists
         removeOrphanTxResults
+        removeOrphanEquivocationProofResults
         publishEvent
         =
 
@@ -112,5 +113,6 @@ module Synchronization =
                     (fun errors ->
                         Log.appErrors errors
                         removeOrphanTxResults ()
+                        removeOrphanEquivocationProofResults ()
                     )
             )

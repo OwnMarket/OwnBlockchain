@@ -526,7 +526,9 @@ module Mapping =
         let equivocationProofResults =
             output.EquivocationProofResults
             |> Map.toList
-            |> List.map (fun (EquivocationProofHash h, s : EquivocationProofResult) -> h, equivocationProofResultToDto s)
+            |> List.map (fun (EquivocationProofHash h, s : EquivocationProofResult) ->
+                h, equivocationProofResultToDto s
+            )
             |> Map.ofList
 
         let chxBalances =

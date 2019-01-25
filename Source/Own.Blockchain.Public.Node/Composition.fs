@@ -14,27 +14,24 @@ module Composition =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let saveTx = Raw.saveTx Config.DataDir
-
     let getTx = Raw.getTx Config.DataDir
-
     let txExists = Raw.txExists Config.DataDir
 
     let saveTxResult = Raw.saveTxResult Config.DataDir
-
     let getTxResult = Raw.getTxResult Config.DataDir
-
     let txResultExists = Raw.txResultExists Config.DataDir
-
     let deleteTxResult = Raw.deleteTxResult Config.DataDir
 
     let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir
-
     let getEquivocationProof = Raw.getEquivocationProof Config.DataDir
 
+    let saveEquivocationProofResult = Raw.saveEquivocationProofResult Config.DataDir
+    let getEquivocationProofResult = Raw.getEquivocationProofResult Config.DataDir
+    let equivocationProofResultExists = Raw.equivocationProofResultExists Config.DataDir
+    let deleteEquivocationProofResult = Raw.deleteEquivocationProofResult Config.DataDir
+
     let saveBlock = Raw.saveBlock Config.DataDir
-
     let getBlock = Raw.getBlock Config.DataDir
-
     let blockExists = Raw.blockExists Config.DataDir
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,63 +41,47 @@ module Composition =
     let initDb () = DbInit.init Config.DbEngineType Config.DbConnectionString
 
     let saveTxToDb = Db.saveTx Config.DbEngineType Config.DbConnectionString
-
     let getTxInfo = Db.getTx Config.DbEngineType Config.DbConnectionString
-
     let getPendingTxs = Db.getPendingTxs Config.DbEngineType Config.DbConnectionString
-
     let getAllPendingTxHashes () = Db.getAllPendingTxHashes Config.DbEngineType Config.DbConnectionString
-
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
 
     let saveEquivocationProofToDb = Db.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
-
     let getPendingEquivocationProofs = Db.getPendingEquivocationProofs Config.DbEngineType Config.DbConnectionString
+    let getAllPendingEquivocationProofHashes () =
+        Db.getAllPendingEquivocationProofHashes Config.DbEngineType Config.DbConnectionString
 
     let saveBlockToDb = Db.saveBlock Config.DbEngineType Config.DbConnectionString
-
     let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbEngineType Config.DbConnectionString
     let getLastAppliedBlockNumber () =
         tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
-
     let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbEngineType Config.DbConnectionString
-
     let getStoredBlockNumbers () = Db.getStoredBlockNumbers Config.DbEngineType Config.DbConnectionString
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbEngineType Config.DbConnectionString
-
     let getAddressAccounts = Db.getAddressAccounts Config.DbEngineType Config.DbConnectionString
-
     let getAccountState = Db.getAccountState Config.DbEngineType Config.DbConnectionString
-
     let getAccountHoldings = Db.getAccountHoldings Config.DbEngineType Config.DbConnectionString
-
     let getHoldingState = Db.getHoldingState Config.DbEngineType Config.DbConnectionString
 
     let getVoteState = Db.getVoteState Config.DbEngineType Config.DbConnectionString
 
     let getEligibilityState = Db.getEligibilityState Config.DbEngineType Config.DbConnectionString
-
     let getKycControllersState = Db.getKycControllersState Config.DbEngineType Config.DbConnectionString
 
     let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
 
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
-
     let getTopValidatorsByStake =
         Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString Config.MaxValidatorCount
 
     let getTopStakersByStake =
         Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakesCount
-
     let getStakeState = Db.getStakeState Config.DbEngineType Config.DbConnectionString
-
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbEngineType Config.DbConnectionString
 
     let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
-
     let savePeerNode = Db.savePeerNode Config.DbEngineType Config.DbConnectionString
-
     let removePeerNode = Db.removePeerNode Config.DbEngineType Config.DbConnectionString
 
     let persistStateChanges = Db.persistStateChanges Config.DbEngineType Config.DbConnectionString
@@ -253,6 +234,16 @@ module Composition =
             txResultExists
             deleteTxResult
 
+    let persistEquivocationProofResults =
+        Workflows.persistEquivocationProofResults
+            saveEquivocationProofResult
+
+    let removeOrphanEquivocationProofResults () =
+        Workflows.removeOrphanEquivocationProofResults
+            getAllPendingEquivocationProofHashes
+            equivocationProofResultExists
+            deleteEquivocationProofResult
+
     let isValidSuccessorBlock =
         Blocks.isValidSuccessorBlock
             Hashing.decode
@@ -264,6 +255,7 @@ module Composition =
             getBlock
             isValidSuccessorBlock
             txResultExists
+            equivocationProofResultExists
             createBlock
 
     let applyBlock =
@@ -271,6 +263,7 @@ module Composition =
             getBlock
             applyBlockToCurrentState
             persistTxResults
+            persistEquivocationProofResults
             persistStateChanges
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -284,6 +277,7 @@ module Composition =
             applyBlock
             txExists
             removeOrphanTxResults
+            removeOrphanEquivocationProofResults
             publishEvent
 
     let fetchMissingBlocks publishEvent =

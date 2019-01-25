@@ -227,6 +227,21 @@ module Db =
         ]
         |> DbTools.query<EquivocationInfoDto> dbEngineType dbConnectionString sql
 
+    let getAllPendingEquivocationProofHashes
+        dbEngineType
+        (dbConnectionString : string)
+        : EquivocationProofHash list
+        =
+
+        let sql =
+            """
+            SELECT equivocation_proof_hash
+            FROM equivocation
+            """
+
+        DbTools.query<string> dbEngineType dbConnectionString sql []
+        |> List.map EquivocationProofHash
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////

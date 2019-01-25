@@ -400,10 +400,41 @@ module Workflows =
                 saveTxResult (TxHash txHash) txResult
         ) (Ok ())
 
+    let removeOrphanTxResults getAllPendingTxHashes txResultExists deleteTxResult =
+        let pendingTxHashes = getAllPendingTxHashes ()
+        for (h : TxHash) in pendingTxHashes do
+            if txResultExists h then
+                Log.warningf "Deleting orphan TxResult: %s" h.Value
+                deleteTxResult h
+                |> Result.iterError Log.appErrors
+
+    let persistEquivocationProofResults saveEquivocationProofResult equivocationProofResults =
+        equivocationProofResults
+        |> Map.toList
+        |> List.fold (fun result (equivocationProofHash, equivocationProofResult) ->
+            result >>= fun _ ->
+                Log.noticef "Saving EquivocationProofResult %s" equivocationProofHash
+                saveEquivocationProofResult (EquivocationProofHash equivocationProofHash) equivocationProofResult
+        ) (Ok ())
+
+    let removeOrphanEquivocationProofResults
+        getAllPendingEquivocationProofHashes
+        equivocationProofResultExists
+        deleteEquivocationProofResult
+        =
+
+        let pendingEquivocationProofHashes = getAllPendingEquivocationProofHashes ()
+        for (h : EquivocationProofHash) in pendingEquivocationProofHashes do
+            if equivocationProofResultExists h then
+                Log.warningf "Deleting orphan EquivocationProofResult: %s" h.Value
+                deleteEquivocationProofResult h
+                |> Result.iterError Log.appErrors
+
     let applyBlockToCurrentState
         getBlock
         isValidSuccessorBlock
         txResultExists
+        equivocationProofResultExists
         createBlock
         (block : Block)
         =
@@ -421,8 +452,18 @@ module Workflows =
             for txHash in block.TxSet do
                 if txResultExists txHash then
                     return!
-                        sprintf "Tx %s cannot be included in the block %i because it is already processed."
+                        sprintf
+                            "Tx %s cannot be included in the block %i because it is already processed."
                             txHash.Value
+                            block.Header.Number.Value
+                        |> Result.appError
+
+            for equivocationProofHash in block.EquivocationProofs do
+                if equivocationProofResultExists equivocationProofHash then
+                    return!
+                        sprintf
+                            "EquivocationProof %s cannot be included in the block %i because it is already processed."
+                            equivocationProofHash.Value
                             block.Header.Number.Value
                         |> Result.appError
 
@@ -450,6 +491,7 @@ module Workflows =
         getBlock
         applyBlockToCurrentState
         persistTxResults
+        persistEquivocationProofResults
         persistStateChanges
         blockNumber
         =
@@ -468,16 +510,9 @@ module Workflows =
 
             let outputDto = Mapping.outputToDto output
             do! persistTxResults outputDto.TxResults
+            do! persistEquivocationProofResults outputDto.EquivocationProofResults
             do! persistStateChanges blockNumber outputDto
         }
-
-    let removeOrphanTxResults getAllPendingTxHashes txResultExists deleteTxResult =
-        let pendingTxHashes = getAllPendingTxHashes ()
-        for (h : TxHash) in pendingTxHashes do
-            if txResultExists h then
-                Log.warningf "Deleting orphan TxResult: %s" h.Value
-                deleteTxResult h
-                |> Result.iterError Log.appErrors
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
