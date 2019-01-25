@@ -241,7 +241,7 @@ type Block = {
 type ConsensusRound = ConsensusRound of int
 
 type BlockEnvelope = {
-    RawBlock : byte[]
+    Block : Block
     ConsensusRound : ConsensusRound
     Signatures : Signature list
 }

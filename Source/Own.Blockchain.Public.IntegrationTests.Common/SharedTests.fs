@@ -255,7 +255,7 @@ module SharedTests =
         // ACT
         let loadedBlockDto =
             Raw.getBlock Config.DataDir (BlockNumber 0L)
-            >>= Blocks.extractBlockFromEnvelopeDto
+            |> Result.map Blocks.extractBlockFromEnvelopeDto
 
         // ASSERT
         test <@ loadedBlockDto = Ok expectedBlockDto @>

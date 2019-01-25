@@ -31,13 +31,13 @@ module Validators =
     let getValidatorsAtHeight getBlock blockNumber =
         let configBlock =
             getBlock blockNumber
-            >>= Blocks.extractBlockFromEnvelopeDto
+            |> Result.map Blocks.extractBlockFromEnvelopeDto
             >>= (fun b ->
                 if b.Configuration.IsSome then
                     Ok b // This block is the configuration block
                 else
                     getBlock b.Header.ConfigurationBlockNumber
-                    >>= Blocks.extractBlockFromEnvelopeDto
+                    |> Result.map Blocks.extractBlockFromEnvelopeDto
             )
 
         match configBlock with

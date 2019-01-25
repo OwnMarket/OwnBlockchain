@@ -16,15 +16,6 @@ module Validation =
         ]
         |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
 
-    let validateBlockEnvelope (blockEnvelopeDto : BlockEnvelopeDto) : Result<BlockEnvelope, AppErrors> =
-        [
-            if blockEnvelopeDto.Block.IsNullOrWhiteSpace() then
-                yield AppError "Block is missing from the block envelope."
-            if blockEnvelopeDto.Signatures |> Array.isEmpty then
-                yield AppError "Signatures are missing from the block envelope."
-        ]
-        |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
-
     let verifyTxSignature createHash verifySignature (txEnvelope : TxEnvelope) : Result<BlockchainAddress, AppErrors> =
         let txHash = createHash txEnvelope.RawTx
         match verifySignature txEnvelope.Signature txHash with
@@ -69,6 +60,16 @@ module Validation =
                 yield AppError "Block TxSet cannot be empty."
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockFromDto blockDto)
+
+    let validateBlockEnvelope isValidAddress (blockEnvelopeDto : BlockEnvelopeDto) : Result<BlockEnvelope, AppErrors> =
+        [
+            match validateBlock isValidAddress blockEnvelopeDto.Block with
+            | Ok _ ->
+                if blockEnvelopeDto.Signatures |> List.isEmpty then
+                    yield AppError "Signatures are missing from the block envelope."
+            | Error errors -> for error in errors do yield error
+        ]
+        |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TxAction validation

@@ -355,35 +355,23 @@ module Consensus =
                     _qualifiedMajority
                     signatures.Length
 
-            block
-            |> Mapping.blockToDto
-            |> Serialization.serialize<BlockDto>
-            |> Result.map (fun blockBytes ->
-                {
-                    Block = blockBytes |> Convert.ToBase64String
-                    ConsensusRound = consensusRound.Value
-                    Signatures = signatures |> List.toArray
-                }
-            )
-            |> Result.handle
-                (fun blockEnvelopeDto ->
-                    (block.Header.Number, blockEnvelopeDto)
-                    |> BlockCommitted
-                    |> publishEvent
+            {
+                Block = block |> Mapping.blockToDto
+                ConsensusRound = consensusRound.Value
+                Signatures = signatures
+            }
+            |> (fun blockEnvelopeDto ->
+                (block.Header.Number, blockEnvelopeDto)
+                |> BlockCommitted
+                |> publishEvent
 
-                    // Wait for the state to get updated before proceeding.
-                    async {
-                        while getLastAppliedBlockNumber () < block.Header.Number do
-                            do! Async.Sleep 100
-                    }
-                    |> Async.RunSynchronously
-                )
-                (fun errors ->
-                    Log.appErrors errors
-                    failwithf "Cannot serialize the block %i created in consensus round %i."
-                        block.Header.Number.Value
-                        consensusRound.Value
-                )
+                // Wait for the state to get updated before proceeding.
+                async {
+                    while getLastAppliedBlockNumber () < block.Header.Number do
+                        do! Async.Sleep 100
+                }
+                |> Async.RunSynchronously
+            )
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Equivocation

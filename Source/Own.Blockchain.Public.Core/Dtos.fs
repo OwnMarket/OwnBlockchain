@@ -216,9 +216,9 @@ type BlockDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type BlockEnvelopeDto = {
-    [<Key(0)>] Block : string
+    [<Key(0)>] Block : BlockDto
     [<Key(1)>] ConsensusRound : int
-    [<Key(2)>] Signatures : string[]
+    [<Key(2)>] Signatures : string list
 }
 
 [<CLIMutable>]

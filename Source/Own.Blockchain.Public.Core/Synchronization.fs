@@ -36,13 +36,13 @@ module Synchronization =
             lastStoredBlockNumber
             |? lastAppliedBlockNumber
             |> getBlock
-            >>= Blocks.extractBlockFromEnvelopeDto
+            |> Result.map Blocks.extractBlockFromEnvelopeDto
             >>= (fun b ->
                 if b.Configuration.IsSome then
                     Ok b
                 else
                     getBlock b.Header.ConfigurationBlockNumber
-                    >>= Blocks.extractBlockFromEnvelopeDto
+                    |> Result.map Blocks.extractBlockFromEnvelopeDto
             )
             |> Result.handle id (fun _ -> failwith "Cannot get last verified configuration block.")
 
@@ -72,7 +72,7 @@ module Synchronization =
         |> List.sort
         |> List.iter (fun bn ->
             getBlock bn
-            >>= Blocks.extractBlockFromEnvelopeDto
+            |> Result.map Blocks.extractBlockFromEnvelopeDto
             |> Result.handle
                 (fun block ->
                     match block.TxSet |> List.filter (txExists >> not) with
@@ -99,7 +99,7 @@ module Synchronization =
         |> Result.iter
             (fun blockEnvelopeDto ->
                 result {
-                    let! block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+                    let block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
                     if block.TxSet |> List.forall txExists then
                         Log.noticef "Applying block %i" block.Header.Number.Value
                         do! applyBlock block.Header.Number

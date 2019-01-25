@@ -81,29 +81,27 @@ module Workflows =
 
         if tryGetLastAppliedBlockNumber () = None then
             let genesisBlock, genesisState = createGenesisBlock ()
+            let genesisBlockFromDisk =
+                getBlock genesisBlock.Header.Number
+                |> Result.map Blocks.extractBlockFromEnvelopeDto
 
             let genesisBlockExists =
-                match getBlock genesisBlock.Header.Number >>= Blocks.extractBlockFromEnvelopeDto with
-                | Ok genesisBlockFromDisk ->
-                    if genesisBlockFromDisk <> genesisBlock then
+                match genesisBlockFromDisk with
+                | Ok blockFromDisk ->
+                    if blockFromDisk <> genesisBlock then
                         failwith "Stored genesis block is invalid."
                     true
-                | _ ->
-                    false
+                | Error _ -> false
 
             let result =
                 result {
-                    let! blockEnvelopeDto =
-                        genesisBlock
-                        |> Mapping.blockToDto
-                        |> Serialization.serialize<BlockDto>
-                        |> Result.map (fun blockBytes ->
-                            {
-                                Block = blockBytes |> Convert.ToBase64String
-                                ConsensusRound = 0
-                                Signatures = genesisSignatures |> List.toArray
-                            }
-                        )
+
+                    let blockEnvelopeDto =
+                        {
+                            Block = genesisBlock |> Mapping.blockToDto
+                            ConsensusRound = 0
+                            Signatures = genesisSignatures
+                        }
 
                     let! genesisSigners =
                         blockEnvelopeDto
@@ -287,7 +285,7 @@ module Workflows =
 
                 let! lastAppliedBlock =
                     getBlock lastAppliedBlockNumber
-                    >>= Blocks.extractBlockFromEnvelopeDto
+                    |> Result.map Blocks.extractBlockFromEnvelopeDto
 
                 let txSet =
                     txSet
@@ -334,11 +332,8 @@ module Workflows =
         =
 
         result {
-            let! blockEnvelope = Validation.validateBlockEnvelope blockEnvelopeDto
-
-            let! blockDto =
-                blockEnvelope.RawBlock
-                |> Serialization.deserialize<Dtos.BlockDto>
+            let! blockEnvelope = Validation.validateBlockEnvelope isValidAddress blockEnvelopeDto
+            let blockDto = blockEnvelope.Block |> Mapping.blockToDto
 
             let! block = Validation.validateBlock isValidAddress blockDto
 
@@ -352,7 +347,7 @@ module Workflows =
 
             let! configBlock =
                 getBlock block.Header.ConfigurationBlockNumber
-                >>= Blocks.extractBlockFromEnvelopeDto
+                |> Result.map Blocks.extractBlockFromEnvelopeDto
 
             let validators =
                 configBlock.Configuration
@@ -417,7 +412,7 @@ module Workflows =
         result {
             let! previousBlock =
                 getBlock (block.Header.Number - 1)
-                >>= Blocks.extractBlockFromEnvelopeDto
+                |> Result.map Blocks.extractBlockFromEnvelopeDto
 
             if not (isValidSuccessorBlock previousBlock.Header.Hash block) then
                 return!
@@ -463,7 +458,7 @@ module Workflows =
         result {
             let! block =
                 getBlock blockNumber
-                >>= Blocks.extractBlockFromEnvelopeDto
+                |> Result.map Blocks.extractBlockFromEnvelopeDto
 
             let! output = applyBlockToCurrentState block
 
@@ -641,7 +636,7 @@ module Workflows =
             let blockEnvelopeDto = data |> Serialization.deserializeJObject
 
             result {
-                let! receivedBlock = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+                let receivedBlock = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
 
                 return
                     match getBlock receivedBlock.Header.Number with
@@ -806,11 +801,12 @@ module Workflows =
             >>= (fun blockEnvelopeDto ->
                 blockEnvelopeDto
                 |> Blocks.extractBlockFromEnvelopeDto
-                |> Result.map (fun block ->
+                |> (fun block ->
                     block
                     |> Mapping.blockToDto
                     |> Mapping.blockDtosToGetBlockApiResponseDto blockEnvelopeDto
                 )
+                |> Ok
             )
 
     let getAddressApi

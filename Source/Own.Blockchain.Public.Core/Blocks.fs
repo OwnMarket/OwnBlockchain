@@ -531,8 +531,7 @@ module Blocks =
     let extractBlockFromEnvelopeDto blockEnvelopeDto =
         blockEnvelopeDto
         |> Mapping.blockEnvelopeFromDto
-        |> fun envelope -> Serialization.deserialize<BlockDto> envelope.RawBlock
-        |> Result.map Mapping.blockFromDto
+        |> fun e -> e.Block
 
     /// Checks if the block is a valid potential successor of a previous block identified by previousBlockHash argument.
     let isValidSuccessorBlock
@@ -574,10 +573,7 @@ module Blocks =
         =
 
         result {
-            let! block =
-                blockEnvelope.RawBlock
-                |> Serialization.deserialize<BlockDto>
-                |> Result.map Mapping.blockFromDto
+            let block = blockEnvelope.Block
 
             let values, errors =
                 blockEnvelope.Signatures

@@ -1,5 +1,7 @@
 ﻿open System.Globalization
 open System.Threading
+open MessagePack.Resolvers
+open MessagePack.FSharp
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Node
@@ -11,6 +13,11 @@ let main argv =
     try
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
         Thread.CurrentThread.CurrentUICulture <- CultureInfo.InvariantCulture
+
+        CompositeResolver.RegisterAndSetAsDefault(
+            FSharpResolver.Instance,
+            StandardResolver.Instance
+        )
 
         argv |> Array.toList |> Cli.handleCommand
     with

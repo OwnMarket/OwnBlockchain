@@ -343,9 +343,9 @@ module Mapping =
 
     let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
         {
-            RawBlock = dto.Block |> Convert.FromBase64String
+            Block = dto.Block |> blockFromDto
             ConsensusRound = ConsensusRound dto.ConsensusRound
-            Signatures = dto.Signatures |> Array.map Signature |> Array.toList
+            Signatures = dto.Signatures |> List.map Signature
         }
 
     let blockHeaderToBlockInfoDto isConfigBlock (blockHeader : BlockHeader) : BlockInfoDto =
@@ -617,7 +617,7 @@ module Mapping =
             GetBlockApiResponseDto.StakingRewards = blockDto.StakingRewards
             GetBlockApiResponseDto.Configuration = blockDto.Configuration
             GetBlockApiResponseDto.ConsensusRound = blockEnvelopeDto.ConsensusRound
-            GetBlockApiResponseDto.Signatures = blockEnvelopeDto.Signatures |> Array.toList
+            GetBlockApiResponseDto.Signatures = blockEnvelopeDto.Signatures
         }
 
     let txToGetTxApiResponseDto
