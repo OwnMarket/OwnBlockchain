@@ -67,7 +67,7 @@ module Validation =
             | Ok _ ->
                 if blockEnvelopeDto.Signatures |> List.isEmpty then
                     yield AppError "Signatures are missing from the block envelope."
-            | Error errors -> for error in errors do yield error
+            | Error errors -> yield! errors
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
 
