@@ -199,9 +199,10 @@ type BlockHeaderDto = {
     [<Key(6)>] TxSetRoot : string
     [<Key(7)>] TxResultSetRoot : string
     [<Key(8)>] EquivocationProofsRoot : string
-    [<Key(9)>] StateRoot : string
-    [<Key(10)>] StakingRewardsRoot : string
-    [<Key(11)>] ConfigurationRoot : string
+    [<Key(9)>] EquivocationProofResultsRoot : string
+    [<Key(10)>] StateRoot : string
+    [<Key(11)>] StakingRewardsRoot : string
+    [<Key(12)>] ConfigurationRoot : string
 }
 
 [<CLIMutable>]

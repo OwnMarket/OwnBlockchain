@@ -218,6 +218,7 @@ type BlockHeader = {
     TxSetRoot : MerkleTreeRoot
     TxResultSetRoot : MerkleTreeRoot
     EquivocationProofsRoot : MerkleTreeRoot
+    EquivocationProofResultsRoot : MerkleTreeRoot
     StateRoot : MerkleTreeRoot
     StakingRewardsRoot : MerkleTreeRoot
     ConfigurationRoot : MerkleTreeRoot

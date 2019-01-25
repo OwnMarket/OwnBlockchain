@@ -226,6 +226,7 @@ module Blocks =
         (MerkleTreeRoot txSetRoot)
         (MerkleTreeRoot txResultSetRoot)
         (MerkleTreeRoot equivocationProofsRoot)
+        (MerkleTreeRoot equivocationProofResultsRoot)
         (MerkleTreeRoot stateRoot)
         (MerkleTreeRoot stakingRewardsRoot)
         (MerkleTreeRoot configurationRoot)
@@ -239,6 +240,7 @@ module Blocks =
             txSetRoot |> decodeHash
             txResultSetRoot |> decodeHash
             equivocationProofsRoot |> decodeHash
+            equivocationProofResultsRoot |> decodeHash
             stateRoot |> decodeHash
             stakingRewardsRoot |> decodeHash
             configurationRoot |> decodeHash
@@ -286,7 +288,7 @@ module Blocks =
             |> List.map (fun (EquivocationProofHash hash) -> hash)
             |> createMerkleTree
 
-        let equivocationProofsResultsRoot =
+        let equivocationProofResultsRoot =
             equivocationProofs
             |> List.map (fun equivocationProofHash ->
                 createEquivocationProofResultHash
@@ -413,6 +415,7 @@ module Blocks =
                 txSetRoot
                 txResultSetRoot
                 equivocationProofsRoot
+                equivocationProofResultsRoot
                 stateRoot
                 stakingRewardsRoot
                 configurationRoot
@@ -428,6 +431,7 @@ module Blocks =
                 TxSetRoot = txSetRoot
                 TxResultSetRoot = txResultSetRoot
                 EquivocationProofsRoot = equivocationProofsRoot
+                EquivocationProofResultsRoot = equivocationProofResultsRoot
                 StateRoot = stateRoot
                 StakingRewardsRoot = stakingRewardsRoot
                 ConfigurationRoot = configurationRoot
@@ -587,6 +591,7 @@ module Blocks =
                 txSetRoot
                 block.Header.TxResultSetRoot
                 block.Header.EquivocationProofsRoot
+                block.Header.EquivocationProofResultsRoot
                 block.Header.StateRoot
                 block.Header.StakingRewardsRoot
                 block.Header.ConfigurationRoot

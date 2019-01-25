@@ -282,9 +282,10 @@ module BlockTests =
         let txSetRoot = MerkleTreeRoot "E"
         let txResultSetRoot = MerkleTreeRoot "F"
         let equivocationProofsRoot = MerkleTreeRoot "G"
-        let stateRoot = MerkleTreeRoot "H"
-        let stakingRewardsRoot = MerkleTreeRoot "I"
-        let configurationRoot = MerkleTreeRoot "A"
+        let equivocationProofResultsRoot = MerkleTreeRoot "H"
+        let stateRoot = MerkleTreeRoot "I"
+        let stakingRewardsRoot = MerkleTreeRoot "A"
+        let configurationRoot = MerkleTreeRoot "B"
 
         // ACT
         let (BlockHash blockHash) =
@@ -298,12 +299,13 @@ module BlockTests =
                 txSetRoot
                 txResultSetRoot
                 equivocationProofsRoot
+                equivocationProofResultsRoot
                 stateRoot
                 stakingRewardsRoot
                 configurationRoot
 
         // ASSERT
-        test <@ blockHash = ".......AB.......CDEFGHIA" @>
+        test <@ blockHash = ".......AB.......CDEFGHIAB" @>
 
     [<Fact>]
     let ``Blocks.assembleBlock`` () =
@@ -544,13 +546,21 @@ module BlockTests =
 
         let txResultSetRoot =
             [
-                "AAAA...........E" // Tx 1
-                "BBBB...G.......E" // Tx 2
-                "CCCA...........E" // Tx 3
+                "AAAA...........E" // TxResult 1
+                "BBBB...G.......E" // TxResult 2
+                "CCCA...........E" // TxResult 3
             ]
             |> String.Concat
 
         let equivocationProofsRoot = "DDDEEEFFF"
+
+        let equivocationProofResultsRoot =
+            [
+                "DDDA...G...................E" // EquivocationProofResult 1
+                "EEEB.......................E" // EquivocationProofResult 2
+                "FFFC.......................E" // EquivocationProofResult 3
+            ]
+            |> String.Concat
 
         let stateRoot =
             [
@@ -607,6 +617,7 @@ module BlockTests =
                 txSetRoot
                 txResultSetRoot
                 equivocationProofsRoot
+                equivocationProofResultsRoot
                 stateRoot
                 stakingRewardRoot
                 configRoot

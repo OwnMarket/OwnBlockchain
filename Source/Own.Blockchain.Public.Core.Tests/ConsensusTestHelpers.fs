@@ -22,6 +22,7 @@ module ConsensusTestHelpers =
                     TxSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     TxResultSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     EquivocationProofsRoot = Helpers.randomString () |> MerkleTreeRoot
+                    EquivocationProofResultsRoot = Helpers.randomString () |> MerkleTreeRoot
                     StateRoot = Helpers.randomString () |> MerkleTreeRoot
                     StakingRewardsRoot = Helpers.randomString () |> MerkleTreeRoot
                     ConfigurationRoot = Helpers.randomString () |> MerkleTreeRoot
