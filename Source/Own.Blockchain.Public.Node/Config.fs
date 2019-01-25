@@ -129,7 +129,7 @@ type Config () =
 
     static member ValidatorThreshold = 500_000m
 
-    static member MaxRewardedStakersCount = 100
+    static member MaxRewardedStakesCount = 100
 
     static member ConsensusMessageRetryingInterval = 1000
     static member ConsensusProposeRetryingInterval = 1000

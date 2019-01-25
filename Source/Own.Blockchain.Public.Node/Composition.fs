@@ -91,7 +91,7 @@ module Composition =
         Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString Config.MaxValidatorCount
 
     let getTopStakersByStake =
-        Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakersCount
+        Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakesCount
 
     let getStakeState = Db.getStakeState Config.DbEngineType Config.DbConnectionString
 

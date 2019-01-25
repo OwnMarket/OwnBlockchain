@@ -23,7 +23,7 @@ module ConsensusTestHelpers =
                     TxResultSetRoot = Helpers.randomString () |> MerkleTreeRoot
                     EquivocationProofsRoot = Helpers.randomString () |> MerkleTreeRoot
                     StateRoot = Helpers.randomString () |> MerkleTreeRoot
-                    StakerRewardsRoot = Helpers.randomString () |> MerkleTreeRoot
+                    StakingRewardsRoot = Helpers.randomString () |> MerkleTreeRoot
                     ConfigurationRoot = Helpers.randomString () |> MerkleTreeRoot
                 }
             TxSet =
@@ -31,7 +31,7 @@ module ConsensusTestHelpers =
                     Helpers.randomString () |> TxHash
                 ]
             EquivocationProofs = []
-            StakerRewards = []
+            StakingRewards = []
             Configuration = None
         }
 

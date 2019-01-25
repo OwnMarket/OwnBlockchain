@@ -192,13 +192,13 @@ type BlockHeaderDto = {
     [<Key(7)>] TxResultSetRoot : string
     [<Key(8)>] EquivocationProofsRoot : string
     [<Key(9)>] StateRoot : string
-    [<Key(10)>] StakerRewardsRoot : string
+    [<Key(10)>] StakingRewardsRoot : string
     [<Key(11)>] ConfigurationRoot : string
 }
 
 [<CLIMutable>]
 [<MessagePackObject>]
-type StakerRewardDto = {
+type StakingRewardDto = {
     [<Key(0)>] StakerAddress : string
     [<Key(1)>] Amount : decimal
 }
@@ -209,7 +209,7 @@ type BlockDto = {
     [<Key(0)>] Header : BlockHeaderDto
     [<Key(1)>] TxSet : string list
     [<Key(2)>] EquivocationProofs : string list
-    [<Key(3)>] StakerRewards : StakerRewardDto list
+    [<Key(3)>] StakingRewards : StakingRewardDto list
     [<Key(4)>] Configuration : BlockchainConfigurationDto
 }
 
@@ -490,11 +490,11 @@ type GetBlockApiResponseDto = {
     TxResultSetRoot : string
     EquivocationProofsRoot : string
     StateRoot : string
-    StakerRewardsRoot : string
+    StakingRewardsRoot : string
     ConfigurationRoot : string
     TxSet : string list
     EquivocationProofs : string list
-    StakerRewards : StakerRewardDto list
+    StakingRewards : StakingRewardDto list
     Configuration : BlockchainConfigurationDto
     ConsensusRound : int
     Signatures : string list

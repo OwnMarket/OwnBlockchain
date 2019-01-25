@@ -256,7 +256,7 @@ module Mapping =
             TxResultSetRoot = MerkleTreeRoot dto.TxResultSetRoot
             EquivocationProofsRoot = MerkleTreeRoot dto.EquivocationProofsRoot
             StateRoot = MerkleTreeRoot dto.StateRoot
-            StakerRewardsRoot = MerkleTreeRoot dto.StakerRewardsRoot
+            StakingRewardsRoot = MerkleTreeRoot dto.StakingRewardsRoot
             ConfigurationRoot = MerkleTreeRoot dto.ConfigurationRoot
         }
 
@@ -272,7 +272,7 @@ module Mapping =
             TxResultSetRoot = block.TxResultSetRoot.Value
             EquivocationProofsRoot = block.EquivocationProofsRoot.Value
             StateRoot = block.StateRoot.Value
-            StakerRewardsRoot = block.StakerRewardsRoot.Value
+            StakingRewardsRoot = block.StakingRewardsRoot.Value
             ConfigurationRoot = block.ConfigurationRoot.Value
         }
 
@@ -292,16 +292,16 @@ module Mapping =
             TotalStake = snapshot.TotalStake.Value
         }
 
-    let stakerRewardFromDto (dto : StakerRewardDto) : StakerReward =
+    let stakingRewardFromDto (dto : StakingRewardDto) : StakingReward =
         {
-            StakerReward.StakerAddress = BlockchainAddress dto.StakerAddress
+            StakingReward.StakerAddress = BlockchainAddress dto.StakerAddress
             Amount = ChxAmount dto.Amount
         }
 
-    let stakerRewardToDto (stakerReward : StakerReward) : StakerRewardDto =
+    let stakingRewardToDto (stakingReward : StakingReward) : StakingRewardDto =
         {
-            StakerRewardDto.StakerAddress = stakerReward.StakerAddress.Value
-            Amount = stakerReward.Amount.Value
+            StakingRewardDto.StakerAddress = stakingReward.StakerAddress.Value
+            Amount = stakingReward.Amount.Value
         }
 
     let blockchainConfigurationFromDto (dto : BlockchainConfigurationDto) : BlockchainConfiguration =
@@ -325,7 +325,7 @@ module Mapping =
             Header = blockHeaderFromDto dto.Header
             TxSet = dto.TxSet |> List.map TxHash
             EquivocationProofs = dto.EquivocationProofs |> List.map EquivocationProofHash
-            StakerRewards = dto.StakerRewards |> List.map stakerRewardFromDto
+            StakingRewards = dto.StakingRewards |> List.map stakingRewardFromDto
             Configuration = config
         }
 
@@ -334,7 +334,7 @@ module Mapping =
             Header = blockHeaderToDto block.Header
             TxSet = block.TxSet |> List.map (fun (TxHash h) -> h)
             EquivocationProofs = block.EquivocationProofs |> List.map (fun (EquivocationProofHash h) -> h)
-            StakerRewards = block.StakerRewards |> List.map stakerRewardToDto
+            StakingRewards = block.StakingRewards |> List.map stakingRewardToDto
             Configuration =
                 match block.Configuration with
                 | None -> Unchecked.defaultof<_>
@@ -610,11 +610,11 @@ module Mapping =
             GetBlockApiResponseDto.TxResultSetRoot = blockDto.Header.TxResultSetRoot
             GetBlockApiResponseDto.EquivocationProofsRoot = blockDto.Header.EquivocationProofsRoot
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
-            GetBlockApiResponseDto.StakerRewardsRoot = blockDto.Header.StakerRewardsRoot
+            GetBlockApiResponseDto.StakingRewardsRoot = blockDto.Header.StakingRewardsRoot
             GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
             GetBlockApiResponseDto.TxSet = blockDto.TxSet
             GetBlockApiResponseDto.EquivocationProofs = blockDto.EquivocationProofs
-            GetBlockApiResponseDto.StakerRewards = blockDto.StakerRewards
+            GetBlockApiResponseDto.StakingRewards = blockDto.StakingRewards
             GetBlockApiResponseDto.Configuration = blockDto.Configuration
             GetBlockApiResponseDto.ConsensusRound = blockEnvelopeDto.ConsensusRound
             GetBlockApiResponseDto.Signatures = blockEnvelopeDto.Signatures |> Array.toList

@@ -203,18 +203,18 @@ module BlockTests =
         test <@ stateHash = "AAABBB...E............" @>
 
     [<Fact>]
-    let ``Blocks.createStakerRewardHash`` () =
-        let stakerReward =
+    let ``Blocks.createStakingRewardHash`` () =
+        let stakingReward =
             {
-                StakerReward.StakerAddress = BlockchainAddress "AAA"
+                StakingReward.StakerAddress = BlockchainAddress "AAA"
                 Amount = ChxAmount 6m
             }
 
         // ACT
-        let stakerRewardHash = Blocks.createStakerRewardHash DummyHash.decode DummyHash.create stakerReward
+        let stakingRewardHash = Blocks.createStakingRewardHash DummyHash.decode DummyHash.create stakingReward
 
         // ASSERT
-        test <@ stakerRewardHash = "AAA...F............" @>
+        test <@ stakingRewardHash = "AAA...F............" @>
 
     [<Fact>]
     let ``Blocks.createBlockHash`` () =
@@ -226,7 +226,7 @@ module BlockTests =
         let txResultSetRoot = MerkleTreeRoot "F"
         let equivocationProofsRoot = MerkleTreeRoot "G"
         let stateRoot = MerkleTreeRoot "H"
-        let stakerRewardsRoot = MerkleTreeRoot "I"
+        let stakingRewardsRoot = MerkleTreeRoot "I"
         let configurationRoot = MerkleTreeRoot "A"
 
         // ACT
@@ -242,7 +242,7 @@ module BlockTests =
                 txResultSetRoot
                 equivocationProofsRoot
                 stateRoot
-                stakerRewardsRoot
+                stakingRewardsRoot
                 configurationRoot
 
         // ASSERT
@@ -410,7 +410,7 @@ module BlockTests =
             ]
             |> Map.ofList
 
-        let stakerRewards =
+        let stakingRewards =
             [
                 BlockchainAddress "HH", ChxAmount 1m
                 BlockchainAddress "II", ChxAmount 2m
@@ -429,7 +429,7 @@ module BlockTests =
                 Assets = assets
                 Validators = validators
                 Stakes = stakes
-                StakerRewards = stakerRewards
+                StakingRewards = stakingRewards
             }
 
         let config =
@@ -499,11 +499,11 @@ module BlockTests =
             ]
             |> String.Concat
 
-        let stakerRewardRoot =
+        let stakingRewardRoot =
             [
                 // Descending order by reward, then ascending by address
-                "II...B............" // Staker reward 2
-                "HH...A............" // Staker reward 1
+                "II...B............" // Staking reward 2
+                "HH...A............" // Staking reward 1
             ]
             |> String.Concat
 
@@ -525,7 +525,7 @@ module BlockTests =
                 txResultSetRoot
                 equivocationProofsRoot
                 stateRoot
-                stakerRewardRoot
+                stakingRewardRoot
                 configRoot
             ]
             |> String.Concat
@@ -554,7 +554,7 @@ module BlockTests =
         test <@ block.Header.TxSetRoot = MerkleTreeRoot txSetRoot @>
         test <@ block.Header.TxResultSetRoot = MerkleTreeRoot txResultSetRoot @>
         test <@ block.Header.StateRoot = MerkleTreeRoot stateRoot @>
-        test <@ block.Header.StakerRewardsRoot = MerkleTreeRoot stakerRewardRoot @>
+        test <@ block.Header.StakingRewardsRoot = MerkleTreeRoot stakingRewardRoot @>
         test <@ block.Header.ConfigurationRoot = MerkleTreeRoot configRoot @>
         test <@ block.Header.Hash = BlockHash blockHash @>
         test <@ block.TxSet = [TxHash "AAA"; TxHash "BBB"; TxHash "CCC"] @>
@@ -727,7 +727,7 @@ module BlockTests =
             ]
             |> Map.ofList
 
-        let stakerRewards =
+        let stakingRewards =
             [
                 BlockchainAddress "CC", ChxAmount 1m
                 BlockchainAddress "DD", ChxAmount 2m
@@ -746,7 +746,7 @@ module BlockTests =
                 Assets = assets
                 Validators = validators
                 Stakes = stakes
-                StakerRewards = stakerRewards
+                StakingRewards = stakingRewards
             }
 
         // ACT
@@ -1031,7 +1031,7 @@ module BlockTests =
             ]
             |> Map.ofList
 
-        let stakerRewards =
+        let stakingRewards =
             [
                 BlockchainAddress "CC", ChxAmount 1m
                 BlockchainAddress "DD", ChxAmount 2m
@@ -1050,7 +1050,7 @@ module BlockTests =
                 Assets = assets
                 Validators = validators
                 Stakes = stakes
-                StakerRewards = stakerRewards
+                StakingRewards = stakingRewards
             }
 
         let assembledBlock =

@@ -219,13 +219,13 @@ type BlockHeader = {
     TxResultSetRoot : MerkleTreeRoot
     EquivocationProofsRoot : MerkleTreeRoot
     StateRoot : MerkleTreeRoot
-    StakerRewardsRoot : MerkleTreeRoot
+    StakingRewardsRoot : MerkleTreeRoot
     ConfigurationRoot : MerkleTreeRoot
 }
 
 type EquivocationProofHash = EquivocationProofHash of string
 
-type StakerReward = {
+type StakingReward = {
     StakerAddress : BlockchainAddress
     Amount : ChxAmount
 }
@@ -234,7 +234,7 @@ type Block = {
     Header : BlockHeader
     TxSet : TxHash list
     EquivocationProofs : EquivocationProofHash list
-    StakerRewards : StakerReward list
+    StakingRewards : StakingReward list
     Configuration : BlockchainConfiguration option
 }
 
@@ -372,7 +372,7 @@ type ProcessingOutput = {
     Assets : Map<AssetHash, AssetState>
     Validators : Map<BlockchainAddress, ValidatorState>
     Stakes : Map<BlockchainAddress * BlockchainAddress, StakeState>
-    StakerRewards : Map<BlockchainAddress, ChxAmount>
+    StakingRewards : Map<BlockchainAddress, ChxAmount>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

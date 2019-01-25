@@ -32,7 +32,7 @@ module Processing =
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
         stakes : ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>,
         totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not part of the blockchain state
-        stakerRewards : ConcurrentDictionary<BlockchainAddress, ChxAmount>,
+        stakingRewards : ConcurrentDictionary<BlockchainAddress, ChxAmount>,
         collectedReward : ChxAmount
         ) =
 
@@ -107,7 +107,7 @@ module Processing =
                 ConcurrentDictionary(validators),
                 ConcurrentDictionary(stakes),
                 ConcurrentDictionary(totalChxStaked),
-                ConcurrentDictionary(stakerRewards),
+                ConcurrentDictionary(stakingRewards),
                 __.CollectedReward
             )
 
@@ -209,11 +209,11 @@ module Processing =
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
 
-        member __.SetStakerReward (stakerAddress : BlockchainAddress, amount : ChxAmount) =
-            stakerRewards.AddOrUpdate(
+        member __.SetStakingReward (stakerAddress : BlockchainAddress, amount : ChxAmount) =
+            stakingRewards.AddOrUpdate(
                 stakerAddress,
                 amount,
-                fun _ _ -> failwithf "Staker reward already set for %s" stakerAddress.Value
+                fun _ _ -> failwithf "Staking reward already set for %s" stakerAddress.Value
             ) |> ignore
 
         member __.ToProcessingOutput () : ProcessingOutput =
@@ -253,7 +253,7 @@ module Processing =
                     |> Seq.ofDict
                     |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
-                StakerRewards = stakerRewards |> Map.ofDict
+                StakingRewards = stakingRewards |> Map.ofDict
             }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -861,7 +861,7 @@ module Processing =
                     stakers
                     |> List.map (fun s ->
                         {
-                            StakerReward.StakerAddress = s.StakerAddress
+                            StakingReward.StakerAddress = s.StakerAddress
                             Amount = (s.Amount / sumOfStakes * distributableReward).Rounded
                         }
                     )
@@ -879,7 +879,7 @@ module Processing =
                 match processTxActions validatorAddress nonce actions state with
                 | Ok (state : ProcessingState) ->
                     for r in rewards do
-                        state.SetStakerReward(r.StakerAddress, r.Amount) |> ignore
+                        state.SetStakingReward(r.StakerAddress, r.Amount) |> ignore
                     state
                 | Error err -> failwithf "Cannot process reward distribution (%A)." err
 

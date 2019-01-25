@@ -186,15 +186,15 @@ module Blocks =
         |> Array.concat
         |> createHash
 
-    let createStakerRewardHash
+    let createStakingRewardHash
         decodeHash
         createHash
-        (stakerReward : StakerReward)
+        (stakingReward : StakingReward)
         =
 
         [
-            decodeHash stakerReward.StakerAddress.Value
-            decimalToBytes stakerReward.Amount.Value
+            decodeHash stakingReward.StakerAddress.Value
+            decimalToBytes stakingReward.Amount.Value
         ]
         |> Array.concat
         |> createHash
@@ -210,7 +210,7 @@ module Blocks =
         (MerkleTreeRoot txResultSetRoot)
         (MerkleTreeRoot equivocationProofsRoot)
         (MerkleTreeRoot stateRoot)
-        (MerkleTreeRoot stakerRewardsRoot)
+        (MerkleTreeRoot stakingRewardsRoot)
         (MerkleTreeRoot configurationRoot)
         =
 
@@ -223,7 +223,7 @@ module Blocks =
             txResultSetRoot |> decodeHash
             equivocationProofsRoot |> decodeHash
             stateRoot |> decodeHash
-            stakerRewardsRoot |> decodeHash
+            stakingRewardsRoot |> decodeHash
             configurationRoot |> decodeHash
         ]
         |> Array.concat
@@ -348,20 +348,20 @@ module Blocks =
             @ stakeHashes
             |> createMerkleTree
 
-        let stakerRewards =
-            output.StakerRewards
+        let stakingRewards =
+            output.StakingRewards
             |> Map.toList
             |> List.sortBy (fun (stakerAddress, amount) -> -amount.Value, stakerAddress) // Ensure a predictable order
             |> List.map (fun (stakerAddress, amount) ->
                 {
-                    StakerReward.StakerAddress = stakerAddress
+                    StakingReward.StakerAddress = stakerAddress
                     Amount = amount
                 }
             )
 
-        let stakerRewardsRoot =
-            stakerRewards
-            |> List.map (createStakerRewardHash decodeHash createHash)
+        let stakingRewardsRoot =
+            stakingRewards
+            |> List.map (createStakingRewardHash decodeHash createHash)
             |> createMerkleTree
 
         let configurationRoot =
@@ -387,7 +387,7 @@ module Blocks =
                 txResultSetRoot
                 equivocationProofsRoot
                 stateRoot
-                stakerRewardsRoot
+                stakingRewardsRoot
                 configurationRoot
 
         let blockHeader =
@@ -402,7 +402,7 @@ module Blocks =
                 TxResultSetRoot = txResultSetRoot
                 EquivocationProofsRoot = equivocationProofsRoot
                 StateRoot = stateRoot
-                StakerRewardsRoot = stakerRewardsRoot
+                StakingRewardsRoot = stakingRewardsRoot
                 ConfigurationRoot = configurationRoot
             }
 
@@ -410,7 +410,7 @@ module Blocks =
             Header = blockHeader
             TxSet = txSet
             EquivocationProofs = equivocationProofs
-            StakerRewards = stakerRewards
+            StakingRewards = stakingRewards
             Configuration = blockchainConfiguration
         }
 
@@ -448,7 +448,7 @@ module Blocks =
             Assets = Map.empty
             Validators = genesisValidators
             Stakes = Map.empty
-            StakerRewards = Map.empty
+            StakingRewards = Map.empty
         }
 
     let assembleGenesisBlock
@@ -561,7 +561,7 @@ module Blocks =
                 block.Header.TxResultSetRoot
                 block.Header.EquivocationProofsRoot
                 block.Header.StateRoot
-                block.Header.StakerRewardsRoot
+                block.Header.StakingRewardsRoot
                 block.Header.ConfigurationRoot
 
         block.Header.Hash = blockHash
