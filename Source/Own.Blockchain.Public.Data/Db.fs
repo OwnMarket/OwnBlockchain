@@ -850,6 +850,51 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private removeProcessedEquivocationProof
+        conn
+        transaction
+        (equivocationProofHash : string)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            DELETE FROM equivocation
+            WHERE equivocation_proof_hash = @equivocationProofHash
+            """
+
+        let sqlParams =
+            [
+                "@equivocationProofHash", equivocationProofHash |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 // When applying the block during catch-up, equivocation proof might not be in the pool.
+            | 1 -> Ok ()
+            | _ ->
+                sprintf "Didn't remove processed equivocation proof from the pool: %s" equivocationProofHash
+                |> Result.appError
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            sprintf "Failed to remove processed equivocation proof from the pool: %s" equivocationProofHash
+            |> Result.appError
+
+    let private removeProcessedEquivocationProofs
+        conn
+        transaction
+        (equivocationProofResults : Map<string, EquivocationProofResultDto>) : Result<unit, AppErrors>
+        =
+
+        let foldFn result (equivocationProofHash, equivocationProofResult : EquivocationProofResultDto) =
+            result
+            >>= fun _ -> removeProcessedEquivocationProof conn transaction equivocationProofHash
+
+        equivocationProofResults
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
     let private updateBlock conn transaction (BlockNumber blockNumber) : Result<unit, AppErrors> =
         let sql =
             """
@@ -1635,6 +1680,7 @@ module Db =
         let result =
             result {
                 do! removeProcessedTxs conn transaction stateChanges.TxResults
+                do! removeProcessedEquivocationProofs conn transaction stateChanges.EquivocationProofResults
                 do! updateChxBalances conn transaction stateChanges.ChxBalances
                 do! updateValidators conn transaction stateChanges.Validators
                 do! updateStakes conn transaction stateChanges.Stakes
