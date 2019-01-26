@@ -340,7 +340,7 @@ module Consensus =
             let signatures =
                 _commits
                 |> List.ofDict
-                |> List.choose (fun ((b, r, _), (h, Signature s)) ->
+                |> List.choose (fun ((b, r, _), (h, s)) ->
                     if b = block.Header.Number && h = Some block.Header.Hash && r = consensusRound then
                         Some s
                     else
@@ -354,23 +354,24 @@ module Consensus =
                     _qualifiedMajority
                     signatures.Length
 
-            {
-                Block = block |> Mapping.blockToDto
-                ConsensusRound = consensusRound.Value
-                Signatures = signatures
-            }
-            |> (fun blockEnvelopeDto ->
-                (block.Header.Number, blockEnvelopeDto)
-                |> BlockCommitted
-                |> publishEvent
-
-                // Wait for the state to get updated before proceeding.
-                async {
-                    while getLastAppliedBlockNumber () < block.Header.Number do
-                        do! Async.Sleep 100
+            let blockEnvelopeDto =
+                {
+                    BlockEnvelope.Block = block
+                    ConsensusRound = consensusRound
+                    Signatures = signatures
                 }
-                |> Async.RunSynchronously
-            )
+                |> Mapping.blockEnvelopeToDto
+
+            (block.Header.Number, blockEnvelopeDto)
+            |> BlockCommitted
+            |> publishEvent
+
+            // Wait for the state to get updated before proceeding.
+            async {
+                while getLastAppliedBlockNumber () < block.Header.Number do
+                    do! Async.Sleep 100
+            }
+            |> Async.RunSynchronously
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Equivocation

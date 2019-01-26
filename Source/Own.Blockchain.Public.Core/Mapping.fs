@@ -382,6 +382,13 @@ module Mapping =
             Signatures = dto.Signatures |> List.map Signature
         }
 
+    let blockEnvelopeToDto (envelope : BlockEnvelope) : BlockEnvelopeDto =
+        {
+            Block = envelope.Block |> blockToDto
+            ConsensusRound = envelope.ConsensusRound.Value
+            Signatures = envelope.Signatures |> List.map (fun (Signature s) -> s)
+        }
+
     let blockHeaderToBlockInfoDto isConfigBlock (blockHeader : BlockHeader) : BlockInfoDto =
         {
             BlockNumber = blockHeader.Number.Value
