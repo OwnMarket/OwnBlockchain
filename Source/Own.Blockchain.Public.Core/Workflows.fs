@@ -332,9 +332,7 @@ module Workflows =
 
         result {
             let! blockEnvelope = Validation.validateBlockEnvelope isValidAddress blockEnvelopeDto
-            let blockDto = blockEnvelope.Block |> Mapping.blockToDto
-
-            let! block = Validation.validateBlock isValidAddress blockDto
+            let block = blockEnvelope.Block
 
             if not (blockExists block.Header.ConfigurationBlockNumber) then
                 Synchronization.unverifiedBlocks.TryAdd(block.Header.Number, blockEnvelopeDto) |> ignore
