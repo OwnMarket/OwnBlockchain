@@ -605,34 +605,31 @@ module Blocks =
         : Result<BlockchainAddress list, AppErrors>
         =
 
-        result {
-            let block = blockEnvelope.Block
+        let block = blockEnvelope.Block
 
-            let values, errors =
-                blockEnvelope.Signatures
-                |> List.map (fun s ->
-                    let messageHash =
-                        createConsensusMessageHash
-                            block.Header.Number
-                            blockEnvelope.ConsensusRound
-                            (block.Header.Hash |> Some |> ConsensusMessage.Commit)
+        let values, errors =
+            blockEnvelope.Signatures
+            |> List.map (fun s ->
+                let messageHash =
+                    createConsensusMessageHash
+                        block.Header.Number
+                        blockEnvelope.ConsensusRound
+                        (block.Header.Hash |> Some |> ConsensusMessage.Commit)
 
-                    match verifySignature s messageHash with
-                    | Some blockchainAddress ->
-                        Ok blockchainAddress
-                    | None ->
-                        sprintf "Cannot verify block signature %s." s.Value
-                        |> Result.appError
-                )
-                |> List.partition (function | Ok _ -> true | _ -> false)
+                match verifySignature s messageHash with
+                | Some blockchainAddress ->
+                    Ok blockchainAddress
+                | None ->
+                    sprintf "Cannot verify block signature %s." s.Value
+                    |> Result.appError
+            )
+            |> List.partition (function | Ok _ -> true | _ -> false)
 
-            return!
-                if errors.IsEmpty then
-                    values
-                    |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't happen")
-                    |> Ok
-                else
-                    errors
-                    |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't happen")
-                    |> Error
-        }
+        if errors.IsEmpty then
+            values
+            |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't happen.")
+            |> Ok
+        else
+            errors
+            |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't happen either.")
+            |> Error
