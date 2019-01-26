@@ -24,6 +24,7 @@ module Composition =
 
     let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir
     let getEquivocationProof = Raw.getEquivocationProof Config.DataDir
+    let equivocationProofExists = Raw.equivocationProofExists Config.DataDir
 
     let saveEquivocationProofResult = Raw.saveEquivocationProofResult Config.DataDir
     let getEquivocationProofResult = Raw.getEquivocationProofResult Config.DataDir
@@ -276,6 +277,7 @@ module Composition =
             getBlock
             applyBlock
             txExists
+            equivocationProofExists
             removeOrphanTxResults
             removeOrphanEquivocationProofResults
             publishEvent
@@ -288,8 +290,10 @@ module Composition =
             getBlock
             blockExists
             txExists
+            equivocationProofExists
             Peers.requestBlockFromPeer
             Peers.requestTxFromPeer
+            Peers.requestEquivocationProofFromPeer
             publishEvent
             Config.ConfigurationBlockDelta
             Config.MaxNumberOfBlocksToFetchInParallel
@@ -304,7 +308,9 @@ module Composition =
             getValidatorsAtHeight
             proposeBlock
             txExists
+            equivocationProofExists
             Peers.requestTxFromPeer
+            Peers.requestEquivocationProofFromPeer
             applyBlockToCurrentState
             Hashing.decode
             Hashing.hash

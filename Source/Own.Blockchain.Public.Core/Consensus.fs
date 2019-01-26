@@ -15,7 +15,9 @@ module Consensus =
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
         proposeBlock : BlockNumber -> Result<Block, AppErrors> option,
         txExists : TxHash -> bool,
+        equivocationProofExists : EquivocationProofHash -> bool,
         requestTx : TxHash -> unit,
+        requestEquivocationProof : EquivocationProofHash -> unit,
         isValidBlock : Block -> bool,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
         publishEvent : AppEvent -> unit,
@@ -64,13 +66,22 @@ module Consensus =
 
                 match envelope.ConsensusMessage with
                 | ConsensusMessage.Propose (block, vr) ->
-                    let missingTxs = block.TxSet |> List.filter (txExists >> not)
-                    if missingTxs.IsEmpty then
+                    let missingTxs =
+                        block.TxSet
+                        |> List.filter (txExists >> not)
+
+                    let missingEquivocationProofs =
+                        block.EquivocationProofs
+                        |> List.filter (equivocationProofExists >> not)
+
+                    match missingTxs, missingEquivocationProofs with
+                    | [], [] ->
                         if _proposals.TryAdd(key, (block, vr)) then
                             __.UpdateState()
-                    else
+                    | _ ->
                         if _blockNumber = block.Header.Number then
                             missingTxs |> List.iter requestTx
+                            missingEquivocationProofs |> List.iter requestEquivocationProof
                             scheduleMessage messageRetryingInterval (senderAddress, envelope)
                 | ConsensusMessage.Vote blockHash ->
                     if _votes.TryAdd(key, (blockHash, envelope.Signature)) then
@@ -529,7 +540,9 @@ module Consensus =
         getValidatorsAtHeight
         proposeBlock
         txExists
+        equivocationProofExists
         requestTx
+        requestEquivocationProof
         applyBlockToCurrentState
         decodeHash
         createHash
@@ -679,7 +692,9 @@ module Consensus =
             getValidatorsAtHeight,
             proposeBlock,
             txExists,
+            equivocationProofExists,
             requestTx,
+            requestEquivocationProof,
             isValidBlock,
             sendConsensusMessage,
             publishEvent,

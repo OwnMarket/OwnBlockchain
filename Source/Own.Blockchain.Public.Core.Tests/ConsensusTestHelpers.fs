@@ -126,6 +126,10 @@ module ConsensusTestHelpers =
 
                 let requestTx _ = ()
 
+                let equivocationProofExists _ = true
+
+                let requestEquivocationProof _ = ()
+
                 let isValidBlock =
                     match isValidBlock with
                     | Some f -> f validatorAddress
@@ -160,6 +164,8 @@ module ConsensusTestHelpers =
                         proposeBlock,
                         txExists,
                         requestTx,
+                        equivocationProofExists,
+                        requestEquivocationProof,
                         isValidBlock,
                         sendConsensusMessage,
                         publishEvent,

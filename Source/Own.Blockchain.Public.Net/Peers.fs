@@ -559,6 +559,9 @@ module Peers =
     let requestTxFromPeer txHash =
         requestFromPeer (NetworkMessageId.Tx txHash)
 
+    let requestEquivocationProofFromPeer equivocationProofHash =
+        requestFromPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
+
     let respondToPeer targetAddress peerMessage =
         match node with
         | Some n -> n.SendResponseDataMessage targetAddress peerMessage

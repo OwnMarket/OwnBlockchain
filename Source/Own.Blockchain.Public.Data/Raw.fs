@@ -131,6 +131,13 @@ module Raw =
 
         loadData<EquivocationProofDto> dataDir EquivocationProof equivocationProofHash
 
+    let equivocationProofExists (dataDir : string) (EquivocationProofHash equivocationProofHash) =
+        equivocationProofHash
+        |> string
+        |> createFileName EquivocationProof
+        |> fun fileName -> Path.Combine (dataDir, fileName)
+        |> File.Exists
+
     // EquivocationProofResult
     let saveEquivocationProofResult
         (dataDir : string)

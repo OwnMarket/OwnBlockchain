@@ -23,8 +23,10 @@ module Synchronization =
         getBlock
         blockExists
         txExists
+        equivocationProofExists
         requestBlockFromPeer
         requestTxFromPeer
+        requestEquivocationProofFromPeer
         publishEvent
         (configurationBlockDelta : int)
         maxNumberOfBlocksToFetchInParallel
@@ -67,7 +69,7 @@ module Synchronization =
             |> Seq.iter (requestBlock requestBlockFromPeer publishEvent)
         )
 
-        // Fetch Txs for verified blocks
+        // Fetch TXs and EquivocationProofs for verified blocks
         getStoredBlockNumbers ()
         |> List.sort
         |> List.iter (fun bn ->
@@ -75,12 +77,21 @@ module Synchronization =
             |> Result.map Blocks.extractBlockFromEnvelopeDto
             |> Result.handle
                 (fun block ->
-                    match block.TxSet |> List.filter (txExists >> not) with
-                    | [] ->
+                    let missingTxs =
+                        block.TxSet
+                        |> List.filter (txExists >> not)
+
+                    let missingEquivocationProofs =
+                        block.EquivocationProofs
+                        |> List.filter (equivocationProofExists >> not)
+
+                    match missingTxs, missingEquivocationProofs with
+                    | [], [] ->
                         if block.Header.Number = lastAppliedBlockNumber + 1 then
                             BlockCompleted block.Header.Number |> publishEvent
-                    | missingTxs ->
+                    | _ ->
                         missingTxs |> List.iter requestTxFromPeer
+                        missingEquivocationProofs |> List.iter requestEquivocationProofFromPeer
                 )
                 Log.appErrors
         )
@@ -90,6 +101,7 @@ module Synchronization =
         getBlock
         applyBlock
         txExists
+        equivocationProofExists
         removeOrphanTxResults
         removeOrphanEquivocationProofResults
         publishEvent
@@ -101,7 +113,9 @@ module Synchronization =
             (fun blockEnvelopeDto ->
                 result {
                     let block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
-                    if block.TxSet |> List.forall txExists then
+                    if block.TxSet |> List.forall txExists
+                        && block.EquivocationProofs |> List.forall equivocationProofExists
+                    then
                         Log.noticef "Applying block %i" block.Header.Number.Value
                         do! applyBlock block.Header.Number
                         return (block.Header.Number |> BlockApplied |> Some)
