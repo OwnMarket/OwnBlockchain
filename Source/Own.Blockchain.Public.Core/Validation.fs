@@ -7,23 +7,6 @@ open Own.Blockchain.Public.Core.Dtos
 
 module Validation =
 
-    let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
-        [
-            if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
-                yield AppError "Tx is missing from the tx envelope."
-            if txEnvelopeDto.Signature.IsNullOrWhiteSpace() then
-                yield AppError "Signature is missing from the tx envelope."
-        ]
-        |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
-
-    let verifyTxSignature createHash verifySignature (txEnvelope : TxEnvelope) : Result<BlockchainAddress, AppErrors> =
-        let txHash = createHash txEnvelope.RawTx
-        match verifySignature txEnvelope.Signature txHash with
-        | Some blockchainAddress ->
-            Ok blockchainAddress
-        | None ->
-            Result.appError "Cannot verify tx signature."
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -57,7 +40,7 @@ module Validation =
                 yield AppError "Block.Header.StateRoot is missing."
 
             if blockDto.TxSet |> Seq.isEmpty then
-                yield AppError "Block TxSet cannot be empty."
+                yield AppError "Block.TxSet cannot be empty."
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockFromDto blockDto)
 
@@ -340,6 +323,23 @@ module Validation =
                 Result.appError "Available CHX balance is insufficient to cover the fee for all pending transactions."
             else
                 Ok ()
+
+    let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
+        [
+            if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
+                yield AppError "Tx is missing from the tx envelope."
+            if txEnvelopeDto.Signature.IsNullOrWhiteSpace() then
+                yield AppError "Signature is missing from the tx envelope."
+        ]
+        |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
+
+    let verifyTxSignature createHash verifySignature (txEnvelope : TxEnvelope) : Result<BlockchainAddress, AppErrors> =
+        let txHash = createHash txEnvelope.RawTx
+        match verifySignature txEnvelope.Signature txHash with
+        | Some blockchainAddress ->
+            Ok blockchainAddress
+        | None ->
+            Result.appError "Cannot verify tx signature."
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquivocationProof validation
