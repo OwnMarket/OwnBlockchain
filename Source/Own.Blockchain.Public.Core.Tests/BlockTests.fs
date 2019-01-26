@@ -647,6 +647,8 @@ module BlockTests =
         test <@ block.Header.ProposerAddress = proposerAddress @>
         test <@ block.Header.TxSetRoot = MerkleTreeRoot txSetRoot @>
         test <@ block.Header.TxResultSetRoot = MerkleTreeRoot txResultSetRoot @>
+        test <@ block.Header.EquivocationProofsRoot = MerkleTreeRoot equivocationProofsRoot @>
+        test <@ block.Header.EquivocationProofResultsRoot = MerkleTreeRoot equivocationProofResultsRoot @>
         test <@ block.Header.StateRoot = MerkleTreeRoot stateRoot @>
         test <@ block.Header.StakingRewardsRoot = MerkleTreeRoot stakingRewardRoot @>
         test <@ block.Header.ConfigurationRoot = MerkleTreeRoot configRoot @>
@@ -884,11 +886,25 @@ module BlockTests =
                 None
 
         // ASSERT
+        let stakingRewards =
+            stakingRewards
+            |> Map.toList
+            |> List.map (fun (address, amount) ->
+                {
+                    StakingReward.StakerAddress = address
+                    Amount = amount
+                }
+            )
+            |> List.sortBy (fun r -> -r.Amount.Value, r.StakerAddress)
+
         test <@ block.Header.Number = blockNumber @>
         test <@ block.Header.PreviousHash = previousBlockHash @>
         test <@ block.Header.Timestamp = timestamp @>
         test <@ block.Header.ProposerAddress = proposerWallet.Address @>
         test <@ block.TxSet = txSet @>
+        test <@ block.EquivocationProofs = equivocationProofs @>
+        test <@ block.StakingRewards = stakingRewards @>
+        test <@ block.Configuration = None @>
 
         let txSetMerkleProofs =
             txSet

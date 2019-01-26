@@ -172,21 +172,6 @@ module Blocks =
         |> Array.concat
         |> createHash
 
-    let createValidatorSnapshotHash
-        decodeHash
-        createHash
-        (validatorSnapshot : ValidatorSnapshot)
-        =
-
-        [
-            decodeHash validatorSnapshot.ValidatorAddress.Value
-            stringToBytes validatorSnapshot.NetworkAddress.Value
-            decimalToBytes validatorSnapshot.SharedRewardPercent
-            decimalToBytes validatorSnapshot.TotalStake.Value
-        ]
-        |> Array.concat
-        |> createHash
-
     let createStakeStateHash
         decodeHash
         createHash
@@ -215,6 +200,38 @@ module Blocks =
         ]
         |> Array.concat
         |> createHash
+
+    let createValidatorSnapshotHash
+        decodeHash
+        createHash
+        (validatorSnapshot : ValidatorSnapshot)
+        =
+
+        [
+            decodeHash validatorSnapshot.ValidatorAddress.Value
+            stringToBytes validatorSnapshot.NetworkAddress.Value
+            decimalToBytes validatorSnapshot.SharedRewardPercent
+            decimalToBytes validatorSnapshot.TotalStake.Value
+        ]
+        |> Array.concat
+        |> createHash
+
+    let createConfigurationMerkleRoot
+        decodeHash
+        createHash
+        createMerkleTree
+        (blockchainConfiguration : BlockchainConfiguration option)
+        =
+
+        match blockchainConfiguration with
+        | None -> []
+        | Some c ->
+            let validatorSnapshotHashes =
+                c.Validators
+                |> List.sortBy (fun v -> v.ValidatorAddress) // Ensure a predictable order
+                |> List.map (createValidatorSnapshotHash decodeHash createHash)
+            validatorSnapshotHashes
+        |> createMerkleTree
 
     let createBlockHash
         decodeHash
@@ -266,7 +283,10 @@ module Blocks =
         =
 
         if txSet.Length <> output.TxResults.Count then
-            failwith "Number of elements in ProcessingOutput.TxResults and TxSet must be equal"
+            failwith "Number of elements in TxResults and TxSet must be equal"
+
+        if equivocationProofs.Length <> output.EquivocationProofResults.Count then
+            failwith "Number of elements in EquivocationProofResults and EquivocationProofs must be equal"
 
         let txSetRoot =
             txSet
@@ -394,15 +414,8 @@ module Blocks =
             |> createMerkleTree
 
         let configurationRoot =
-            match blockchainConfiguration with
-            | None -> []
-            | Some c ->
-                let validatorSnapshotHashes =
-                    c.Validators
-                    |> List.sortBy (fun v -> v.ValidatorAddress) // Ensure a predictable order
-                    |> List.map (createValidatorSnapshotHash decodeHash createHash)
-                validatorSnapshotHashes
-            |> createMerkleTree
+            blockchainConfiguration
+            |> createConfigurationMerkleRoot decodeHash createHash createMerkleTree
 
         let blockHash =
             createBlockHash
@@ -580,6 +593,23 @@ module Blocks =
             |> List.map (fun (TxHash hash) -> hash)
             |> createMerkleTree
 
+        let equivocationProofsRoot =
+            block.EquivocationProofs
+            |> List.map (fun (EquivocationProofHash hash) -> hash)
+            |> createMerkleTree
+
+        let stakingRewardsRoot =
+            block.StakingRewards
+            |> List.map (createStakingRewardHash decodeHash createHash)
+            |> createMerkleTree
+
+        let configurationRoot =
+            createConfigurationMerkleRoot
+                decodeHash
+                createHash
+                createMerkleTree
+                block.Configuration
+
         let blockHash =
             createBlockHash
                 decodeHash
@@ -590,11 +620,11 @@ module Blocks =
                 block.Header.ProposerAddress
                 txSetRoot
                 block.Header.TxResultSetRoot
-                block.Header.EquivocationProofsRoot
+                equivocationProofsRoot
                 block.Header.EquivocationProofResultsRoot
                 block.Header.StateRoot
-                block.Header.StakingRewardsRoot
-                block.Header.ConfigurationRoot
+                stakingRewardsRoot
+                configurationRoot
 
         block.Header.Hash = blockHash
 

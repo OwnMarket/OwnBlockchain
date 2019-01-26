@@ -657,6 +657,7 @@ module Mapping =
             GetBlockApiResponseDto.TxSetRoot = blockDto.Header.TxSetRoot
             GetBlockApiResponseDto.TxResultSetRoot = blockDto.Header.TxResultSetRoot
             GetBlockApiResponseDto.EquivocationProofsRoot = blockDto.Header.EquivocationProofsRoot
+            GetBlockApiResponseDto.EquivocationProofResultsRoot = blockDto.Header.EquivocationProofResultsRoot
             GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
             GetBlockApiResponseDto.StakingRewardsRoot = blockDto.Header.StakingRewardsRoot
             GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot

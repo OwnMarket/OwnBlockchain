@@ -499,6 +499,7 @@ type GetBlockApiResponseDto = {
     TxSetRoot : string
     TxResultSetRoot : string
     EquivocationProofsRoot : string
+    EquivocationProofResultsRoot : string
     StateRoot : string
     StakingRewardsRoot : string
     ConfigurationRoot : string

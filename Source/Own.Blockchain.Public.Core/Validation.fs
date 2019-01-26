@@ -22,6 +22,9 @@ module Validation =
             if blockDto.Header.PreviousHash.IsNullOrWhiteSpace() then
                 yield AppError "Block.Header.PreviousHash is missing."
 
+            if blockDto.Header.ConfigurationBlockNumber < 0L then
+                yield AppError "Block.Header.ConfigurationBlockNumber cannot be negative."
+
             if blockDto.Header.Timestamp < 0L then
                 yield AppError "Block.Header.Timestamp cannot be negative."
 
