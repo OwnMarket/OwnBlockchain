@@ -644,10 +644,8 @@ module Mapping =
             GetAccountApiResponseDto.Holdings = List.map mapFn holdings
         }
 
-    let blockDtosToGetBlockApiResponseDto
-        (blockEnvelopeDto : BlockEnvelopeDto)
-        (blockDto : BlockDto)
-        =
+    let blockEnvelopeDtoToGetBlockApiResponseDto (blockEnvelopeDto : BlockEnvelopeDto) =
+        let blockDto = blockEnvelopeDto.Block
 
         {
             GetBlockApiResponseDto.Number = blockDto.Header.Number

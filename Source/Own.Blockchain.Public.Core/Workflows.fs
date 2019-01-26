@@ -94,7 +94,6 @@ module Workflows =
 
             let result =
                 result {
-
                     let blockEnvelopeDto =
                         {
                             Block = genesisBlock |> Mapping.blockToDto
@@ -819,7 +818,7 @@ module Workflows =
 
     let getBlockApi
         getLastAppliedBlockNumber
-        getBlock
+        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
         (blockNumber : BlockNumber)
         : Result<GetBlockApiResponseDto, AppErrors>
         =
@@ -830,16 +829,7 @@ module Workflows =
             |> Result.appError
         else
             getBlock blockNumber
-            >>= (fun blockEnvelopeDto ->
-                blockEnvelopeDto
-                |> Blocks.extractBlockFromEnvelopeDto
-                |> (fun block ->
-                    block
-                    |> Mapping.blockToDto
-                    |> Mapping.blockDtosToGetBlockApiResponseDto blockEnvelopeDto
-                )
-                |> Ok
-            )
+            >>= (Mapping.blockEnvelopeDtoToGetBlockApiResponseDto >> Ok)
 
     let getAddressApi
         getChxBalanceState
