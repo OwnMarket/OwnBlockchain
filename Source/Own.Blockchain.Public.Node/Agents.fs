@@ -90,11 +90,14 @@ module Agents =
             sprintf "Validator %s:\n%A" validatorAddress.Value proof
             |> formatMessage
             |> Log.warning
-        | EquivocationProofReceived (proof)
-        | EquivocationProofFetched (proof) ->
+        | EquivocationProofReceived (proof) ->
             sprintf "%A" proof
             |> formatMessage
             |> Log.warning
+        | EquivocationProofFetched (proof) ->
+            sprintf "%A" proof
+            |> formatMessage
+            |> Log.info
         | EquivocationProofStored (equivocationProofHash, isFetched) ->
             equivocationProofHash.Value
             |> formatMessage
