@@ -55,10 +55,10 @@ module internal Secp256k1 =
 
     let serializeSignature signature =
         let serializedSignature = Array.zeroCreate<byte> Secp256k1.SERIALIZED_SIGNATURE_SIZE
-        let recoveryId = ref -1
+        let mutable recoveryId = -1
         let secp256k1 = getSecp256k1 ()
-        if secp256k1.RecoverableSignatureSerializeCompact(Span serializedSignature, recoveryId, Span signature) then
-            (!recoveryId, serializedSignature)
+        if secp256k1.RecoverableSignatureSerializeCompact(Span serializedSignature, &recoveryId, Span signature) then
+            (recoveryId, serializedSignature)
         else
             failwith "[Secp256k1] Error serializing signature"
 
