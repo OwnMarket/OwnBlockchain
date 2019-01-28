@@ -611,7 +611,10 @@ module Consensus =
                         sprintf "Consensus_%s" consensusMessageHash
                         |> ConsensusMessageId
                         |> NetworkMessageId.Consensus
-                    Data = consensusMessageEnvelope |> Mapping.consensusMessageEnvelopeToDto
+                    Data =
+                        consensusMessageEnvelope
+                        |> Mapping.consensusMessageEnvelopeToDto
+                        |> Serialization.serializeBinary
                 }
                 |> MulticastMessage
                 |> sendPeerMessage

@@ -4,6 +4,7 @@ open System
 open System.Collections.Concurrent
 open System.Collections.Generic
 open Own.Common
+open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Dtos
 open NetMQ
@@ -14,29 +15,28 @@ module Transport =
 
     let private poller = new NetMQPoller()
     let mutable private receiverSocket : PullSocket option = None
-    let private connectionPool = new ConcurrentDictionary<string, DealerSocket * NetMQQueue<string>>()
+    let private connectionPool = new ConcurrentDictionary<string, DealerSocket * NetMQQueue<byte[]>>()
 
     let private packMessage message =
-        message |> Serialization.serializePeerMessage
+        message |> Serialization.serializeBinary
 
     let private unpackMessage message =
         message |> Serialization.deserializePeerMessage
 
-    let private send (msg : string) targetAddress =
+    let private send (msg : byte[]) targetAddress =
         match connectionPool.TryGetValue targetAddress with
         | true, (_, queue) ->
             queue.Enqueue msg
         | _ ->
             let senderSocket = new DealerSocket(">tcp://" + targetAddress)
-            let messageQueue = new NetMQQueue<string>()
+            let messageQueue = new NetMQQueue<byte[]>()
             messageQueue.ReceiveReady |> Observable.subscribe (fun eventArgs ->
-                let msgList = new HashSet<string>()
-                let msg = ref ""
-                while eventArgs.Queue.TryDequeue(msg, TimeSpan.FromMilliseconds(100.)) do
-                    msgList.Add !msg |> ignore
+                let msgList = new HashSet<byte[]>()
+                let mutable msg = Array.zeroCreate<byte> 0
+                while eventArgs.Queue.TryDequeue(&msg, TimeSpan.FromMilliseconds(100.)) do
+                    msgList.Add msg |> ignore
 
-                for message in msgList do
-                    senderSocket.TrySendFrame message |> ignore
+                msgList |> Seq.iter (fun m -> senderSocket.TrySendFrame m |> ignore)
             )
             |> ignore
 
@@ -86,10 +86,11 @@ module Transport =
             poller.Add socket
             socket.ReceiveReady
             |> Observable.subscribe (fun eventArgs ->
-                let received, message = eventArgs.Socket.TryReceiveFrameString()
+                let received, message = eventArgs.Socket.TryReceiveFrameBytes()
                 if received then
-                    let peerMessage = unpackMessage message
-                    receiveCallback peerMessage
+                    match unpackMessage message with
+                    | Ok peerMessage -> receiveCallback peerMessage
+                    | Error error -> Log.error error
             )
             |> ignore
         )

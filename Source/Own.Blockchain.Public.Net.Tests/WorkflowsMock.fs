@@ -13,7 +13,7 @@ module WorkflowsMock =
                 if RawMock.hasData address messageId then
                     let peerMessage = ResponseDataMessage {
                         MessageId = messageId
-                        Data = "txEnvelope" |> box
+                        Data = "txEnvelope" |> Conversion.stringToBytes //TODO: fix this
                     }
                     peerMessage
                     |> respondToPeer targetAddress
@@ -24,7 +24,7 @@ module WorkflowsMock =
                 if RawMock.hasData address messageId then
                     let peerMessage = ResponseDataMessage {
                         MessageId = messageId
-                        Data = "equivocationProof" |> box
+                        Data = "equivocationProof" |> Conversion.stringToBytes //TODO: fix this
                     }
                     peerMessage
                     |> respondToPeer targetAddress
@@ -35,7 +35,7 @@ module WorkflowsMock =
                 if RawMock.hasData address messageId then
                     let peerMessage = ResponseDataMessage {
                         MessageId = messageId
-                        Data = "blockEnvelope" |> box
+                        Data = "blockEnvelope" |> Conversion.stringToBytes //TODO: fix this
                     }
                     peerMessage
                     |> respondToPeer targetAddress

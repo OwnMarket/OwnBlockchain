@@ -8,6 +8,7 @@ open Own.Blockchain.Public.Core.Dtos
 open Newtonsoft.Json
 open Newtonsoft.Json.Converters
 open Newtonsoft.Json.Linq
+open MessagePack
 
 module Serialization =
 
@@ -110,63 +111,34 @@ module Serialization =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private tokenToPeerMessage<'T> messageType (token : JToken option) =
-        match token with
-        | Some _ ->
-            {
-                MessageType = messageType
-                MessageData = JsonConvert.DeserializeObject<'T> (token.Value.ToString())
-            }
-            |> box
-        | None ->
-            token |> box
+    let deserializeBinary<'T> (serializedMessageData : byte[]) =
+        LZ4MessagePackSerializer.Deserialize<'T> (serializedMessageData)
+
+    let private deserializeHandler<'T> = fun m -> m |> deserializeBinary<'T> |> box
 
     let private peerMessageTypeToObjectMapping =
+
         [
-            "GossipDiscoveryMessage", tokenToPeerMessage<GossipDiscoveryMessageDto>
-            "GossipMessage", tokenToPeerMessage<GossipMessageDto>
-            "MulticastMessage", tokenToPeerMessage<MulticastMessageDto>
-            "RequestDataMessage", tokenToPeerMessage<RequestDataMessageDto>
-            "ResponseDataMessage", tokenToPeerMessage<ResponseDataMessageDto>
+            "GossipDiscoveryMessage", deserializeHandler<GossipDiscoveryMessageDto>
+            "GossipMessage", deserializeHandler<GossipMessageDto>
+            "MulticastMessage", deserializeHandler<MulticastMessageDto>
+            "RequestDataMessage", deserializeHandler<RequestDataMessageDto>
+            "ResponseDataMessage", deserializeHandler<ResponseDataMessageDto>
         ]
         |> Map.ofList
 
-    let private peerMessageConverter = {
-        new CustomCreationConverter<PeerMessageDto>() with
+    let serializeBinary dto =
+        LZ4MessagePackSerializer.Serialize dto
 
-        override __.Create objectType =
-            failwith "Not implemented"
-
-        override __.ReadJson
-            (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
-            =
-
-            let jObject = JObject.Load(reader)
-
-            match (tokenValue "MessageType" jObject) with
-            | None -> jObject |> box
-            | Some messageType ->
-                let messageData = tokenValue "MessageData"
-                let peerMessageType = messageType.Value<string>()
-                match peerMessageType |> peerMessageTypeToObjectMapping.TryFind with
-                | Some create ->
-                    messageData jObject |> create peerMessageType
-                | None ->
-                    {
-                        MessageType = peerMessageType
-                        MessageData =
-                            match messageData jObject with
-                            | None -> null
-                            | Some x -> x.ToString()
-                    }
-                    |> box
-    }
-
-    let serializePeerMessage dto =
-        JsonConvert.SerializeObject dto
-
-    let deserializePeerMessage message =
-        JsonConvert.DeserializeObject<PeerMessageDto> (message, peerMessageConverter)
-
-    let deserializeJObject<'T> (data : obj) =
-        (data :?> JObject).ToObject<'T>()
+    let deserializePeerMessage (message : byte[]) : Result<PeerMessageDto, AppErrors> =
+        try
+            let peerMessageDto = LZ4MessagePackSerializer.Deserialize<PeerMessageDto> (message)
+            let deserialize = peerMessageTypeToObjectMapping.[peerMessageDto.MessageType]
+            {
+                MessageType = peerMessageDto.MessageType
+                MessageData = deserialize (peerMessageDto.MessageData :?> byte[])
+            }
+            |> Ok
+        with
+        | ex ->
+            Result.appError ex.AllMessagesAndStackTraces

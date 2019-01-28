@@ -891,7 +891,7 @@ module Mapping =
             responseDataMessageFromDto m |> ResponseDataMessage
         | _ -> failwith "Invalid message type to map."
 
-    let peerMessageToDto (serialize : (obj -> string)) (peerMessage : PeerMessage) : PeerMessageDto =
+    let peerMessageToDto (serialize : (obj -> byte[])) (peerMessage : PeerMessage) : PeerMessageDto =
         let messageType, data =
             match peerMessage with
             | GossipDiscoveryMessage m -> "GossipDiscoveryMessage", m |> gossipDiscoveryMessageToDto |> serialize

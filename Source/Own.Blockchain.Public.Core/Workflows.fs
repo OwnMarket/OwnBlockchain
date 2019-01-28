@@ -590,7 +590,7 @@ module Workflows =
             GossipMessage {
                 MessageId = Tx txHash
                 SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
-                Data = txEnvelopeDto
+                Data = Serialization.serializeBinary txEnvelopeDto
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" txHash.Value
@@ -607,7 +607,7 @@ module Workflows =
             GossipMessage {
                 MessageId = EquivocationProof equivocationProofHash
                 SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
-                Data = equivocationProofDto
+                Data = Serialization.serializeBinary equivocationProofDto
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "EquivocationProof %s does not exist" equivocationProofHash.Value
@@ -624,7 +624,7 @@ module Workflows =
             GossipMessage {
                 MessageId = Block blockNumber
                 SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
-                Data = blockEnvelopeDto
+                Data = Serialization.serializeBinary blockEnvelopeDto
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "Block %i does not exist." blockNumber.Value
@@ -644,7 +644,7 @@ module Workflows =
             | Ok _ -> None
             | _ ->
                 data
-                |> Serialization.deserializeJObject
+                |> Serialization.deserializeBinary<TxEnvelopeDto>
                 |> fun txEnvelopeDto ->
                     (txHash, txEnvelopeDto)
                     |> (if isResponse then TxFetched else TxReceived)
@@ -656,7 +656,7 @@ module Workflows =
             | Ok _ -> None
             | _ ->
                 data
-                |> Serialization.deserializeJObject
+                |> Serialization.deserializeBinary<EquivocationProofDto>
                 |> fun equivocationProofDto ->
                     equivocationProofDto
                     |> (if isResponse then EquivocationProofFetched else EquivocationProofReceived)
@@ -664,7 +664,7 @@ module Workflows =
             |> Ok
 
         let processBlockFromPeer isResponse blockNr data =
-            let blockEnvelopeDto = data |> Serialization.deserializeJObject
+            let blockEnvelopeDto = data |> Serialization.deserializeBinary<BlockEnvelopeDto>
 
             result {
                 let receivedBlock = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
@@ -680,11 +680,11 @@ module Workflows =
 
         let processConsensusMessageFromPeer consensusMessageId data =
             data
-            |> Serialization.deserializeJObject
+            |> Serialization.deserializeBinary<ConsensusMessageEnvelopeDto>
             |> handleReceivedConsensusMessage
             |> Result.map (ConsensusMessageReceived >> Some)
 
-        let processData isResponse messageId (data : obj) =
+        let processData isResponse messageId (data : byte[]) =
             match messageId with
             | Tx txHash -> processTxFromPeer isResponse txHash data
             | EquivocationProof proofHash -> processEquivocationProofFromPeer isResponse proofHash data
@@ -698,7 +698,7 @@ module Workflows =
                 | Ok txEvenvelopeDto ->
                     ResponseDataMessage {
                         MessageId = messageId
-                        Data = txEvenvelopeDto
+                        Data = txEvenvelopeDto |> Serialization.serializeBinary
                     }
                     |> respondToPeer senderAddress
                     Ok None
@@ -709,7 +709,7 @@ module Workflows =
                 | Ok equivocationProofDto ->
                     ResponseDataMessage {
                         MessageId = messageId
-                        Data = equivocationProofDto
+                        Data = equivocationProofDto |> Serialization.serializeBinary
                     }
                     |> respondToPeer senderAddress
                     Ok None
@@ -726,7 +726,7 @@ module Workflows =
                 | Ok blockEnvelopeDto ->
                     ResponseDataMessage {
                         MessageId = messageId
-                        Data = blockEnvelopeDto
+                        Data = blockEnvelopeDto |> Serialization.serializeBinary
                     }
                     |> respondToPeer senderAddress
                     Ok None

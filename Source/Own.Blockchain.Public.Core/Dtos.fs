@@ -380,18 +380,20 @@ type AccountHoldingDto = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // TODO: Find a cleaner way to do this.
+[<MessagePackObject>]
 type ConsensusMessageDto = {
-    ConsensusMessageType : string
-    BlockHash : string
-    Block : BlockDto
-    ValidRound : Nullable<int>
+    [<Key(0)>] ConsensusMessageType : string
+    [<Key(1)>] BlockHash : string
+    [<Key(2)>] Block : BlockDto
+    [<Key(3)>] ValidRound : Nullable<int>
 }
 
+[<MessagePackObject>]
 type ConsensusMessageEnvelopeDto = {
-    BlockNumber : int64
-    Round : int
-    ConsensusMessage : ConsensusMessageDto
-    Signature : string
+    [<Key(0)>] BlockNumber : int64
+    [<Key(1)>] Round : int
+    [<Key(2)>] ConsensusMessage : ConsensusMessageDto
+    [<Key(3)>] Signature : string
 }
 
 [<CLIMutable>]
@@ -420,49 +422,56 @@ type EquivocationInfoDto = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type GossipMemberDto = {
-    NetworkAddress : string
-    Heartbeat : int64
+    [<Key(0)>] NetworkAddress : string
+    [<Key(1)>] Heartbeat : int64
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type GossipDiscoveryMessageDto = {
-    ActiveMembers : GossipMemberDto list
+    [<Key(0)>] ActiveMembers : GossipMemberDto list
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type GossipMessageDto = {
-    MessageType : string
-    MessageId : string
-    SenderAddress : string
-    Data : obj
+    [<Key(0)>] MessageType : string
+    [<Key(1)>] MessageId : string
+    [<Key(2)>] SenderAddress : string
+    [<Key(3)>] Data : byte[]
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type MulticastMessageDto = {
-    MessageType : string
-    MessageId : string
-    Data : obj
+    [<Key(0)>] MessageType : string
+    [<Key(1)>] MessageId : string
+    [<Key(2)>] Data : byte[]
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type RequestDataMessageDto = {
-    MessageType : string
-    MessageId : string
-    SenderAddress : string
+    [<Key(0)>] MessageType : string
+    [<Key(1)>] MessageId : string
+    [<Key(2)>] SenderAddress : string
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type ResponseDataMessageDto = {
-    MessageType : string
-    MessageId : string
-    Data : obj
+    [<Key(0)>] MessageType : string
+    [<Key(1)>] MessageId : string
+    [<Key(2)>] Data : byte[]
 }
 
 [<CLIMutable>]
+[<MessagePackObject>]
 type PeerMessageDto = {
-    MessageType : string
-    MessageData : obj
+    [<Key(0)>] MessageType : string
+    [<Key(1)>] MessageData : obj
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

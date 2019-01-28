@@ -137,14 +137,14 @@ module Peers =
                 |> Option.iter (fun members ->
                     for m in members do
                         Log.debugf "Sending memberlist to: %s" m.NetworkAddress.Value
-                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage message
+                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
                         sendGossipDiscoveryMessage
                             peerMessageDto
                             m.NetworkAddress.Value
                 )
 
             | MulticastMessage _ ->
-                let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage message
+                let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
                 sendMulticastMessage
                     config.NetworkAddress.Value
                     peerMessageDto
@@ -190,7 +190,7 @@ module Peers =
                             MessageId = messageId
                             SenderAddress = config.NetworkAddress
                         }
-                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage unicastMessage
+                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary unicastMessage
                         sendUnicastMessage peerMessageDto address.Value
                     )
 
@@ -209,7 +209,7 @@ module Peers =
             Async.Start(loop requestId, cts.Token)
 
         member __.SendResponseDataMessage (targetAddress : NetworkAddress) responseMessage =
-            let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage responseMessage
+            let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary responseMessage
             sendUnicastMessage peerMessageDto targetAddress.Value
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -349,7 +349,7 @@ module Peers =
                     recipientAddress.Value
 
                 let peerMessage = GossipMessage gossipMessage
-                let peerMessageDto = Mapping.peerMessageToDto Serialization.serializePeerMessage peerMessage
+                let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary peerMessage
                 let recipientMemberDto = Mapping.gossipMemberToDto recipientMember
                 sendGossipMessage peerMessageDto recipientMemberDto
             | false, _ -> ()

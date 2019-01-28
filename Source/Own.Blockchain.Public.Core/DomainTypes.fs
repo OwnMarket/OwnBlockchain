@@ -455,12 +455,12 @@ type GossipDiscoveryMessage = {
 type GossipMessage = {
     MessageId : NetworkMessageId
     SenderAddress : NetworkAddress
-    Data : obj
+    Data : byte[]
 }
 
 type MulticastMessage = {
     MessageId : NetworkMessageId
-    Data : obj
+    Data : byte[]
 }
 
 type RequestDataMessage = {
@@ -470,7 +470,7 @@ type RequestDataMessage = {
 
 type ResponseDataMessage = {
     MessageId : NetworkMessageId
-    Data : obj
+    Data : byte[]
 }
 
 type PeerMessage =

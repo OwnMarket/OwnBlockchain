@@ -2,20 +2,21 @@
 
 open System.Collections.Concurrent
 open Own.Common
+open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Dtos
 
 module TransportMock =
 
-    let messageQueue = new ConcurrentDictionary<string, Set<string>>()
+    let messageQueue = new ConcurrentDictionary<string, Set<byte[]>>()
 
     let private packMessage message =
-        message |> Serialization.serializePeerMessage
+        message |> Serialization.serializeBinary
 
     let private unpackMessage message =
         message |> Serialization.deserializePeerMessage
 
-    let private send (msg : string) targetAddress =
+    let private send (msg : byte[]) targetAddress =
         match messageQueue.TryGetValue targetAddress with
         | true, messages ->
             let set = messages.Add(msg)
@@ -57,8 +58,9 @@ module TransportMock =
                 | true, messages ->
                     messages
                     |> Set.iter(fun message ->
-                        let peerMessage = unpackMessage message
-                        callback peerMessage
+                        match unpackMessage message with
+                        | Ok peerMessage -> callback peerMessage
+                        | Error error -> Log.error error
                     )
                     messageQueue.TryRemove address |> ignore
                 | _ -> ()

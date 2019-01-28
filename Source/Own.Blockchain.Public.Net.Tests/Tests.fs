@@ -2,6 +2,7 @@ namespace Own.Blockchain.Public.Net.Tests
 
 open System.Threading
 open Own.Common
+open Own.Blockchain.Common
 open Own.Blockchain.Public.Net.Peers
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Events
@@ -29,7 +30,7 @@ module PeerTests =
         let gossipMessage = GossipMessage {
             MessageId = Tx txHash
             SenderAddress = node.GetNetworkAddress()
-            Data = "txEnvelope" |> box
+            Data = "txEnvelope" |> Conversion.stringToBytes //TODO: fix this
         }
 
         node |> sendMessage gossipMessage
@@ -37,7 +38,7 @@ module PeerTests =
     let multicastTx (node : NetworkNode) txHash =
         let multicastMessage = MulticastMessage {
             MessageId = Tx txHash
-            Data = "txEnvelope" |> box
+            Data = "txEnvelope" |> Conversion.stringToBytes //TODO: fix this
         }
 
         node |> sendMessage multicastMessage
@@ -49,7 +50,7 @@ module PeerTests =
         let peerMessage = GossipMessage {
             MessageId = Block blockNr
             SenderAddress = node.GetNetworkAddress()
-            Data = "blockEnvelope" |> box
+            Data = "blockEnvelope" |> Conversion.stringToBytes //TODO: fix this
         }
 
         node |> sendMessage peerMessage
@@ -58,7 +59,7 @@ module PeerTests =
         let peerMessage = GossipMessage {
             MessageId = Block blockNr
             SenderAddress = node.GetNetworkAddress()
-            Data = "blockEnvelope" |> box
+            Data = "blockEnvelope" |> Conversion.stringToBytes //TODO: fix this
         }
 
         node |> sendMessage peerMessage
