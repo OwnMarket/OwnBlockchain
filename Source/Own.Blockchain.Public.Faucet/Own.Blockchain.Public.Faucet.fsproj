@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MessagePack.FSharpExtensions" Version="1.4.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.1.1" />

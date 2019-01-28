@@ -117,7 +117,6 @@ module Serialization =
     let private deserializeHandler<'T> = fun m -> m |> deserializeBinary<'T> |> box
 
     let private peerMessageTypeToObjectMapping =
-
         [
             "GossipDiscoveryMessage", deserializeHandler<GossipDiscoveryMessageDto>
             "GossipMessage", deserializeHandler<GossipMessageDto>

@@ -3,6 +3,8 @@ open System.Threading
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Faucet
+open MessagePack.Resolvers
+open MessagePack.FSharp
 
 [<EntryPoint>]
 let main argv =
@@ -11,6 +13,11 @@ let main argv =
     try
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
         Thread.CurrentThread.CurrentUICulture <- CultureInfo.InvariantCulture
+
+        CompositeResolver.RegisterAndSetAsDefault(
+            FSharpResolver.Instance,
+            StandardResolver.Instance
+        )
 
         PaceMaker.start ()
         Api.start ()
