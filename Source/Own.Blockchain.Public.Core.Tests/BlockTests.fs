@@ -57,11 +57,11 @@ module BlockTests =
         test <@ txResultHash = "ABCB...C.......D" @>
 
     [<Fact>]
-    let ``Blocks.createEquivocationProofResultHash for DepositTaken`` () =
+    let ``Blocks.createEquivocationProofResultHash for 1 CHX deposit taken`` () =
         let equivocationProofHash = EquivocationProofHash "ABC"
         let equivocationProofStatus =
             {
-                Status = EquivocationProofStatus.DepositTaken (ChxAmount 1m)
+                DepositTaken = ChxAmount 1m
                 BlockNumber = BlockNumber 4L
             }
 
@@ -73,14 +73,14 @@ module BlockTests =
                 (equivocationProofHash, equivocationProofStatus)
 
         // ASSERT
-        test <@ equivocationProofResultHash = "ABCA...A...................D" @>
+        test <@ equivocationProofResultHash = "ABC...A...................D" @>
 
     [<Fact>]
-    let ``Blocks.createEquivocationProofResultHash for DepositAlreadyTaken`` () =
+    let ``Blocks.createEquivocationProofResultHash for 0 CHX deposit taken`` () =
         let equivocationProofHash = EquivocationProofHash "ABC"
         let equivocationProofStatus =
             {
-                Status = EquivocationProofStatus.DepositAlreadyTaken
+                DepositTaken = ChxAmount 0m
                 BlockNumber = BlockNumber 4L
             }
 
@@ -92,26 +92,7 @@ module BlockTests =
                 (equivocationProofHash, equivocationProofStatus)
 
         // ASSERT
-        test <@ equivocationProofResultHash = "ABCB.......................D" @>
-
-    [<Fact>]
-    let ``Blocks.createEquivocationProofResultHash for DepositNotAvailable`` () =
-        let equivocationProofHash = EquivocationProofHash "ABC"
-        let equivocationProofStatus =
-            {
-                Status = EquivocationProofStatus.DepositNotAvailable
-                BlockNumber = BlockNumber 4L
-            }
-
-        // ACT
-        let equivocationProofResultHash =
-            Blocks.createEquivocationProofResultHash
-                DummyHash.decode
-                DummyHash.create
-                (equivocationProofHash, equivocationProofStatus)
-
-        // ASSERT
-        test <@ equivocationProofResultHash = "ABCC.......................D" @>
+        test <@ equivocationProofResultHash = "ABC.......................D" @>
 
     [<Fact>]
     let ``Blocks.createChxBalanceStateHash`` () =
@@ -342,26 +323,21 @@ module BlockTests =
 
         // Equivocation Proofs
         let equivocationProofs =
-            ["DDD"; "EEE"; "FFF"]
+            ["DDD"; "EEE"]
             |> List.map EquivocationProofHash
 
         let equivocationProofResult1 : EquivocationProofResult = {
-            Status = DepositTaken (ChxAmount 7m)
+            DepositTaken = ChxAmount 7m
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResult2 : EquivocationProofResult = {
-            Status = DepositAlreadyTaken
-            BlockNumber = BlockNumber 5L
-        }
-
-        let equivocationProofResult3 : EquivocationProofResult = {
-            Status = DepositNotAvailable
+            DepositTaken = ChxAmount 0m
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResults =
-            [equivocationProofResult1; equivocationProofResult2; equivocationProofResult3]
+            [equivocationProofResult1; equivocationProofResult2]
             |> List.zip equivocationProofs
             |> Map.ofList
 
@@ -552,13 +528,12 @@ module BlockTests =
             ]
             |> String.Concat
 
-        let equivocationProofsRoot = "DDDEEEFFF"
+        let equivocationProofsRoot = "DDDEEE"
 
         let equivocationProofResultsRoot =
             [
-                "DDDA...G...................E" // EquivocationProofResult 1
-                "EEEB.......................E" // EquivocationProofResult 2
-                "FFFC.......................E" // EquivocationProofResult 3
+                "DDD...G...................E" // EquivocationProofResult 1
+                "EEE.......................E" // EquivocationProofResult 2
             ]
             |> String.Concat
 
@@ -696,26 +671,21 @@ module BlockTests =
 
         // Equivocation Proofs
         let equivocationProofs =
-            ["Proof1"; "Proof2"; "Proof3"]
+            ["Proof1"; "Proof2"]
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
         let equivocationProofResult1 : EquivocationProofResult = {
-            Status = DepositTaken (ChxAmount 7m)
+            DepositTaken = ChxAmount 7m
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResult2 : EquivocationProofResult = {
-            Status = DepositAlreadyTaken
-            BlockNumber = BlockNumber 5L
-        }
-
-        let equivocationProofResult3 : EquivocationProofResult = {
-            Status = DepositNotAvailable
+            DepositTaken = ChxAmount 0m
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResults =
-            [equivocationProofResult1; equivocationProofResult2; equivocationProofResult3]
+            [equivocationProofResult1; equivocationProofResult2]
             |> List.zip equivocationProofs
             |> Map.ofList
 
@@ -1022,26 +992,21 @@ module BlockTests =
 
         // Equivocation Proofs
         let equivocationProofs =
-            ["Proof1"; "Proof2"; "Proof3"]
+            ["Proof1"; "Proof2"]
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
         let equivocationProofResult1 : EquivocationProofResult = {
-            Status = DepositTaken (ChxAmount 7m)
+            DepositTaken = ChxAmount 7m
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResult2 : EquivocationProofResult = {
-            Status = DepositAlreadyTaken
-            BlockNumber = BlockNumber 5L
-        }
-
-        let equivocationProofResult3 : EquivocationProofResult = {
-            Status = DepositNotAvailable
+            DepositTaken = ChxAmount 0m
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResults =
-            [equivocationProofResult1; equivocationProofResult2; equivocationProofResult3]
+            [equivocationProofResult1; equivocationProofResult2]
             |> List.zip equivocationProofs
             |> Map.ofList
 

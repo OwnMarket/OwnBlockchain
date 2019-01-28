@@ -242,33 +242,15 @@ module Mapping =
             ConsensusStep = equivocationProof.ConsensusStep |> consensusStepToCode
         }
 
-    let equivocationProofResultToDto (equivocationProofResult : EquivocationProofResult) =
-        let status, amountTaken =
-            match equivocationProofResult.Status with
-            | DepositTaken amount -> 1uy, Nullable amount.Value
-            | DepositAlreadyTaken -> 2uy, Nullable ()
-            | DepositNotAvailable -> 3uy, Nullable ()
-
+    let equivocationProofResultToDto (equivocationProofResult : EquivocationProofResult) : EquivocationProofResultDto =
         {
-            Status = status
-            AmountTaken = amountTaken
+            DepositTaken = equivocationProofResult.DepositTaken.Value
             BlockNumber = equivocationProofResult.BlockNumber.Value
         }
 
     let equivocationProofResultFromDto (dto : EquivocationProofResultDto) : EquivocationProofResult =
-        let status =
-            match dto.Status with
-            | 1uy ->
-                if dto.AmountTaken.HasValue then
-                    dto.AmountTaken.Value |> ChxAmount |> DepositTaken
-                else
-                    failwith "AmountTaken cannot be NULL for EquivocationProofStatus.DepositTaken."
-            | 2uy -> DepositAlreadyTaken
-            | 3uy -> DepositNotAvailable
-            | c -> failwithf "Unknown EquivocationProofStatus code %i" c
-
         {
-            Status = status
+            DepositTaken = ChxAmount dto.DepositTaken
             BlockNumber = BlockNumber dto.BlockNumber
         }
 

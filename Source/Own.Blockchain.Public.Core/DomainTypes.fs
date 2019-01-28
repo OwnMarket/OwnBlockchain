@@ -302,13 +302,8 @@ type TxResult = {
     BlockNumber : BlockNumber
 }
 
-type EquivocationProofStatus =
-    | DepositTaken of ChxAmount
-    | DepositAlreadyTaken // Multiple proofs for same block/validator.
-    | DepositNotAvailable // Proof included in the block too late - validator escaped.
-
 type EquivocationProofResult = {
-    Status : EquivocationProofStatus
+    DepositTaken : ChxAmount
     BlockNumber : BlockNumber
 }
 

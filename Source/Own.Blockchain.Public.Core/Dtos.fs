@@ -159,9 +159,8 @@ type TxResultDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type EquivocationProofResultDto = {
-    [<Key(0)>] Status : byte
-    [<Key(1)>] AmountTaken : Nullable<decimal>
-    [<Key(2)>] BlockNumber : int64
+    [<Key(0)>] DepositTaken : decimal
+    [<Key(1)>] BlockNumber : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

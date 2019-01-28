@@ -32,13 +32,10 @@ module Blocks =
         (EquivocationProofHash equivocationProofHash, equivocationProofResult : EquivocationProofResult)
         =
 
-        let equivocationProofResult = Mapping.equivocationProofResultToDto equivocationProofResult
-
         [
             decodeHash equivocationProofHash
-            [| equivocationProofResult.Status |]
-            equivocationProofResult.AmountTaken |?? 0m |> decimalToBytes
-            equivocationProofResult.BlockNumber |> int64ToBytes
+            equivocationProofResult.DepositTaken.Value |> decimalToBytes
+            equivocationProofResult.BlockNumber.Value |> int64ToBytes
         ]
         |> Array.concat
         |> createHash
