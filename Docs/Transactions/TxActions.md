@@ -264,6 +264,18 @@ Parameter | Data Type | Description
 - For new eligibility (i.e. there is no existing eligibility for the (`AccountHash`, `AssetHash`) pair) the transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action) or one of the addresses from the approved list of KYC providers for the asset.
 - If eligibility exists, then the transaction must be signed using the private key of the address currently set as the KYC controller for the account.
 
+### `SetIsEligibilityRequired`
+
+`SetIsEligibilityRequired` action sets the eligibility required flag on the asset
+
+Parameter | Data Type | Description
+--- | --- | ---
+`AssetHash` | string | Hash of the asset for which the required eligibility flag is set.
+`IsEligibilityRequired` | bool | Determine if the eligibility requirement checks are performed on `TransferAsset` action
+
+**NOTE:**
+The transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action).
+
 ### `ChangeKycControllerAddress`
 
 `ChangeKycControllerAddress` action changes the KYC controller responsible for maintaining the account eligibility flags in the context of a certain asset.
