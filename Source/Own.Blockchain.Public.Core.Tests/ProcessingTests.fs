@@ -289,6 +289,156 @@ module ProcessingTests =
         test <@ output.ChxBalances.[staker2Wallet.Address].Amount = staker2ChxBalance @>
         test <@ output.ChxBalances.[staker3Wallet.Address].Amount = staker3ChxBalance @>
 
+    [<Fact>]
+    let ``Processing.processTxSet distributes rewards to stakers with proper decimalization`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let staker1Wallet = Signing.generateWallet ()
+        let staker2Wallet = Signing.generateWallet ()
+        let staker3Wallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                staker1Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
+                staker2Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
+                staker3Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
+            ]
+            |> Map.ofList
+
+        let stake1 = ChxAmount 100m
+        let stake2 = ChxAmount 100m
+        let stake3 = ChxAmount 100m
+
+        let fee = ChxAmount 0.0000010m
+        let sharedRewardPercent = 100m
+        let validatorReward = ChxAmount 0.0000001m // Due to rounding
+        let staker1Reward = ChxAmount 0.0000003m
+        let staker2Reward = ChxAmount 0.0000003m
+        let staker3Reward = ChxAmount 0.0000003m
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let amountToTransfer = ChxAmount 10m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
+        let getKycControllersState _ =
+            failwith "getKycControllersState should not be called"
+
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState (stakerAddress, validatorAddress) =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ =
+            [
+                {StakerInfo.StakerAddress = staker1Wallet.Address; Amount = stake1}
+                {StakerInfo.StakerAddress = staker2Wallet.Address; Amount = stake2}
+                {StakerInfo.StakerAddress = staker3Wallet.Address; Amount = stake3}
+            ]
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                sharedRewardPercent
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - fee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + validatorReward
+        let staker1ChxBalance = initialChxState.[staker1Wallet.Address].Amount + staker1Reward
+        let staker2ChxBalance = initialChxState.[staker2Wallet.Address].Amount + staker2Reward
+        let staker3ChxBalance = initialChxState.[staker3Wallet.Address].Amount + staker3Reward
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+
+        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[staker1Wallet.Address].Nonce = initialChxState.[staker1Wallet.Address].Nonce @>
+        test <@ output.ChxBalances.[staker2Wallet.Address].Nonce = initialChxState.[staker2Wallet.Address].Nonce @>
+        test <@ output.ChxBalances.[staker3Wallet.Address].Nonce = initialChxState.[staker3Wallet.Address].Nonce @>
+
+        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxBalances.[staker1Wallet.Address].Amount = staker1ChxBalance @>
+        test <@ output.ChxBalances.[staker2Wallet.Address].Amount = staker2ChxBalance @>
+        test <@ output.ChxBalances.[staker3Wallet.Address].Amount = staker3ChxBalance @>
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TransferChx
     ////////////////////////////////////////////////////////////////////////////////////////////////////
