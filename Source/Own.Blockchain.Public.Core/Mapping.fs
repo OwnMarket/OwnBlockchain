@@ -603,9 +603,9 @@ module Mapping =
         =
 
         {
-            GetAddressApiResponseDto.BlockchainAddress = blockchainAddress
-            GetAddressApiResponseDto.Balance = chxBalanceState.Amount
-            GetAddressApiResponseDto.Nonce = chxBalanceState.Nonce
+            BlockchainAddress = blockchainAddress
+            Balance = chxBalanceState.Amount
+            Nonce = chxBalanceState.Nonce
         }
 
     let accountHoldingDtosToGetAccoungHoldingsResponseDto
@@ -621,34 +621,34 @@ module Mapping =
             }
 
         {
-            GetAccountApiResponseDto.AccountHash = accountHash
-            GetAccountApiResponseDto.ControllerAddress = accountState.ControllerAddress
-            GetAccountApiResponseDto.Holdings = List.map mapFn holdings
+            AccountHash = accountHash
+            ControllerAddress = accountState.ControllerAddress
+            Holdings = List.map mapFn holdings
         }
 
     let blockEnvelopeDtoToGetBlockApiResponseDto (blockEnvelopeDto : BlockEnvelopeDto) =
         let blockDto = blockEnvelopeDto.Block
 
         {
-            GetBlockApiResponseDto.Number = blockDto.Header.Number
-            GetBlockApiResponseDto.Hash = blockDto.Header.Hash
-            GetBlockApiResponseDto.PreviousHash = blockDto.Header.PreviousHash
-            GetBlockApiResponseDto.ConfigurationBlockNumber = blockDto.Header.ConfigurationBlockNumber
-            GetBlockApiResponseDto.Timestamp = blockDto.Header.Timestamp
-            GetBlockApiResponseDto.ProposerAddress = blockDto.Header.ProposerAddress
-            GetBlockApiResponseDto.TxSetRoot = blockDto.Header.TxSetRoot
-            GetBlockApiResponseDto.TxResultSetRoot = blockDto.Header.TxResultSetRoot
-            GetBlockApiResponseDto.EquivocationProofsRoot = blockDto.Header.EquivocationProofsRoot
-            GetBlockApiResponseDto.EquivocationProofResultsRoot = blockDto.Header.EquivocationProofResultsRoot
-            GetBlockApiResponseDto.StateRoot = blockDto.Header.StateRoot
-            GetBlockApiResponseDto.StakingRewardsRoot = blockDto.Header.StakingRewardsRoot
-            GetBlockApiResponseDto.ConfigurationRoot = blockDto.Header.ConfigurationRoot
-            GetBlockApiResponseDto.TxSet = blockDto.TxSet
-            GetBlockApiResponseDto.EquivocationProofs = blockDto.EquivocationProofs
-            GetBlockApiResponseDto.StakingRewards = blockDto.StakingRewards
-            GetBlockApiResponseDto.Configuration = blockDto.Configuration
-            GetBlockApiResponseDto.ConsensusRound = blockEnvelopeDto.ConsensusRound
-            GetBlockApiResponseDto.Signatures = blockEnvelopeDto.Signatures
+            Number = blockDto.Header.Number
+            Hash = blockDto.Header.Hash
+            PreviousHash = blockDto.Header.PreviousHash
+            ConfigurationBlockNumber = blockDto.Header.ConfigurationBlockNumber
+            Timestamp = blockDto.Header.Timestamp
+            ProposerAddress = blockDto.Header.ProposerAddress
+            TxSetRoot = blockDto.Header.TxSetRoot
+            TxResultSetRoot = blockDto.Header.TxResultSetRoot
+            EquivocationProofsRoot = blockDto.Header.EquivocationProofsRoot
+            EquivocationProofResultsRoot = blockDto.Header.EquivocationProofResultsRoot
+            StateRoot = blockDto.Header.StateRoot
+            StakingRewardsRoot = blockDto.Header.StakingRewardsRoot
+            ConfigurationRoot = blockDto.Header.ConfigurationRoot
+            TxSet = blockDto.TxSet
+            EquivocationProofs = blockDto.EquivocationProofs
+            StakingRewards = blockDto.StakingRewards
+            Configuration = blockDto.Configuration
+            ConsensusRound = blockEnvelopeDto.ConsensusRound
+            Signatures = blockEnvelopeDto.Signatures
         }
 
     let txToGetTxApiResponseDto
@@ -664,15 +664,41 @@ module Mapping =
             | None -> 0uy, Nullable(), Nullable(), Nullable()
 
         {
-            GetTxApiResponseDto.TxHash = txHash
-            GetTxApiResponseDto.SenderAddress = senderAddress
-            GetTxApiResponseDto.Nonce = txDto.Nonce
-            GetTxApiResponseDto.Fee = txDto.Fee
-            GetTxApiResponseDto.Actions = txDto.Actions
-            GetTxApiResponseDto.Status = txStatus |> txStatusNumberToString
-            GetTxApiResponseDto.ErrorCode = txErrorCode |> txErrorCodeNumberToString
-            GetTxApiResponseDto.FailedActionNumber = failedActionNumber
-            GetTxApiResponseDto.BlockNumber = blockNumber
+            TxHash = txHash
+            SenderAddress = senderAddress
+            Nonce = txDto.Nonce
+            Fee = txDto.Fee
+            Actions = txDto.Actions
+            Status = txStatus |> txStatusNumberToString
+            ErrorCode = txErrorCode |> txErrorCodeNumberToString
+            FailedActionNumber = failedActionNumber
+            IncludedInBlockNumber = blockNumber
+        }
+
+    let equivocationProofToGetEquivocationProofApiResponseDto
+        (EquivocationProofHash equivocationProofHash)
+        (BlockchainAddress validatorAddress)
+        (equivocationProofDto : EquivocationProofDto)
+        (equivocationProofResult : EquivocationProofResultDto option)
+        =
+
+        let depositTaken, blockNumber =
+            match equivocationProofResult with
+            | Some r -> Nullable r.DepositTaken, Nullable r.BlockNumber
+            | None -> Nullable(), Nullable()
+
+        {
+            EquivocationProofHash = equivocationProofHash
+            ValidatorAddress = validatorAddress
+            BlockNumber = equivocationProofDto.BlockNumber
+            ConsensusRound = equivocationProofDto.ConsensusRound
+            ConsensusStep = equivocationProofDto.ConsensusStep |> consensusStepFromCode |> unionCaseName
+            BlockHash1 = equivocationProofDto.BlockHash1
+            BlockHash2 = equivocationProofDto.BlockHash2
+            Signature1 = equivocationProofDto.Signature1
+            Signature2 = equivocationProofDto.Signature2
+            DepositTaken = depositTaken
+            IncludedInBlockNumber = blockNumber
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

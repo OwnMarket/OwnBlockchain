@@ -156,13 +156,6 @@ type TxResultDto = {
     [<Key(3)>] BlockNumber : int64
 }
 
-[<CLIMutable>]
-[<MessagePackObject>]
-type EquivocationProofResultDto = {
-    [<Key(0)>] DepositTaken : decimal
-    [<Key(1)>] BlockNumber : int64
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Blockchain Configuration
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -235,6 +228,54 @@ type BlockInfoDto = {
     BlockHash : string
     BlockTimestamp : int64
     IsConfigBlock : bool
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Consensus
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+[<MessagePackObject>]
+type ConsensusMessageDto = {
+    [<Key(0)>] ConsensusMessageType : string
+    [<Key(1)>] BlockHash : string
+    [<Key(2)>] Block : BlockDto
+    [<Key(3)>] ValidRound : Nullable<int>
+}
+
+[<MessagePackObject>]
+type ConsensusMessageEnvelopeDto = {
+    [<Key(0)>] BlockNumber : int64
+    [<Key(1)>] Round : int
+    [<Key(2)>] ConsensusMessage : ConsensusMessageDto
+    [<Key(3)>] Signature : string
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type EquivocationProofDto = {
+    [<Key(0)>] BlockNumber : int64
+    [<Key(1)>] ConsensusRound : int
+    [<Key(2)>] ConsensusStep : byte
+    [<Key(3)>] BlockHash1 : string
+    [<Key(4)>] BlockHash2 : string
+    [<Key(5)>] Signature1 : string
+    [<Key(6)>] Signature2 : string
+}
+
+[<CLIMutable>]
+type EquivocationInfoDto = {
+    EquivocationProofHash : string
+    ValidatorAddress : string
+    BlockNumber : int64
+    ConsensusRound : int
+    ConsensusStep : byte
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type EquivocationProofResultDto = {
+    [<Key(0)>] DepositTaken : decimal
+    [<Key(1)>] BlockNumber : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -375,48 +416,6 @@ type AccountHoldingDto = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Consensus
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// TODO: Find a cleaner way to do this.
-[<MessagePackObject>]
-type ConsensusMessageDto = {
-    [<Key(0)>] ConsensusMessageType : string
-    [<Key(1)>] BlockHash : string
-    [<Key(2)>] Block : BlockDto
-    [<Key(3)>] ValidRound : Nullable<int>
-}
-
-[<MessagePackObject>]
-type ConsensusMessageEnvelopeDto = {
-    [<Key(0)>] BlockNumber : int64
-    [<Key(1)>] Round : int
-    [<Key(2)>] ConsensusMessage : ConsensusMessageDto
-    [<Key(3)>] Signature : string
-}
-
-[<CLIMutable>]
-[<MessagePackObject>]
-type EquivocationProofDto = {
-    [<Key(0)>] BlockNumber : int64
-    [<Key(1)>] ConsensusRound : int
-    [<Key(2)>] ConsensusStep : byte
-    [<Key(3)>] BlockHash1 : string
-    [<Key(4)>] BlockHash2 : string
-    [<Key(5)>] Signature1 : string
-    [<Key(6)>] Signature2 : string
-}
-
-[<CLIMutable>]
-type EquivocationInfoDto = {
-    EquivocationProofHash : string
-    ValidatorAddress : string
-    BlockNumber : int64
-    ConsensusRound : int
-    ConsensusStep : byte
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -492,9 +491,25 @@ type GetTxApiResponseDto = {
     Fee : decimal
     Actions : TxActionDto list
     Status : string
+    // Result
     ErrorCode : string
     FailedActionNumber : Nullable<int16>
-    BlockNumber : Nullable<int64>
+    IncludedInBlockNumber : Nullable<int64>
+}
+
+type GetEquivocationProofApiResponseDto = {
+    EquivocationProofHash : string
+    ValidatorAddress : string
+    BlockNumber : int64
+    ConsensusRound : int
+    ConsensusStep : string
+    BlockHash1 : string
+    BlockHash2 : string
+    Signature1 : string
+    Signature2 : string
+    // Result
+    DepositTaken : Nullable<decimal>
+    IncludedInBlockNumber : Nullable<int64>
 }
 
 type GetBlockApiResponseDto = {

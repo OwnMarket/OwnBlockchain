@@ -48,6 +48,7 @@ module Composition =
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
 
     let saveEquivocationProofToDb = Db.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
+    let getEquivocationInfo = Db.getEquivocationProof Config.DbEngineType Config.DbConnectionString
     let getPendingEquivocationProofs = Db.getPendingEquivocationProofs Config.DbEngineType Config.DbConnectionString
     let getAllPendingEquivocationProofHashes () =
         Db.getAllPendingEquivocationProofHashes Config.DbEngineType Config.DbConnectionString
@@ -360,6 +361,15 @@ module Composition =
             (ChxAmount Config.MinTxActionFee)
 
     let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Hashing.hash Signing.verifySignature
+
+    let getEquivocationProofApi =
+        Workflows.getEquivocationProofApi
+            getEquivocationProof
+            getEquivocationInfo
+            getEquivocationProofResult
+            Hashing.decode
+            Hashing.hash
+            Signing.verifySignature
 
     let getBlockApi = Workflows.getBlockApi getLastAppliedBlockNumber getBlock
 

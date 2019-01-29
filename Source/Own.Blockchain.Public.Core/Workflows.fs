@@ -823,6 +823,44 @@ module Workflows =
             return Mapping.txToGetTxApiResponseDto txHash senderAddress txDto txResult
         }
 
+    let getEquivocationProofApi
+        getEquivocationProof
+        getEquivocationInfo
+        getEquivocationProofResult
+        decodeHash
+        createHash
+        verifySignature
+        (equivocationProofHash : EquivocationProofHash)
+        : Result<GetEquivocationProofApiResponseDto, AppErrors>
+        =
+
+        result {
+            let! equivocationProofDto = getEquivocationProof equivocationProofHash
+            let! equivocationProof =
+                Validation.validateEquivocationProof
+                    verifySignature
+                    Consensus.createConsensusMessageHash
+                    decodeHash
+                    createHash
+                    equivocationProofDto
+
+            let! equivocationProofResult =
+                // If the EquivocationProof is still in the pool (DB),
+                // we respond with Pending status and ignore the EquivocationProofResult file.
+                // This avoids the lag in the state changes
+                // (when EquivocationProofResult file is persisted, but DB not yet updated).
+                match getEquivocationInfo equivocationProofHash with
+                | Some _ -> Ok None
+                | None -> getEquivocationProofResult equivocationProofHash |> Result.map Some
+
+            return
+                Mapping.equivocationProofToGetEquivocationProofApiResponseDto
+                    equivocationProofHash
+                    equivocationProof.ValidatorAddress
+                    equivocationProofDto
+                    equivocationProofResult
+        }
+
     let getBlockApi
         getLastAppliedBlockNumber
         (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)

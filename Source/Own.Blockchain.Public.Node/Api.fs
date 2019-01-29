@@ -60,6 +60,15 @@ module Api =
             return! response next ctx
         }
 
+    let getEquivocationProofHandler equivocationProofHash : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getEquivocationProofApi (EquivocationProofHash equivocationProofHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getBlockHandler blockNumber : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -109,6 +118,7 @@ module Api =
                 route "/" >=> text "TODO: Show link to the help page"
                 route "/stats" >=> getStatsHandler
                 routef "/tx/%s" getTxHandler
+                routef "/equivocation/%s" getEquivocationProofHandler
                 routef "/block/%d" getBlockHandler
                 routef "/address/%s/accounts" getAddressAccountsHandler
                 routef "/address/%s" getAddressHandler

@@ -136,7 +136,7 @@ module Db =
         match DbTools.query<TxInfoDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [tx] -> Some tx
-        | _ -> failwithf "Multiple Txs found for hash %A" txHash
+        | _ -> failwithf "Multiple TXs found for hash %A" txHash
 
     let getTotalFeeForPendingTxs
         dbEngineType
@@ -241,6 +241,35 @@ module Db =
 
         DbTools.query<string> dbEngineType dbConnectionString sql []
         |> List.map EquivocationProofHash
+
+    let getEquivocationProof
+        dbEngineType
+        (dbConnectionString : string)
+        (EquivocationProofHash equivocationProofHash)
+        : EquivocationInfoDto option
+        =
+
+        let sql =
+            """
+            SELECT
+                equivocation_proof_hash,
+                validator_address,
+                block_number,
+                consensus_round,
+                consensus_step
+            FROM equivocation
+            WHERE equivocation_proof_hash = @equivocationProofHash
+            """
+
+        let sqlParams =
+            [
+                "@equivocationProofHash", equivocationProofHash |> box
+            ]
+
+        match DbTools.query<EquivocationInfoDto> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | [proof] -> Some proof
+        | _ -> failwithf "Multiple equivocation proofs found for hash %A" equivocationProofHash
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
