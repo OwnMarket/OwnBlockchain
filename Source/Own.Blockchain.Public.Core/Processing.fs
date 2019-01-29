@@ -25,9 +25,9 @@ module Processing =
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
         chxBalances : ConcurrentDictionary<BlockchainAddress, ChxBalanceState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
-        votes: ConcurrentDictionary<VoteId, VoteState option>,
-        eligibilities: ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>,
-        kycControllers: ConcurrentDictionary<KycControllerState, KycControllerChange>,
+        votes : ConcurrentDictionary<VoteId, VoteState option>,
+        eligibilities : ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>,
+        kycControllers : ConcurrentDictionary<KycControllerState, KycControllerChange>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
@@ -42,7 +42,7 @@ module Processing =
             |? {Amount = ChxAmount 0m; Nonce = Nonce 0L}
         let getHoldingState (accountHash, assetHash) =
             getHoldingStateFromStorage (accountHash, assetHash)
-            |? {Amount = AssetAmount 0m}
+            |? {Amount = AssetAmount 0m; IsEmission = false}
 
         new
             (
@@ -308,20 +308,37 @@ module Processing =
             let fromState = state.GetHolding(action.FromAccountHash, action.AssetHash)
             let toState = state.GetHolding(action.ToAccountHash, action.AssetHash)
 
+            let isPrimaryEligible, isSecondaryEligible =
+                match state.GetAsset(action.AssetHash) with
+                | Some asset when asset.IsEligibilityRequired ->
+                    match state.GetEligibility(action.ToAccountHash, action.AssetHash) with
+                    | Some eligibilityState ->
+                        (eligibilityState.Eligibility.IsPrimaryEligible,
+                         eligibilityState.Eligibility.IsSecondaryEligible)
+                    | None ->
+                        (false, false)
+                | _ ->
+                    (true, true)
+
             if fromState.Amount < action.Amount then
                 Error TxErrorCode.InsufficientAssetHoldingBalance
             else
-                state.SetHolding(
-                    action.FromAccountHash,
-                    action.AssetHash,
-                    { fromState with Amount = fromState.Amount - action.Amount }
-                )
-                state.SetHolding(
-                    action.ToAccountHash,
-                    action.AssetHash,
-                    { toState with Amount = toState.Amount + action.Amount }
-                )
-                Ok state
+                if fromState.IsEmission && not isPrimaryEligible then
+                    Error TxErrorCode.NotEligibleInPrimary
+                elif not fromState.IsEmission && not isSecondaryEligible then
+                    Error TxErrorCode.NotEligibleInSecondary
+                else
+                    state.SetHolding(
+                        action.FromAccountHash,
+                        action.AssetHash,
+                        { fromState with Amount = fromState.Amount - action.Amount }
+                    )
+                    state.SetHolding(
+                        action.ToAccountHash,
+                        action.AssetHash,
+                        { toState with Amount = toState.Amount + action.Amount }
+                    )
+                    Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
 
@@ -342,7 +359,7 @@ module Processing =
             state.SetHolding(
                 action.EmissionAccountHash,
                 action.AssetHash,
-                { holdingState with Amount = holdingState.Amount + action.Amount }
+                { holdingState with Amount = holdingState.Amount + action.Amount; IsEmission = true }
             )
             Ok state
         | _ ->
@@ -383,7 +400,7 @@ module Processing =
 
         match state.GetAsset(assetHash) with
         | None ->
-            state.SetAsset(assetHash, {AssetCode = None; ControllerAddress = senderAddress})
+            state.SetAsset(assetHash, {AssetCode = None; ControllerAddress = senderAddress; IsEligibilityRequired = false})
             Ok state
         | _ ->
             Error TxErrorCode.AssetAlreadyExists // Hash collision.
@@ -580,6 +597,22 @@ module Processing =
                         Error TxErrorCode.SenderIsNotCurrentKycController
             else
                 Error TxErrorCode.SenderIsNotApprovedKycProvider
+
+    let processSetIsEligibilityRequiredTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : SetIsEligibilityRequiredTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAsset(action.AssetHash) with
+        | None ->
+            Error TxErrorCode.AssetNotFound
+        | Some assetState when assetState.ControllerAddress = senderAddress ->
+            state.SetAsset(action.AssetHash, {assetState with IsEligibilityRequired = action.IsEligibilityRequired})
+            Ok state
+        | _ ->
+            Error TxErrorCode.SenderIsNotAssetController
 
     let processChangeKycControllerAddressTxAction
         (state : ProcessingState)
@@ -818,6 +851,7 @@ module Processing =
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
         | SetEligibility action -> processSetEligibilityTxAction state senderAddress action
+        | SetIsEligibilityRequired action -> processSetIsEligibilityRequiredTxAction state senderAddress action
         | ChangeKycControllerAddress action -> processChangeKycControllerAddressTxAction state senderAddress action
         | AddKycController action -> processAddKycControllerTxAction state senderAddress action
         | RemoveKycController action -> processRemoveKycControllerTxAction state senderAddress action

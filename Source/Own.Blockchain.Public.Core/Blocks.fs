@@ -64,6 +64,7 @@ module Blocks =
             decodeHash accountHash
             decodeHash assetHash
             decimalToBytes amount
+            boolToBytes state.IsEmission
         ]
         |> Array.concat
         |> createHash
@@ -151,6 +152,7 @@ module Blocks =
             decodeHash assetHash
             assetCodeBytes
             addressBytes
+            boolToBytes state.IsEligibilityRequired
         ]
         |> Array.concat
         |> createHash

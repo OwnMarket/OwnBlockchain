@@ -464,7 +464,7 @@ module Db =
 
         let sql =
             """
-            SELECT h.amount
+            SELECT h.amount, h.is_emission
             FROM holding AS h
             JOIN account AS a USING (account_id)
             WHERE a.account_hash = @accountHash
@@ -571,7 +571,7 @@ module Db =
     let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
             """
-            SELECT asset_code, controller_address
+            SELECT asset_code, controller_address, is_eligibility_required
             FROM asset
             WHERE asset_hash = @assetHash
             """
@@ -1060,8 +1060,8 @@ module Db =
     let private addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO holding (account_id, asset_hash, amount)
-            SELECT account_id, @assetHash, @amount
+            INSERT INTO holding (account_id, asset_hash, amount, is_emission)
+            SELECT account_id, @assetHash, @amount, @isEmission
             FROM account
             WHERE account_hash = @accountHash
             """
@@ -1071,6 +1071,7 @@ module Db =
                 "@accountHash", holdingInfo.AccountHash |> box
                 "@assetHash", holdingInfo.AssetHash |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
+                "@isEmission", holdingInfo.HoldingState.IsEmission |> box
             ]
 
         try
@@ -1086,7 +1087,7 @@ module Db =
         let sql =
             """
             UPDATE holding
-            SET amount = @amount
+            SET amount = @amount, is_emission = @isEmission
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
             AND asset_hash = @assetHash
             """
@@ -1096,6 +1097,7 @@ module Db =
                 "@accountHash", holdingInfo.AccountHash |> box
                 "@assetHash", holdingInfo.AssetHash |> box
                 "@amount", holdingInfo.HoldingState.Amount |> box
+                "@isEmission", holdingInfo.HoldingState.IsEmission |> box
             ]
 
         try
@@ -1124,6 +1126,7 @@ module Db =
                     HoldingState =
                         {
                             Amount = holdingState.Amount
+                            IsEmission = holdingState.IsEmission
                         }
                 }
                 |> updateHolding conn transaction
@@ -1231,7 +1234,7 @@ module Db =
             """
             INSERT INTO eligibility (
                 account_id, asset_id, is_primary_eligible, is_secondary_eligible, kyc_controller_address)
-            SELECT account_id, account_id, @isPrimaryEligible, @isSecondaryEligible, @kycControllerAddress
+            SELECT account_id, asset_id, @isPrimaryEligible, @isSecondaryEligible, @kycControllerAddress
             FROM account, asset
             WHERE account_hash = @accountHash
             AND asset_hash = @assetHash
@@ -1327,6 +1330,7 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't insert KYC controller."
         with
@@ -1361,6 +1365,32 @@ module Db =
             sprintf "Failed to remove KYC controller: %s" kycController.ControllerAddress
             |> Result.appError
 
+    let private updateKycController conn transaction (kycController : KycControllerStateDto) isAdded : Result<unit, AppErrors> =
+        let sql =
+            """
+            UPDATE kyc_controller
+            SET controller_address = @controllerAddress
+            WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
+            AND controller_address = @controllerAddress
+            """
+
+        let sqlParams =
+            [
+                "@assetHash", kycController.AssetHash |> box
+                "@controllerAddress", kycController.ControllerAddress |> box
+            ]
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 ->
+                if isAdded then addKycController conn transaction kycController
+                else removeKycController conn transaction kycController
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update KYC controller state."
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update KYC controller state."
+
     let private updateKycControllers
         conn
         transaction
@@ -1370,9 +1400,7 @@ module Db =
 
         let foldFn result (kycController, isAdded) =
             result
-            >>= fun _ ->
-                if isAdded then addKycController conn transaction kycController
-                else removeKycController conn transaction kycController
+            >>= fun _ -> updateKycController conn transaction kycController isAdded
 
         kycControllers
         |> Map.toList
@@ -1466,8 +1494,8 @@ module Db =
 
         let sql =
             """
-            INSERT INTO asset (asset_hash, asset_code, controller_address)
-            VALUES (@assetHash, @assetCode, @controllerAddress)
+            INSERT INTO asset (asset_hash, asset_code, controller_address, is_eligibility_required)
+            VALUES (@assetHash, @assetCode, @controllerAddress, @isEligibilityRequired)
             """
 
         let assetCodeParamValue =
@@ -1481,6 +1509,7 @@ module Db =
                 "@assetHash", assetInfo.AssetHash |> box
                 "@assetCode", assetCodeParamValue
                 "@controllerAddress", assetInfo.ControllerAddress |> box
+                "@isEligibilityRequired", assetInfo.IsEligibilityRequired |> box
             ]
 
         try
@@ -1503,7 +1532,8 @@ module Db =
             """
             UPDATE asset
             SET asset_code = @assetCode,
-                controller_address = @controllerAddress
+                controller_address = @controllerAddress,
+                is_eligibility_required = @isEligibilityRequired
             WHERE asset_hash = @assetHash
             """
 
@@ -1518,6 +1548,7 @@ module Db =
                 "@assetHash", assetInfo.AssetHash |> box
                 "@assetCode", assetCodeParamValue
                 "@controllerAddress", assetInfo.ControllerAddress |> box
+                "@isEligibilityRequired", assetInfo.IsEligibilityRequired |> box
             ]
 
         try
@@ -1544,6 +1575,7 @@ module Db =
                     AssetHash = assetHash
                     AssetCode = state.AssetCode
                     ControllerAddress = state.ControllerAddress
+                    IsEligibilityRequired = state.IsEligibilityRequired
                 }
                 |> updateAsset conn transaction
             )

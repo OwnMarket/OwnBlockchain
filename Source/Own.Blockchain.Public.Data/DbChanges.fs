@@ -174,6 +174,10 @@ module DbChanges =
                             REFERENCES asset (asset_id)
                     );
                     CREATE INDEX eligibility__ix__asset_id ON eligibility (asset_id);
+
+                    ALTER TABLE asset ADD COLUMN is_eligibility_required BOOL NOT NULL DEFAULT FALSE;
+
+                    ALTER TABLE holding ADD COLUMN is_emission BOOL NOT NULL DEFAULT FALSE;
                     """
             }
             {
@@ -365,6 +369,10 @@ module DbChanges =
                             REFERENCES asset (asset_id)
                     );
                     CREATE INDEX eligibility__ix__asset_id ON eligibility (asset_id);
+
+                    ALTER TABLE asset ADD COLUMN is_eligibility_required BOOL NOT NULL DEFAULT FALSE;
+
+                    ALTER TABLE holding ADD COLUMN is_emission BOOL NOT NULL DEFAULT FALSE;
                     """
             }
             {

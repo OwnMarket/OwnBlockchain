@@ -124,6 +124,12 @@ module Mapping =
                     }
             }
             |> SetEligibility
+        | :? SetIsEligibilityRequiredTxActionDto as a ->
+            {
+                SetIsEligibilityRequiredTxAction.AssetHash = AssetHash a.AssetHash
+                IsEligibilityRequired = a.IsEligibilityRequired
+            }
+            |> SetIsEligibilityRequired
         | :? AddKycControllerTxActionDto as a ->
             {
                 AddKycControllerTxAction.AssetHash = AssetHash a.AssetHash
@@ -398,11 +404,13 @@ module Mapping =
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
         {
             Amount = AssetAmount dto.Amount
+            IsEmission = dto.IsEmission
         }
 
     let holdingStateToDto (state : HoldingState) : HoldingStateDto =
         {
             Amount = state.Amount.Value
+            IsEmission = state.IsEmission
         }
 
     let voteStateFromDto (dto : VoteStateDto) : VoteState =
@@ -469,12 +477,14 @@ module Mapping =
                 else
                     dto.AssetCode |> AssetCode |> Some
             ControllerAddress = BlockchainAddress dto.ControllerAddress
+            IsEligibilityRequired = dto.IsEligibilityRequired
         }
 
     let assetStateToDto (state : AssetState) : AssetStateDto =
         {
             AssetCode = state.AssetCode |> Option.map (fun (AssetCode c) -> c) |> Option.toObj
             ControllerAddress = state.ControllerAddress.Value
+            IsEligibilityRequired = state.IsEligibilityRequired
         }
 
     let validatorStateFromDto (dto : ValidatorStateDto) : ValidatorState =

@@ -404,7 +404,8 @@ module SharedTests =
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
         let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
-        test <@ assetState = Some { AssetCode = None; ControllerAddress = newController.Address } @>
+        test <@ assetState =
+            Some { AssetCode = None; ControllerAddress = newController.Address; IsEligibilityRequired = false } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 
@@ -464,7 +465,8 @@ module SharedTests =
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
         let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
 
-        test <@ assetState = Some { AssetCode = Some assetCode; ControllerAddress = sender.Address } @>
+        test <@ assetState =
+            Some { AssetCode = Some assetCode; ControllerAddress = sender.Address; IsEligibilityRequired = false } @>
         test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
         test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
 

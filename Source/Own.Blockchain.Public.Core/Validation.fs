@@ -206,6 +206,12 @@ module Validation =
                 yield AppError "AssetHash is not provided."
         ]
 
+    let private validateSetIsEligibilityRequired (action : SetIsEligibilityRequiredTxActionDto) =
+        [
+            if action.AssetHash.IsNullOrWhiteSpace() then
+                yield AppError "AssetHash is not provided."
+        ]
+
     let private validateSetKycController
         isValidAddress
         (assetHash : string)
@@ -289,6 +295,8 @@ module Validation =
                 validateSubmitVoteWeight a
             | :? SetEligibilityTxActionDto as a ->
                 validateSetEligibility a
+            | :? SetIsEligibilityRequiredTxActionDto as a ->
+                validateSetIsEligibilityRequired a
             | :? ChangeKycControllerAddressTxActionDto as a ->
                 validateChangeKycControllerAddress isValidAddress a
             | :? AddKycControllerTxActionDto as a ->

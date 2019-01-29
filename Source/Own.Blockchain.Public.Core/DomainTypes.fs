@@ -137,6 +137,11 @@ type SetEligibilityTxAction = {
     Eligibility : Eligibility
 }
 
+type SetIsEligibilityRequiredTxAction = {
+    AssetHash : AssetHash
+    IsEligibilityRequired : bool
+}
+
 type ChangeKycControllerAddressTxAction = {
     AccountHash : AccountHash
     AssetHash : AssetHash
@@ -167,6 +172,7 @@ type TxAction =
     | SubmitVote of SubmitVoteTxAction
     | SubmitVoteWeight of SubmitVoteWeightTxAction
     | SetEligibility of SetEligibilityTxAction
+    | SetIsEligibilityRequired of SetIsEligibilityRequiredTxAction
     | ChangeKycControllerAddress of ChangeKycControllerAddressTxAction
     | AddKycController of AddKycControllerTxAction
     | RemoveKycController of RemoveKycControllerTxAction
@@ -285,6 +291,8 @@ type TxErrorCode =
     | SenderIsNotCurrentKycController = 620s
     | SenderIsNotApprovedKycProvider = 630s
     | SenderIsNotAssetControllerOrApprovedKycProvider = 640s
+    | NotEligibleInPrimary = 650s
+    | NotEligibleInSecondary = 660s
 
     // Validators
     | InsufficientStake = 910s
@@ -323,6 +331,7 @@ type ChxBalanceState = {
 
 type HoldingState = {
     Amount : AssetAmount
+    IsEmission : bool
 }
 
 type VoteState = {
@@ -351,6 +360,7 @@ type AccountState = {
 type AssetState = {
     AssetCode : AssetCode option
     ControllerAddress : BlockchainAddress
+    IsEligibilityRequired : bool
 }
 
 type ValidatorState = {

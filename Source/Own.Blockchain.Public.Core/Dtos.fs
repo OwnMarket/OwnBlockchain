@@ -89,6 +89,12 @@ type SetEligibilityTxActionDto = {
 }
 
 [<CLIMutable>]
+type SetIsEligibilityRequiredTxActionDto = {
+    AssetHash : string
+    IsEligibilityRequired : bool
+}
+
+[<CLIMutable>]
 type ChangeKycControllerAddressTxActionDto = {
     AccountHash : string
     AssetHash : string
@@ -291,6 +297,7 @@ type ChxBalanceStateDto = {
 [<CLIMutable>]
 type HoldingStateDto = {
     Amount : decimal
+    IsEmission : bool
 }
 
 [<CLIMutable>]
@@ -321,6 +328,7 @@ type AccountStateDto = {
 type AssetStateDto = {
     AssetCode : string
     ControllerAddress : string
+    IsEligibilityRequired : bool
 }
 
 [<CLIMutable>]
@@ -387,6 +395,7 @@ type AssetInfoDto = {
     AssetHash : string
     AssetCode : string
     ControllerAddress : string
+    IsEligibilityRequired : bool
 }
 
 [<CLIMutable>]
