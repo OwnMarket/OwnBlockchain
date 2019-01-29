@@ -840,6 +840,67 @@ module Processing =
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
+    let processEquivocationProofs
+        getProofBody
+        verifySignature
+        createConsensusMessageHash
+        decodeHash
+        createHash
+        processTxActions
+        validatorDeposit
+        (blockNumber : BlockNumber)
+        (validators : BlockchainAddress list)
+        (equivocationProofs : EquivocationProofHash list)
+        (state : ProcessingState)
+        =
+
+        for proofHash in equivocationProofs do
+            let proof =
+                getProofBody proofHash
+                >>= Validation.validateEquivocationProof
+                    verifySignature
+                    createConsensusMessageHash
+                    decodeHash
+                    createHash
+                |> Result.handle
+                    id
+                    (fun errors ->
+                        Log.appErrors errors
+                        // TODO: Remove invalid proof from the pool?
+                        failwithf "Cannot load equivocation proof %s" proofHash.Value
+                    )
+
+            let amountToTake =
+                state.GetChxBalance(proof.ValidatorAddress).Amount
+                |> min validatorDeposit
+
+            if amountToTake > ChxAmount 0m then
+                let validators = validators |> List.except [proof.ValidatorAddress]
+                let amountPerValidator = (amountToTake / decimal validators.Length).Rounded
+                let actions =
+                    validators
+                    |> List.map (fun v ->
+                        TransferChx {
+                            RecipientAddress = v
+                            Amount = amountPerValidator
+                        }
+                    )
+
+                let nonce = state.GetChxBalance(proof.ValidatorAddress).Nonce + 1
+
+                processTxActions proof.ValidatorAddress nonce actions state
+                |> Result.iterError
+                    (failwithf "Cannot process equivocation proof %s: (%A)." proof.EquivocationProofHash.Value)
+
+            let equivocationProofResult =
+                {
+                    DepositTaken = amountToTake
+                    BlockNumber = blockNumber
+                }
+            state.SetEquivocationProofResult(proofHash, equivocationProofResult)
+
+        state
+
     let distributeReward
         processTxActions
         (getTopStakers : BlockchainAddress -> StakerInfo list)
@@ -888,14 +949,17 @@ module Processing =
                     for r in rewards do
                         state.SetStakingReward(r.StakerAddress, r.Amount) |> ignore
                     state
-                | Error err -> failwithf "Cannot process reward distribution (%A)." err
+                | Error err -> failwithf "Cannot process reward distribution: (%A)." err
 
     let processTxSet
         getTx
+        getEquivocationProof
         verifySignature
         isValidAddress
         deriveHash
+        decodeHash
         createHash
+        createConsensusMessageHash
         (getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option)
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
         (getVoteStateFromStorage : VoteId -> VoteState option)
@@ -907,12 +971,16 @@ module Processing =
         (getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option)
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
         (getTopStakers : BlockchainAddress -> StakerInfo list)
+        validatorDeposit
+        (validators : BlockchainAddress list)
         (validatorAddress : BlockchainAddress)
         (sharedRewardPercent : decimal)
         (blockNumber : BlockNumber)
         (equivocationProofs : EquivocationProofHash list)
         (txSet : TxHash list)
         =
+
+        let processTxActions = processTxActions deriveHash
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
             let tx =
@@ -934,7 +1002,7 @@ module Processing =
                     state
                 | Ok oldState ->
                     let newState = oldState.Clone()
-                    match processTxActions deriveHash tx.Sender tx.Nonce tx.Actions newState with
+                    match processTxActions tx.Sender tx.Nonce tx.Actions newState with
                     | Error e ->
                         oldState.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
                         oldState.MergeStateAfterFailedTx(newState)
@@ -960,6 +1028,17 @@ module Processing =
         let state =
             txSet
             |> List.fold processTx initialState
-            |> distributeReward (processTxActions deriveHash) getTopStakers validatorAddress sharedRewardPercent
+            |> processEquivocationProofs
+                getEquivocationProof
+                verifySignature
+                createConsensusMessageHash
+                decodeHash
+                createHash
+                processTxActions
+                validatorDeposit
+                blockNumber
+                validators
+                equivocationProofs
+            |> distributeReward processTxActions getTopStakers validatorAddress sharedRewardPercent
 
         state.ToProcessingOutput()

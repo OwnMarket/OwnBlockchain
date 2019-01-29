@@ -128,6 +128,7 @@ type Config () =
     static member MaxValidatorCount = 100
 
     static member ValidatorThreshold = 500_000m
+    static member ValidatorDeposit = 5_000m
 
     static member MaxRewardedStakesCount = 100
 

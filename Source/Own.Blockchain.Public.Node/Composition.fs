@@ -173,6 +173,7 @@ module Composition =
     let createBlock =
         Workflows.createBlock
             getTx
+            getEquivocationProof
             Signing.verifySignature
             Hashing.isValidBlockchainAddress
             getChxBalanceState
@@ -190,9 +191,11 @@ module Composition =
             Hashing.deriveHash
             Hashing.decode
             Hashing.hash
+            Consensus.createConsensusMessageHash
             Hashing.merkleTree
             calculateConfigurationBlockNumberForNewBlock
             (ChxAmount Config.MinTxActionFee)
+            (ChxAmount Config.ValidatorDeposit)
 
     let getAvailableChxBalance =
         Workflows.getAvailableChxBalance
@@ -335,7 +338,7 @@ module Composition =
     let storeEquivocationProof =
         Workflows.storeEquivocationProof
             Signing.verifySignature
-            createConsensusMessageHash
+            Consensus.createConsensusMessageHash
             Hashing.decode
             Hashing.hash
             saveEquivocationProof

@@ -133,6 +133,7 @@ module Workflows =
 
     let createBlock
         getTx
+        getEquivocationProof
         verifySignature
         isValidAddress
         getChxBalanceStateFromStorage
@@ -150,9 +151,11 @@ module Workflows =
         deriveHash
         decodeHash
         createHash
+        createConsensusMessageHash
         createMerkleTree
         (calculateConfigurationBlockNumberForNewBlock : BlockNumber -> BlockNumber)
         minTxActionFee
+        validatorDeposit
         validatorAddress
         (previousBlockHash : BlockHash)
         (blockNumber : BlockNumber)
@@ -176,13 +179,10 @@ module Workflows =
 
         let getTopStakers = getTopStakersFromStorage >> List.map Mapping.stakerInfoFromDto
 
-        let sharedRewardPercent =
-            let validators =
-                blockNumber - 1
-                |> getValidatorsAtHeight
-                |> List.filter (fun v -> v.ValidatorAddress = validatorAddress)
+        let validators = getValidatorsAtHeight (blockNumber - 1)
 
-            match validators with
+        let sharedRewardPercent =
+            match validators |> List.filter (fun v -> v.ValidatorAddress = validatorAddress) with
             | [] ->
                 failwithf "Validator %s not found to create block %i."
                     validatorAddress.Value
@@ -195,13 +195,18 @@ module Workflows =
                     validatorAddress.Value
                     blockNumber.Value
 
+        let validators = validators |> List.map (fun v -> v.ValidatorAddress)
+
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 verifySignature
                 isValidAddress
                 deriveHash
+                decodeHash
                 createHash
+                createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -213,6 +218,8 @@ module Workflows =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                validatorDeposit
+                validators
                 validatorAddress
                 sharedRewardPercent
                 blockNumber

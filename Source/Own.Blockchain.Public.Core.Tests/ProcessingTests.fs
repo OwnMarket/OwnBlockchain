@@ -195,6 +195,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -235,10 +238,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -250,6 +256,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 sharedRewardPercent
                 blockNumber
@@ -325,6 +333,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -360,10 +371,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -375,6 +389,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -435,6 +451,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -470,10 +489,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -485,6 +507,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -546,6 +570,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -581,10 +608,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -596,6 +626,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -657,6 +689,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -691,10 +726,13 @@ module ProcessingTests =
         let processTxSet () =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -706,6 +744,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -757,6 +797,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -796,10 +839,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -811,6 +857,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -886,6 +934,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -921,10 +972,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -936,6 +990,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1007,6 +1063,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1042,10 +1101,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1057,6 +1119,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1131,6 +1195,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1169,10 +1236,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1184,6 +1254,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1255,6 +1327,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1293,10 +1368,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1308,6 +1386,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1382,6 +1462,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1417,10 +1500,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1432,6 +1518,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1525,6 +1613,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1567,10 +1658,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1582,6 +1676,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1641,6 +1737,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1676,10 +1775,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1691,6 +1793,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1769,6 +1873,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1814,10 +1921,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1829,6 +1939,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -1891,6 +2003,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -1926,10 +2041,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -1941,6 +2059,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2007,6 +2127,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2042,10 +2165,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2057,6 +2183,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2119,6 +2247,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2154,10 +2285,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2169,6 +2303,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2236,6 +2372,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2271,10 +2410,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2286,6 +2428,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2343,6 +2487,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2378,10 +2525,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2393,6 +2543,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2469,6 +2621,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2514,10 +2669,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2529,6 +2687,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2591,6 +2751,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2626,10 +2789,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2641,6 +2807,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2703,6 +2871,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2742,10 +2913,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2757,6 +2931,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2837,6 +3013,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid txHash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2881,10 +3060,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -2896,6 +3078,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -2955,6 +3139,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2994,10 +3181,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3009,6 +3199,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3084,6 +3276,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3129,10 +3324,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3144,6 +3342,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3206,6 +3406,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3245,10 +3448,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3260,6 +3466,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3338,6 +3546,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3387,10 +3598,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3402,6 +3616,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3464,6 +3680,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3499,10 +3718,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3514,6 +3736,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3571,6 +3795,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3610,10 +3837,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3625,6 +3855,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3682,6 +3914,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3721,10 +3956,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3736,6 +3974,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3799,6 +4039,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3838,10 +4081,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3853,6 +4099,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -3907,6 +4155,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3942,10 +4193,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -3957,6 +4211,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4024,6 +4280,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4060,10 +4319,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4075,6 +4337,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4135,6 +4399,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4170,10 +4437,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4185,6 +4455,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4252,6 +4524,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4288,10 +4563,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4303,6 +4581,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4380,6 +4660,9 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4415,10 +4698,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4430,6 +4716,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4489,6 +4777,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4524,10 +4815,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4539,6 +4833,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4605,6 +4901,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4640,10 +4939,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4655,6 +4957,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4717,6 +5021,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4752,10 +5059,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4767,6 +5077,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4831,6 +5143,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4866,10 +5181,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4881,6 +5199,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -4944,6 +5264,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -4979,10 +5302,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -4994,6 +5320,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5062,6 +5390,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5097,10 +5428,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5112,6 +5446,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5178,6 +5514,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5213,10 +5552,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5228,6 +5570,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5290,6 +5634,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5325,10 +5672,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5340,6 +5690,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5397,6 +5749,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5432,10 +5787,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5447,6 +5805,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5509,6 +5869,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5544,10 +5907,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5559,6 +5925,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5625,6 +5993,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5660,10 +6031,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5675,6 +6049,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5732,6 +6108,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5767,10 +6146,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5782,6 +6164,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5844,6 +6228,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5879,10 +6266,13 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
@@ -5894,6 +6284,8 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -5960,6 +6352,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -5975,8 +6370,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
@@ -5995,21 +6390,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6067,6 +6467,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6082,8 +6485,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             None
@@ -6102,21 +6505,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6179,6 +6587,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6194,8 +6605,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
@@ -6214,21 +6625,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6294,6 +6710,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6309,8 +6728,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -6332,21 +6751,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6405,6 +6829,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6420,8 +6847,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -6440,21 +6867,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6524,6 +6956,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6539,8 +6974,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -6559,21 +6994,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6631,6 +7071,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6646,8 +7089,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -6666,21 +7109,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6738,6 +7186,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6753,8 +7204,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -6773,21 +7224,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6850,6 +7306,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6865,8 +7324,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -6885,21 +7344,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber
@@ -6962,6 +7426,9 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -6977,8 +7444,8 @@ module ProcessingTests =
         let getKycControllersState _ =
             failwith "getKycControllersState should not be called"
 
-        let getAccountCode _ =
-            failwith "getAccountCode should not be called"
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             failwith "getAssetState should not be called"
@@ -6997,21 +7464,26 @@ module ProcessingTests =
         let output =
             Processing.processTxSet
                 getTx
+                getEquivocationProof
                 Signing.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
+                Hashing.decode
                 Hashing.hash
+                Consensus.createConsensusMessageHash
                 getChxBalanceState
                 getHoldingState
                 getVoteState
                 getEligibilityState
                 getKycControllersState
-                getAccountCode
+                getAccountState
                 getAssetState
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                (ChxAmount 0m)
+                []
                 validatorWallet.Address
                 0m
                 blockNumber

@@ -17,6 +17,7 @@ const validatorAddresses =
     ]
 
 const validatorStake = 500000
+const validatorDeposit = 5000
 const initialBalance = 10000
 const walletCount = 100
 const transfersPerWallet = 10
@@ -37,6 +38,13 @@ function composeInitialTx(validators, recipients) {
             ActionData: {
                 ValidatorAddress: v,
                 Amount: validatorStake
+            }
+        })
+        actions.push({
+            ActionType: "TransferChx",
+            ActionData: {
+                RecipientAddress: v,
+                Amount: validatorDeposit
             }
         })
     })

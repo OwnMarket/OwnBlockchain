@@ -385,7 +385,7 @@ module Validation =
         let signer1 =
             verifyEquivocationProofSignature
                 verifySignature
-                createConsensusMessageHash
+                (createConsensusMessageHash decodeHash createHash)
                 equivocationProofDto.BlockNumber
                 equivocationProofDto.ConsensusRound
                 equivocationProofDto.ConsensusStep
@@ -394,7 +394,7 @@ module Validation =
         let signer2 =
             verifyEquivocationProofSignature
                 verifySignature
-                createConsensusMessageHash
+                (createConsensusMessageHash decodeHash createHash)
                 equivocationProofDto.BlockNumber
                 equivocationProofDto.ConsensusRound
                 equivocationProofDto.ConsensusStep
