@@ -418,6 +418,14 @@ module Consensus =
             (Signature signature2)
             =
 
+            // Prevent the same two hashes being propagated as two distinct proofs (h1/h2 and h2/h1),
+            // to avoid deposit being slashed twice for essentialy the same proof.
+            let blockHash1, blockHash2, signature1, signature2 =
+                if blockHash1 > blockHash2 then
+                    blockHash2, blockHash1, signature2, signature1 // Swap
+                else
+                    blockHash1, blockHash2, signature1, signature2
+
             {
                 BlockNumber = blockNumber
                 ConsensusRound = consensusRound
