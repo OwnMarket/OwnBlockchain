@@ -1,6 +1,6 @@
 namespace Own.Blockchain.Public.Core.DomainTypes
 
-open System
+open Own.Blockchain.Common
 
 type NetworkAddress = NetworkAddress of string
 
@@ -611,49 +611,49 @@ type ChxAmount with
     member __.Value =
         __ |> fun (ChxAmount v) -> v
     member __.Rounded =
-        __ |> fun (ChxAmount v) -> Decimal.Round(v, 7) |> ChxAmount
+        __ |> fun (ChxAmount v) -> Utils.round v |> ChxAmount
     static member Zero =
         ChxAmount 0m
     static member (+) (ChxAmount a1, ChxAmount a2) =
-        ChxAmount (Decimal.Round(a1 + a2, 18))
+        ChxAmount (a1 + a2)
     static member (+) (ChxAmount a1, a2) =
-        ChxAmount (Decimal.Round(a1 + a2, 18))
+        ChxAmount (a1 + a2)
     static member (-) (ChxAmount a1, ChxAmount a2) =
-        ChxAmount (Decimal.Round(a1 - a2, 18))
+        ChxAmount (a1 - a2)
     static member (-) (ChxAmount a1, a2) =
-        ChxAmount (Decimal.Round(a1 - a2, 18))
+        ChxAmount (a1 - a2)
     static member (*) (ChxAmount a1, ChxAmount a2) =
-        ChxAmount (Decimal.Round(a1 * a2, 18))
+        ChxAmount (a1 * a2)
     static member (*) (ChxAmount a1, a2) =
-        ChxAmount (Decimal.Round(a1 * a2, 18))
+        ChxAmount (a1 * a2)
     static member (/) (ChxAmount a1, ChxAmount a2) =
-        ChxAmount (Decimal.Round(a1 / a2, 18))
+        ChxAmount (a1 / a2)
     static member (/) (ChxAmount a1, a2) =
-        ChxAmount (Decimal.Round(a1 / a2, 18))
+        ChxAmount (a1 / a2)
 
 type AssetAmount with
     member __.Value =
         __ |> fun (AssetAmount v) -> v
     member __.Rounded =
-        __ |> fun (AssetAmount v) -> Decimal.Round(v, 7) |> AssetAmount
+        __ |> fun (AssetAmount v) -> Utils.round v |> AssetAmount
     static member Zero =
         AssetAmount 0m
     static member (+) (AssetAmount a1, AssetAmount a2) =
-        AssetAmount (Decimal.Round(a1 + a2, 18))
+        AssetAmount (a1 + a2)
     static member (+) (AssetAmount a1, a2) =
-        AssetAmount (Decimal.Round(a1 + a2, 18))
+        AssetAmount (a1 + a2)
     static member (-) (AssetAmount a1, AssetAmount a2) =
-        AssetAmount (Decimal.Round(a1 - a2, 18))
+        AssetAmount (a1 - a2)
     static member (-) (AssetAmount a1, a2) =
-        AssetAmount (Decimal.Round(a1 - a2, 18))
+        AssetAmount (a1 - a2)
     static member (*) (AssetAmount a1, AssetAmount a2) =
-        AssetAmount (Decimal.Round(a1 * a2, 18))
+        AssetAmount (a1 * a2)
     static member (*) (AssetAmount a1, a2) =
-        AssetAmount (Decimal.Round(a1 * a2, 18))
+        AssetAmount (a1 * a2)
     static member (/) (AssetAmount a1, AssetAmount a2) =
-        AssetAmount (Decimal.Round(a1 / a2, 18))
+        AssetAmount (a1 / a2)
     static member (/) (AssetAmount a1, a2) =
-        AssetAmount (Decimal.Round(a1 / a2, 18))
+        AssetAmount (a1 / a2)
 
 type Tx with
     member __.TotalFee = __.Fee * decimal __.Actions.Length
