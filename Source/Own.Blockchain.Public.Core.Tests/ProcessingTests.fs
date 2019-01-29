@@ -2564,7 +2564,12 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = senderWallet.Address
+                    IsEligibilityRequired = false
+                }
+                |> Some
             else
                 None
 
@@ -3317,7 +3322,12 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = senderWallet.Address
+                    IsEligibilityRequired = false
+                }
+                |> Some
             else
                 None
 
@@ -3977,7 +3987,12 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = senderWallet.Address
+                    IsEligibilityRequired = false
+                }
+                |> Some
             else
                 None
 
@@ -4598,7 +4613,12 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = senderWallet.Address
+                    IsEligibilityRequired = false
+                }
+                |> Some
             else
                 None
 

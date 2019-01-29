@@ -189,7 +189,12 @@ module BlockTests =
         let assetHash = AssetHash "AAA"
         let assetCode = AssetCode "XXX" |> Some // X = 88 = 8 = H
         let controllerAddress = BlockchainAddress "CC"
-        let state = {AssetState.AssetCode = assetCode; ControllerAddress = controllerAddress; IsEligibilityRequired = true}
+        let state =
+            {
+                AssetState.AssetCode = assetCode
+                ControllerAddress = controllerAddress
+                IsEligibilityRequired = true
+            }
 
         // ACT
         let stateHash = Blocks.createAssetStateHash DummyHash.decode DummyHash.create (assetHash, state)
@@ -437,8 +442,17 @@ module BlockTests =
         let assets =
             [
                 AssetHash "EEEE",
-                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"; IsEligibilityRequired = false}
-                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = BlockchainAddress "FFFF"
+                    IsEligibilityRequired = false
+                }
+                AssetHash "GGGG",
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = BlockchainAddress "HHHH"
+                    IsEligibilityRequired = false
+                }
             ]
             |> Map.ofList
 
@@ -786,9 +800,17 @@ module BlockTests =
         let assets =
             [
                 AssetHash "EEEE",
-                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = BlockchainAddress "FFFF"
+                    IsEligibilityRequired = false
+                }
                 AssetHash "GGGG",
-                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = BlockchainAddress "HHHH"
+                    IsEligibilityRequired = false
+                }
             ]
             |> Map.ofList
 
@@ -1109,9 +1131,17 @@ module BlockTests =
         let assets =
             [
                 AssetHash "EEEE",
-                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = BlockchainAddress "FFFF"
+                    IsEligibilityRequired = false
+                }
                 AssetHash "GGGG",
-                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"; IsEligibilityRequired = false}
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = BlockchainAddress "HHHH"
+                    IsEligibilityRequired = false
+                }
             ]
             |> Map.ofList
 

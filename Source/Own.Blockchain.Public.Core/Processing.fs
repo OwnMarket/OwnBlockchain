@@ -313,8 +313,10 @@ module Processing =
                 | Some asset when asset.IsEligibilityRequired ->
                     match state.GetEligibility(action.ToAccountHash, action.AssetHash) with
                     | Some eligibilityState ->
-                        (eligibilityState.Eligibility.IsPrimaryEligible,
-                         eligibilityState.Eligibility.IsSecondaryEligible)
+                        (
+                            eligibilityState.Eligibility.IsPrimaryEligible,
+                            eligibilityState.Eligibility.IsSecondaryEligible
+                        )
                     | None ->
                         (false, false)
                 | _ ->
@@ -400,7 +402,10 @@ module Processing =
 
         match state.GetAsset(assetHash) with
         | None ->
-            state.SetAsset(assetHash, {AssetCode = None; ControllerAddress = senderAddress; IsEligibilityRequired = false})
+            state.SetAsset(
+                assetHash,
+                {AssetCode = None; ControllerAddress = senderAddress; IsEligibilityRequired = false}
+            )
             Ok state
         | _ ->
             Error TxErrorCode.AssetAlreadyExists // Hash collision.

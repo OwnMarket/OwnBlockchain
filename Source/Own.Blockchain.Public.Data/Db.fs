@@ -1365,7 +1365,14 @@ module Db =
             sprintf "Failed to remove KYC controller: %s" kycController.ControllerAddress
             |> Result.appError
 
-    let private updateKycController conn transaction (kycController : KycControllerStateDto) isAdded : Result<unit, AppErrors> =
+    let private updateKycController
+        conn
+        transaction
+        (kycController : KycControllerStateDto)
+        isAdded
+        : Result<unit, AppErrors>
+        =
+
         let sql =
             """
             UPDATE kyc_controller
