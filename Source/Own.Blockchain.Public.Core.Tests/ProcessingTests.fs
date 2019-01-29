@@ -1052,8 +1052,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1106,7 +1106,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            failwith "getAssetState should not be called"
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -1162,6 +1162,517 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].IsEmission = false @>
+
+    [<Fact>]
+    let ``Processing.processTxSet TransferAsset success if transfer from emission to EligibleInPrimary`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = true}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            {
+                EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
+                KycControllerAddress = senderWallet.Address
+            }
+            |> Some
+
+        let getKycControllersState _ =
+            failwith "getKycControllersState should not be called"
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
+
+    [<Fact>]
+    let ``Processing.processTxSet TransferAsset success if transfer from non-emission to EligibleInSecondary`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            {
+                EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = true}
+                KycControllerAddress = senderWallet.Address
+            }
+            |> Some
+
+        let getKycControllersState _ =
+            failwith "getKycControllersState should not be called"
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
+
+    [<Fact>]
+    let ``Processing.processTxSet TransferAsset fails if transfer from emission to NotEligibleInPrimary`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = true}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            {
+                EligibilityState.Eligibility = {IsPrimaryEligible = false; IsSecondaryEligible = true}
+                KycControllerAddress = senderWallet.Address
+            }
+            |> Some
+
+        let getKycControllersState _ =
+            failwith "getKycControllersState should not be called"
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.NotEligibleInPrimary)
+            |> TxActionError
+            |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = AssetAmount 50m @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = AssetAmount 0m @>
+
+    [<Fact>]
+    let ``Processing.processTxSet TransferAsset fails if transfer from non-emission to NotEligibleInSecondary`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let senderAccountHash = AccountHash "Acc1"
+        let recipientAccountHash = AccountHash "Acc2"
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 10m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            {
+                EligibilityState.Eligibility = {IsPrimaryEligible = true; IsSecondaryEligible = false}
+                KycControllerAddress = senderWallet.Address
+            }
+            |> Some
+
+        let getKycControllersState _ =
+            failwith "getKycControllersState should not be called"
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.NotEligibleInSecondary)
+            |> TxActionError
+            |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = AssetAmount 50m @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = AssetAmount 0m @>
 
     [<Fact>]
     let ``Processing.processTxSet TransferAsset with insufficient balance`` () =
@@ -1181,8 +1692,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1235,7 +1746,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            failwith "getAssetState should not be called"
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -1313,8 +1824,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1445,8 +1956,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m}
+                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1582,7 +2093,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m}
+                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1634,7 +2145,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -1712,7 +2223,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m}
+                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1792,7 +2303,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -1909,7 +2420,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -2053,7 +2564,7 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
             else
                 None
 
@@ -2175,7 +2686,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = otherWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -2247,7 +2758,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m}
+                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -2299,7 +2810,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -2419,7 +2930,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -2544,7 +3055,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -2659,7 +3170,12 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = otherWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -2801,7 +3317,7 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
             else
                 None
 
@@ -2923,7 +3439,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -3047,7 +3563,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -3194,7 +3710,12 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = otherWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -3315,7 +3836,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -3456,7 +3977,7 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
             else
                 None
 
@@ -3514,6 +4035,353 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
         test <@ output.Eligibilities.Count = 0 @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SetIsEligibilityRequired
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processTxSet SetIsEligibilityRequired update success`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetIsEligibilityRequired"
+                    ActionData =
+                        {
+                            AssetHash = assetHash.Value
+                            IsEligibilityRequired = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getKycControllersState _ =
+            [senderWallet.Address]
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let expectedAssetState =
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = senderWallet.Address
+                IsEligibilityRequired = true
+            }
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.Assets.Count = 1 @>
+        test <@ output.Assets.[assetHash] = expectedAssetState @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetIsEligibilityRequired fails if asset not found`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetIsEligibilityRequired"
+                    ActionData =
+                        {
+                            AssetHash = assetHash.Value
+                            IsEligibilityRequired = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getKycControllersState _ =
+            [senderWallet.Address]
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            None
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.AssetNotFound)
+            |> TxActionError
+            |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Assets.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetIsEligibilityRequired fails is sender is not asset controller`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let otherWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetIsEligibilityRequired"
+                    ActionData =
+                        {
+                            AssetHash = assetHash.Value
+                            IsEligibilityRequired = true
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getKycControllersState _ =
+            [senderWallet.Address]
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address; IsEligibilityRequired = false}
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycControllersState
+                getAccountState
+                getAssetState
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
+            |> TxActionError
+            |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Assets.Count = 1 @>
+        test <@ output.Assets.[assetHash] =
+            {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address; IsEligibilityRequired = false} @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ChangeKycControllerAddress
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
     let ``Processing.processTxSet ChangeKycControllerAddress`` () =
@@ -3582,7 +4450,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -3730,7 +4598,7 @@ module ProcessingTests =
             if assetHash = assetHash1 then
                 None
             elif assetHash = assetHash2 then
-                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+                Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
             else
                 None
 
@@ -3852,7 +4720,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -3971,7 +4839,12 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = otherWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4090,7 +4963,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4215,7 +5088,12 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = otherWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4266,6 +5144,10 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
         test <@ output.Eligibilities.Count = 0 @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // AddKycController
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
     let ``Processing.processTxSet AddKycController`` () =
@@ -4327,7 +5209,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4453,7 +5335,13 @@ module ProcessingTests =
 
         let getAssetState assetHash =
             if assetHash = assetHash1 then None
-            else Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+            else
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = otherWallet.Address
+                    IsEligibilityRequired = false
+                }
+                |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4510,6 +5398,10 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
         test <@ output.KycControllers.Count = 0 @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // RemoveKycController
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
     let ``Processing.processTxSet RemoveKycController`` () =
@@ -4571,7 +5463,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4697,7 +5589,13 @@ module ProcessingTests =
 
         let getAssetState assetHash =
             if assetHash = assetHash1 then None
-            else Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address}
+            else
+                {
+                    AssetState.AssetCode = None
+                    ControllerAddress = otherWallet.Address
+                    IsEligibilityRequired = false
+                }
+                |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4832,7 +5730,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -4949,7 +5847,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -5002,6 +5900,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emissionAmount @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
     [<Fact>]
     let ``Processing.processTxSet CreateAssetEmission additional emission`` () =
@@ -5021,7 +5920,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (emissionAccountHash, assetHash), {HoldingState.Amount = AssetAmount 30m}
+                (emissionAccountHash, assetHash), {HoldingState.Amount = AssetAmount 30m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -5073,7 +5972,7 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -5127,6 +6026,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emittedAssetBalance @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
     [<Fact>]
     let ``Processing.processTxSet CreateAssetEmission fails if sender not current controller`` () =
@@ -5193,7 +6093,12 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = currentControllerWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -5436,7 +6341,12 @@ module ProcessingTests =
             None
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = currentControllerWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -5739,7 +6649,8 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Assets.Count = 1 @>
-        test <@ output.Assets.[assetHash] = {AssetCode = None; ControllerAddress = senderWallet.Address} @>
+        test <@ output.Assets.[assetHash] =
+            {AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false} @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountController
@@ -6165,7 +7076,7 @@ module ProcessingTests =
             failwith "getAccountState should not be called"
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -6400,7 +7311,12 @@ module ProcessingTests =
             failwith "getAccountState should not be called"
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = currentControllerWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -6524,7 +7440,7 @@ module ProcessingTests =
             failwith "getAccountState should not be called"
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address}
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
@@ -6759,7 +7675,12 @@ module ProcessingTests =
             failwith "getAccountState should not be called"
 
         let getAssetState _ =
-            Some {AssetState.AssetCode = None; ControllerAddress = currentControllerWallet.Address}
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = currentControllerWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
 
         let getValidatorState _ =
             failwith "getValidatorState should not be called"

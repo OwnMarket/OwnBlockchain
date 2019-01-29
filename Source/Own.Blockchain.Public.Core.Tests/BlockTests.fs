@@ -109,13 +109,13 @@ module BlockTests =
     let ``Blocks.createHoldingStateHash`` () =
         let accountHash = AccountHash "HHH"
         let assetHash = AssetHash "II"
-        let state = {HoldingState.Amount = AssetAmount 7m}
+        let state = {HoldingState.Amount = AssetAmount 7m; IsEmission = true}
 
         // ACT
         let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (accountHash, assetHash, state)
 
         // ASSERT
-        test <@ stateHash = "HHHII...G............" @>
+        test <@ stateHash = "HHHII...G............A" @>
 
     [<Fact>]
     let ``Blocks.createVoteStateHash`` () =
@@ -189,13 +189,13 @@ module BlockTests =
         let assetHash = AssetHash "AAA"
         let assetCode = AssetCode "XXX" |> Some // X = 88 = 8 = H
         let controllerAddress = BlockchainAddress "CC"
-        let state = {AssetState.AssetCode = assetCode; ControllerAddress = controllerAddress}
+        let state = {AssetState.AssetCode = assetCode; ControllerAddress = controllerAddress; IsEligibilityRequired = true}
 
         // ACT
         let stateHash = Blocks.createAssetStateHash DummyHash.decode DummyHash.create (assetHash, state)
 
         // ASSERT
-        test <@ stateHash = "AAAHHHCC" @>
+        test <@ stateHash = "AAAHHHCCA" @>
 
     [<Fact>]
     let ``Blocks.createValidatorStateHash`` () =
@@ -351,8 +351,8 @@ module BlockTests =
 
         let holdings =
             [
-                (AccountHash "DDD", AssetHash "EEE"), {HoldingState.Amount = AssetAmount 1m}
-                (AccountHash "FFF", AssetHash "GGG"), {HoldingState.Amount = AssetAmount 2m}
+                (AccountHash "DDD", AssetHash "EEE"), {HoldingState.Amount = AssetAmount 1m; IsEmission = false}
+                (AccountHash "FFF", AssetHash "GGG"), {HoldingState.Amount = AssetAmount 2m; IsEmission = true}
             ]
             |> Map.ofList
 
@@ -436,8 +436,9 @@ module BlockTests =
 
         let assets =
             [
-                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"}
-                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"}
+                AssetHash "EEEE",
+                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"; IsEligibilityRequired = false}
+                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"; IsEligibilityRequired = false}
             ]
             |> Map.ofList
 
@@ -541,8 +542,8 @@ module BlockTests =
             [
                 "HH...E...................G" // CHX balance 1
                 "II...F...................H" // CHX balance 2
-                "DDDEEE...A............" // Holding balance 1
-                "FFFGGG...B............" // Holding balance 2
+                "DDDEEE...A............." // Holding balance 1
+                "FFFGGG...B............A" // Holding balance 2
                 "DDDEEEAAAADA...A............" // Vote 1 Holding 1
                 "DDDEEEBBBBDA...A............" // Vote 2 Holding 1
                 "DDDEEECCCCAD...A............" // Vote 3 Holding 1
@@ -557,8 +558,8 @@ module BlockTests =
                 "GGGBBB." // Remove Kyc controller 3 for Asset 1
                 "AAAABBBB" // Account controller 1
                 "CCCCDDDD" // Account controller 2
-                "EEEEFFFF" // Asset controller 1
-                "GGGGHHHH" // Asset controller 2
+                "EEEEFFFF." // Asset controller 1
+                "GGGGHHHH." // Asset controller 2
                 "AAAAAGGG...A............" // Validator 1
                 "BBBBBHHH...B............" // Validator 2
                 "CCCCCIII...C............" // Validator 3
@@ -699,8 +700,8 @@ module BlockTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m}
-                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m; IsEmission = false}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -784,8 +785,10 @@ module BlockTests =
 
         let assets =
             [
-                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"}
-                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"}
+                AssetHash "EEEE",
+                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"; IsEligibilityRequired = false}
+                AssetHash "GGGG",
+                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"; IsEligibilityRequired = false}
             ]
             |> Map.ofList
 
@@ -1020,8 +1023,8 @@ module BlockTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m}
-                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m; IsEmission = false}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1105,8 +1108,10 @@ module BlockTests =
 
         let assets =
             [
-                AssetHash "EEEE", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"}
-                AssetHash "GGGG", {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"}
+                AssetHash "EEEE",
+                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "FFFF"; IsEligibilityRequired = false}
+                AssetHash "GGGG",
+                {AssetState.AssetCode = None; ControllerAddress = BlockchainAddress "HHHH"; IsEligibilityRequired = false}
             ]
             |> Map.ofList
 
