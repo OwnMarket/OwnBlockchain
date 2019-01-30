@@ -528,8 +528,10 @@ module Db =
             """
             SELECT is_primary_eligible, is_secondary_eligible, kyc_controller_address
             FROM eligibility
-            WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
-            AND asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
+            JOIN account USING (account_id)
+            JOIN asset USING (asset_id)
+            WHERE account_hash = @accountHash
+            AND asset_hash = @assetHash
             """
 
         let sqlParams =
@@ -558,7 +560,8 @@ module Db =
             """
             SELECT provider_address
             FROM kyc_provider
-            WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
+            JOIN asset USING (asset_id)
+            WHERE asset_hash = @assetHash
             """
 
         let sqlParams =
