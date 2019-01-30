@@ -143,6 +143,7 @@ module Workflows =
         getKycProvidersStateFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
+        getAssetHashByCodeFromStorage
         getValidatorStateFromStorage
         getStakeStateFromStorage
         getTotalChxStakedFromStorage
@@ -172,6 +173,7 @@ module Workflows =
         let getKycProvidersState =
             memoize (getKycProvidersStateFromStorage >> List.map (fun a -> BlockchainAddress a))
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
+        let getAssetHashByCode = memoize getAssetHashByCodeFromStorage
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
         let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
@@ -214,6 +216,7 @@ module Workflows =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked

@@ -18,6 +18,7 @@ module Processing =
         getKycProvidersFromStorage : AssetHash -> BlockchainAddress list,
         getAccountStateFromStorage : AccountHash -> AccountState option,
         getAssetStateFromStorage : AssetHash -> AssetState option,
+        getAssetHashByCodeFromStorage : AssetCode -> AssetHash option,
         getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
         getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option,
         getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount,
@@ -30,6 +31,7 @@ module Processing =
         kycProviders : ConcurrentDictionary<KycProviderState, KycProviderChange option>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
+        assetHashesByCode : ConcurrentDictionary<AssetCode, AssetHash option>,
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
         stakes : ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>,
         totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not part of the blockchain state
@@ -53,6 +55,7 @@ module Processing =
             getKycProvidersFromStorage : AssetHash -> BlockchainAddress list,
             getAccountStateFromStorage : AccountHash -> AccountState option,
             getAssetStateFromStorage : AssetHash -> AssetState option,
+            getAssetHashByCodeFromStorage : AssetCode -> AssetHash option,
             getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
             getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option,
             getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
@@ -65,6 +68,7 @@ module Processing =
                 getKycProvidersFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
+                getAssetHashByCodeFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
                 getTotalChxStakedFromStorage,
@@ -77,6 +81,7 @@ module Processing =
                 ConcurrentDictionary<KycProviderState, KycProviderChange option>(),
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
+                ConcurrentDictionary<AssetCode, AssetHash option>(),
                 ConcurrentDictionary<BlockchainAddress, ValidatorState option>(),
                 ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
@@ -95,6 +100,7 @@ module Processing =
                 getKycProvidersFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
+                getAssetHashByCodeFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
                 getTotalChxStakedFromStorage,
@@ -107,6 +113,7 @@ module Processing =
                 ConcurrentDictionary(kycProviders),
                 ConcurrentDictionary(accounts),
                 ConcurrentDictionary(assets),
+                ConcurrentDictionary(assetHashesByCode),
                 ConcurrentDictionary(validators),
                 ConcurrentDictionary(stakes),
                 ConcurrentDictionary(totalChxStaked),
@@ -150,14 +157,9 @@ module Processing =
                 kycProviders.GetOrAdd (kycProvider, None) |> ignore
             )
 
-            let isRemove change =
-                match change with
-                | Some c when c = Remove -> true
-                | _ -> false
-
             kycProviders
             |> Map.ofDict
-            |> Map.filter (fun key change -> key.AssetHash = assetHash && not (isRemove change))
+            |> Map.filter (fun key change -> key.AssetHash = assetHash && not (change = Some Remove))
             |> Map.keys
             |> List.map (fun key -> key.ProviderAddress)
 
@@ -166,6 +168,9 @@ module Processing =
 
         member __.GetAsset (assetHash : AssetHash) =
             assets.GetOrAdd(assetHash, getAssetStateFromStorage)
+
+        member __.GetAssetHashByCode (assetCode : AssetCode) =
+            assetHashesByCode.GetOrAdd(assetCode, getAssetHashByCodeFromStorage)
 
         member __.GetValidator (address : BlockchainAddress) =
             validators.GetOrAdd(address, getValidatorStateFromStorage)
@@ -457,8 +462,12 @@ module Processing =
         | None ->
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
-            state.SetAsset(action.AssetHash, {assetState with AssetCode = Some action.AssetCode})
-            Ok state
+            match state.GetAssetHashByCode action.AssetCode with
+            | Some _ ->
+                Error TxErrorCode.AssetCodeAlreadyExists
+            | None ->
+                state.SetAsset(action.AssetHash, {assetState with AssetCode = Some action.AssetCode})
+                Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
@@ -1010,6 +1019,7 @@ module Processing =
         (getKycProvidersFromStorage : AssetHash -> BlockchainAddress list)
         (getAccountStateFromStorage : AccountHash -> AccountState option)
         (getAssetStateFromStorage : AssetHash -> AssetState option)
+        (getAssetHashByCodeFromStorage : AssetCode -> AssetHash option)
         (getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option)
         (getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option)
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
@@ -1063,6 +1073,7 @@ module Processing =
                 getKycProvidersFromStorage,
                 getAccountStateFromStorage,
                 getAssetStateFromStorage,
+                getAssetHashByCodeFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
                 getTotalChxStakedFromStorage

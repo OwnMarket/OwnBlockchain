@@ -219,6 +219,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -252,6 +255,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -369,6 +373,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -402,6 +409,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -507,6 +515,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -535,6 +546,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -625,6 +637,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -653,6 +668,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -744,6 +760,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -772,6 +791,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -863,6 +883,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -890,6 +913,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -971,6 +995,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1003,6 +1030,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -1108,6 +1136,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1136,6 +1167,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -1242,6 +1274,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1270,6 +1305,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -1369,6 +1405,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1397,6 +1436,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -1496,6 +1536,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1524,6 +1567,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -1624,6 +1668,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1652,6 +1699,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -1748,6 +1796,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1776,6 +1827,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -1883,6 +1935,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -1911,6 +1966,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2015,6 +2071,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2043,6 +2102,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2147,6 +2207,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2175,6 +2238,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2305,6 +2369,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2333,6 +2400,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2422,6 +2490,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2450,6 +2521,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2573,6 +2645,9 @@ module ProcessingTests =
             else
                 None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2601,6 +2676,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2693,6 +2769,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2721,6 +2800,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2817,6 +2897,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2845,6 +2928,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -2937,6 +3021,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -2965,6 +3052,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3062,6 +3150,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -3090,6 +3181,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3182,6 +3274,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -3210,6 +3305,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3331,6 +3427,9 @@ module ProcessingTests =
             else
                 None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -3359,6 +3458,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3451,6 +3551,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -3479,6 +3582,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3575,6 +3679,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -3603,6 +3710,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3727,6 +3835,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -3755,6 +3866,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3848,6 +3960,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -3876,6 +3991,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -3996,6 +4112,9 @@ module ProcessingTests =
             else
                 None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4024,6 +4143,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4117,6 +4237,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4145,6 +4268,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4231,6 +4355,9 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4259,6 +4386,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4343,6 +4471,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4371,6 +4502,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4474,6 +4606,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4502,6 +4637,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4629,6 +4765,9 @@ module ProcessingTests =
             else
                 None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4657,6 +4796,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4749,6 +4889,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4777,6 +4920,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4873,6 +5017,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -4901,6 +5048,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -4992,6 +5140,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5020,6 +5171,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -5122,6 +5274,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5150,6 +5305,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -5238,6 +5394,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5266,6 +5425,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -5370,6 +5530,9 @@ module ProcessingTests =
                 }
                 |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5398,6 +5561,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -5492,6 +5656,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5520,6 +5687,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -5624,6 +5792,9 @@ module ProcessingTests =
                 }
                 |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5652,6 +5823,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -5759,6 +5931,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5787,6 +5962,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -5876,6 +6052,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -5904,6 +6083,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6001,6 +6181,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6029,6 +6212,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6127,6 +6311,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6155,6 +6342,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6249,6 +6437,9 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6277,6 +6468,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6375,6 +6567,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6403,6 +6598,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6501,6 +6697,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6529,6 +6728,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6625,6 +6825,9 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6653,6 +6856,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6751,6 +6955,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6779,6 +6986,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6866,6 +7074,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -6894,6 +7105,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -6986,6 +7198,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -7014,6 +7229,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7110,6 +7326,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -7138,6 +7357,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7225,6 +7445,9 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -7253,6 +7476,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7350,6 +7574,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -7378,6 +7605,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7474,6 +7702,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getAssetHashByCode _ =
+            None
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -7502,6 +7733,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7589,6 +7821,9 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -7617,6 +7852,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7714,6 +7950,9 @@ module ProcessingTests =
             }
             |> Some
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -7742,6 +7981,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7837,6 +8077,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             Some {
                 ValidatorState.NetworkAddress = NetworkAddress "old-address:12345"
@@ -7868,6 +8111,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -7956,6 +8200,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             None
 
@@ -7984,6 +8231,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -8083,6 +8331,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -8111,6 +8362,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -8198,6 +8450,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -8226,6 +8481,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -8313,6 +8569,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -8341,6 +8600,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -8433,6 +8693,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -8461,6 +8724,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked
@@ -8553,6 +8817,9 @@ module ProcessingTests =
         let getAssetState _ =
             failwith "getAssetState should not be called"
 
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
         let getValidatorState _ =
             failwith "getValidatorState should not be called"
 
@@ -8581,6 +8848,7 @@ module ProcessingTests =
                 getKycProvidersState
                 getAccountState
                 getAssetState
+                getAssetHashByCode
                 getValidatorState
                 getStakeState
                 getTotalChxStaked

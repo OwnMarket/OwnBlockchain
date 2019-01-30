@@ -72,6 +72,7 @@ module Composition =
     let getKycProvidersState = Db.getKycProvidersState Config.DbEngineType Config.DbConnectionString
 
     let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
+    let getAssetHashByCode = Db.getAssetHashByCode Config.DbEngineType Config.DbConnectionString
 
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
     let getTopValidatorsByStake =
@@ -184,6 +185,7 @@ module Composition =
             getKycProvidersState
             getAccountState
             getAssetState
+            getAssetHashByCode
             getValidatorState
             getStakeState
             getTotalChxStaked
