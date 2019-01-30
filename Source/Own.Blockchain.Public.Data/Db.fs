@@ -1376,9 +1376,12 @@ module Db =
 
         let foldFn result (kycProvider, addProvider) =
             result
-            >>= fun _ ->
-                    if addProvider then addKycProvider conn transaction kycProvider
-                    else removeKycProvider conn transaction kycProvider
+            >>= (fun _ ->
+                if addProvider then
+                    addKycProvider conn transaction kycProvider
+                else
+                    removeKycProvider conn transaction kycProvider
+            )
 
         kycProviders
         |> Map.toList
