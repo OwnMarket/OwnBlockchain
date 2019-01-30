@@ -280,7 +280,8 @@ type TxErrorCode =
     // Asset
     | AssetNotFound = 410s
     | AssetAlreadyExists = 420s
-    | SenderIsNotAssetController = 430s
+    | AssetCodeAlreadyExists = 430s
+    | SenderIsNotAssetController = 440s
 
     // Voting
     | VoteNotFound = 510s

@@ -671,6 +671,58 @@ module ValidationTests =
             test <@ e.Length = 2 @>
 
     [<Fact>]
+    let ``Validation.validateTx SetAssetCode code is too long`` () =
+        let expected =
+            {
+                SetAssetCodeTxActionDto.AssetHash = "A"
+                AssetCode = "ABCDEFGHIJK0123456789"
+            }
+
+        let tx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            Fee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = setAssetCodeActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock chAddress txHash tx with
+        | Ok t -> failwith "This test should fail."
+        | Error e ->
+            test <@ e.Length = 1 @>
+
+    [<Fact>]
+    let ``Validation.validateTx SetAssetCode code has invalid chars`` () =
+        let expected =
+            {
+                SetAssetCodeTxActionDto.AssetHash = "A"
+                AssetCode = "AaabcZ"
+            }
+
+        let tx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            Fee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = setAssetCodeActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx isValidAddressMock chAddress txHash tx with
+        | Ok t -> failwith "This test should fail."
+        | Error e ->
+            test <@ e.Length = 1 @>
+
+    [<Fact>]
     let ``Validation.validateTx ConfigureValidator valid action`` () =
         let expected =
             {

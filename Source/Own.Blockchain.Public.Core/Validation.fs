@@ -1,5 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Core
 
+open System.Text.RegularExpressions
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
@@ -137,6 +138,12 @@ module Validation =
 
             if action.AssetCode.IsNullOrWhiteSpace() then
                 yield AppError "AssetCode is not provided."
+
+            if action.AssetCode.Length > 20 then
+                yield AppError "Asset code cannot be longer than 20 chars."
+
+            if not (Regex.IsMatch(action.AssetCode, @"^[0-9A-Z]+$")) then
+                yield AppError "Asset code can only contain digits and upper case letters."
         ]
 
     let private validateConfigureValidator (action : ConfigureValidatorTxActionDto) =
