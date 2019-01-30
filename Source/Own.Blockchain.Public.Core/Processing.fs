@@ -140,7 +140,7 @@ module Processing =
         member __.GetVote (voteId : VoteId) =
             votes.GetOrAdd(voteId, getVoteStateFromStorage)
 
-        member __.GetEligibility (accountHash : AccountHash, assetHash : AssetHash) =
+        member __.GetAccountEligibility (accountHash : AccountHash, assetHash : AssetHash) =
             eligibilities.GetOrAdd((accountHash, assetHash), getEligibilityStateFromStorage)
 
         member __.GetKycControllers (assetHash) =
@@ -182,7 +182,7 @@ module Processing =
             let state = Some state;
             votes.AddOrUpdate(voteId, state, fun _ _ -> state) |> ignore
 
-        member __.SetEligibility (accountHash, assetHash, state : EligibilityState) =
+        member __.SetAccountEligibility (accountHash, assetHash, state : EligibilityState) =
             let state = Some state;
             eligibilities.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
@@ -311,7 +311,7 @@ module Processing =
             let isPrimaryEligible, isSecondaryEligible =
                 match state.GetAsset(action.AssetHash) with
                 | Some asset when asset.IsEligibilityRequired ->
-                    match state.GetEligibility(action.ToAccountHash, action.AssetHash) with
+                    match state.GetAccountEligibility(action.ToAccountHash, action.AssetHash) with
                     | Some eligibilityState ->
                         (
                             eligibilityState.Eligibility.IsPrimaryEligible,
@@ -564,10 +564,10 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
-    let processSetEligibilityTxAction
+    let processSetAccountEligibilityTxAction
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
-        (action : SetEligibilityTxAction)
+        (action : SetAccountEligibilityTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
@@ -582,9 +582,9 @@ module Processing =
                 |> List.contains senderAddress
 
             if isApprovedKycProvider then
-                match state.GetEligibility(action.AccountHash, action.AssetHash) with
+                match state.GetAccountEligibility(action.AccountHash, action.AssetHash) with
                 | None ->
-                    state.SetEligibility(
+                    state.SetAccountEligibility(
                         action.AccountHash,
                         action.AssetHash,
                         {EligibilityState.Eligibility = action.Eligibility; KycControllerAddress = senderAddress}
@@ -592,7 +592,7 @@ module Processing =
                     Ok state
                 | Some eligibilityState ->
                     if eligibilityState.KycControllerAddress = senderAddress then
-                        state.SetEligibility(
+                        state.SetAccountEligibility(
                             action.AccountHash,
                             action.AssetHash,
                             {eligibilityState with Eligibility = action.Eligibility}
@@ -632,7 +632,7 @@ module Processing =
         | _, None ->
             Error TxErrorCode.AccountNotFound
         | Some assetState, Some _ ->
-            match state.GetEligibility(action.AccountHash, action.AssetHash) with
+            match state.GetAccountEligibility(action.AccountHash, action.AssetHash) with
             | None -> Error TxErrorCode.EligibilityNotFound
             | Some eligibilityState ->
                 let isApprovedKycProvider =
@@ -641,7 +641,7 @@ module Processing =
 
                 if eligibilityState.KycControllerAddress = senderAddress && isApprovedKycProvider
                     || assetState.ControllerAddress = senderAddress then
-                    state.SetEligibility(
+                    state.SetAccountEligibility(
                         action.AccountHash,
                         action.AssetHash,
                         {eligibilityState with KycControllerAddress = action.KycControllerAddress}
@@ -855,7 +855,7 @@ module Processing =
         | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
-        | SetEligibility action -> processSetEligibilityTxAction state senderAddress action
+        | SetAccountEligibility action -> processSetAccountEligibilityTxAction state senderAddress action
         | SetAssetEligibility action -> processSetAssetEligibilityTxAction state senderAddress action
         | ChangeKycControllerAddress action -> processChangeKycControllerAddressTxAction state senderAddress action
         | AddKycController action -> processAddKycControllerTxAction state senderAddress action

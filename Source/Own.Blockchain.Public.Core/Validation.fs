@@ -204,7 +204,7 @@ module Validation =
                 yield AppError "Vote weight must have at most 7 decimals."
         ]
 
-    let private validateSetEligibility (action : SetEligibilityTxActionDto) =
+    let private validateSetAccountEligibility (action : SetAccountEligibilityTxActionDto) =
         [
             if action.AccountHash.IsNullOrWhiteSpace() then
                 yield AppError "AccountHash value is not provided."
@@ -300,8 +300,8 @@ module Validation =
                 validateSubmitVote a
             | :? SubmitVoteWeightTxActionDto as a ->
                 validateSubmitVoteWeight a
-            | :? SetEligibilityTxActionDto as a ->
-                validateSetEligibility a
+            | :? SetAccountEligibilityTxActionDto as a ->
+                validateSetAccountEligibility a
             | :? SetAssetEligibilityTxActionDto as a ->
                 validateSetAssetEligibility a
             | :? ChangeKycControllerAddressTxActionDto as a ->

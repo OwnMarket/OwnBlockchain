@@ -43,7 +43,7 @@ module Serialization =
             "DelegateStake", tokenToAction<DelegateStakeTxActionDto>
             "SubmitVote", tokenToAction<SubmitVoteTxActionDto>
             "SubmitVoteWeight", tokenToAction<SubmitVoteWeightTxActionDto>
-            "SetEligibility", tokenToAction<SetEligibilityTxActionDto>
+            "SetAccountEligibility", tokenToAction<SetAccountEligibilityTxActionDto>
             "SetAssetEligibility", tokenToAction<SetAssetEligibilityTxActionDto>
             "ChangeKycControllerAddress", tokenToAction<ChangeKycControllerAddressTxActionDto>
             "AddKycController", tokenToAction<AddKycControllerTxActionDto>

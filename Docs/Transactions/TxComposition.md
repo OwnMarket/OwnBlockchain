@@ -52,7 +52,7 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
     - [`SetAccountController`](TxActions.md#setaccountcontroller)
     - [`SubmitVote`](TxActions.md#submitvote)
     - [`SubmitVoteWeight`](TxActions.md#submitvoteweight)
-    - [`SetEligibility`](TxActions.md#seteligibility)
+    - [`SetAccountEligibility`](TxActions.md#setaccounteligibility)
     - [`SetAssetEligibility`](TxActions.md#setasseteligibility)
     - [`ChangeKycControllerAddress`](TxActions.md#changekyccontrolleraddress)
     - [`AddKycController`](TxActions.md#addkyccontroller)

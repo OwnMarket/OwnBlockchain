@@ -131,7 +131,7 @@ type SubmitVoteWeightTxAction = {
     VoteWeight : VoteWeight
 }
 
-type SetEligibilityTxAction = {
+type SetAccountEligibilityTxAction = {
     AccountHash : AccountHash
     AssetHash : AssetHash
     Eligibility : Eligibility
@@ -171,7 +171,7 @@ type TxAction =
     | DelegateStake of DelegateStakeTxAction
     | SubmitVote of SubmitVoteTxAction
     | SubmitVoteWeight of SubmitVoteWeightTxAction
-    | SetEligibility of SetEligibilityTxAction
+    | SetAccountEligibility of SetAccountEligibilityTxAction
     | SetAssetEligibility of SetAssetEligibilityTxAction
     | ChangeKycControllerAddress of ChangeKycControllerAddressTxAction
     | AddKycController of AddKycControllerTxAction

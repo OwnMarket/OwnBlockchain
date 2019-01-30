@@ -3383,11 +3383,11 @@ module ProcessingTests =
         test <@ output.Votes.Count = 0 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // SetEligibility
+    // SetAccountEligibility
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetEligibility insert success`` () =
+    let ``Processing.processTxSet SetAccountEligibility insert success`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -3408,7 +3408,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetEligibility"
+                    ActionType = "SetAccountEligibility"
                     ActionData =
                         {
                             AccountHash = accountHash.Value
@@ -3507,7 +3507,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.[(accountHash, assetHash)] = expectedEligibilityState @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetEligibility update success`` () =
+    let ``Processing.processTxSet SetAccountEligibility update success`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -3528,7 +3528,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetEligibility"
+                    ActionType = "SetAccountEligibility"
                     ActionData =
                         {
                             AccountHash = accountHash.Value
@@ -3631,7 +3631,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.[(accountHash, assetHash)] = expectedEligibilityState @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetEligibility insert and update fails if not approved KYC provider`` () =
+    let ``Processing.processTxSet SetAccountEligibility insert and update fails if not approved KYC provider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -3653,7 +3653,7 @@ module ProcessingTests =
         let txHash1, txEnvelope1 =
             [
                 {
-                    ActionType = "SetEligibility"
+                    ActionType = "SetAccountEligibility"
                     ActionData =
                         {
                             AccountHash = accountHash1.Value
@@ -3668,7 +3668,7 @@ module ProcessingTests =
         let txHash2, txEnvelope2 =
             [
                 {
-                    ActionType = "SetEligibility"
+                    ActionType = "SetAccountEligibility"
                     ActionData =
                         {
                             AccountHash = accountHash2.Value
@@ -3779,7 +3779,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.Count = 0 @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetEligibility update fails if approved KYC provider but not current controller`` () =
+    let ``Processing.processTxSet SetAccountEligibility update fails if approved KYC provider but not current`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -3801,7 +3801,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetEligibility"
+                    ActionType = "SetAccountEligibility"
                     ActionData =
                         {
                             AccountHash = accountHash.Value
@@ -3899,7 +3899,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.Count = 0 @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetEligibility insert and update fails if asset or account not found`` () =
+    let ``Processing.processTxSet SetAccountEligibility insert and update fails if asset or account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -3921,7 +3921,7 @@ module ProcessingTests =
         let txHash1, txEnvelope1 =
             [
                 {
-                    ActionType = "SetEligibility"
+                    ActionType = "SetAccountEligibility"
                     ActionData =
                         {
                             AccountHash = accountHash1.Value
@@ -3936,7 +3936,7 @@ module ProcessingTests =
         let txHash2, txEnvelope2 =
             [
                 {
-                    ActionType = "SetEligibility"
+                    ActionType = "SetAccountEligibility"
                     ActionData =
                         {
                             AccountHash = accountHash2.Value

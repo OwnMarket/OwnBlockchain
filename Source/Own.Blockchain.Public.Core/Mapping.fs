@@ -113,7 +113,7 @@ module Mapping =
                 VoteWeight = VoteWeight a.VoteWeight
             }
             |> SubmitVoteWeight
-        | :? SetEligibilityTxActionDto as a ->
+        | :? SetAccountEligibilityTxActionDto as a ->
             {
                 AccountHash = AccountHash a.AccountHash
                 AssetHash = AssetHash a.AssetHash
@@ -123,7 +123,7 @@ module Mapping =
                         IsSecondaryEligible = a.IsSecondaryEligible
                     }
             }
-            |> SetEligibility
+            |> SetAccountEligibility
         | :? SetAssetEligibilityTxActionDto as a ->
             {
                 SetAssetEligibilityTxAction.AssetHash = AssetHash a.AssetHash

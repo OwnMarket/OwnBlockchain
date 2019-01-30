@@ -81,7 +81,7 @@ type SubmitVoteWeightTxActionDto = {
 }
 
 [<CLIMutable>]
-type SetEligibilityTxActionDto = {
+type SetAccountEligibilityTxActionDto = {
     AccountHash : string
     AssetHash : string
     IsPrimaryEligible : bool
