@@ -649,7 +649,7 @@ module ValidationTests =
         let expected =
             {
                 SetAssetCodeTxActionDto.AssetHash = ""
-                AssetCode = ""
+                AssetCode = "A"
             }
 
         let tx = {
@@ -668,7 +668,7 @@ module ValidationTests =
         match Validation.validateTx isValidAddressMock chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
-            test <@ e.Length = 2 @>
+            test <@ e.Length = 1 @>
 
     [<Fact>]
     let ``Validation.validateTx SetAssetCode code is too long`` () =

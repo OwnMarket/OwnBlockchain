@@ -7073,7 +7073,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ProviderAddress = newControllerWallet.Address.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -7188,7 +7188,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ProviderAddress = newControllerWallet.Address.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -7308,7 +7308,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ProviderAddress = newControllerWallet.Address.Value
+                            ControllerAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -7417,7 +7417,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "Foo"
-        let assetCode = AssetCode "Bar"
+        let assetCode = AssetCode "BAR"
 
         let initialChxState =
             [
@@ -7532,7 +7532,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "Foo"
-        let assetCode = AssetCode "Bar"
+        let assetCode = AssetCode "BAR"
 
         let initialChxState =
             [
@@ -7652,7 +7652,7 @@ module ProcessingTests =
         let validatorWallet = Signing.generateWallet ()
         let currentControllerWallet = Signing.generateWallet ()
         let assetHash = AssetHash "Foo"
-        let assetCode = AssetCode "Bar"
+        let assetCode = AssetCode "BAR"
 
         let initialChxState =
             [
