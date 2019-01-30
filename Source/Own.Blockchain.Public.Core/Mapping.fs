@@ -124,12 +124,12 @@ module Mapping =
                     }
             }
             |> SetEligibility
-        | :? SetIsEligibilityRequiredTxActionDto as a ->
+        | :? SetAssetEligibilityTxActionDto as a ->
             {
-                SetIsEligibilityRequiredTxAction.AssetHash = AssetHash a.AssetHash
+                SetAssetEligibilityTxAction.AssetHash = AssetHash a.AssetHash
                 IsEligibilityRequired = a.IsEligibilityRequired
             }
-            |> SetIsEligibilityRequired
+            |> SetAssetEligibility
         | :? AddKycControllerTxActionDto as a ->
             {
                 AddKycControllerTxAction.AssetHash = AssetHash a.AssetHash

@@ -89,7 +89,7 @@ type SetEligibilityTxActionDto = {
 }
 
 [<CLIMutable>]
-type SetIsEligibilityRequiredTxActionDto = {
+type SetAssetEligibilityTxActionDto = {
     AssetHash : string
     IsEligibilityRequired : bool
 }

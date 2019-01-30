@@ -137,7 +137,7 @@ type SetEligibilityTxAction = {
     Eligibility : Eligibility
 }
 
-type SetIsEligibilityRequiredTxAction = {
+type SetAssetEligibilityTxAction = {
     AssetHash : AssetHash
     IsEligibilityRequired : bool
 }
@@ -172,7 +172,7 @@ type TxAction =
     | SubmitVote of SubmitVoteTxAction
     | SubmitVoteWeight of SubmitVoteWeightTxAction
     | SetEligibility of SetEligibilityTxAction
-    | SetIsEligibilityRequired of SetIsEligibilityRequiredTxAction
+    | SetAssetEligibility of SetAssetEligibilityTxAction
     | ChangeKycControllerAddress of ChangeKycControllerAddressTxAction
     | AddKycController of AddKycControllerTxAction
     | RemoveKycController of RemoveKycControllerTxAction

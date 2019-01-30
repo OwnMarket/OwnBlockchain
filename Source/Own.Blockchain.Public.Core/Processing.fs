@@ -603,10 +603,10 @@ module Processing =
             else
                 Error TxErrorCode.SenderIsNotApprovedKycProvider
 
-    let processSetIsEligibilityRequiredTxAction
+    let processSetAssetEligibilityTxAction
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
-        (action : SetIsEligibilityRequiredTxAction)
+        (action : SetAssetEligibilityTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
@@ -856,7 +856,7 @@ module Processing =
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
         | SetEligibility action -> processSetEligibilityTxAction state senderAddress action
-        | SetIsEligibilityRequired action -> processSetIsEligibilityRequiredTxAction state senderAddress action
+        | SetAssetEligibility action -> processSetAssetEligibilityTxAction state senderAddress action
         | ChangeKycControllerAddress action -> processChangeKycControllerAddressTxAction state senderAddress action
         | AddKycController action -> processAddKycControllerTxAction state senderAddress action
         | RemoveKycController action -> processRemoveKycControllerTxAction state senderAddress action

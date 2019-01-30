@@ -44,7 +44,7 @@ module Serialization =
             "SubmitVote", tokenToAction<SubmitVoteTxActionDto>
             "SubmitVoteWeight", tokenToAction<SubmitVoteWeightTxActionDto>
             "SetEligibility", tokenToAction<SetEligibilityTxActionDto>
-            "SetIsEligibilityRequired", tokenToAction<SetIsEligibilityRequiredTxActionDto>
+            "SetAssetEligibility", tokenToAction<SetAssetEligibilityTxActionDto>
             "ChangeKycControllerAddress", tokenToAction<ChangeKycControllerAddressTxActionDto>
             "AddKycController", tokenToAction<AddKycControllerTxActionDto>
             "RemoveKycController", tokenToAction<RemoveKycControllerTxActionDto>

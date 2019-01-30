@@ -4052,11 +4052,11 @@ module ProcessingTests =
         test <@ output.Eligibilities.Count = 0 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // SetIsEligibilityRequired
+    // SetAssetEligibility
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetIsEligibilityRequired update success`` () =
+    let ``Processing.processTxSet SetAssetEligibility update success`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -4076,7 +4076,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetIsEligibilityRequired"
+                    ActionType = "SetAssetEligibility"
                     ActionData =
                         {
                             AssetHash = assetHash.Value
@@ -4170,7 +4170,7 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash] = expectedAssetState @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetIsEligibilityRequired fails if asset not found`` () =
+    let ``Processing.processTxSet SetAssetEligibility fails if asset not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -4190,7 +4190,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetIsEligibilityRequired"
+                    ActionType = "SetAssetEligibility"
                     ActionData =
                         {
                             AssetHash = assetHash.Value
@@ -4281,7 +4281,7 @@ module ProcessingTests =
         test <@ output.Assets.Count = 0 @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetIsEligibilityRequired fails is sender is not asset controller`` () =
+    let ``Processing.processTxSet SetAssetEligibility fails is sender is not asset controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -4302,7 +4302,7 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "SetIsEligibilityRequired"
+                    ActionType = "SetAssetEligibility"
                     ActionData =
                         {
                             AssetHash = assetHash.Value
