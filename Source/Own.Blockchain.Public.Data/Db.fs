@@ -1333,13 +1333,12 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert KYC controller."
+            | _ -> Result.appError "Didn't insert KYC provider."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert KYC controller."
+            Result.appError "Failed to insert KYC povider."
 
     let private removeKycProvider conn transaction (kycProvider : KycProviderStateDto) : Result<unit, AppErrors> =
         let sql =
@@ -1360,46 +1359,13 @@ module Db =
             | 0
             | 1 -> Ok ()
             | _ ->
-                sprintf "Didn't remove KYC controller: %s" kycProvider.ProviderAddress
+                sprintf "Didn't remove KYC provider: %s" kycProvider.ProviderAddress
                 |> Result.appError
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            sprintf "Failed to remove KYC controller: %s" kycProvider.ProviderAddress
+            sprintf "Failed to remove KYC provider: %s" kycProvider.ProviderAddress
             |> Result.appError
-
-    let private updateKycProvider
-        conn
-        transaction
-        (kycProvider : KycProviderStateDto)
-        isAdded
-        : Result<unit, AppErrors>
-        =
-
-        let sql =
-            """
-            UPDATE kyc_provider
-            SET provider_address = @providerAddress
-            WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
-            AND provider_address = @providerAddress
-            """
-
-        let sqlParams =
-            [
-                "@assetHash", kycProvider.AssetHash |> box
-                "@providerAddress", kycProvider.ProviderAddress |> box
-            ]
-        try
-            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 ->
-                if isAdded then addKycProvider conn transaction kycProvider
-                else removeKycProvider conn transaction kycProvider
-            | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update KYC controller state."
-        with
-        | ex ->
-            Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update KYC controller state."
 
     let private updateKycProviders
         conn
@@ -1408,9 +1374,11 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (kycProvider, isAdded) =
+        let foldFn result (kycProvider, addProvider) =
             result
-            >>= fun _ -> updateKycProvider conn transaction kycProvider isAdded
+            >>= fun _ ->
+                    if addProvider then addKycProvider conn transaction kycProvider
+                    else removeKycProvider conn transaction kycProvider
 
         kycProviders
         |> Map.toList

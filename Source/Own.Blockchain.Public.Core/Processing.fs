@@ -27,7 +27,7 @@ module Processing =
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
         votes : ConcurrentDictionary<VoteId, VoteState option>,
         eligibilities : ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>,
-        kycProviders : ConcurrentDictionary<KycProviderState, KycProviderChange>,
+        kycProviders : ConcurrentDictionary<KycProviderState, KycProviderChange option>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
@@ -74,7 +74,7 @@ module Processing =
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
                 ConcurrentDictionary<VoteId, VoteState option>(),
                 ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>(),
-                ConcurrentDictionary<KycProviderState, KycProviderChange>(),
+                ConcurrentDictionary<KycProviderState, KycProviderChange option>(),
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
                 ConcurrentDictionary<BlockchainAddress, ValidatorState option>(),
@@ -147,12 +147,17 @@ module Processing =
             getKycProvidersFromStorage assetHash
             |> List.iter(fun address ->
                 let kycProvider = {KycProviderState.ProviderAddress = address; AssetHash = assetHash};
-                kycProviders.GetOrAdd (kycProvider, Add) |> ignore
+                kycProviders.GetOrAdd (kycProvider, None) |> ignore
             )
+
+            let isRemove change =
+                match change with
+                | Some c when c = Remove -> true
+                | _ -> false
 
             kycProviders
             |> Map.ofDict
-            |> Map.filter (fun key _ -> key.AssetHash = assetHash)
+            |> Map.filter (fun key change -> key.AssetHash = assetHash && not (isRemove change))
             |> Map.keys
             |> List.map (fun key -> key.ProviderAddress)
 
@@ -186,7 +191,7 @@ module Processing =
             let state = Some state;
             eligibilities.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
-        member __.SetKycProvider (state : KycProviderState, change : KycProviderChange) =
+        member __.SetKycProvider (state : KycProviderState, change : KycProviderChange option) =
             kycProviders.AddOrUpdate(state, change, fun _ _ -> change) |> ignore
 
         member __.SetAccount (accountHash, state : AccountState) =
@@ -239,7 +244,8 @@ module Processing =
                     |> Map.ofSeq
                 KycProviders =
                     kycProviders
-                    |> Map.ofDict
+                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Map.ofSeq
                 Accounts =
                     accounts
                     |> Seq.ofDict
@@ -663,7 +669,7 @@ module Processing =
         | Some assetState when assetState.ControllerAddress = senderAddress ->
             state.SetKycProvider(
                 {KycProviderState.AssetHash = action.AssetHash; ProviderAddress = action.ProviderAddress},
-                KycProviderChange.Add
+                KycProviderChange.Add |> Some
             )
             Ok state
         | _ ->
@@ -682,7 +688,7 @@ module Processing =
         | Some assetState when assetState.ControllerAddress = senderAddress ->
             state.SetKycProvider(
                 {KycProviderState.AssetHash = action.AssetHash; ProviderAddress = action.ProviderAddress},
-                KycProviderChange.Remove
+                KycProviderChange.Remove |> Some
             )
             Ok state
         | _ ->
