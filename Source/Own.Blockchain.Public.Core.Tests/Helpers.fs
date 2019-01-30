@@ -28,6 +28,7 @@ module Helpers =
         | SubmitVote action -> box action :?> 'T
         | SubmitVoteWeight action -> box action :?> 'T
         | SetAccountEligibility action -> box action :?> 'T
+        | SetAssetEligibility action -> box action :?> 'T
         | ChangeKycControllerAddress action -> box action :?> 'T
         | AddKycProvider action -> box action :?> 'T
         | RemoveKycProvider action -> box action :?> 'T
