@@ -324,8 +324,7 @@ module Processing =
                 | Some asset when asset.IsEligibilityRequired ->
                     match state.GetAccountEligibility(action.ToAccountHash, action.AssetHash) with
                     | Some eligibilityState ->
-                         eligibilityState.Eligibility.IsPrimaryEligible,
-                         eligibilityState.Eligibility.IsSecondaryEligible
+                        eligibilityState.Eligibility.IsPrimaryEligible, eligibilityState.Eligibility.IsSecondaryEligible
                     | None ->
                         false, false
                 | _ ->

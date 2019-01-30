@@ -2698,7 +2698,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Votes= Map.empty @>
+        test <@ output.Votes = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVote fails if sender is not account controller`` () =
@@ -2819,7 +2819,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes= Map.empty @>
+        test <@ output.Votes = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVote fails if vote is already weighted`` () =
@@ -2947,7 +2947,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes= Map.empty @>
+        test <@ output.Votes = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SubmitVoteWeight
@@ -3198,7 +3198,7 @@ module ProcessingTests =
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.VoteNotFound) |> TxActionError |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes= Map.empty @>
+        test <@ output.Votes = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVoteWeight fails is sender is not asset controller`` () =
@@ -3322,7 +3322,7 @@ module ProcessingTests =
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController) |> TxActionError |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes= Map.empty @>
+        test <@ output.Votes = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVoteWeight if asset or account not found`` () =
@@ -3480,7 +3480,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Votes= Map.empty @>
+        test <@ output.Votes = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountEligibility
@@ -3888,7 +3888,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatus @>
         test <@ output.TxResults.[txHash2].Status = expectedStatus @>
-        test <@ output.Eligibilities= Map.empty @>
+        test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAccountEligibility update fails if approved KYC provider but not current`` () =
@@ -4012,7 +4012,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities= Map.empty @>
+        test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAccountEligibility insert and update fails if asset or account not found`` () =
@@ -4169,7 +4169,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Eligibilities= Map.empty @>
+        test <@ output.Eligibilities = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAssetEligibility
@@ -4406,7 +4406,7 @@ module ProcessingTests =
             |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Assets= Map.empty @>
+        test <@ output.Assets = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAssetEligibility fails is sender is not asset controller`` () =
@@ -4822,7 +4822,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Eligibilities= Map.empty @>
+        test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet ChangeKycControllerAddress fails if no eligibility`` () =
@@ -4941,7 +4941,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities= Map.empty @>
+        test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet ChangeKycControllerAddress fails SenderIsKycCtrlNotApprovedKycProvider`` () =
@@ -5069,7 +5069,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities= Map.empty @>
+        test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet ChangeKycControllerAddress ok SenderIsNotApprovedKycProviderButAssetCtrl`` () =
@@ -5326,7 +5326,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities= Map.empty @>
+        test <@ output.Eligibilities = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // AddKycProvider
@@ -5850,7 +5850,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.KycProviders= Map.empty @>
+        test <@ output.KycProviders = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet Add and RemoveKycProvider mixed`` () =
