@@ -2540,7 +2540,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
 
-        test <@ output.Votes.Count = 0 @>
+        test <@ output.Votes = Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVote fails if asset or account not found`` () =
@@ -2698,7 +2698,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Votes.Count = 0 @>
+        test <@ output.Votes= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVote fails if sender is not account controller`` () =
@@ -2819,7 +2819,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes.Count = 0 @>
+        test <@ output.Votes= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVote fails if vote is already weighted`` () =
@@ -2947,7 +2947,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes.Count = 0 @>
+        test <@ output.Votes= Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SubmitVoteWeight
@@ -3198,7 +3198,7 @@ module ProcessingTests =
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.VoteNotFound) |> TxActionError |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes.Count = 0 @>
+        test <@ output.Votes= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVoteWeight fails is sender is not asset controller`` () =
@@ -3322,7 +3322,7 @@ module ProcessingTests =
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController) |> TxActionError |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes.Count = 0 @>
+        test <@ output.Votes= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SubmitVoteWeight if asset or account not found`` () =
@@ -3480,7 +3480,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Votes.Count = 0 @>
+        test <@ output.Votes= Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountEligibility
@@ -3888,7 +3888,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatus @>
         test <@ output.TxResults.[txHash2].Status = expectedStatus @>
-        test <@ output.Eligibilities.Count = 0 @>
+        test <@ output.Eligibilities= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAccountEligibility update fails if approved KYC provider but not current`` () =
@@ -4012,7 +4012,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities.Count = 0 @>
+        test <@ output.Eligibilities= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAccountEligibility insert and update fails if asset or account not found`` () =
@@ -4169,7 +4169,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Eligibilities.Count = 0 @>
+        test <@ output.Eligibilities= Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAssetEligibility
@@ -4406,7 +4406,7 @@ module ProcessingTests =
             |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Assets.Count = 0 @>
+        test <@ output.Assets= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAssetEligibility fails is sender is not asset controller`` () =
@@ -4822,7 +4822,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.Eligibilities.Count = 0 @>
+        test <@ output.Eligibilities= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet ChangeKycControllerAddress fails if no eligibility`` () =
@@ -4941,7 +4941,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities.Count = 0 @>
+        test <@ output.Eligibilities= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet ChangeKycControllerAddress fails SenderIsKycCtrlNotApprovedKycProvider`` () =
@@ -5069,7 +5069,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities.Count = 0 @>
+        test <@ output.Eligibilities= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet ChangeKycControllerAddress ok SenderIsNotApprovedKycProviderButAssetCtrl`` () =
@@ -5326,7 +5326,7 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities.Count = 0 @>
+        test <@ output.Eligibilities= Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // AddKycProvider
@@ -5588,7 +5588,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.KycProviders.Count = 0 @>
+        test <@ output.KycProviders = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // RemoveKycProvider
@@ -5850,7 +5850,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.KycProviders.Count = 0 @>
+        test <@ output.KycProviders= Map.empty @>
 
     [<Fact>]
     let ``Processing.processTxSet Add and RemoveKycProvider mixed`` () =
@@ -7880,6 +7880,128 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Assets = Map.empty @>
+
+    [<Fact>]
+    let ``Processing.processTxSet SetAssetCode fails if assetCode already exists`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "Foo"
+        let assetCode = AssetCode "BAR"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetAssetCode"
+                    ActionData =
+                        {
+                            AssetHash = assetHash.Value
+                            AssetCode = assetCode.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
+
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
+
+        let getAssetState _ =
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = senderWallet.Address
+                IsEligibilityRequired = false
+            }
+            |> Some
+
+        let getAssetHashByCode _ =
+            AssetHash "BLA" |> Some
+
+        let getValidatorState _ =
+            failwith "getValidatorState should not be called"
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processTxSet
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycProvidersState
+                getAccountState
+                getAssetState
+                getAssetHashByCode
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                (ChxAmount 0m)
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                []
+                txSet
+
+        // ASSERT
+        let expectedTxStatus =
+            (TxActionNumber 1s, TxErrorCode.AssetCodeAlreadyExists)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
+        test <@ output.Assets.[assetHash].AssetCode = None @>
 
     [<Fact>]
     let ``Processing.processTxSet SetAssetCode fails if sender not current controller`` () =
