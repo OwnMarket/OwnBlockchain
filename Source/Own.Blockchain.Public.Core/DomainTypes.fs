@@ -67,9 +67,9 @@ type EligibilityInfo = {
     KycControllerAddress : BlockchainAddress
 }
 
-type KycController = {
+type KycProvider = {
     AssetHash : AssetHash
-    ControllerAddress : BlockchainAddress
+    ProviderAddress : BlockchainAddress
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,14 +148,14 @@ type ChangeKycControllerAddressTxAction = {
     KycControllerAddress : BlockchainAddress
 }
 
-type AddKycControllerTxAction = {
+type AddKycProviderTxAction = {
     AssetHash : AssetHash
-    ControllerAddress : BlockchainAddress
+    ProviderAddress : BlockchainAddress
 }
 
-type RemoveKycControllerTxAction = {
+type RemoveKycProviderTxAction = {
     AssetHash : AssetHash
-    ControllerAddress : BlockchainAddress
+    ProviderAddress : BlockchainAddress
 }
 
 type TxAction =
@@ -174,8 +174,8 @@ type TxAction =
     | SetAccountEligibility of SetAccountEligibilityTxAction
     | SetAssetEligibility of SetAssetEligibilityTxAction
     | ChangeKycControllerAddress of ChangeKycControllerAddressTxAction
-    | AddKycController of AddKycControllerTxAction
-    | RemoveKycController of RemoveKycControllerTxAction
+    | AddKycProvider of AddKycProviderTxAction
+    | RemoveKycProvider of RemoveKycProviderTxAction
 
 type Tx = {
     TxHash : TxHash
@@ -345,12 +345,12 @@ type EligibilityState = {
     KycControllerAddress : BlockchainAddress
 }
 
-type KycControllerState = {
+type KycProviderState = {
     AssetHash : AssetHash
-    ControllerAddress : BlockchainAddress
+    ProviderAddress : BlockchainAddress
 }
 
-type KycControllerChange =
+type KycProviderChange =
     | Add
     | Remove
 
@@ -385,7 +385,7 @@ type ProcessingOutput = {
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     Votes : Map<VoteId, VoteState>
     Eligibilities : Map<AccountHash * AssetHash, EligibilityState>
-    KycControllers : Map<KycControllerState, KycControllerChange>
+    KycProviders : Map<KycProviderState, KycProviderChange>
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
     Validators : Map<BlockchainAddress, ValidatorState>

@@ -547,7 +547,7 @@ module Db =
                 accountHash
                 assetHash
 
-    let getKycControllersState
+    let getKycProvidersState
         dbEngineType
         (dbConnectionString : string)
         (AssetHash assetHash)
@@ -556,8 +556,8 @@ module Db =
 
         let sql =
             """
-            SELECT controller_address
-            FROM kyc_controller
+            SELECT provider_address
+            FROM kyc_provider
             WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
             """
 
@@ -1313,19 +1313,19 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
-    let private addKycController conn transaction (kycController : KycControllerStateDto) : Result<unit, AppErrors> =
+    let private addKycProvider conn transaction (kycProvider : KycProviderStateDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO kyc_controller (asset_id, controller_address)
-            SELECT asset_id, @controllerAddress
+            INSERT INTO kyc_provider (asset_id, provider_address)
+            SELECT asset_id, @providerAddress
             FROM asset
             WHERE asset_hash = @assetHash
             """
 
         let sqlParams =
             [
-                "@assetHash", kycController.AssetHash |> box
-                "@controllerAddress", kycController.ControllerAddress|> box
+                "@assetHash", kycProvider.AssetHash |> box
+                "@providerAddress", kycProvider.ProviderAddress|> box
             ]
 
         try
@@ -1338,18 +1338,18 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert KYC controller."
 
-    let private removeKycController conn transaction (kycController : KycControllerStateDto) : Result<unit, AppErrors> =
+    let private removeKycProvider conn transaction (kycProvider : KycProviderStateDto) : Result<unit, AppErrors> =
         let sql =
             """
-            DELETE FROM kyc_controller
+            DELETE FROM kyc_provider
             WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
-            AND controller_address = @controllerAddress
+            AND provider_address = @providerAddress
             """
 
         let sqlParams =
             [
-                "@assetHash", kycController.AssetHash |> box
-                "@controllerAddress", kycController.ControllerAddress |> box
+                "@assetHash", kycProvider.AssetHash |> box
+                "@providerAddress", kycProvider.ProviderAddress |> box
             ]
 
         try
@@ -1357,40 +1357,40 @@ module Db =
             | 0
             | 1 -> Ok ()
             | _ ->
-                sprintf "Didn't remove KYC controller: %s" kycController.ControllerAddress
+                sprintf "Didn't remove KYC controller: %s" kycProvider.ProviderAddress
                 |> Result.appError
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            sprintf "Failed to remove KYC controller: %s" kycController.ControllerAddress
+            sprintf "Failed to remove KYC controller: %s" kycProvider.ProviderAddress
             |> Result.appError
 
-    let private updateKycController
+    let private updateKycProvider
         conn
         transaction
-        (kycController : KycControllerStateDto)
+        (kycProvider : KycProviderStateDto)
         isAdded
         : Result<unit, AppErrors>
         =
 
         let sql =
             """
-            UPDATE kyc_controller
-            SET controller_address = @controllerAddress
+            UPDATE kyc_provider
+            SET provider_address = @providerAddress
             WHERE asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
-            AND controller_address = @controllerAddress
+            AND provider_address = @providerAddress
             """
 
         let sqlParams =
             [
-                "@assetHash", kycController.AssetHash |> box
-                "@controllerAddress", kycController.ControllerAddress |> box
+                "@assetHash", kycProvider.AssetHash |> box
+                "@providerAddress", kycProvider.ProviderAddress |> box
             ]
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 ->
-                if isAdded then addKycController conn transaction kycController
-                else removeKycController conn transaction kycController
+                if isAdded then addKycProvider conn transaction kycProvider
+                else removeKycProvider conn transaction kycProvider
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't update KYC controller state."
         with
@@ -1398,18 +1398,18 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to update KYC controller state."
 
-    let private updateKycControllers
+    let private updateKycProviders
         conn
         transaction
-        (kycControllers : Map<KycControllerStateDto, bool>)
+        (kycProviders : Map<KycProviderStateDto, bool>)
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (kycController, isAdded) =
+        let foldFn result (kycProvider, isAdded) =
             result
-            >>= fun _ -> updateKycController conn transaction kycController isAdded
+            >>= fun _ -> updateKycProvider conn transaction kycProvider isAdded
 
-        kycControllers
+        kycProviders
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
@@ -1771,7 +1771,7 @@ module Db =
                 do! updateAccounts conn transaction stateChanges.Accounts
                 do! updateHoldings conn transaction stateChanges.Holdings
                 do! updateVotes conn transaction stateChanges.Votes
-                do! updateKycControllers conn transaction stateChanges.KycControllers
+                do! updateKycProviders conn transaction stateChanges.KycProviders
                 do! updateEligibilities conn transaction stateChanges.Eligibilities
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber

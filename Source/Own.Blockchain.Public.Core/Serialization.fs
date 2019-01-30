@@ -46,8 +46,8 @@ module Serialization =
             "SetAccountEligibility", tokenToAction<SetAccountEligibilityTxActionDto>
             "SetAssetEligibility", tokenToAction<SetAssetEligibilityTxActionDto>
             "ChangeKycControllerAddress", tokenToAction<ChangeKycControllerAddressTxActionDto>
-            "AddKycController", tokenToAction<AddKycControllerTxActionDto>
-            "RemoveKycController", tokenToAction<RemoveKycControllerTxActionDto>
+            "AddKycProvider", tokenToAction<AddKycProviderTxActionDto>
+            "RemoveKycProvider", tokenToAction<RemoveKycProviderTxActionDto>
         ] |> Map.ofList
 
     let private actionsConverter = {

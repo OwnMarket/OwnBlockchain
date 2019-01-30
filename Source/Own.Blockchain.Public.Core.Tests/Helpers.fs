@@ -29,8 +29,8 @@ module Helpers =
         | SubmitVoteWeight action -> box action :?> 'T
         | SetAccountEligibility action -> box action :?> 'T
         | ChangeKycControllerAddress action -> box action :?> 'T
-        | AddKycController action -> box action :?> 'T
-        | RemoveKycController action -> box action :?> 'T
+        | AddKycProvider action -> box action :?> 'T
+        | RemoveKycProvider action -> box action :?> 'T
 
     let newPendingTxInfo
         (txHash : TxHash)

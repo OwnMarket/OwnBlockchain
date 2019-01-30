@@ -107,15 +107,15 @@ module Blocks =
         |> Array.concat
         |> createHash
 
-    let createKycControllerStateHash
+    let createKycProviderStateHash
         decodeHash
         createHash
-        (state : KycControllerState, change : KycControllerChange)
+        (state : KycProviderState, change : KycProviderChange)
         =
 
         [
             decodeHash state.AssetHash.Value
-            decodeHash state.ControllerAddress.Value
+            decodeHash state.ProviderAddress.Value
             boolToBytes (change = Add)
         ]
         |> Array.concat
@@ -350,12 +350,12 @@ module Blocks =
                 createEligibilityStateHash decodeHash createHash (accountHash, assetHash, state)
             )
 
-        let kycControllerHashes =
-            output.KycControllers
+        let kycProviderHashes =
+            output.KycProviders
             |> Map.toList
             |> List.sort // Ensure a predictable order
             |> List.map (fun (state, change) ->
-                createKycControllerStateHash decodeHash createHash (state, change)
+                createKycProviderStateHash decodeHash createHash (state, change)
             )
 
         let accountHashes =
@@ -389,7 +389,7 @@ module Blocks =
             @ holdingHashes
             @ voteHashes
             @ eligibilityHashes
-            @ kycControllerHashes
+            @ kycProviderHashes
             @ accountHashes
             @ assetHashes
             @ validatorHashes
@@ -487,7 +487,7 @@ module Blocks =
             Holdings = Map.empty
             Votes = Map.empty
             Eligibilities = Map.empty
-            KycControllers = Map.empty
+            KycProviders = Map.empty
             Accounts = Map.empty
             Assets = Map.empty
             Validators = genesisValidators

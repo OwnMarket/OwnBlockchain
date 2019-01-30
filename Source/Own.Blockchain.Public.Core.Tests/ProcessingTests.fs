@@ -210,8 +210,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -249,7 +249,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -360,8 +360,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -399,7 +399,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -498,8 +498,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -532,7 +532,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -616,8 +616,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -650,7 +650,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -735,8 +735,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -769,7 +769,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -854,8 +854,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -887,7 +887,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -962,8 +962,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -1000,7 +1000,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1099,8 +1099,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1133,7 +1133,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1233,8 +1233,8 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1267,7 +1267,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1360,8 +1360,8 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1394,7 +1394,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1487,8 +1487,8 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1521,7 +1521,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1615,8 +1615,8 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1649,7 +1649,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1739,8 +1739,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1773,7 +1773,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -1871,8 +1871,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = recipientAccountHash then
@@ -1908,7 +1908,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2003,8 +2003,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = senderAccountHash then
@@ -2040,7 +2040,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2138,8 +2138,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -2172,7 +2172,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2296,8 +2296,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -2330,7 +2330,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2413,8 +2413,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -2447,7 +2447,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2549,8 +2549,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = accountHash1 then
@@ -2598,7 +2598,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2684,8 +2684,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = otherWallet.Address}
@@ -2718,7 +2718,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2808,8 +2808,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -2842,7 +2842,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -2928,8 +2928,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -2962,7 +2962,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3053,8 +3053,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -3087,7 +3087,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3168,8 +3168,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -3207,7 +3207,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3307,8 +3307,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = accountHash1 then
@@ -3356,7 +3356,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3442,7 +3442,7 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -3476,7 +3476,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3566,7 +3566,7 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -3600,7 +3600,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3713,7 +3713,7 @@ module ProcessingTests =
             else
                 None
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             []
 
         let getAccountState _ =
@@ -3752,7 +3752,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3839,7 +3839,7 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -3873,7 +3873,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -3972,7 +3972,7 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             []
 
         let getAccountState accountHash =
@@ -4021,7 +4021,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4108,7 +4108,7 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -4142,7 +4142,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4222,7 +4222,7 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -4256,7 +4256,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4334,7 +4334,7 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -4368,7 +4368,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4465,7 +4465,7 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -4499,7 +4499,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4605,7 +4605,7 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState accountHash =
@@ -4654,7 +4654,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4740,7 +4740,7 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -4774,7 +4774,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4859,7 +4859,7 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             []
 
         let getAccountState _ =
@@ -4898,7 +4898,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -4983,7 +4983,7 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             []
 
         let getAccountState _ =
@@ -5017,7 +5017,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5108,7 +5108,7 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycControllersState _ =
+        let getKycProvidersState _ =
             [senderWallet.Address]
 
         let getAccountState _ =
@@ -5147,7 +5147,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5173,11 +5173,11 @@ module ProcessingTests =
         test <@ output.Eligibilities.Count = 0 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // AddKycController
+    // AddKycProvider
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet AddKycController`` () =
+    let ``Processing.processTxSet AddKycProvider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -5197,11 +5197,11 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "AddKycController"
+                    ActionType = "AddKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5229,8 +5229,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -5263,7 +5263,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5281,11 +5281,11 @@ module ProcessingTests =
         // ASSERT
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.KycControllers.Count = 1 @>
-        test <@ output.KycControllers.[{AssetHash = assetHash; ControllerAddress = senderWallet.Address}] = Add @>
+        test <@ output.KycProviders.Count = 1 @>
+        test <@ output.KycProviders.[{AssetHash = assetHash; ProviderAddress = senderWallet.Address}] = Add @>
 
     [<Fact>]
-    let ``Processing.processTxSet AddKycController various errors`` () =
+    let ``Processing.processTxSet AddKycProvider various errors`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5306,11 +5306,11 @@ module ProcessingTests =
         let txHash1, txEnvelope1 =
             [
                 {
-                    ActionType = "AddKycController"
+                    ActionType = "AddKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash1.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5319,11 +5319,11 @@ module ProcessingTests =
         let txHash2, txEnvelope2 =
             [
                 {
-                    ActionType = "AddKycController"
+                    ActionType = "AddKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash2.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5354,8 +5354,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -5395,7 +5395,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5424,14 +5424,14 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.KycControllers.Count = 0 @>
+        test <@ output.KycProviders.Count = 0 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // RemoveKycController
+    // RemoveKycProvider
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet RemoveKycController`` () =
+    let ``Processing.processTxSet RemoveKycProvider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -5451,11 +5451,11 @@ module ProcessingTests =
         let txHash, txEnvelope =
             [
                 {
-                    ActionType = "RemoveKycController"
+                    ActionType = "RemoveKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5483,8 +5483,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -5517,7 +5517,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5535,11 +5535,11 @@ module ProcessingTests =
         // ASSERT
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.KycControllers.Count = 1 @>
-        test <@ output.KycControllers.[{AssetHash = assetHash; ControllerAddress = senderWallet.Address}] = Remove @>
+        test <@ output.KycProviders.Count = 1 @>
+        test <@ output.KycProviders.[{AssetHash = assetHash; ProviderAddress = senderWallet.Address}] = Remove @>
 
     [<Fact>]
-    let ``Processing.processTxSet RemoveKycController various errors`` () =
+    let ``Processing.processTxSet RemoveKycProvider various errors`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5560,11 +5560,11 @@ module ProcessingTests =
         let txHash1, txEnvelope1 =
             [
                 {
-                    ActionType = "RemoveKycController"
+                    ActionType = "RemoveKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash1.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5573,11 +5573,11 @@ module ProcessingTests =
         let txHash2, txEnvelope2 =
             [
                 {
-                    ActionType = "RemoveKycController"
+                    ActionType = "RemoveKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash2.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5608,8 +5608,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -5649,7 +5649,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5678,10 +5678,10 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = expectedStatusTxHash1 @>
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
-        test <@ output.KycControllers.Count = 0 @>
+        test <@ output.KycProviders.Count = 0 @>
 
     [<Fact>]
-    let ``Processing.processTxSet Add and RemoveKycController mixed`` () =
+    let ``Processing.processTxSet Add and RemoveKycProvider mixed`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5702,11 +5702,11 @@ module ProcessingTests =
         let txHash1, txEnvelope1 =
             [
                 {
-                    ActionType = "AddKycController"
+                    ActionType = "AddKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash1.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5715,11 +5715,11 @@ module ProcessingTests =
         let txHash2, txEnvelope2 =
             [
                 {
-                    ActionType = "RemoveKycController"
+                    ActionType = "RemoveKycProvider"
                     ActionData =
                         {
                             AssetHash = assetHash2.Value
-                            ControllerAddress = senderWallet.Address.Value
+                            ProviderAddress = senderWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -5750,8 +5750,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -5784,7 +5784,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5802,9 +5802,9 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = Success @>
         test <@ output.TxResults.[txHash2].Status = Success @>
-        test <@ output.KycControllers.Count = 2 @>
-        test <@ output.KycControllers.[{AssetHash = assetHash1; ControllerAddress = senderWallet.Address}] = Add @>
-        test <@ output.KycControllers.[{AssetHash = assetHash2; ControllerAddress = senderWallet.Address}] = Remove @>
+        test <@ output.KycProviders.Count = 2 @>
+        test <@ output.KycProviders.[{AssetHash = assetHash1; ProviderAddress = senderWallet.Address}] = Add @>
+        test <@ output.KycProviders.[{AssetHash = assetHash2; ProviderAddress = senderWallet.Address}] = Remove @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission
@@ -5867,8 +5867,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -5901,7 +5901,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -5992,8 +5992,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -6026,7 +6026,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6113,8 +6113,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -6152,7 +6152,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6240,8 +6240,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -6274,7 +6274,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6361,8 +6361,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             None
@@ -6400,7 +6400,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6492,8 +6492,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             None
@@ -6526,7 +6526,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6616,8 +6616,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -6650,7 +6650,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6742,8 +6742,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -6776,7 +6776,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6857,8 +6857,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             None
@@ -6891,7 +6891,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -6977,8 +6977,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = currentControllerWallet.Address}
@@ -7011,7 +7011,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7073,7 +7073,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ControllerAddress = newControllerWallet.Address.Value
+                            ProviderAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -7101,8 +7101,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7135,7 +7135,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7188,7 +7188,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ControllerAddress = newControllerWallet.Address.Value
+                            ProviderAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -7216,8 +7216,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7250,7 +7250,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7308,7 +7308,7 @@ module ProcessingTests =
                     ActionData =
                         {
                             AssetHash = assetHash.Value
-                            ControllerAddress = newControllerWallet.Address.Value
+                            ProviderAddress = newControllerWallet.Address.Value
                         }
                 } :> obj
             ]
@@ -7336,8 +7336,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7375,7 +7375,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7465,8 +7465,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7499,7 +7499,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7580,8 +7580,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7614,7 +7614,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7700,8 +7700,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7739,7 +7739,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7828,8 +7828,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7865,7 +7865,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -7947,8 +7947,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -7981,7 +7981,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -8074,8 +8074,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -8108,7 +8108,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -8189,8 +8189,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -8223,7 +8223,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -8304,8 +8304,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -8338,7 +8338,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -8424,8 +8424,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -8458,7 +8458,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState
@@ -8544,8 +8544,8 @@ module ProcessingTests =
         let getEligibilityState _ =
             failwith "getEligibilityState should not be called"
 
-        let getKycControllersState _ =
-            failwith "getKycControllersState should not be called"
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             failwith "getAccountState should not be called"
@@ -8578,7 +8578,7 @@ module ProcessingTests =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycControllersState
+                getKycProvidersState
                 getAccountState
                 getAssetState
                 getValidatorState

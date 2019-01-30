@@ -69,7 +69,7 @@ module Composition =
     let getVoteState = Db.getVoteState Config.DbEngineType Config.DbConnectionString
 
     let getEligibilityState = Db.getEligibilityState Config.DbEngineType Config.DbConnectionString
-    let getKycControllersState = Db.getKycControllersState Config.DbEngineType Config.DbConnectionString
+    let getKycProvidersState = Db.getKycProvidersState Config.DbEngineType Config.DbConnectionString
 
     let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
 
@@ -181,7 +181,7 @@ module Composition =
             getHoldingState
             getVoteState
             getEligibilityState
-            getKycControllersState
+            getKycProvidersState
             getAccountState
             getAssetState
             getValidatorState

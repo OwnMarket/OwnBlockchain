@@ -130,12 +130,12 @@ module Mapping =
                 IsEligibilityRequired = a.IsEligibilityRequired
             }
             |> SetAssetEligibility
-        | :? AddKycControllerTxActionDto as a ->
+        | :? AddKycProviderTxActionDto as a ->
             {
-                AddKycControllerTxAction.AssetHash = AssetHash a.AssetHash
-                ControllerAddress = BlockchainAddress a.ControllerAddress
+                AddKycProviderTxAction.AssetHash = AssetHash a.AssetHash
+                ProviderAddress = BlockchainAddress a.ProviderAddress
             }
-            |> AddKycController
+            |> AddKycProvider
         | :? ChangeKycControllerAddressTxActionDto as a ->
             {
                 ChangeKycControllerAddressTxAction.AccountHash = AccountHash a.AccountHash
@@ -143,12 +143,12 @@ module Mapping =
                 KycControllerAddress = BlockchainAddress a.KycControllerAddress
             }
             |> ChangeKycControllerAddress
-        | :? RemoveKycControllerTxActionDto as a ->
+        | :? RemoveKycProviderTxActionDto as a ->
             {
-                RemoveKycControllerTxAction.AssetHash = AssetHash a.AssetHash
-                ControllerAddress = BlockchainAddress a.ControllerAddress
+                RemoveKycProviderTxAction.AssetHash = AssetHash a.AssetHash
+                ProviderAddress = BlockchainAddress a.ProviderAddress
             }
-            |> RemoveKycController
+            |> RemoveKycProvider
         | _ ->
             failwith "Invalid action type to map."
 
@@ -447,16 +447,16 @@ module Mapping =
             KycControllerAddress = state.KycControllerAddress.Value
         }
 
-    let kycControllerStateFromDto (dto : KycControllerStateDto) : KycControllerState =
+    let kycProviderStateFromDto (dto : KycProviderStateDto) : KycProviderState =
         {
             AssetHash = AssetHash dto.AssetHash
-            ControllerAddress = BlockchainAddress dto.ControllerAddress
+            ProviderAddress = BlockchainAddress dto.ProviderAddress
         }
 
-    let kycControllerStateToDto (state : KycControllerState) =
+    let kycProviderStateToDto (state : KycProviderState) =
         {
             AssetHash = state.AssetHash.Value
-            ControllerAddress = state.ControllerAddress.Value
+            ProviderAddress = state.ProviderAddress.Value
         }
 
     let accountStateFromDto (dto : AccountStateDto) : AccountState =
@@ -557,10 +557,10 @@ module Mapping =
                 (ah, ac), eligibilityStateToDto s)
             |> Map.ofList
 
-        let kycControllers =
-            output.KycControllers
+        let kycProviders =
+            output.KycProviders
             |> Map.toList
-            |> List.map (fun (s : KycControllerState, c : KycControllerChange) -> kycControllerStateToDto s, c = Add)
+            |> List.map (fun (s : KycProviderState, c : KycProviderChange) -> kycProviderStateToDto s, c = Add)
             |> Map.ofList
 
         let accounts =
@@ -596,7 +596,7 @@ module Mapping =
             Holdings = holdings
             Votes = votes
             Eligibilities = eligibilities
-            KycControllers = kycControllers
+            KycProviders = kycProviders
             Accounts = accounts
             Assets = assets
             Validators = validators

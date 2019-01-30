@@ -102,15 +102,15 @@ type ChangeKycControllerAddressTxActionDto = {
 }
 
 [<CLIMutable>]
-type AddKycControllerTxActionDto = {
+type AddKycProviderTxActionDto = {
     AssetHash : string
-    ControllerAddress : string
+    ProviderAddress : string
 }
 
 [<CLIMutable>]
-type RemoveKycControllerTxActionDto = {
+type RemoveKycProviderTxActionDto = {
     AssetHash : string
-    ControllerAddress : string
+    ProviderAddress : string
 }
 
 [<CLIMutable>]
@@ -314,9 +314,9 @@ type EligibilityStateDto = {
 }
 
 [<CLIMutable>]
-type KycControllerStateDto = {
+type KycProviderStateDto = {
     AssetHash : string
-    ControllerAddress : string
+    ProviderAddress : string
 }
 
 [<CLIMutable>]
@@ -349,7 +349,7 @@ type ProcessingOutputDto = {
     Holdings : Map<string * string, HoldingStateDto>
     Votes : Map<string * string * string, VoteStateDto>
     Eligibilities : Map<string * string, EligibilityStateDto>
-    KycControllers : Map<KycControllerStateDto, bool>
+    KycProviders : Map<KycProviderStateDto, bool>
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto>
