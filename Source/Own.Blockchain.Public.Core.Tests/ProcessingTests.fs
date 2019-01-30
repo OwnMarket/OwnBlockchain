@@ -4388,11 +4388,18 @@ module ProcessingTests =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
             |> TxActionError
             |> Failure
+
+        let expectedAssetState =
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = otherWallet.Address
+                IsEligibilityRequired = false
+            }
+
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
         test <@ output.Assets.Count = 1 @>
-        test <@ output.Assets.[assetHash] =
-            {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address; IsEligibilityRequired = false} @>
+        test <@ output.Assets.[assetHash] = expectedAssetState @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // ChangeKycControllerAddress
@@ -6661,6 +6668,12 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedAssetState =
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = senderWallet.Address
+                IsEligibilityRequired = false
+            }
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -6669,8 +6682,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
         test <@ output.Assets.Count = 1 @>
-        test <@ output.Assets.[assetHash] =
-            {AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false} @>
+        test <@ output.Assets.[assetHash] = expectedAssetState @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountController
