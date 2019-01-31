@@ -367,6 +367,8 @@ type AssetState = {
 type ValidatorState = {
     NetworkAddress : NetworkAddress
     SharedRewardPercent : decimal
+    LastActiveInConfigBlock : BlockNumber option
+    BlacklistedInBlock : BlockNumber option
 }
 
 type StakeState = {

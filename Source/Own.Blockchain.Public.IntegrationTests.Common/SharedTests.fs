@@ -240,7 +240,13 @@ module SharedTests =
         let genesisValidators =
             Config.GenesisValidators
             |> List.map (fun (ba, na) ->
-                BlockchainAddress ba, {ValidatorState.NetworkAddress = NetworkAddress na; SharedRewardPercent = 0m}
+                BlockchainAddress ba,
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress na
+                        SharedRewardPercent = 0m
+                        LastActiveInConfigBlock = BlockNumber 0L |> Some
+                        BlacklistedInBlock = None
+                    }
             )
             |> Map.ofList
 
@@ -478,6 +484,8 @@ module SharedTests =
             {
                 NetworkAddress = NetworkAddress "localhost:5000"
                 SharedRewardPercent = 42m
+                LastActiveInConfigBlock = None
+                BlacklistedInBlock = None
             }
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10m

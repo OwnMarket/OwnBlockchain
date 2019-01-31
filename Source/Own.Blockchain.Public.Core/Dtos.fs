@@ -335,6 +335,8 @@ type AssetStateDto = {
 type ValidatorStateDto = {
     NetworkAddress : string
     SharedRewardPercent : decimal
+    LastActiveInConfigBlock : Nullable<int64>
+    BlacklistedInBlock : Nullable<int64>
 }
 
 [<CLIMutable>]
@@ -403,6 +405,8 @@ type ValidatorInfoDto = {
     ValidatorAddress : string
     NetworkAddress : string
     SharedRewardPercent : decimal
+    LastActiveInConfigBlock : Nullable<int64>
+    BlacklistedInBlock : Nullable<int64>
 }
 
 [<CLIMutable>]

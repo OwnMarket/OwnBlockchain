@@ -163,10 +163,22 @@ module Blocks =
         (BlockchainAddress validatorAddress, state : ValidatorState)
         =
 
+        let lastActiveInConfigBlockBytes =
+            state.LastActiveInConfigBlock
+            |> Option.map (fun b -> int64ToBytes b.Value)
+            |? Array.empty // TODO: Ensure proper hashing by providing non-empty array as default value!
+
+        let blacklistedInBlockBytes =
+            state.BlacklistedInBlock
+            |> Option.map (fun b -> int64ToBytes b.Value)
+            |? Array.empty // TODO: Ensure proper hashing by providing non-empty array as default value!
+
         [
             decodeHash validatorAddress
             stringToBytes state.NetworkAddress.Value
             decimalToBytes state.SharedRewardPercent
+            lastActiveInConfigBlockBytes
+            blacklistedInBlockBytes
         ]
         |> Array.concat
         |> createHash

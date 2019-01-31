@@ -198,6 +198,9 @@ module DbChanges =
                     CREATE INDEX equivocation__ix__validator ON equivocation (validator_address);
                     CREATE INDEX equivocation__ix__b__r__s
                         ON equivocation (block_number, consensus_round, consensus_step);
+
+                    ALTER TABLE validator ADD last_active_in_config_block BIGINT;
+                    ALTER TABLE validator ADD blacklisted_in_block BIGINT;
                     """
             }
         ]
@@ -393,6 +396,9 @@ module DbChanges =
                     CREATE INDEX equivocation__ix__validator_address ON equivocation (validator_address);
                     CREATE INDEX equivocation__ix__block_number__consensus_round__consensus_step
                         ON equivocation (block_number, consensus_round, consensus_step);
+
+                    ALTER TABLE validator ADD COLUMN last_active_in_config_block BIGINT;
+                    ALTER TABLE validator ADD COLUMN blacklisted_in_block BIGINT;
                     """
             }
         ]

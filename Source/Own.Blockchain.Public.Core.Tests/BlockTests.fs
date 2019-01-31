@@ -209,13 +209,15 @@ module BlockTests =
             {
                 ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                 SharedRewardPercent = 4m
+                LastActiveInConfigBlock = BlockNumber 3L |> Some
+                BlacklistedInBlock = BlockNumber 5L |> Some
             }
 
         // ACT
         let stateHash = Blocks.createValidatorStateHash DummyHash.decode DummyHash.create (validatorAddress, state)
 
         // ASSERT
-        test <@ stateHash = "AAAHHH...D............" @>
+        test <@ stateHash = "AAAHHH...D...................C.......E" @>
 
     [<Fact>]
     let ``Blocks.createValidatorSnapshotHash`` () =
@@ -462,16 +464,22 @@ module BlockTests =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
                         SharedRewardPercent = 1m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 4L |> Some
                     }
                 BlockchainAddress "BBBBB",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                         SharedRewardPercent = 2m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 5L |> Some
                     }
                 BlockchainAddress "CCCCC",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
                         SharedRewardPercent = 3m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 6L |> Some
                     }
             ]
             |> Map.ofList
@@ -574,9 +582,9 @@ module BlockTests =
                 "CCCCDDDD" // Account controller 2
                 "EEEEFFFF." // Asset controller 1
                 "GGGGHHHH." // Asset controller 2
-                "AAAAAGGG...A............" // Validator 1
-                "BBBBBHHH...B............" // Validator 2
-                "CCCCCIII...C............" // Validator 3
+                "AAAAAGGG...A...................C.......D" // Validator 1
+                "BBBBBHHH...B...................C.......E" // Validator 2
+                "CCCCCIII...C...................C.......F" // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
             ]
@@ -820,16 +828,22 @@ module BlockTests =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
                         SharedRewardPercent = 1m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 4L |> Some
                     }
                 BlockchainAddress "BBBBB",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                         SharedRewardPercent = 2m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 5L |> Some
                     }
                 BlockchainAddress "CCCCC",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
                         SharedRewardPercent = 3m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 6L |> Some
                     }
             ]
             |> Map.ofList
@@ -1151,16 +1165,22 @@ module BlockTests =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
                         SharedRewardPercent = 1m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 4L |> Some
                     }
                 BlockchainAddress "BBBBB",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                         SharedRewardPercent = 2m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 5L |> Some
                     }
                 BlockchainAddress "CCCCC",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
                         SharedRewardPercent = 3m
+                        LastActiveInConfigBlock = BlockNumber 3L |> Some
+                        BlacklistedInBlock = BlockNumber 6L |> Some
                     }
             ]
             |> Map.ofList

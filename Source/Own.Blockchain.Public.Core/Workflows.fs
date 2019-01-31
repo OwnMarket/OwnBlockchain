@@ -38,7 +38,13 @@ module Workflows =
         let genesisValidators =
             genesisValidators
             |> List.map (fun (ba, na) ->
-                BlockchainAddress ba, {ValidatorState.NetworkAddress = NetworkAddress na; SharedRewardPercent = 0m}
+                BlockchainAddress ba,
+                    {
+                        ValidatorState.NetworkAddress = NetworkAddress na
+                        SharedRewardPercent = 0m
+                        LastActiveInConfigBlock = BlockNumber 0L |> Some
+                        BlacklistedInBlock = None
+                    }
             )
             |> Map.ofList
 
@@ -226,6 +232,7 @@ module Workflows =
                 validatorAddress
                 sharedRewardPercent
                 blockNumber
+                blockchainConfiguration
                 equivocationProofs
                 txSet
 

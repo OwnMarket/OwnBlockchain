@@ -9,6 +9,12 @@ open Own.Blockchain.Public.Core.Dtos
 
 module Db =
 
+    let private boxNullable (v : Nullable<_>) =
+        if v.HasValue then
+            v.Value |> box
+        else
+            DBNull.Value |> box
+
     let private createInsertParams (parameters : (string * obj) list) =
         let parameterNames =
             parameters
@@ -616,7 +622,7 @@ module Db =
 
         let sql =
             """
-            SELECT network_address
+            SELECT network_address, shared_reward_percent, last_active_in_config_block, blacklisted_in_block
             FROM validator
             WHERE validator_address = @validatorAddress
             """
@@ -1186,17 +1192,13 @@ module Db =
             AND resolution_hash = @resolutionHash
             """
 
-        let voteWeightParamValue =
-            if voteInfo.VoteState.VoteWeight.HasValue then voteInfo.VoteState.VoteWeight.Value |> box
-            else DBNull.Value |> box
-
         let sqlParams =
             [
                 "@accountHash", voteInfo.AccountHash |> box
                 "@assetHash", voteInfo.AssetHash |> box
                 "@resolutionHash", voteInfo.ResolutionHash |> box
                 "@voteHash", voteInfo.VoteState.VoteHash |> box
-                "@voteWeight", voteWeightParamValue
+                "@voteWeight", voteInfo.VoteState.VoteWeight |> boxNullable
             ]
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
@@ -1576,8 +1578,20 @@ module Db =
 
         let sql =
             """
-            INSERT INTO validator (validator_address, network_address, shared_reward_percent)
-            VALUES (@validatorAddress, @networkAddress, @sharedRewardPercent)
+            INSERT INTO validator (
+                validator_address,
+                network_address,
+                shared_reward_percent,
+                last_active_in_config_block,
+                blacklisted_in_block
+            )
+            VALUES (
+                @validatorAddress,
+                @networkAddress,
+                @sharedRewardPercent,
+                @lastActiveInConfigBlock,
+                @blacklistedInBlock
+            )
             """
 
         let sqlParams =
@@ -1585,6 +1599,8 @@ module Db =
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
+                "@lastActiveInConfigBlock", validatorInfo.LastActiveInConfigBlock |> boxNullable
+                "@blacklistedInBlock", validatorInfo.BlacklistedInBlock |> boxNullable
             ]
 
         try
@@ -1607,7 +1623,9 @@ module Db =
             """
             UPDATE validator
             SET network_address = @networkAddress,
-                shared_reward_percent = @sharedRewardPercent
+                shared_reward_percent = @sharedRewardPercent,
+                last_active_in_config_block = @lastActiveInConfigBlock,
+                blacklisted_in_block = @blacklistedInBlock
             WHERE validator_address = @validatorAddress
             """
 
@@ -1616,6 +1634,8 @@ module Db =
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
+                "@lastActiveInConfigBlock", validatorInfo.LastActiveInConfigBlock |> boxNullable
+                "@blacklistedInBlock", validatorInfo.BlacklistedInBlock |> boxNullable
             ]
 
         try
@@ -1642,6 +1662,8 @@ module Db =
                     ValidatorAddress = validatorAddress
                     NetworkAddress = state.NetworkAddress
                     SharedRewardPercent = state.SharedRewardPercent
+                    LastActiveInConfigBlock = state.LastActiveInConfigBlock
+                    BlacklistedInBlock = state.BlacklistedInBlock
                 }
                 |> updateValidator conn transaction
             )

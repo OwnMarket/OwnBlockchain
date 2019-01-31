@@ -485,6 +485,8 @@ module Processing =
                 {
                     ValidatorState.NetworkAddress = action.NetworkAddress
                     SharedRewardPercent = action.SharedRewardPercent
+                    LastActiveInConfigBlock = None
+                    BlacklistedInBlock = None
                 }
             )
             Ok state
@@ -921,6 +923,10 @@ module Processing =
                         failwithf "Cannot load equivocation proof %s" proofHash.Value
                     )
 
+            match state.GetValidator(proof.ValidatorAddress) with
+            | Some s -> state.SetValidator(proof.ValidatorAddress, {s with BlacklistedInBlock = Some blockNumber})
+            | None -> failwithf "Cannot get validator state for %s" proof.ValidatorAddress.Value
+
             let amountToTake =
                 state.GetChxBalance(proof.ValidatorAddress).Amount
                 |> min validatorDeposit
@@ -1002,6 +1008,22 @@ module Processing =
                     state
                 | Error err -> failwithf "Cannot process reward distribution: (%A)." err
 
+    let updateLastActiveConfigBlockForValidators
+        (blockNumber : BlockNumber)
+        (blockchainConfiguration : BlockchainConfiguration option)
+        (state : ProcessingState)
+        =
+
+        blockchainConfiguration
+        |> Option.iter (fun c ->
+            for v in c.Validators do
+                match state.GetValidator(v.ValidatorAddress) with
+                | Some s -> state.SetValidator(v.ValidatorAddress, {s with LastActiveInConfigBlock = Some blockNumber})
+                | None -> failwithf "Cannot get validator state for %s" v.ValidatorAddress.Value
+        )
+
+        state
+
     let processTxSet
         getTx
         getEquivocationProof
@@ -1028,6 +1050,7 @@ module Processing =
         (validatorAddress : BlockchainAddress)
         (sharedRewardPercent : decimal)
         (blockNumber : BlockNumber)
+        (blockchainConfiguration : BlockchainConfiguration option)
         (equivocationProofs : EquivocationProofHash list)
         (txSet : TxHash list)
         =
@@ -1093,5 +1116,6 @@ module Processing =
                 validators
                 equivocationProofs
             |> distributeReward processTxActions getTopStakers validatorAddress sharedRewardPercent
+            |> updateLastActiveConfigBlockForValidators blockNumber blockchainConfiguration
 
         state.ToProcessingOutput()
