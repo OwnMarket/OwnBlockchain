@@ -35,7 +35,7 @@ module internal Helper =
         tryDeleteFile filePath 0
 
     let testCleanup dbEngineType connString =
-        if Directory.Exists(Config.DataDir) then do
+        if Directory.Exists(Config.DataDir) then
             Directory.Delete(Config.DataDir, true)
 
         if dbEngineType = Firebird then

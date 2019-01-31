@@ -15,8 +15,10 @@ module Serialization =
     let private tokenValue tokenName (jObject : JObject) =
         let token = ref (JValue("") :> JToken)
         let isValid = jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase, token)
-        if isValid then Some token.Value
-        else None
+        if isValid then
+            Some token.Value
+        else
+            None
 
     let private tokenToAction<'T> actionType (token : JToken option) =
         match token with

@@ -417,8 +417,10 @@ module Mapping =
         {
             VoteHash = VoteHash dto.VoteHash
             VoteWeight =
-                if dto.VoteWeight.HasValue then dto.VoteWeight.Value |> VoteWeight |> Some
-                else None
+                if dto.VoteWeight.HasValue then
+                    dto.VoteWeight.Value |> VoteWeight |> Some
+                else
+                    None
         }
 
     let voteStateToDto (state : VoteState) : VoteStateDto =

@@ -5561,7 +5561,8 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState assetHash =
-            if assetHash = assetHash1 then None
+            if assetHash = assetHash1 then
+                None
             else
                 {
                     AssetState.AssetCode = None
@@ -5825,7 +5826,8 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState assetHash =
-            if assetHash = assetHash1 then None
+            if assetHash = assetHash1 then
+                None
             else
                 {
                     AssetState.AssetCode = None
