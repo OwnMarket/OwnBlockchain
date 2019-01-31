@@ -153,7 +153,7 @@ module DbChanges =
                         provider_address VARCHAR(50) NOT NULL,
 
                         CONSTRAINT kyc_provider__pk PRIMARY KEY (kyc_provider_id),
-                        CONSTRAINT kyc_provider__uk__asset__ctrl UNIQUE (asset_id, controller_address),
+                        CONSTRAINT kyc_provider__uk__asset__prov UNIQUE (asset_id, provider_address),
                         CONSTRAINT kyc_provider__fk__asset FOREIGN KEY (asset_id)
                             REFERENCES asset (asset_id)
                     );
@@ -175,9 +175,9 @@ module DbChanges =
                     );
                     CREATE INDEX eligibility__ix__asset_id ON eligibility (asset_id);
 
-                    ALTER TABLE asset ADD COLUMN is_eligibility_required BOOL NOT NULL DEFAULT FALSE;
+                    ALTER TABLE asset ADD is_eligibility_required BOOLEAN DEFAULT FALSE NOT NULL;
 
-                    ALTER TABLE holding ADD COLUMN is_emission BOOL NOT NULL DEFAULT FALSE;
+                    ALTER TABLE holding ADD is_emission BOOLEAN DEFAULT FALSE NOT NULL;
                     """
             }
             {
@@ -348,7 +348,7 @@ module DbChanges =
                         provider_address VARCHAR(50) NOT NULL,
 
                         CONSTRAINT kyc_provider__pk PRIMARY KEY (kyc_provider_id),
-                        CONSTRAINT kyc_provider__uk__asset__ctrl UNIQUE (asset_id, controller_address),
+                        CONSTRAINT kyc_provider__uk__asset__prov UNIQUE (asset_id, provider_address),
                         CONSTRAINT kyc_provider__fk__asset FOREIGN KEY (asset_id)
                             REFERENCES asset (asset_id)
                     );
@@ -370,9 +370,9 @@ module DbChanges =
                     );
                     CREATE INDEX eligibility__ix__asset_id ON eligibility (asset_id);
 
-                    ALTER TABLE asset ADD COLUMN is_eligibility_required BOOL NOT NULL DEFAULT FALSE;
+                    ALTER TABLE asset ADD COLUMN is_eligibility_required BOOL DEFAULT FALSE NOT NULL;
 
-                    ALTER TABLE holding ADD COLUMN is_emission BOOL NOT NULL DEFAULT FALSE;
+                    ALTER TABLE holding ADD COLUMN is_emission BOOL DEFAULT FALSE NOT NULL;
                     """
             }
             {
