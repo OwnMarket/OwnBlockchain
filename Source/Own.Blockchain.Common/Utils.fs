@@ -10,7 +10,7 @@ module Utils =
 
     /// Truncates a decimal number to blockchain default of 7 decimal digits.
     let round (x : decimal) =
-        let multiplier = 10_000_000m // 7 decimal places
+        let multiplier = 10_000_000m // 7 decimal digits
         Math.Truncate(x * multiplier) / multiplier
 
     /// Checks if a decimal number is truncated to blockchain default of 7 decimal digits.
