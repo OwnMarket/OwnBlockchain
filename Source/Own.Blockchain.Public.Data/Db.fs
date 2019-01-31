@@ -1015,7 +1015,8 @@ module Db =
         let sql =
             """
             UPDATE chx_balance
-            SET amount = @amount, nonce = @nonce
+            SET amount = @amount,
+                nonce = @nonce
             WHERE blockchain_address = @blockchainAddress
             """
 
@@ -1090,7 +1091,8 @@ module Db =
         let sql =
             """
             UPDATE holding
-            SET amount = @amount, is_emission = @isEmission
+            SET amount = @amount,
+                is_emission = @isEmission
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
             AND asset_hash = @assetHash
             """
