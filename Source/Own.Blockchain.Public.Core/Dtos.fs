@@ -314,12 +314,6 @@ type EligibilityStateDto = {
 }
 
 [<CLIMutable>]
-type KycProviderStateDto = {
-    AssetHash : string
-    ProviderAddress : string
-}
-
-[<CLIMutable>]
 type AccountStateDto = {
     ControllerAddress : string
 }
@@ -351,7 +345,7 @@ type ProcessingOutputDto = {
     Holdings : Map<string * string, HoldingStateDto>
     Votes : Map<string * string * string, VoteStateDto>
     Eligibilities : Map<string * string, EligibilityStateDto>
-    KycProviders : Map<KycProviderStateDto, bool>
+    KycProviders : Map<string, Map<string, bool>>
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto>

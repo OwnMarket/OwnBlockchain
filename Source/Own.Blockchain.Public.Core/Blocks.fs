@@ -110,14 +110,15 @@ module Blocks =
     let createKycProviderStateHash
         decodeHash
         createHash
-        (state : KycProviderState, change : KycProviderChange)
+        (AssetHash assetHash, state : Map<BlockchainAddress, KycProviderChange>)
         =
 
-        [
-            decodeHash state.AssetHash.Value
-            decodeHash state.ProviderAddress.Value
-            boolToBytes (change = Add)
-        ]
+        let stateHash =
+            state
+            |> Seq.map (fun pair -> [decodeHash pair.Key.Value; boolToBytes (pair.Value = Add)])
+            |> List.concat
+
+        [decodeHash assetHash] @ stateHash
         |> Array.concat
         |> createHash
 
@@ -366,8 +367,8 @@ module Blocks =
             output.KycProviders
             |> Map.toList
             |> List.sort // Ensure a predictable order
-            |> List.map (fun (state, change) ->
-                createKycProviderStateHash decodeHash createHash (state, change)
+            |> List.map (fun (hash, state) ->
+                createKycProviderStateHash decodeHash createHash (hash, state)
             )
 
         let accountHashes =

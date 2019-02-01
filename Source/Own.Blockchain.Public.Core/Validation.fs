@@ -222,17 +222,17 @@ module Validation =
     let private validateSetKycProvider
         isValidAddress
         (assetHash : string)
-        (controllerAddress : string)
+        (providerAddress : string)
         =
 
         [
             if assetHash.IsNullOrWhiteSpace() then
                 yield AppError "AssetHash is not provided."
 
-            if controllerAddress.IsNullOrWhiteSpace() then
-                yield AppError "ValidatorAddress is not provided."
-            elif controllerAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "ValidatorAddress is not valid."
+            if providerAddress.IsNullOrWhiteSpace() then
+                yield AppError "KYC Provider Address is not provided."
+            elif providerAddress |> BlockchainAddress |> isValidAddress |> not then
+                yield AppError "KYC Provider Address is not valid."
         ]
 
     let private validateChangeKycControllerAddress isValidAddress (action : ChangeKycControllerAddressTxActionDto) =

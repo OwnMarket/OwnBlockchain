@@ -1320,7 +1320,13 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
-    let private addKycProvider conn transaction (kycProvider : KycProviderStateDto) : Result<unit, AppErrors> =
+    let private addKycProvider
+        conn
+        transaction
+        (assetHash : string, providerAddress : string)
+        : Result<unit, AppErrors>
+        =
+
         let sql =
             """
             INSERT INTO kyc_provider (asset_id, provider_address)
@@ -1331,8 +1337,8 @@ module Db =
 
         let sqlParams =
             [
-                "@assetHash", kycProvider.AssetHash |> box
-                "@providerAddress", kycProvider.ProviderAddress|> box
+                "@assetHash", assetHash |> box
+                "@providerAddress", providerAddress|> box
             ]
 
         try
@@ -1344,7 +1350,13 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert KYC povider."
 
-    let private removeKycProvider conn transaction (kycProvider : KycProviderStateDto) : Result<unit, AppErrors> =
+    let private removeKycProvider
+        conn
+        transaction
+        (assetHash : string, providerAddress : string)
+        : Result<unit, AppErrors>
+        =
+
         let sql =
             """
             DELETE FROM kyc_provider
@@ -1354,8 +1366,8 @@ module Db =
 
         let sqlParams =
             [
-                "@assetHash", kycProvider.AssetHash |> box
-                "@providerAddress", kycProvider.ProviderAddress |> box
+                "@assetHash", assetHash |> box
+                "@providerAddress", providerAddress |> box
             ]
 
         try
@@ -1363,32 +1375,38 @@ module Db =
             | 0
             | 1 -> Ok ()
             | _ ->
-                sprintf "Didn't remove KYC provider: %s" kycProvider.ProviderAddress
+                sprintf "Didn't remove KYC provider: %s" providerAddress
                 |> Result.appError
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            sprintf "Failed to remove KYC provider: %s" kycProvider.ProviderAddress
+            sprintf "Failed to remove KYC provider: %s" providerAddress
             |> Result.appError
 
     let private updateKycProviders
         conn
         transaction
-        (kycProviders : Map<KycProviderStateDto, bool>)
+        (kycProviders : Map<string, Map<string, bool>>)
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (kycProvider, addProvider) =
+        let foldFn result (assetHash: string, state : string * bool) =
             result
             >>= (fun _ ->
-                if addProvider then
-                    addKycProvider conn transaction kycProvider
+                if snd state then
+                    addKycProvider conn transaction (assetHash, fst state)
                 else
-                    removeKycProvider conn transaction kycProvider
+                    removeKycProvider conn transaction (assetHash, fst state)
             )
 
         kycProviders
         |> Map.toList
+        |> List.map (fun (asset, stateList) ->
+            stateList |> Map.toList |> List.map (fun state ->
+                (asset, state)
+            )
+        )
+        |> List.concat
         |> List.fold foldFn (Ok ())
 
     let private addAccount

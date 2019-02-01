@@ -449,18 +449,6 @@ module Mapping =
             KycControllerAddress = state.KycControllerAddress.Value
         }
 
-    let kycProviderStateFromDto (dto : KycProviderStateDto) : KycProviderState =
-        {
-            AssetHash = AssetHash dto.AssetHash
-            ProviderAddress = BlockchainAddress dto.ProviderAddress
-        }
-
-    let kycProviderStateToDto (state : KycProviderState) =
-        {
-            AssetHash = state.AssetHash.Value
-            ProviderAddress = state.ProviderAddress.Value
-        }
-
     let accountStateFromDto (dto : AccountStateDto) : AccountState =
         {
             ControllerAddress = BlockchainAddress dto.ControllerAddress
@@ -568,7 +556,12 @@ module Mapping =
         let kycProviders =
             output.KycProviders
             |> Map.toList
-            |> List.map (fun (s : KycProviderState, c : KycProviderChange) -> kycProviderStateToDto s, c = Add)
+            |> List.map (fun (AssetHash asset, p ) ->
+                asset, p |> Map.toList |> List.map (fun (BlockchainAddress a, c) ->
+                    a, c = Add
+                )
+                |> Map.ofList
+            )
             |> Map.ofList
 
         let accounts =

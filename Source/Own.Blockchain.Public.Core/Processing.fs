@@ -28,7 +28,8 @@ module Processing =
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
         votes : ConcurrentDictionary<VoteId, VoteState option>,
         eligibilities : ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>,
-        kycProviders : ConcurrentDictionary<KycProviderState, KycProviderChange option>,
+        kycProviders :
+            ConcurrentDictionary<AssetHash, ConcurrentDictionary<BlockchainAddress, KycProviderChange option>>,
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         assetHashesByCode : ConcurrentDictionary<AssetCode, AssetHash option>,
@@ -78,7 +79,7 @@ module Processing =
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
                 ConcurrentDictionary<VoteId, VoteState option>(),
                 ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>(),
-                ConcurrentDictionary<KycProviderState, KycProviderChange option>(),
+                ConcurrentDictionary<AssetHash, ConcurrentDictionary<BlockchainAddress, KycProviderChange option>>(),
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
                 ConcurrentDictionary<AssetCode, AssetHash option>(),
@@ -151,17 +152,22 @@ module Processing =
             eligibilities.GetOrAdd((accountHash, assetHash), getEligibilityStateFromStorage)
 
         member __.GetKycProviders (assetHash) =
-            getKycProvidersFromStorage assetHash
-            |> List.iter(fun address ->
-                let kycProvider = {KycProviderState.ProviderAddress = address; AssetHash = assetHash};
-                kycProviders.GetOrAdd (kycProvider, None) |> ignore
+            kycProviders.GetOrAdd(assetHash, fun _ ->
+                getKycProvidersFromStorage assetHash
+                |> Seq.map(fun address -> (address, None))
+                |> Map.ofSeq
+                |> Map.toDictionary
             )
+            |> ignore
 
             kycProviders
             |> Map.ofDict
-            |> Map.filter (fun key change -> key.AssetHash = assetHash && not (change = Some Remove))
-            |> Map.keys
-            |> List.map (fun key -> key.ProviderAddress)
+            |> Map.filter (fun h _ -> h = assetHash)
+            |> Seq.map (fun s -> s.Value)
+            |> Seq.head
+            |> Seq.filter (fun pair -> not (pair.Value = Some Remove))
+            |> Seq.map (fun pair -> pair.Key)
+            |> Seq.toList
 
         member __.GetAccount (accountHash : AccountHash) =
             accounts.GetOrAdd(accountHash, getAccountStateFromStorage)
@@ -196,8 +202,33 @@ module Processing =
             let state = Some state;
             eligibilities.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
-        member __.SetKycProvider (state : KycProviderState, change : KycProviderChange option) =
-            kycProviders.AddOrUpdate(state, change, fun _ _ -> change) |> ignore
+        member __.SetKycProvider (assetHash, state : BlockchainAddress * KycProviderChange option) =
+            let providerAddress = fst state;
+            let providerChange = snd state;
+
+            match kycProviders.TryGetValue assetHash with
+            | false, _ ->
+                let newProvider = new ConcurrentDictionary<BlockchainAddress, KycProviderChange option>()
+                newProvider.AddOrUpdate (providerAddress, providerChange, fun _ _ -> providerChange) |> ignore
+                kycProviders.AddOrUpdate (assetHash, newProvider, fun _ _ -> newProvider) |> ignore
+            | true, existingProvider ->
+                match existingProvider.TryGetValue providerAddress with
+                | false, _ ->
+                    existingProvider.AddOrUpdate (
+                        providerAddress,
+                        providerChange,
+                        fun _ _ -> providerChange)
+                    |> ignore
+                | true, existingChange ->
+                    if existingChange = Some Add && providerChange = Some Remove
+                        || existingChange = Some Remove && providerChange = Some Add then
+                        existingProvider.AddOrUpdate (providerAddress, None, fun _ _ -> None) |> ignore
+                    else
+                        existingProvider.AddOrUpdate (
+                            providerAddress,
+                            providerChange,
+                            fun _ _ -> providerChange)
+                        |> ignore
 
         member __.SetAccount (accountHash, state : AccountState) =
             let state = Some state
@@ -249,8 +280,12 @@ module Processing =
                     |> Map.ofSeq
                 KycProviders =
                     kycProviders
-                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
-                    |> Map.ofSeq
+                    |> Map.ofDict
+                    |> Map.map(fun _ provider ->
+                        provider
+                        |> Seq.ofDict
+                        |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
+                        |> Map.ofSeq)
                 Accounts =
                     accounts
                     |> Seq.ofDict
@@ -676,8 +711,8 @@ module Processing =
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
             state.SetKycProvider(
-                {KycProviderState.AssetHash = action.AssetHash; ProviderAddress = action.ProviderAddress},
-                KycProviderChange.Add |> Some
+                action.AssetHash,
+                (action.ProviderAddress, Some Add)
             )
             Ok state
         | _ ->
@@ -695,8 +730,8 @@ module Processing =
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
             state.SetKycProvider(
-                {KycProviderState.AssetHash = action.AssetHash; ProviderAddress = action.ProviderAddress},
-                KycProviderChange.Remove |> Some
+                action.AssetHash,
+                (action.ProviderAddress, Some Remove)
             )
             Ok state
         | _ ->

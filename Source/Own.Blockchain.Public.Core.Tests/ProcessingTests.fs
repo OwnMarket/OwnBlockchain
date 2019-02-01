@@ -5482,7 +5482,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.KycProviders.Count = 1 @>
-        test <@ output.KycProviders.[{AssetHash = assetHash; ProviderAddress = senderWallet.Address}] = Add @>
+        test <@ output.KycProviders.[assetHash].[senderWallet.Address] = Add @>
 
     [<Fact>]
     let ``Processing.processTxSet AddKycProvider various errors`` () =
@@ -5747,7 +5747,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.KycProviders.Count = 1 @>
-        test <@ output.KycProviders.[{AssetHash = assetHash; ProviderAddress = senderWallet.Address}] = Remove @>
+        test <@ output.KycProviders.[assetHash].[senderWallet.Address] = Remove @>
 
     [<Fact>]
     let ``Processing.processTxSet RemoveKycProvider various errors`` () =
@@ -6025,8 +6025,8 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash1].Status = Success @>
         test <@ output.TxResults.[txHash2].Status = Success @>
         test <@ output.KycProviders.Count = 2 @>
-        test <@ output.KycProviders.[{AssetHash = assetHash1; ProviderAddress = senderWallet.Address}] = Add @>
-        test <@ output.KycProviders.[{AssetHash = assetHash2; ProviderAddress = senderWallet.Address}] = Remove @>
+        test <@ output.KycProviders.[assetHash1].[senderWallet.Address] = Add @>
+        test <@ output.KycProviders.[assetHash2].[senderWallet.Address] = Remove @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission

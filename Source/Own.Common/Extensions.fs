@@ -2,6 +2,7 @@
 
 open System
 open System.Security.Cryptography
+open System.Collections.Concurrent
 
 [<AutoOpen>]
 module Extensions =
@@ -69,3 +70,5 @@ module Map =
 
     let inline keys (map : Map<'Key, 'Value>) =
         Map.fold (fun keys key _ -> key :: keys) [] map
+
+    let inline toDictionary (map : Map<_, _>) : ConcurrentDictionary<_, _> = ConcurrentDictionary(map)

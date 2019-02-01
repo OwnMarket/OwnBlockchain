@@ -345,11 +345,6 @@ type EligibilityState = {
     KycControllerAddress : BlockchainAddress
 }
 
-type KycProviderState = {
-    AssetHash : AssetHash
-    ProviderAddress : BlockchainAddress
-}
-
 type KycProviderChange =
     | Add
     | Remove
@@ -387,7 +382,7 @@ type ProcessingOutput = {
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     Votes : Map<VoteId, VoteState>
     Eligibilities : Map<AccountHash * AssetHash, EligibilityState>
-    KycProviders : Map<KycProviderState, KycProviderChange>
+    KycProviders : Map<AssetHash, Map<BlockchainAddress, KycProviderChange>>
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
     Validators : Map<BlockchainAddress, ValidatorState>
