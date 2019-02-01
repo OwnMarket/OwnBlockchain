@@ -115,8 +115,8 @@ module Blocks =
 
         let stateHash =
             state
-            |> Seq.map (fun pair -> [decodeHash pair.Key.Value; boolToBytes (pair.Value = Add)])
-            |> List.concat
+            |> Map.toList
+            |> List.collect (fun (k, v) -> [decodeHash k.Value; boolToBytes (v = Add)])
 
         [decodeHash assetHash] @ stateHash
         |> Array.concat
