@@ -202,10 +202,7 @@ module Processing =
             let state = Some state;
             eligibilities.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
-        member __.SetKycProvider (assetHash, state : BlockchainAddress * KycProviderChange option) =
-            let providerAddress = fst state;
-            let providerChange = snd state;
-
+        member __.SetKycProvider (assetHash, providerAddress, providerChange) =
             match kycProviders.TryGetValue assetHash with
             | false, _ ->
                 let newProvider = new ConcurrentDictionary<BlockchainAddress, KycProviderChange option>()
@@ -710,10 +707,7 @@ module Processing =
         | None ->
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
-            state.SetKycProvider(
-                action.AssetHash,
-                (action.ProviderAddress, Some Add)
-            )
+            state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some Add)
             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
@@ -729,10 +723,7 @@ module Processing =
         | None ->
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
-            state.SetKycProvider(
-                action.AssetHash,
-                (action.ProviderAddress, Some Remove)
-            )
+            state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some Remove)
             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
