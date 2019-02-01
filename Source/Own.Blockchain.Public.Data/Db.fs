@@ -622,7 +622,7 @@ module Db =
 
         let sql =
             """
-            SELECT network_address, shared_reward_percent, last_active_in_config_block, blacklisted_in_block
+            SELECT network_address, shared_reward_percent, time_to_lock_deposit, time_to_blacklist
             FROM validator
             WHERE validator_address = @validatorAddress
             """
@@ -1600,15 +1600,15 @@ module Db =
                 validator_address,
                 network_address,
                 shared_reward_percent,
-                last_active_in_config_block,
-                blacklisted_in_block
+                time_to_lock_deposit,
+                time_to_blacklist
             )
             VALUES (
                 @validatorAddress,
                 @networkAddress,
                 @sharedRewardPercent,
-                @lastActiveInConfigBlock,
-                @blacklistedInBlock
+                @timeToLockDeposit,
+                @timeToBlacklist
             )
             """
 
@@ -1617,8 +1617,8 @@ module Db =
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
-                "@lastActiveInConfigBlock", validatorInfo.LastActiveInConfigBlock |> boxNullable
-                "@blacklistedInBlock", validatorInfo.BlacklistedInBlock |> boxNullable
+                "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> boxNullable
+                "@timeToBlacklist", validatorInfo.TimeToBlacklist |> boxNullable
             ]
 
         try
@@ -1642,8 +1642,8 @@ module Db =
             UPDATE validator
             SET network_address = @networkAddress,
                 shared_reward_percent = @sharedRewardPercent,
-                last_active_in_config_block = @lastActiveInConfigBlock,
-                blacklisted_in_block = @blacklistedInBlock
+                time_to_lock_deposit = @timeToLockDeposit,
+                time_to_blacklist = @timeToBlacklist
             WHERE validator_address = @validatorAddress
             """
 
@@ -1652,8 +1652,8 @@ module Db =
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
-                "@lastActiveInConfigBlock", validatorInfo.LastActiveInConfigBlock |> boxNullable
-                "@blacklistedInBlock", validatorInfo.BlacklistedInBlock |> boxNullable
+                "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> boxNullable
+                "@timeToBlacklist", validatorInfo.TimeToBlacklist |> boxNullable
             ]
 
         try
@@ -1680,8 +1680,8 @@ module Db =
                     ValidatorAddress = validatorAddress
                     NetworkAddress = state.NetworkAddress
                     SharedRewardPercent = state.SharedRewardPercent
-                    LastActiveInConfigBlock = state.LastActiveInConfigBlock
-                    BlacklistedInBlock = state.BlacklistedInBlock
+                    TimeToLockDeposit = state.TimeToLockDeposit
+                    TimeToBlacklist = state.TimeToBlacklist
                 }
                 |> updateValidator conn transaction
             )

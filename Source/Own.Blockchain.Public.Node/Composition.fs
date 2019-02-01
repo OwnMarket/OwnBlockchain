@@ -1,5 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Node
 
+open System
 open Own.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
@@ -153,6 +154,7 @@ module Composition =
             (ChxAmount Config.GenesisChxSupply)
             (BlockchainAddress Config.GenesisAddress)
             Config.GenesisValidators
+            (Convert.ToInt16 Config.ValidatorDepositLockTime)
 
     let signGenesisBlock =
         Workflows.signGenesisBlock
@@ -199,6 +201,8 @@ module Composition =
             calculateConfigurationBlockNumberForNewBlock
             (ChxAmount Config.MinTxActionFee)
             (ChxAmount Config.ValidatorDeposit)
+            (Convert.ToInt16 Config.ValidatorDepositLockTime)
+            (Convert.ToInt16 Config.ValidatorBlacklistTime)
 
     let getAvailableChxBalance =
         Workflows.getAvailableChxBalance

@@ -57,7 +57,6 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-
     static member NetworkAddress
         with get () =
             let networkAddress = config.["NetworkAddress"]
@@ -114,11 +113,11 @@ type Config () =
         with get () =
             config.["ValidatorPrivateKey"]
 
-    static member ConfigurationBlockDelta = 100
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member ConfigurationBlockDelta = 100
+
     static member MaxNumberOfBlocksToFetchInParallel = 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +128,8 @@ type Config () =
 
     static member ValidatorThreshold = 500_000m
     static member ValidatorDeposit = 5_000m
+    static member ValidatorDepositLockTime = 2 // Number of config blocks to keep the deposit locked after leaving.
+    static member ValidatorBlacklistTime = 5 // Number of config blocks to keep the validator blacklisted.
 
     static member MaxRewardedStakesCount = 100
 

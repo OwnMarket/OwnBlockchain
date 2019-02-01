@@ -517,8 +517,8 @@ module Processing =
                 {
                     ValidatorState.NetworkAddress = action.NetworkAddress
                     SharedRewardPercent = action.SharedRewardPercent
-                    LastActiveInConfigBlock = None
-                    BlacklistedInBlock = None
+                    TimeToLockDeposit = None
+                    TimeToBlacklist = None
                 }
             )
             Ok state
@@ -927,6 +927,7 @@ module Processing =
         createHash
         processTxActions
         validatorDeposit
+        validatorBlacklistTime
         (blockNumber : BlockNumber)
         (validators : BlockchainAddress list)
         (equivocationProofs : EquivocationProofHash list)
@@ -950,7 +951,8 @@ module Processing =
                     )
 
             match state.GetValidator(proof.ValidatorAddress) with
-            | Some s -> state.SetValidator(proof.ValidatorAddress, {s with BlacklistedInBlock = Some blockNumber})
+            | Some s ->
+                state.SetValidator(proof.ValidatorAddress, {s with TimeToBlacklist = Some validatorBlacklistTime})
             | None -> failwithf "Cannot get validator state for %s" proof.ValidatorAddress.Value
 
             let amountToTake =
@@ -1035,6 +1037,7 @@ module Processing =
                 | Error err -> failwithf "Cannot process reward distribution: (%A)." err
 
     let updateLastActiveConfigBlockForValidators
+        validatorDepositLockTime
         (blockNumber : BlockNumber)
         (blockchainConfiguration : BlockchainConfiguration option)
         (state : ProcessingState)
@@ -1044,7 +1047,8 @@ module Processing =
         |> Option.iter (fun c ->
             for v in c.Validators do
                 match state.GetValidator(v.ValidatorAddress) with
-                | Some s -> state.SetValidator(v.ValidatorAddress, {s with LastActiveInConfigBlock = Some blockNumber})
+                | Some s ->
+                    state.SetValidator(v.ValidatorAddress, {s with TimeToLockDeposit = Some validatorDepositLockTime})
                 | None -> failwithf "Cannot get validator state for %s" v.ValidatorAddress.Value
         )
 
@@ -1072,6 +1076,8 @@ module Processing =
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
         (getTopStakers : BlockchainAddress -> StakerInfo list)
         validatorDeposit
+        validatorDepositLockTime
+        validatorBlacklistTime
         (validators : BlockchainAddress list)
         (validatorAddress : BlockchainAddress)
         (sharedRewardPercent : decimal)
@@ -1138,10 +1144,11 @@ module Processing =
                 createHash
                 processTxActions
                 validatorDeposit
+                validatorBlacklistTime
                 blockNumber
                 validators
                 equivocationProofs
             |> distributeReward processTxActions getTopStakers validatorAddress sharedRewardPercent
-            |> updateLastActiveConfigBlockForValidators blockNumber blockchainConfiguration
+            |> updateLastActiveConfigBlockForValidators validatorDepositLockTime blockNumber blockchainConfiguration
 
         state.ToProcessingOutput()

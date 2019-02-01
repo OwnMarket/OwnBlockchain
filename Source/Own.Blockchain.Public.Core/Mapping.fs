@@ -481,18 +481,16 @@ module Mapping =
         {
             NetworkAddress = NetworkAddress dto.NetworkAddress
             SharedRewardPercent = dto.SharedRewardPercent
-            LastActiveInConfigBlock = dto.LastActiveInConfigBlock |> Option.ofNullable |> Option.map BlockNumber
-            BlacklistedInBlock = dto.BlacklistedInBlock |> Option.ofNullable |> Option.map BlockNumber
+            TimeToLockDeposit = dto.TimeToLockDeposit |> Option.ofNullable
+            TimeToBlacklist = dto.TimeToBlacklist |> Option.ofNullable
         }
 
     let validatorStateToDto (state : ValidatorState) : ValidatorStateDto =
         {
             NetworkAddress = state.NetworkAddress.Value
             SharedRewardPercent = state.SharedRewardPercent
-            LastActiveInConfigBlock =
-                state.LastActiveInConfigBlock |> Option.map (fun b -> b.Value) |> Option.toNullable
-            BlacklistedInBlock =
-                state.BlacklistedInBlock |> Option.map (fun b -> b.Value) |> Option.toNullable
+            TimeToLockDeposit = state.TimeToLockDeposit |> Option.toNullable
+            TimeToBlacklist = state.TimeToBlacklist |> Option.toNullable
         }
 
     let stakeStateFromDto (dto : StakeStateDto) : StakeState =

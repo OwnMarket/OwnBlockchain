@@ -261,6 +261,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 sharedRewardPercent
@@ -416,6 +418,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 sharedRewardPercent
@@ -554,6 +558,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -677,6 +683,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -801,6 +809,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -924,6 +934,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1042,6 +1054,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1180,6 +1194,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1319,6 +1335,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1451,6 +1469,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1583,6 +1603,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1716,6 +1738,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1845,6 +1869,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -1985,6 +2011,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -2122,6 +2150,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -2259,6 +2289,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -2422,6 +2454,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -2544,6 +2578,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -2700,6 +2736,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -2825,6 +2863,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -2954,6 +2994,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -3079,6 +3121,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -3209,6 +3253,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -3334,6 +3380,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -3488,6 +3536,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -3613,6 +3663,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -3742,6 +3794,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -3899,6 +3953,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4025,6 +4081,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4178,6 +4236,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4304,6 +4364,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4423,6 +4485,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4540,6 +4604,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4676,6 +4742,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4836,6 +4904,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -4961,6 +5031,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -5090,6 +5162,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -5214,6 +5288,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -5349,6 +5425,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -5470,6 +5548,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -5608,6 +5688,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -5735,6 +5817,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -5873,6 +5957,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6013,6 +6099,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6135,6 +6223,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6265,6 +6355,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6396,6 +6488,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6523,6 +6617,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6654,6 +6750,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6785,6 +6883,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -6914,6 +7014,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7045,6 +7147,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7165,6 +7269,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7290,6 +7396,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7419,6 +7527,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7539,6 +7649,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7669,6 +7781,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7798,6 +7912,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -7918,6 +8034,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8047,6 +8165,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8171,6 +8291,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8269,8 +8391,8 @@ module ProcessingTests =
             Some {
                 ValidatorState.NetworkAddress = NetworkAddress "old-address:12345"
                 SharedRewardPercent = 6m
-                LastActiveInConfigBlock = None
-                BlacklistedInBlock = None
+                TimeToLockDeposit = None
+                TimeToBlacklist = None
             }
 
         let getStakeState _ =
@@ -8304,6 +8426,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8425,6 +8549,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8557,6 +8683,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8677,6 +8805,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8797,6 +8927,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -8922,6 +9054,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m
@@ -9047,6 +9181,8 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 (ChxAmount 0m)
+                0s
+                0s
                 []
                 validatorWallet.Address
                 0m

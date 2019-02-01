@@ -244,8 +244,8 @@ module SharedTests =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress na
                         SharedRewardPercent = 0m
-                        LastActiveInConfigBlock = BlockNumber 0L |> Some
-                        BlacklistedInBlock = None
+                        TimeToLockDeposit = Config.ValidatorDepositLockTime |> Convert.ToInt16 |> Some
+                        TimeToBlacklist = None
                     }
             )
             |> Map.ofList
@@ -484,8 +484,8 @@ module SharedTests =
             {
                 NetworkAddress = NetworkAddress "localhost:5000"
                 SharedRewardPercent = 42m
-                LastActiveInConfigBlock = None
-                BlacklistedInBlock = None
+                TimeToLockDeposit = None
+                TimeToBlacklist = None
             }
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10m

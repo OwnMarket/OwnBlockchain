@@ -199,8 +199,8 @@ module DbChanges =
                     CREATE INDEX equivocation__ix__b__r__s
                         ON equivocation (block_number, consensus_round, consensus_step);
 
-                    ALTER TABLE validator ADD last_active_in_config_block BIGINT;
-                    ALTER TABLE validator ADD blacklisted_in_block BIGINT;
+                    ALTER TABLE validator ADD time_to_lock_deposit SMALLINT;
+                    ALTER TABLE validator ADD time_to_blacklist SMALLINT;
                     """
             }
         ]
@@ -397,8 +397,8 @@ module DbChanges =
                     CREATE INDEX equivocation__ix__block_number__consensus_round__consensus_step
                         ON equivocation (block_number, consensus_round, consensus_step);
 
-                    ALTER TABLE validator ADD COLUMN last_active_in_config_block BIGINT;
-                    ALTER TABLE validator ADD COLUMN blacklisted_in_block BIGINT;
+                    ALTER TABLE validator ADD COLUMN time_to_lock_deposit SMALLINT;
+                    ALTER TABLE validator ADD COLUMN time_to_blacklist SMALLINT;
                     """
             }
         ]

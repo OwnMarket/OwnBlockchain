@@ -33,6 +33,7 @@ module Workflows =
         genesisChxSupply
         genesisAddress
         genesisValidators
+        validatorDepositLockTime
         =
 
         let genesisValidators =
@@ -42,8 +43,8 @@ module Workflows =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress na
                         SharedRewardPercent = 0m
-                        LastActiveInConfigBlock = BlockNumber 0L |> Some
-                        BlacklistedInBlock = None
+                        TimeToLockDeposit = Some validatorDepositLockTime
+                        TimeToBlacklist = None
                     }
             )
             |> Map.ofList
@@ -163,6 +164,8 @@ module Workflows =
         (calculateConfigurationBlockNumberForNewBlock : BlockNumber -> BlockNumber)
         minTxActionFee
         validatorDeposit
+        validatorDepositLockTime
+        validatorBlacklistTime
         validatorAddress
         (previousBlockHash : BlockHash)
         (blockNumber : BlockNumber)
@@ -228,6 +231,8 @@ module Workflows =
                 getTotalChxStaked
                 getTopStakers
                 validatorDeposit
+                validatorDepositLockTime
+                validatorBlacklistTime
                 validators
                 validatorAddress
                 sharedRewardPercent
