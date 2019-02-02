@@ -164,22 +164,12 @@ module Blocks =
         (BlockchainAddress validatorAddress, state : ValidatorState)
         =
 
-        let timeToLockDepositBytes =
-            state.TimeToLockDeposit
-            |> Option.map int16ToBytes
-            |? Array.empty // TODO: Ensure proper hashing by providing non-empty array as default value!
-
-        let timeToBlacklistBytes =
-            state.TimeToBlacklist
-            |> Option.map int16ToBytes
-            |? Array.empty // TODO: Ensure proper hashing by providing non-empty array as default value!
-
         [
             decodeHash validatorAddress
             stringToBytes state.NetworkAddress.Value
             decimalToBytes state.SharedRewardPercent
-            timeToLockDepositBytes
-            timeToBlacklistBytes
+            int16ToBytes state.TimeToLockDeposit
+            int16ToBytes state.TimeToBlacklist
         ]
         |> Array.concat
         |> createHash

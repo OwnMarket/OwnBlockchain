@@ -329,8 +329,8 @@ type AssetStateDto = {
 type ValidatorStateDto = {
     NetworkAddress : string
     SharedRewardPercent : decimal
-    TimeToLockDeposit : Nullable<int16>
-    TimeToBlacklist : Nullable<int16>
+    TimeToLockDeposit : int16
+    TimeToBlacklist : int16
 }
 
 [<CLIMutable>]
@@ -399,8 +399,8 @@ type ValidatorInfoDto = {
     ValidatorAddress : string
     NetworkAddress : string
     SharedRewardPercent : decimal
-    TimeToLockDeposit : Nullable<int16>
-    TimeToBlacklist : Nullable<int16>
+    TimeToLockDeposit : int16
+    TimeToBlacklist : int16
 }
 
 [<CLIMutable>]

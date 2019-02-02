@@ -8391,8 +8391,8 @@ module ProcessingTests =
             Some {
                 ValidatorState.NetworkAddress = NetworkAddress "old-address:12345"
                 SharedRewardPercent = 6m
-                TimeToLockDeposit = None
-                TimeToBlacklist = None
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 0s
             }
 
         let getStakeState _ =

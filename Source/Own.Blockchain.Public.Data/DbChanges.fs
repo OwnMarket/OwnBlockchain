@@ -176,8 +176,10 @@ module DbChanges =
                     CREATE INDEX eligibility__ix__asset_id ON eligibility (asset_id);
 
                     ALTER TABLE asset ADD is_eligibility_required BOOLEAN DEFAULT FALSE NOT NULL;
+                    ALTER TABLE asset ALTER is_eligibility_required DROP DEFAULT;
 
                     ALTER TABLE holding ADD is_emission BOOLEAN DEFAULT FALSE NOT NULL;
+                    ALTER TABLE holding ALTER is_emission DROP DEFAULT;
                     """
             }
             {
@@ -199,8 +201,11 @@ module DbChanges =
                     CREATE INDEX equivocation__ix__b__r__s
                         ON equivocation (block_number, consensus_round, consensus_step);
 
-                    ALTER TABLE validator ADD time_to_lock_deposit SMALLINT;
-                    ALTER TABLE validator ADD time_to_blacklist SMALLINT;
+                    ALTER TABLE validator ADD time_to_lock_deposit SMALLINT DEFAULT 0 NOT NULL;
+                    ALTER TABLE validator ALTER time_to_lock_deposit DROP DEFAULT;
+
+                    ALTER TABLE validator ADD time_to_blacklist SMALLINT DEFAULT 0 NOT NULL;
+                    ALTER TABLE validator ALTER time_to_blacklist DROP DEFAULT;
                     """
             }
         ]
@@ -373,9 +378,11 @@ module DbChanges =
                     );
                     CREATE INDEX eligibility__ix__asset_id ON eligibility (asset_id);
 
-                    ALTER TABLE asset ADD COLUMN is_eligibility_required BOOL DEFAULT FALSE NOT NULL;
+                    ALTER TABLE asset ADD is_eligibility_required BOOL DEFAULT FALSE NOT NULL;
+                    ALTER TABLE asset ALTER is_eligibility_required DROP DEFAULT;
 
-                    ALTER TABLE holding ADD COLUMN is_emission BOOL DEFAULT FALSE NOT NULL;
+                    ALTER TABLE holding ADD is_emission BOOL DEFAULT FALSE NOT NULL;
+                    ALTER TABLE holding ALTER is_emission DROP DEFAULT;
                     """
             }
             {
@@ -397,8 +404,11 @@ module DbChanges =
                     CREATE INDEX equivocation__ix__block_number__consensus_round__consensus_step
                         ON equivocation (block_number, consensus_round, consensus_step);
 
-                    ALTER TABLE validator ADD COLUMN time_to_lock_deposit SMALLINT;
-                    ALTER TABLE validator ADD COLUMN time_to_blacklist SMALLINT;
+                    ALTER TABLE validator ADD time_to_lock_deposit SMALLINT DEFAULT 0 NOT NULL;
+                    ALTER TABLE validator ALTER time_to_lock_deposit DROP DEFAULT;
+
+                    ALTER TABLE validator ADD time_to_blacklist SMALLINT DEFAULT 0 NOT NULL;
+                    ALTER TABLE validator ALTER time_to_blacklist DROP DEFAULT;
                     """
             }
         ]

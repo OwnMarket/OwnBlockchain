@@ -1149,8 +1149,8 @@ module Db =
     let private addVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO vote (holding_id, resolution_hash, vote_hash, vote_weight)
-            SELECT holding_id, @resolutionHash, @voteHash, NULL
+            INSERT INTO vote (holding_id, resolution_hash, vote_hash)
+            SELECT holding_id, @resolutionHash, @voteHash
             FROM holding
             JOIN account USING (account_id)
             WHERE asset_hash = @assetHash
@@ -1617,8 +1617,8 @@ module Db =
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
-                "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> boxNullable
-                "@timeToBlacklist", validatorInfo.TimeToBlacklist |> boxNullable
+                "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
+                "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
             ]
 
         try
@@ -1652,8 +1652,8 @@ module Db =
                 "@validatorAddress", validatorInfo.ValidatorAddress |> box
                 "@networkAddress", validatorInfo.NetworkAddress |> box
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
-                "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> boxNullable
-                "@timeToBlacklist", validatorInfo.TimeToBlacklist |> boxNullable
+                "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
+                "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
             ]
 
         try

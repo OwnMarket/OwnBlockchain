@@ -517,8 +517,8 @@ module Processing =
                 {
                     ValidatorState.NetworkAddress = action.NetworkAddress
                     SharedRewardPercent = action.SharedRewardPercent
-                    TimeToLockDeposit = None
-                    TimeToBlacklist = None
+                    TimeToLockDeposit = 0s
+                    TimeToBlacklist = 0s
                 }
             )
             Ok state
@@ -952,7 +952,7 @@ module Processing =
 
             match state.GetValidator(proof.ValidatorAddress) with
             | Some s ->
-                state.SetValidator(proof.ValidatorAddress, {s with TimeToBlacklist = Some validatorBlacklistTime})
+                state.SetValidator(proof.ValidatorAddress, {s with TimeToBlacklist = validatorBlacklistTime})
             | None -> failwithf "Cannot get validator state for %s" proof.ValidatorAddress.Value
 
             let amountToTake =
@@ -1048,7 +1048,7 @@ module Processing =
             for v in c.Validators do
                 match state.GetValidator(v.ValidatorAddress) with
                 | Some s ->
-                    state.SetValidator(v.ValidatorAddress, {s with TimeToLockDeposit = Some validatorDepositLockTime})
+                    state.SetValidator(v.ValidatorAddress, {s with TimeToLockDeposit = validatorDepositLockTime})
                 | None -> failwithf "Cannot get validator state for %s" v.ValidatorAddress.Value
         )
 

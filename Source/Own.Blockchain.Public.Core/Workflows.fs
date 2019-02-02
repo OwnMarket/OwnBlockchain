@@ -43,8 +43,8 @@ module Workflows =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress na
                         SharedRewardPercent = 0m
-                        TimeToLockDeposit = Some validatorDepositLockTime
-                        TimeToBlacklist = None
+                        TimeToLockDeposit = validatorDepositLockTime
+                        TimeToBlacklist = 0s
                     }
             )
             |> Map.ofList

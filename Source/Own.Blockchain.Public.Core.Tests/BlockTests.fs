@@ -210,8 +210,8 @@ module BlockTests =
             {
                 ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                 SharedRewardPercent = 4m
-                TimeToLockDeposit = Some 3s
-                TimeToBlacklist = Some 5s
+                TimeToLockDeposit = 3s
+                TimeToBlacklist = 5s
             }
 
         // ACT
@@ -483,22 +483,22 @@ module BlockTests =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
                         SharedRewardPercent = 1m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 4s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 4s
                     }
                 BlockchainAddress "BBBBB",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                         SharedRewardPercent = 2m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 5s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 5s
                     }
                 BlockchainAddress "CCCCC",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
                         SharedRewardPercent = 3m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 6s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 6s
                     }
             ]
             |> Map.ofList
@@ -864,22 +864,22 @@ module BlockTests =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
                         SharedRewardPercent = 1m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 4s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 4s
                     }
                 BlockchainAddress "BBBBB",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                         SharedRewardPercent = 2m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 5s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 5s
                     }
                 BlockchainAddress "CCCCC",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
                         SharedRewardPercent = 3m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 6s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 6s
                     }
             ]
             |> Map.ofList
@@ -1214,22 +1214,22 @@ module BlockTests =
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "WWW" // W = 87 = 7 = G
                         SharedRewardPercent = 1m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 4s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 4s
                     }
                 BlockchainAddress "BBBBB",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "XXX" // X = 88 = 8 = H
                         SharedRewardPercent = 2m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 5s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 5s
                     }
                 BlockchainAddress "CCCCC",
                     {
                         ValidatorState.NetworkAddress = NetworkAddress "YYY" // Y = 89 = 9 = I
                         SharedRewardPercent = 3m
-                        TimeToLockDeposit = Some 3s
-                        TimeToBlacklist = Some 6s
+                        TimeToLockDeposit = 3s
+                        TimeToBlacklist = 6s
                     }
             ]
             |> Map.ofList
