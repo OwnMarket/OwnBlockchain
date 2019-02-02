@@ -97,6 +97,9 @@ module ConsensusTestHelpers =
                     )
                     |> Seq.toList
 
+                let isValidatorBlacklisted (_, _, _) =
+                    false
+
                 let getProposer blockNumber consensusRound =
                     getValidators ()
                     |> Validators.getProposer blockNumber consensusRound
@@ -161,6 +164,7 @@ module ConsensusTestHelpers =
                     new ConsensusState(
                         getLastAppliedBlockNumber,
                         getValidators,
+                        isValidatorBlacklisted,
                         proposeBlock,
                         txExists,
                         equivocationProofExists,
