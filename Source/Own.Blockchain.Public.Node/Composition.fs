@@ -316,6 +316,7 @@ module Composition =
         Consensus.createConsensusStateInstance
             getLastAppliedBlockNumber
             getValidatorsAtHeight
+            getValidatorState
             proposeBlock
             txExists
             equivocationProofExists

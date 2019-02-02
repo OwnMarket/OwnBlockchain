@@ -13,6 +13,7 @@ module Consensus =
         (
         getLastAppliedBlockNumber : unit -> BlockNumber,
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
+        isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
         proposeBlock : BlockNumber -> Result<Block, AppErrors> option,
         txExists : TxHash -> bool,
         equivocationProofExists : EquivocationProofHash -> bool,
@@ -61,7 +62,11 @@ module Consensus =
                 | ConsensusStep.Commit -> __.OnTimeoutCommit(blockNumber, consensusRound)
 
         member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope) =
-            if envelope.BlockNumber >= _blockNumber then
+            if isValidatorBlacklisted (senderAddress, _blockNumber, envelope.BlockNumber) then
+                envelope.ConsensusMessage
+                |> unionCaseName
+                |> Log.warningf "Validator %s is blacklisted. %s consensus message ignored." senderAddress.Value
+            elif envelope.BlockNumber >= _blockNumber then
                 let key = envelope.BlockNumber, envelope.Round, senderAddress
 
                 match envelope.ConsensusMessage with
@@ -546,6 +551,7 @@ module Consensus =
     let createConsensusStateInstance
         (getLastAppliedBlockNumber : unit -> BlockNumber)
         getValidatorsAtHeight
+        (getValidatorState : BlockchainAddress -> ValidatorStateDto option)
         proposeBlock
         txExists
         equivocationProofExists
@@ -568,6 +574,30 @@ module Consensus =
 
         let validatorAddress =
             addressFromPrivateKey validatorPrivateKey
+
+        let isValidatorBlacklisted = memoize <| fun (validatorAddress, currentBlockNumber, incomingMsgBlockNumber) ->
+            (*
+            currentBlockNumber and incomingMsgBlockNumber parameters ensure proper caching per block.
+            Since function is relying on last applied state in DB, having only currentBlock parameter would result in
+            incorrect response. For example:
+
+            IF TimeToBlacklist = 1 (meaning validator will be removed from blacklist in next config block, e.g. #10)
+            AND current block number being voted on in consensus is one block before next config block (e.g. #9)
+            AND incoming message is for future block (e.g. #10, because node might be catching up)
+            THEN function would be called with block number #10 and would return TRUE,
+                which would cause all messages for block #10 from previously blacklisted validator,
+                to be ignored for all rounds in block #10, although validator is not on blacklist at block #10.
+
+            Having currentBlockNumber and incomingMsgBlockNumber parameters ensures this incorrect behavior will
+            stop once this node catches up and applies block #9 to the state, because the function will be called
+            with #10/#10 (which is different from previous #9/#10) and will return fresh result from the DB state.
+
+            This reduces incorrect behaviour to the level equal to non-cached version of the function,
+            while still benefiting from caching.
+            *)
+            match getValidatorState validatorAddress with
+            | Some s when s.TimeToBlacklist > 0s -> true
+            | _ -> false
 
         let canParticipateInConsensus = memoizeWhen (fun output -> output <> None) <| fun blockNumber ->
             let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -701,6 +731,7 @@ module Consensus =
             (
             getLastAppliedBlockNumber,
             getValidatorsAtHeight,
+            isValidatorBlacklisted,
             proposeBlock,
             txExists,
             equivocationProofExists,
