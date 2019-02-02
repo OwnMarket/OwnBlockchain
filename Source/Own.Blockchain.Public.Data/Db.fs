@@ -658,6 +658,7 @@ module Db =
                     HAVING sum(amount) >= @threshold
                     ORDER BY sum(amount) DESC, count(staker_address) DESC, validator_address
                 ) s USING (validator_address)
+                WHERE time_to_blacklist = 0
                 ORDER BY validator_address
                 """
             | PostgreSQL ->
@@ -672,6 +673,7 @@ module Db =
                     ORDER BY sum(amount) DESC, count(staker_address) DESC, validator_address
                     LIMIT @topCount
                 ) s USING (validator_address)
+                WHERE time_to_blacklist = 0
                 ORDER BY validator_address
                 """
 
