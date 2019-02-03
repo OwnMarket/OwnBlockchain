@@ -211,7 +211,8 @@ module Processing =
                     |> ignore
                 | true, existingChange ->
                     if existingChange = Some Add && providerChange = Some Remove
-                        || existingChange = Some Remove && providerChange = Some Add then
+                        || existingChange = Some Remove && providerChange = Some Add
+                    then
                         existingProvider.AddOrUpdate (providerAddress, None, fun _ _ -> None) |> ignore
                     else
                         existingProvider.AddOrUpdate (
@@ -693,7 +694,8 @@ module Processing =
                     |> List.contains senderAddress
 
                 if eligibilityState.KycControllerAddress = senderAddress && isApprovedKycProvider
-                    || assetState.ControllerAddress = senderAddress then
+                    || assetState.ControllerAddress = senderAddress
+                then
                     state.SetAccountEligibility(
                         action.AccountHash,
                         action.AssetHash,
