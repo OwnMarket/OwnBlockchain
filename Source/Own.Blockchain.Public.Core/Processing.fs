@@ -272,11 +272,12 @@ module Processing =
                 KycProviders =
                     kycProviders
                     |> Map.ofDict
-                    |> Map.map(fun _ provider ->
+                    |> Map.map (fun _ provider ->
                         provider
                         |> Seq.ofDict
                         |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
-                        |> Map.ofSeq)
+                        |> Map.ofSeq
+                    )
                 Accounts =
                     accounts
                     |> Seq.ofDict
