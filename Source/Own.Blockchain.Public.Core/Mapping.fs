@@ -512,9 +512,7 @@ module Mapping =
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults
-            |> Map.toList
-            |> List.map (fun (TxHash h, s : TxResult) -> h, txResultToDto s)
-            |> Map.ofList
+            |> Map.mapBoth (fun (TxHash h, s : TxResult) -> h, txResultToDto s)
 
         let equivocationProofResults =
             output.EquivocationProofResults
@@ -526,15 +524,11 @@ module Mapping =
 
         let chxBalances =
             output.ChxBalances
-            |> Map.toList
-            |> List.map (fun (BlockchainAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
-            |> Map.ofList
+            |> Map.mapBoth (fun (BlockchainAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
 
         let holdings =
             output.Holdings
-            |> Map.toList
-            |> List.map (fun ((AccountHash ah, AssetHash ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
-            |> Map.ofList
+            |> Map.mapBoth (fun ((AccountHash ah, AssetHash ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
 
         let votes =
             output.Votes
@@ -555,31 +549,21 @@ module Mapping =
             output.KycProviders
             |> Map.toList
             |> List.map (fun (AssetHash assetHash, providers) ->
-                assetHash,
-                providers
-                |> Map.toList
-                |> List.map (fun (BlockchainAddress a, c) -> a, c = Add)
-                |> Map.ofList
+                assetHash, providers |> Map.mapBoth (fun (BlockchainAddress a, c) -> a, c = Add)
             )
             |> Map.ofList
 
         let accounts =
             output.Accounts
-            |> Map.toList
-            |> List.map (fun (AccountHash ah, s : AccountState) -> ah, accountStateToDto s)
-            |> Map.ofList
+            |> Map.mapBoth (fun (AccountHash ah, s : AccountState) -> ah, accountStateToDto s)
 
         let assets =
             output.Assets
-            |> Map.toList
-            |> List.map (fun (AssetHash ah, s : AssetState) -> ah, assetStateToDto s)
-            |> Map.ofList
+            |> Map.mapBoth (fun (AssetHash ah, s : AssetState) -> ah, assetStateToDto s)
 
         let validators =
             output.Validators
-            |> Map.toList
-            |> List.map (fun (BlockchainAddress a, s : ValidatorState) -> a, validatorStateToDto s)
-            |> Map.ofList
+            |> Map.mapBoth (fun (BlockchainAddress a, s : ValidatorState) -> a, validatorStateToDto s)
 
         let stakes =
             output.Stakes

@@ -69,3 +69,7 @@ module Map =
 
     let inline keys (map : Map<'Key, 'Value>) =
         Map.fold (fun keys key _ -> key :: keys) [] map
+
+    /// Produces a new Map by maping both key and value.
+    let mapBoth mapper =
+        Map.toSeq >> Seq.map mapper >> Map.ofSeq
