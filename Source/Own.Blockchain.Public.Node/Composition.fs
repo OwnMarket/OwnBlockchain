@@ -208,6 +208,8 @@ module Composition =
         Workflows.getAvailableChxBalance
             getChxBalanceState
             getTotalChxStaked
+            getValidatorState
+            (ChxAmount Config.ValidatorDeposit)
 
     let proposeBlock =
         Workflows.proposeBlock

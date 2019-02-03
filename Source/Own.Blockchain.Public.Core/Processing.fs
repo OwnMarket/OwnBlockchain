@@ -311,6 +311,7 @@ module Processing =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let processTransferChxTxAction
+        validatorDeposit
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
         (action : TransferChxTxAction)
@@ -320,7 +321,13 @@ module Processing =
         let fromState = state.GetChxBalance(senderAddress)
         let toState = state.GetChxBalance(action.RecipientAddress)
 
-        let availableBalance = fromState.Amount - state.GetTotalChxStaked(senderAddress)
+        let validatorDeposit =
+            state.GetValidator(senderAddress)
+            |> Option.filter (fun v -> v.TimeToLockDeposit > 0s)
+            |> Option.map (fun _ -> validatorDeposit)
+            |? ChxAmount 0m
+
+        let availableBalance = fromState.Amount - state.GetTotalChxStaked(senderAddress) - validatorDeposit
 
         if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
@@ -533,6 +540,7 @@ module Processing =
             Ok state
 
     let processDelegateStakeTxAction
+        validatorDeposit
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
         (action : DelegateStakeTxAction)
@@ -542,7 +550,13 @@ module Processing =
         let senderState = state.GetChxBalance(senderAddress)
         let totalChxStaked = state.GetTotalChxStaked(senderAddress)
 
-        let availableBalance = senderState.Amount - totalChxStaked
+        let validatorDeposit =
+            state.GetValidator(senderAddress)
+            |> Option.filter (fun v -> v.TimeToLockDeposit > 0s)
+            |> Option.map (fun _ -> validatorDeposit)
+            |? ChxAmount 0m
+
+        let availableBalance = senderState.Amount - totalChxStaked - validatorDeposit
 
         if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
@@ -865,16 +879,17 @@ module Processing =
             // Logic in excludeTxsWithNonceGap is supposed to prevent this.
             failwith "Nonce too high."
 
-    let processValidatorReward (tx : Tx) validator (state : ProcessingState) =
+    let processValidatorReward validatorDeposit (tx : Tx) validator (state : ProcessingState) =
         {
             TransferChxTxAction.RecipientAddress = validator
             Amount = tx.TotalFee
         }
-        |> processTransferChxTxAction state tx.Sender
+        |> processTransferChxTxAction validatorDeposit state tx.Sender
         |> Result.mapError TxError
 
     let processTxAction
         deriveHash
+        validatorDeposit
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actionNumber : TxActionNumber)
@@ -883,7 +898,7 @@ module Processing =
         =
 
         match action with
-        | TransferChx action -> processTransferChxTxAction state senderAddress action
+        | TransferChx action -> processTransferChxTxAction validatorDeposit state senderAddress action
         | TransferAsset action -> processTransferAssetTxAction state senderAddress action
         | CreateAssetEmission action -> processCreateAssetEmissionTxAction state senderAddress action
         | CreateAccount -> processCreateAccountTxAction deriveHash state senderAddress nonce actionNumber
@@ -892,7 +907,7 @@ module Processing =
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
         | ConfigureValidator action -> processConfigureValidatorTxAction state senderAddress action
-        | DelegateStake action -> processDelegateStakeTxAction state senderAddress action
+        | DelegateStake action -> processDelegateStakeTxAction validatorDeposit state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
         | SetAccountEligibility action -> processSetAccountEligibilityTxAction state senderAddress action
@@ -903,6 +918,7 @@ module Processing =
 
     let processTxActions
         deriveHash
+        validatorDeposit
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actions : TxAction list)
@@ -915,7 +931,7 @@ module Processing =
             result
             >>= fun state ->
                 let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
-                processTxAction deriveHash senderAddress nonce actionNumber action state
+                processTxAction deriveHash validatorDeposit senderAddress nonce actionNumber action state
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
@@ -1087,7 +1103,7 @@ module Processing =
         (txSet : TxHash list)
         =
 
-        let processTxActions = processTxActions deriveHash
+        let processTxActions = processTxActions deriveHash validatorDeposit
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
             let tx =
@@ -1097,7 +1113,7 @@ module Processing =
                     Log.appErrors err
                     failwithf "Cannot load tx %s" txHash.Value // TODO: Remove invalid tx from the pool?
 
-            match processValidatorReward tx validatorAddress state with
+            match processValidatorReward validatorDeposit tx validatorAddress state with
             | Error e ->
                 // Logic in excludeTxsIfBalanceCannotCoverFees is supposed to prevent this.
                 failwithf "Cannot process validator reward for tx %s (Error: %A)" txHash.Value e

@@ -223,7 +223,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState (stakerAddress, validatorAddress) =
             failwith "getStakeState should not be called"
@@ -380,7 +380,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState (stakerAddress, validatorAddress) =
             failwith "getStakeState should not be called"
@@ -525,7 +525,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -650,7 +650,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -776,7 +776,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -902,7 +902,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1017,7 +1017,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1161,7 +1161,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1302,7 +1302,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1436,7 +1436,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1570,7 +1570,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1705,7 +1705,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1836,7 +1836,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -1978,7 +1978,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2117,7 +2117,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2256,7 +2256,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2421,7 +2421,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2545,7 +2545,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2703,7 +2703,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2830,7 +2830,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -2961,7 +2961,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -3088,7 +3088,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -3220,7 +3220,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -3347,7 +3347,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -3503,7 +3503,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -3630,7 +3630,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -3761,7 +3761,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -3920,7 +3920,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4048,7 +4048,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4203,7 +4203,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4331,7 +4331,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4452,7 +4452,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4571,7 +4571,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4709,7 +4709,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4871,7 +4871,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -4998,7 +4998,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -5129,7 +5129,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -5255,7 +5255,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -5392,7 +5392,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -5515,7 +5515,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -5655,7 +5655,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -5784,7 +5784,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -5924,7 +5924,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6066,7 +6066,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6190,7 +6190,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6322,7 +6322,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6455,7 +6455,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6584,7 +6584,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6717,7 +6717,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6850,7 +6850,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -6981,7 +6981,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -7114,7 +7114,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -7236,7 +7236,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -7363,7 +7363,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -7494,7 +7494,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -7616,7 +7616,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -7748,7 +7748,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -7879,7 +7879,7 @@ module ProcessingTests =
             None
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -8001,7 +8001,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -8132,7 +8132,7 @@ module ProcessingTests =
             AssetHash "BLA" |> Some
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -8258,7 +8258,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             failwith "getStakeState should not be called"
@@ -8650,7 +8650,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
@@ -8772,7 +8772,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             None
@@ -8894,7 +8894,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             None
@@ -9021,7 +9021,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
@@ -9148,7 +9148,7 @@ module ProcessingTests =
             failwith "getAssetHashByCode should not be called"
 
         let getValidatorState _ =
-            failwith "getValidatorState should not be called"
+            None
 
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}

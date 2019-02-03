@@ -9,7 +9,15 @@ open Own.Blockchain.Public.Core.Events
 
 module Workflows =
 
-    let getAvailableChxBalance getChxBalanceState getTotalChxStaked senderAddress : ChxAmount =
+    let getAvailableChxBalance
+        getChxBalanceState
+        getTotalChxStaked
+        getValidatorState
+        validatorDeposit
+        senderAddress
+        : ChxAmount
+        =
+
         let chxBalance =
             senderAddress
             |> getChxBalanceState
@@ -18,7 +26,14 @@ module Workflows =
 
         let chxStaked = getTotalChxStaked senderAddress
 
-        chxBalance - chxStaked
+        let validatorDeposit =
+            getValidatorState(senderAddress)
+            |> Option.map Mapping.validatorStateFromDto
+            |> Option.filter (fun v -> v.TimeToLockDeposit > 0s)
+            |> Option.map (fun _ -> validatorDeposit)
+            |? ChxAmount 0m
+
+        chxBalance - chxStaked - validatorDeposit
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain
