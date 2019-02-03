@@ -1392,7 +1392,7 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (assetHash : string, providerAddress : string, addProvider : bool) =
+        let foldFn result (assetHash, providerAddress, addProvider) =
             result
             >>= (fun _ ->
                 if addProvider then
