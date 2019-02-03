@@ -512,7 +512,7 @@ module Mapping =
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults
-            |> Map.mapBoth (fun (TxHash h, s : TxResult) -> h, txResultToDto s)
+            |> Map.remap (fun (TxHash h, s : TxResult) -> h, txResultToDto s)
 
         let equivocationProofResults =
             output.EquivocationProofResults
@@ -524,11 +524,11 @@ module Mapping =
 
         let chxBalances =
             output.ChxBalances
-            |> Map.mapBoth (fun (BlockchainAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
+            |> Map.remap (fun (BlockchainAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
 
         let holdings =
             output.Holdings
-            |> Map.mapBoth (fun ((AccountHash ah, AssetHash ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
+            |> Map.remap (fun ((AccountHash ah, AssetHash ac), s : HoldingState) -> (ah, ac), holdingStateToDto s)
 
         let votes =
             output.Votes
@@ -549,21 +549,21 @@ module Mapping =
             output.KycProviders
             |> Map.toList
             |> List.map (fun (AssetHash assetHash, providers) ->
-                assetHash, providers |> Map.mapBoth (fun (BlockchainAddress a, c) -> a, c = Add)
+                assetHash, providers |> Map.remap (fun (BlockchainAddress a, c) -> a, c = Add)
             )
             |> Map.ofList
 
         let accounts =
             output.Accounts
-            |> Map.mapBoth (fun (AccountHash ah, s : AccountState) -> ah, accountStateToDto s)
+            |> Map.remap (fun (AccountHash ah, s : AccountState) -> ah, accountStateToDto s)
 
         let assets =
             output.Assets
-            |> Map.mapBoth (fun (AssetHash ah, s : AssetState) -> ah, assetStateToDto s)
+            |> Map.remap (fun (AssetHash ah, s : AssetState) -> ah, assetStateToDto s)
 
         let validators =
             output.Validators
-            |> Map.mapBoth (fun (BlockchainAddress a, s : ValidatorState) -> a, validatorStateToDto s)
+            |> Map.remap (fun (BlockchainAddress a, s : ValidatorState) -> a, validatorStateToDto s)
 
         let stakes =
             output.Stakes
