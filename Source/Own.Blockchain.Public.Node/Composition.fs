@@ -78,8 +78,7 @@ module Composition =
     let getAssetHashByCode = Db.getAssetHashByCode Config.DbEngineType Config.DbConnectionString
 
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
-    let getTopValidatorsByStake =
-        Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString Config.MaxValidatorCount
+    let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString
 
     let getTopStakersByStake =
         Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakesCount
@@ -101,7 +100,9 @@ module Composition =
     let getTopValidators () =
         Validators.getTopValidators
             getTopValidatorsByStake
+            Config.MaxValidatorCount
             (ChxAmount Config.ValidatorThreshold)
+            (ChxAmount Config.ValidatorDeposit)
 
     let getValidatorsAtHeight =
         Validators.getValidatorsAtHeight

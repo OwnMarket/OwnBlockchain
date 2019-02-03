@@ -642,6 +642,7 @@ module Db =
         (dbConnectionString : string)
         (topCount : int)
         (ChxAmount threshold)
+        (ChxAmount deposit)
         : ValidatorSnapshotDto list
         =
 
@@ -649,37 +650,54 @@ module Db =
             match dbEngineType with
             | Firebird ->
                 """
-                SELECT validator_address, network_address, shared_reward_percent, total_stake
+                SELECT FIRST @topCount validator_address, network_address, shared_reward_percent, total_stake
                 FROM validator
                 JOIN (
-                    SELECT FIRST @topCount validator_address, sum(amount) AS total_stake
+                    SELECT validator_address, sum(amount) AS total_stake, count(staker_address) AS staker_count
                     FROM stake
                     GROUP BY validator_address
                     HAVING sum(amount) >= @threshold
-                    ORDER BY sum(amount) DESC, count(staker_address) DESC, validator_address
                 ) s USING (validator_address)
+                JOIN chx_balance ON
+                    chx_balance.blockchain_address = validator.validator_address
+                LEFT JOIN (
+                    SELECT staker_address, sum(amount) AS total_delegation
+                    FROM stake
+                    GROUP BY staker_address
+                ) d ON
+                    d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
-                ORDER BY validator_address
+                AND (chx_balance.amount - coalesce(d.total_delegation, 0)) >= @deposit
+                ORDER BY total_stake DESC, staker_count DESC, validator_address
                 """
             | PostgreSQL ->
                 """
                 SELECT validator_address, network_address, shared_reward_percent, total_stake
                 FROM validator
                 JOIN (
-                    SELECT validator_address, sum(amount) AS total_stake
+                    SELECT validator_address, sum(amount) AS total_stake, count(staker_address) AS staker_count
                     FROM stake
                     GROUP BY validator_address
                     HAVING sum(amount) >= @threshold
-                    ORDER BY sum(amount) DESC, count(staker_address) DESC, validator_address
-                    LIMIT @topCount
                 ) s USING (validator_address)
+                JOIN chx_balance ON
+                    chx_balance.blockchain_address = validator.validator_address
+                LEFT JOIN (
+                    SELECT staker_address, sum(amount) AS total_delegation
+                    FROM stake
+                    GROUP BY staker_address
+                ) d ON
+                    d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
-                ORDER BY validator_address
+                AND (chx_balance.amount - coalesce(d.total_delegation, 0)) >= @deposit
+                ORDER BY total_stake DESC, staker_count DESC, validator_address
+                LIMIT @topCount
                 """
 
         [
             "@topCount", topCount |> box
             "@threshold", threshold |> box
+            "@deposit", deposit |> box
         ]
         |> DbTools.query<ValidatorSnapshotDto> dbEngineType dbConnectionString sql
 
