@@ -1392,23 +1392,22 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (assetHash: string, state : string * bool) =
+        let foldFn result (assetHash : string, providerAddress : string, addProvider : bool) =
             result
             >>= (fun _ ->
-                if snd state then
-                    addKycProvider conn transaction (assetHash, fst state)
+                if addProvider then
+                    addKycProvider conn transaction (assetHash, providerAddress)
                 else
-                    removeKycProvider conn transaction (assetHash, fst state)
+                    removeKycProvider conn transaction (assetHash, providerAddress)
             )
 
         kycProviders
         |> Map.toList
-        |> List.map (fun (asset, stateList) ->
-            stateList |> Map.toList |> List.map (fun state ->
-                (asset, state)
+        |> List.collect (fun (asset, stateList) ->
+            stateList |> Map.toList |> List.map (fun (address, change) ->
+                (asset, address, change)
             )
         )
-        |> List.concat
         |> List.fold foldFn (Ok ())
 
     let private addAccount
