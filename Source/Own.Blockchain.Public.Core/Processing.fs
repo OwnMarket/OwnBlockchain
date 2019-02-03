@@ -158,16 +158,9 @@ module Processing =
                 |> Map.ofSeq
                 |> ConcurrentDictionary
             )
-            |> ignore
-
-            kycProviders
-            |> Map.ofDict
-            |> Map.filter (fun h _ -> h = assetHash)
-            |> Seq.map (fun s -> s.Value)
-            |> Seq.head
-            |> Seq.filter (fun pair -> not (pair.Value = Some Remove))
-            |> Seq.map (fun pair -> pair.Key)
-            |> Seq.toList
+            |> List.ofDict
+            |> List.filter (fun (_, change) -> not (change = Some Remove))
+            |> List.map fst
 
         member __.GetAccount (accountHash : AccountHash) =
             accounts.GetOrAdd(accountHash, getAccountStateFromStorage)
