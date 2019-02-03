@@ -554,10 +554,11 @@ module Mapping =
         let kycProviders =
             output.KycProviders
             |> Map.toList
-            |> List.map (fun (AssetHash asset, p ) ->
-                asset, p |> Map.toList |> List.map (fun (BlockchainAddress a, c) ->
-                    a, c = Add
-                )
+            |> List.map (fun (AssetHash assetHash, providers) ->
+                assetHash,
+                providers
+                |> Map.toList
+                |> List.map (fun (BlockchainAddress a, c) -> a, c = Add)
                 |> Map.ofList
             )
             |> Map.ofList

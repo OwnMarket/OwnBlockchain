@@ -154,9 +154,9 @@ module Processing =
         member __.GetKycProviders (assetHash) =
             kycProviders.GetOrAdd(assetHash, fun _ ->
                 getKycProvidersFromStorage assetHash
-                |> Seq.map(fun address -> (address, None))
+                |> Seq.map (fun address -> (address, None))
                 |> Map.ofSeq
-                |> Map.toDictionary
+                |> ConcurrentDictionary
             )
             |> ignore
 

@@ -118,7 +118,7 @@ module Blocks =
             |> Map.toList
             |> List.collect (fun (k, v) -> [decodeHash k.Value; boolToBytes (v = Add)])
 
-        [decodeHash assetHash] @ stateHash
+        decodeHash assetHash :: stateHash
         |> Array.concat
         |> createHash
 
