@@ -159,7 +159,7 @@ module Processing =
                 |> ConcurrentDictionary
             )
             |> List.ofDict
-            |> List.filter (fun (_, change) -> not (change = Some Remove))
+            |> List.filter (fun (_, change) -> change <> Some Remove)
             |> List.map fst
 
         member __.GetAccount (accountHash : AccountHash) =
