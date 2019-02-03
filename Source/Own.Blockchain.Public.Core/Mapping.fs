@@ -516,11 +516,9 @@ module Mapping =
 
         let equivocationProofResults =
             output.EquivocationProofResults
-            |> Map.toList
-            |> List.map (fun (EquivocationProofHash h, s : EquivocationProofResult) ->
+            |> Map.remap (fun (EquivocationProofHash h, s : EquivocationProofResult) ->
                 h, equivocationProofResultToDto s
             )
-            |> Map.ofList
 
         let chxBalances =
             output.ChxBalances
@@ -532,26 +530,20 @@ module Mapping =
 
         let votes =
             output.Votes
-            |> Map.toList
-            |> List.map (fun (voteId : VoteId, s : VoteState) ->
+            |> Map.remap (fun (voteId : VoteId, s : VoteState) ->
                 (voteId.AccountHash.Value, voteId.AssetHash.Value, voteId.ResolutionHash.Value), voteStateToDto s
             )
-            |> Map.ofList
 
         let eligibilities =
             output.Eligibilities
-            |> Map.toList
-            |> List.map (fun ((AccountHash ah, AssetHash ac), s : EligibilityState) ->
+            |> Map.remap (fun ((AccountHash ah, AssetHash ac), s : EligibilityState) ->
                 (ah, ac), eligibilityStateToDto s)
-            |> Map.ofList
 
         let kycProviders =
             output.KycProviders
-            |> Map.toList
-            |> List.map (fun (AssetHash assetHash, providers) ->
+            |> Map.remap (fun (AssetHash assetHash, providers) ->
                 assetHash, providers |> Map.remap (fun (BlockchainAddress a, c) -> a, c = Add)
             )
-            |> Map.ofList
 
         let accounts =
             output.Accounts
@@ -567,11 +559,9 @@ module Mapping =
 
         let stakes =
             output.Stakes
-            |> Map.toList
-            |> List.map (fun ((BlockchainAddress sa, BlockchainAddress va), s : StakeState) ->
+            |> Map.remap (fun ((BlockchainAddress sa, BlockchainAddress va), s : StakeState) ->
                 (sa, va), stakeStateToDto s
             )
-            |> Map.ofList
 
         {
             ProcessingOutputDto.TxResults = txResults
