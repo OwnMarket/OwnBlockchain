@@ -1,7 +1,8 @@
 ﻿namespace Own.Blockchain.Public.Crypto
 
+open System
 open System.Security.Cryptography
-open Base58Check
+open SimpleBase
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
@@ -23,10 +24,16 @@ module Hashing =
         sha256 data
 
     let encode hash =
-        Base58CheckEncoding.EncodePlain hash
+        Base58.Bitcoin.Encode (ReadOnlySpan hash)
 
-    let decode hash =
-        Base58CheckEncoding.DecodePlain hash
+    let decode (hash : string) =
+        (Base58.Bitcoin.Decode hash).ToArray()
+
+    let encodeHex hash =
+        Base16.EncodeLower (ReadOnlySpan hash)
+
+    let decodeHex (hash : string) =
+        (Base16.Decode hash).ToArray()
 
     let zeroHash =
         Array.zeroCreate<byte> 32 |> encode

@@ -14,18 +14,20 @@ module Composition =
     // Raw storage
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let saveTx = Raw.saveTx Config.DataDir
-    let getTx = Raw.getTx Config.DataDir
-    let txExists = Raw.txExists Config.DataDir
+    let createMixedHashKey = Raw.createMixedHashKey Hashing.decode Hashing.encodeHex
+
+    let saveTx = Raw.saveTx Config.DataDir createMixedHashKey
+    let getTx = Raw.getTx Config.DataDir createMixedHashKey
+    let txExists = Raw.txExists Config.DataDir createMixedHashKey
 
     let saveTxResult = Raw.saveTxResult Config.DataDir
     let getTxResult = Raw.getTxResult Config.DataDir
     let txResultExists = Raw.txResultExists Config.DataDir
     let deleteTxResult = Raw.deleteTxResult Config.DataDir
 
-    let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir
-    let getEquivocationProof = Raw.getEquivocationProof Config.DataDir
-    let equivocationProofExists = Raw.equivocationProofExists Config.DataDir
+    let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir createMixedHashKey
+    let getEquivocationProof = Raw.getEquivocationProof Config.DataDir createMixedHashKey
+    let equivocationProofExists = Raw.equivocationProofExists Config.DataDir createMixedHashKey
 
     let saveEquivocationProofResult = Raw.saveEquivocationProofResult Config.DataDir
     let getEquivocationProofResult = Raw.getEquivocationProofResult Config.DataDir

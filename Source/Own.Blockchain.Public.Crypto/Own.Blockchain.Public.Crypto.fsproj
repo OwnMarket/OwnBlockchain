@@ -15,7 +15,7 @@
     <Compile Include="Signing.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Base58Check" Version="0.2.0" />
     <PackageReference Include="Secp256k1.Net" Version="0.1.48" />
+    <PackageReference Include="SimpleBase" Version="1.7.1" />
   </ItemGroup>
 </Project>
