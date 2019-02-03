@@ -2,7 +2,6 @@
 
 open System
 open System.Security.Cryptography
-open System.Collections.Concurrent
 
 [<AutoOpen>]
 module Extensions =
