@@ -130,6 +130,12 @@ module Processing =
                 __.SetChxBalance (other.Key, { current with Nonce = other.Value.Nonce })
             for other in otherOutput.Holdings do
                 __.GetHolding (other.Key) |> ignore
+            for other in otherOutput.Votes do
+                __.GetVote (other.Key) |> ignore
+            for other in otherOutput.Eligibilities do
+                __.GetAccountEligibility (other.Key) |> ignore
+            for other in otherOutput.KycProviders do
+                __.GetKycProviders (other.Key) |> ignore
             for other in otherOutput.Accounts do
                 __.GetAccount (other.Key) |> ignore
             for other in otherOutput.Assets do
