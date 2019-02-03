@@ -31,8 +31,7 @@ module Consensus =
         timeoutVote : int,
         timeoutCommit : int,
         validatorAddress : BlockchainAddress
-        )
-        =
+        ) =
 
         let mutable _validators = []
         let mutable _qualifiedMajority = 0
