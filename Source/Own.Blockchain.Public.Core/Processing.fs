@@ -315,6 +315,7 @@ module Processing =
         validatorDeposit
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
+        isDepositSlashing
         (action : TransferChxTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
@@ -328,7 +329,10 @@ module Processing =
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
 
-        let availableBalance = fromState.Amount - state.GetTotalChxStaked(senderAddress) - validatorDeposit
+        let availableBalance =
+            fromState.Amount
+            - state.GetTotalChxStaked(senderAddress)
+            - if isDepositSlashing then ChxAmount 0m else validatorDeposit // Deposit must be available to slash it.
 
         if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
@@ -886,7 +890,7 @@ module Processing =
             TransferChxTxAction.RecipientAddress = validator
             Amount = tx.TotalFee
         }
-        |> processTransferChxTxAction validatorDeposit state tx.Sender
+        |> processTransferChxTxAction validatorDeposit state tx.Sender false
         |> Result.mapError TxError
 
     let processTxAction
@@ -900,7 +904,7 @@ module Processing =
         =
 
         match action with
-        | TransferChx action -> processTransferChxTxAction validatorDeposit state senderAddress action
+        | TransferChx action -> processTransferChxTxAction validatorDeposit state senderAddress false action
         | TransferAsset action -> processTransferAssetTxAction state senderAddress action
         | CreateAssetEmission action -> processCreateAssetEmissionTxAction state senderAddress action
         | CreateAccount -> processCreateAccountTxAction deriveHash state senderAddress nonce actionNumber
@@ -980,20 +984,14 @@ module Processing =
             if amountToTake > ChxAmount 0m then
                 let validators = validators |> List.except [proof.ValidatorAddress]
                 let amountPerValidator = (amountToTake / decimal validators.Length).Rounded
-                let actions =
-                    validators
-                    |> List.map (fun v ->
-                        TransferChx {
-                            RecipientAddress = v
-                            Amount = amountPerValidator
-                        }
-                    )
-
-                let nonce = state.GetChxBalance(proof.ValidatorAddress).Nonce + 1
-
-                processTxActions proof.ValidatorAddress nonce actions state
-                |> Result.iterError
-                    (failwithf "Cannot process equivocation proof %s: (%A)." proof.EquivocationProofHash.Value)
+                for v in validators do
+                    {
+                        RecipientAddress = v
+                        Amount = amountPerValidator
+                    }
+                    |> processTransferChxTxAction validatorDeposit state proof.ValidatorAddress true
+                    |> Result.iterError
+                        (failwithf "Cannot process equivocation proof %s: (%A)." proof.EquivocationProofHash.Value)
 
             let equivocationProofResult =
                 {
