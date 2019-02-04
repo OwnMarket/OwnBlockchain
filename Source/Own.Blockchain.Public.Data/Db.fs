@@ -559,7 +559,7 @@ module Db =
         dbEngineType
         (dbConnectionString : string)
         (AssetHash assetHash)
-        : string list
+        : BlockchainAddress list
         =
 
         let sql =
@@ -570,12 +570,11 @@ module Db =
             WHERE asset_hash = @assetHash
             """
 
-        let sqlParams =
-            [
-                "@assetHash", assetHash |> box
-            ]
-
-        DbTools.query<string> dbEngineType dbConnectionString sql sqlParams
+        [
+            "@assetHash", assetHash |> box
+        ]
+        |> DbTools.query<string> dbEngineType dbConnectionString sql
+        |> List.map BlockchainAddress
 
     let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
         let sql =
