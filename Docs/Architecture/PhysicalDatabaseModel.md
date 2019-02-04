@@ -2,10 +2,10 @@
 
 The purpose of this document is to describe physical database model of a node in Own public blockchain.
 In order to validate transactions, a node needs to be able to store the data. A node stores data in a raw file storage and a relational database. The nodes on our blockchain can select following database engines to store relational data:
-* SQLite for a lightweight node
+* Firebird for a lightweight node
 * PostgreSQL for a full-scale node
 
-This document will present the physical database model and describe all the tables with their columns and constraints. There is no difference between database models in a lightweight (SQLite) and a full-scale (PostgreSQL) node.
+This document will present the physical database model and describe all the tables with their columns and constraints. There is no difference between database models in a lightweight (Firebird) and a full-scale (PostgreSQL) node.
 
 
 ## Physical Model

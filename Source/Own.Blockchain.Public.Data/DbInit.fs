@@ -43,7 +43,7 @@ module DbInit =
         with
         | ex when
             (ex.AllMessages.Contains "Table unknown" && ex.AllMessages.Contains "DB_VERSION") // Firebird
-            || ex.AllMessages.Contains """relation "db_version" does not exist""" // PostgreSQL
+            || ex.AllMessages.Contains """relation "db_version" does not exist""" // Postgres
             -> 0
 
     let private ensureDbChangeNumberConsistency (dbChanges : DbChange list) =
@@ -71,14 +71,14 @@ module DbInit =
         match dbEngineType with
         | Firebird ->
             DbTools.executeFbBatch dbEngineType connectionString sql []
-        | PostgreSQL ->
+        | Postgres ->
             DbTools.execute dbEngineType connectionString sql [] |> ignore
 
     let private applyDbChanges dbEngineType connectionString =
         let dbChanges =
             match dbEngineType with
             | Firebird -> DbChanges.firebirdChanges
-            | PostgreSQL -> DbChanges.postgresqlChanges
+            | Postgres -> DbChanges.postgresChanges
 
         ensureDbChangeNumberConsistency dbChanges
 

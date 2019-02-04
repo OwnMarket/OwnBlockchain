@@ -93,7 +93,7 @@ module Db =
                     ORDER BY fee DESC, tx_id
                     """
                     skipConditionPattern
-            | PostgreSQL ->
+            | Postgres ->
                 sprintf
                     """
                     SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
@@ -328,7 +328,7 @@ module Db =
                 WHERE is_applied = FALSE
                 ORDER BY block_number DESC
                 """
-            | PostgreSQL ->
+            | Postgres ->
                 """
                 SELECT block_number
                 FROM block
@@ -670,7 +670,7 @@ module Db =
                 AND (chx_balance.amount - coalesce(d.total_delegation, 0)) >= @deposit
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 """
-            | PostgreSQL ->
+            | Postgres ->
                 """
                 SELECT validator_address, network_address, shared_reward_percent, total_stake
                 FROM validator
@@ -736,7 +736,7 @@ module Db =
                 AND amount > 0
                 ORDER BY amount DESC, staker_address
                 """
-            | PostgreSQL ->
+            | Postgres ->
                 """
                 SELECT staker_address, amount
                 FROM stake

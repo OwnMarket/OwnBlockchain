@@ -40,7 +40,7 @@ type Config () =
         with get () =
             match config.["DbEngineType"] with
             | "Firebird" -> Firebird
-            | "PostgreSQL" -> PostgreSQL
+            | "Postgres" -> Postgres
             | t -> failwithf "Unknown DB engine type: %s" t
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

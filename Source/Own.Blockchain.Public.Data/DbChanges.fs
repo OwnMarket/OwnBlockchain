@@ -210,7 +210,7 @@ module DbChanges =
             }
         ]
 
-    let internal postgresqlChanges : DbChange list =
+    let internal postgresChanges : DbChange list =
         [
             {
                 Number = 1

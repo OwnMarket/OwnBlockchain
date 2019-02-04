@@ -90,7 +90,7 @@ Configuration file provides the execution parameters and environment configurati
 
 Setting Name | Description
 ---  | ---
-`DbEngineType` | Database engine used for storing the blockchain state. Possible values are `SQLite` and `PostgreSQL`.
+`DbEngineType` | Database engine used for storing the blockchain state. Possible values are `Firebird` and `Postgres`.
 `DbConnectionString` | Connection string for the database. Depends on the value of `DbEngineType` setting.
 `ApiListeningAddresses` | The address on which the node API accepts the requests. Default address is `http://*:10717`.
 `NetworkAddress` | The address on which the node listens for incoming network messages from the peers. Default address is `*:25718`.
@@ -102,7 +102,7 @@ Setting Name | Description
 
 ```json
 {
-    "DbEngineType": "PostgreSQL",
+    "DbEngineType": "Postgres",
     "DbConnectionString": "server=db-srvr;database=own_db;user id=own_db_usr;password=XXX;searchpath=own",
     "ApiListeningAddresses": "http://*:10717",
     "NetworkAddress": "*:25718",

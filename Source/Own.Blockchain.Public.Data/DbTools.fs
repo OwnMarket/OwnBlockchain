@@ -91,7 +91,7 @@ module DbTools =
         | Firebird ->
             let csb = prepareFirebirdConnectionString dbConnectionString
             new FbConnection(csb.ConnectionString) :> DbConnection
-        | PostgreSQL ->
+        | Postgres ->
             new NpgsqlConnection(dbConnectionString) :> DbConnection
 
     let private connectionBasedActions dbConnection =

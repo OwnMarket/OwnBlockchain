@@ -15,7 +15,7 @@ INSTANCE_DB=own_public_blockchain_$INSTANCE_NAME
 INSTANCE_USER=${INSTANCE_DB}_user
 INSTANCE_PASS=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 20 ; echo)
 
-if [ -f "$INSTANCE_DIR/AppSettings.json" ]; then
+if [ -f "$INSTANCE_DIR/Config.json" ]; then
     echo "ERROR: Node instance configuration already exsits for '$INSTANCE_NAME'."
     exit 1;
 fi
@@ -60,10 +60,10 @@ echo '//////////////////////////////////////////////////////////////////////////
 echo '// Data directory and configuration'
 echo '////////////////////////////////////////////////////////////////////////////////'
 sudo mkdir -p "$INSTANCE_DIR"
-sudo cp AppSettings.json "$INSTANCE_DIR"
+sudo cp Config.json "$INSTANCE_DIR"
 
-sudo sed -i -- 's/"DbEngineType".*$/"DbEngineType": "PostgreSQL",/g' "$INSTANCE_DIR/AppSettings.json"
-sudo sed -i -- "s/\"DbConnectionString\".*$/\"DbConnectionString\": \"server=localhost;database=$INSTANCE_DB;user id=$INSTANCE_USER;password=$INSTANCE_PASS;searchpath=own\",/g" "$INSTANCE_DIR/AppSettings.json"
+sudo sed -i -- 's/"DbEngineType".*$/"DbEngineType": "Postgres",/g' "$INSTANCE_DIR/Config.json"
+sudo sed -i -- "s/\"DbConnectionString\".*$/\"DbConnectionString\": \"server=localhost;database=$INSTANCE_DB;user id=$INSTANCE_USER;password=$INSTANCE_PASS;searchpath=own\",/g" "$INSTANCE_DIR/Config.json"
 
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Starting the instance'

@@ -42,7 +42,7 @@ module internal Helper =
             let conn = new SqliteConnection(connString)
             deleteFile conn.DataSource
 
-        if dbEngineType = PostgreSQL then
+        if dbEngineType = Postgres then
             let schemaName = (Npgsql.NpgsqlConnectionStringBuilder connString).SearchPath
             let removeAllTables =
                 sprintf
