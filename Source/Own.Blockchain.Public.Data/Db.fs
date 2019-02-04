@@ -701,6 +701,23 @@ module Db =
         ]
         |> DbTools.query<ValidatorSnapshotDto> dbEngineType dbConnectionString sql
 
+    let getLockedAndBlacklistedValidators
+        dbEngineType
+        (dbConnectionString : string)
+        : BlockchainAddress list
+        =
+
+        let sql =
+            """
+            SELECT validator_address
+            FROM validator
+            WHERE time_to_lock_deposit > 0
+            OR time_to_blacklist > 0
+            """
+
+        DbTools.query<string> dbEngineType dbConnectionString sql []
+        |> List.map BlockchainAddress
+
     let getTopStakersByStake
         dbEngineType
         (dbConnectionString : string)

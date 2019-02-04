@@ -171,6 +171,7 @@ module Workflows =
         getTotalChxStakedFromStorage
         getTopStakersFromStorage
         (getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list)
+        getLockedAndBlacklistedValidators
         deriveHash
         decodeHash
         createHash
@@ -244,6 +245,7 @@ module Workflows =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 validatorDeposit
                 validatorDepositLockTime
                 validatorBlacklistTime

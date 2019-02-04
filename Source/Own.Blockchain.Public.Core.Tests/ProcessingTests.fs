@@ -222,6 +222,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -260,6 +263,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -379,6 +383,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -417,6 +424,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -524,6 +532,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -557,6 +568,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -649,6 +661,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -682,6 +697,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -775,6 +791,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -808,6 +827,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -901,6 +921,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -933,6 +956,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1016,6 +1040,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -1053,6 +1080,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1160,6 +1188,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -1193,6 +1224,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1301,6 +1333,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -1334,6 +1369,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1435,6 +1471,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -1468,6 +1507,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1569,6 +1609,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -1602,6 +1645,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1704,6 +1748,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -1737,6 +1784,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1835,6 +1883,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -1868,6 +1919,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1977,6 +2029,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2010,6 +2065,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2116,6 +2172,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2149,6 +2208,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2255,6 +2315,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2288,6 +2351,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2420,6 +2484,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2453,6 +2520,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2544,6 +2612,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2577,6 +2648,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2702,6 +2774,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2735,6 +2810,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2829,6 +2905,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2862,6 +2941,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2960,6 +3040,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -2993,6 +3076,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3087,6 +3171,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -3120,6 +3207,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3219,6 +3307,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -3252,6 +3343,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3346,6 +3438,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -3379,6 +3474,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3502,6 +3598,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -3535,6 +3634,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3629,6 +3729,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -3662,6 +3765,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3760,6 +3864,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -3793,6 +3900,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3919,6 +4027,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -3952,6 +4063,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4047,6 +4159,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -4080,6 +4195,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4202,6 +4318,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -4235,6 +4354,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4330,6 +4450,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -4363,6 +4486,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4451,6 +4575,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -4484,6 +4611,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4570,6 +4698,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -4603,6 +4734,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4708,6 +4840,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -4741,6 +4876,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4870,6 +5006,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -4903,6 +5042,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4997,6 +5137,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5030,6 +5173,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5128,6 +5272,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5161,6 +5308,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5254,6 +5402,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5287,6 +5438,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5391,6 +5543,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5424,6 +5579,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5514,6 +5670,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5547,6 +5706,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5654,6 +5814,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5687,6 +5850,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5783,6 +5947,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5816,6 +5983,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5923,6 +6091,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -5956,6 +6127,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6065,6 +6237,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -6098,6 +6273,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6189,6 +6365,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -6222,6 +6401,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6321,6 +6501,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -6354,6 +6537,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6454,6 +6638,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -6487,6 +6674,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6583,6 +6771,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -6616,6 +6807,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6716,6 +6908,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -6749,6 +6944,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6849,6 +7045,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -6882,6 +7081,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6980,6 +7180,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7013,6 +7216,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7113,6 +7317,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7146,6 +7353,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7235,6 +7443,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7268,6 +7479,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7362,6 +7574,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7395,6 +7610,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7493,6 +7709,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7526,6 +7745,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7615,6 +7835,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7648,6 +7871,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7747,6 +7971,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7780,6 +8007,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7878,6 +8106,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             None
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -7911,6 +8142,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8000,6 +8232,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -8033,6 +8268,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8131,6 +8367,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             AssetHash "BLA" |> Some
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -8164,6 +8403,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8257,6 +8497,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -8290,6 +8533,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8387,6 +8631,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             Some {
                 ValidatorState.NetworkAddress = NetworkAddress "old-address:12345"
@@ -8425,6 +8672,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8515,6 +8763,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -8548,6 +8799,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8649,6 +8901,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -8682,6 +8937,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8771,6 +9027,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -8804,6 +9063,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8893,6 +9153,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -8926,6 +9189,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9020,6 +9284,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -9053,6 +9320,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9147,6 +9415,9 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             failwith "getAssetHashByCode should not be called"
 
+        let getLockedAndBlacklistedValidators _ =
+            []
+
         let getValidatorState _ =
             None
 
@@ -9180,6 +9451,7 @@ module ProcessingTests =
                 getStakeState
                 getTotalChxStaked
                 getTopStakers
+                getLockedAndBlacklistedValidators
                 (ChxAmount 0m)
                 0s
                 0s

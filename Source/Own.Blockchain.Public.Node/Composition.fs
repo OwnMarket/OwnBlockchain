@@ -79,6 +79,8 @@ module Composition =
 
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
     let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString
+    let getLockedAndBlacklistedValidators () =
+        Db.getLockedAndBlacklistedValidators Config.DbEngineType Config.DbConnectionString
 
     let getTopStakersByStake =
         Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakesCount
@@ -196,6 +198,7 @@ module Composition =
             getTotalChxStaked
             getTopStakersByStake
             getValidatorsAtHeight
+            getLockedAndBlacklistedValidators
             Hashing.deriveHash
             Hashing.decode
             Hashing.hash
