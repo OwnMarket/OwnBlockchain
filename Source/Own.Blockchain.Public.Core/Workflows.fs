@@ -223,7 +223,7 @@ module Workflows =
         let validators = validators |> List.map (fun v -> v.ValidatorAddress)
 
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 verifySignature

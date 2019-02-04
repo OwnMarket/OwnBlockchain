@@ -140,7 +140,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet distributes rewards to stakers`` () =
+    let ``Processing.processChanges distributes rewards to stakers`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -239,7 +239,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -297,7 +297,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[staker3Wallet.Address].Amount = staker3ChxBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet distributes rewards to stakers with proper decimalization`` () =
+    let ``Processing.processChanges distributes rewards to stakers with proper decimalization`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -396,7 +396,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -458,7 +458,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet TransferChx`` () =
+    let ``Processing.processChanges TransferChx`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -536,7 +536,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -583,7 +583,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferChx with insufficient balance`` () =
+    let ``Processing.processChanges TransferChx with insufficient balance`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -661,7 +661,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -709,7 +709,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferChx with insufficient balance to cover fee`` () =
+    let ``Processing.processChanges TransferChx with insufficient balance to cover fee`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -787,7 +787,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -835,7 +835,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferChx with insufficient balance to cover fee - simulated invalid state`` () =
+    let ``Processing.processChanges TransferChx with insufficient balance to cover fee - simulated invalid state`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -911,8 +911,8 @@ module ProcessingTests =
 
         let getTopStakers _ = []
 
-        let processTxSet () =
-            Processing.processTxSet
+        let processChanges () =
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -946,11 +946,11 @@ module ProcessingTests =
 
         // ASSERT
         raisesWith<exn>
-            <@ processTxSet () @>
+            <@ processChanges () @>
             (fun ex -> <@ ex.Message.StartsWith "Cannot process validator reward" @>)
 
     [<Fact>]
-    let ``Processing.processTxSet TransferChx with insufficient balance to cover fee due to the staked CHX`` () =
+    let ``Processing.processChanges TransferChx with insufficient balance to cover fee due to the staked CHX`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
@@ -1032,7 +1032,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -1084,7 +1084,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset`` () =
+    let ``Processing.processChanges TransferAsset`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -1172,7 +1172,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -1221,7 +1221,7 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].IsEmission = false @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset success if transfer from emission to EligibleInPrimary`` () =
+    let ``Processing.processChanges TransferAsset success if transfer from emission to EligibleInPrimary`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -1313,7 +1313,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -1355,7 +1355,7 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset success if transfer from non-emission to EligibleInSecondary`` () =
+    let ``Processing.processChanges TransferAsset success if transfer from non-emission to EligibleInSecondary`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -1447,7 +1447,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -1489,7 +1489,7 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset fails if transfer from emission to NotEligibleInPrimary`` () =
+    let ``Processing.processChanges TransferAsset fails if transfer from emission to NotEligibleInPrimary`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -1581,7 +1581,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -1624,7 +1624,7 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = AssetAmount 0m @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset fails if transfer from non-emission to NotEligibleInSecondary`` () =
+    let ``Processing.processChanges TransferAsset fails if transfer from non-emission to NotEligibleInSecondary`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -1716,7 +1716,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -1759,7 +1759,7 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = AssetAmount 0m @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset with insufficient balance`` () =
+    let ``Processing.processChanges TransferAsset with insufficient balance`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -1847,7 +1847,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -1898,7 +1898,7 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset fails if source account not found`` () =
+    let ``Processing.processChanges TransferAsset fails if source account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -1989,7 +1989,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -2037,7 +2037,7 @@ module ProcessingTests =
         test <@ output.Holdings = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet TransferAsset fails if destination account not found`` () =
+    let ``Processing.processChanges TransferAsset fails if destination account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -2128,7 +2128,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -2180,7 +2180,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVote success insert`` () =
+    let ``Processing.processChanges SubmitVote success insert`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -2267,7 +2267,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -2317,7 +2317,7 @@ module ProcessingTests =
             = {VoteHash = voteHash; VoteWeight = None} @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVote success insert and update unweighted`` () =
+    let ``Processing.processChanges SubmitVote success insert and update unweighted`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -2432,7 +2432,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -2475,7 +2475,7 @@ module ProcessingTests =
             = {VoteHash = voteHashYes; VoteWeight = None} @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVote fails if no holding`` () =
+    let ``Processing.processChanges SubmitVote fails if no holding`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -2556,7 +2556,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -2597,7 +2597,7 @@ module ProcessingTests =
         test <@ output.Votes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVote fails if asset or account not found`` () =
+    let ``Processing.processChanges SubmitVote fails if asset or account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -2714,7 +2714,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -2758,7 +2758,7 @@ module ProcessingTests =
         test <@ output.Votes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVote fails if sender is not account controller`` () =
+    let ``Processing.processChanges SubmitVote fails if sender is not account controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -2841,7 +2841,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -2882,7 +2882,7 @@ module ProcessingTests =
         test <@ output.Votes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVote fails if vote is already weighted`` () =
+    let ``Processing.processChanges SubmitVote fails if vote is already weighted`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -2972,7 +2972,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3017,7 +3017,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVoteWeight success update`` () =
+    let ``Processing.processChanges SubmitVoteWeight success update`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -3099,7 +3099,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3149,7 +3149,7 @@ module ProcessingTests =
             = {VoteHash = voteHash; VoteWeight = Some voteWeight} @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVoteWeight fails if vote not found`` () =
+    let ``Processing.processChanges SubmitVoteWeight fails if vote not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -3231,7 +3231,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3270,7 +3270,7 @@ module ProcessingTests =
         test <@ output.Votes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVoteWeight fails is sender is not asset controller`` () =
+    let ``Processing.processChanges SubmitVoteWeight fails is sender is not asset controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -3358,7 +3358,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3397,7 +3397,7 @@ module ProcessingTests =
         test <@ output.Votes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SubmitVoteWeight if asset or account not found`` () =
+    let ``Processing.processChanges SubmitVoteWeight if asset or account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -3514,7 +3514,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3562,7 +3562,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountEligibility insert success`` () =
+    let ``Processing.processChanges SetAccountEligibility insert success`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -3641,7 +3641,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3689,7 +3689,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.[(accountHash, assetHash)] = expectedEligibilityState @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountEligibility update success`` () =
+    let ``Processing.processChanges SetAccountEligibility update success`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -3772,7 +3772,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3820,7 +3820,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.[(accountHash, assetHash)] = expectedEligibilityState @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountEligibility insert and update fails if not approved KYC provider`` () =
+    let ``Processing.processChanges SetAccountEligibility insert and update fails if not approved KYC provider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -3931,7 +3931,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -3975,7 +3975,7 @@ module ProcessingTests =
         test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountEligibility update fails if approved KYC provider but not current`` () =
+    let ``Processing.processChanges SetAccountEligibility update fails if approved KYC provider but not current`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -4059,7 +4059,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -4102,7 +4102,7 @@ module ProcessingTests =
         test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountEligibility insert and update fails if asset or account not found`` () =
+    let ``Processing.processChanges SetAccountEligibility insert and update fails if asset or account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -4214,7 +4214,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -4266,7 +4266,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetEligibility update success`` () =
+    let ``Processing.processChanges SetAssetEligibility update success`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -4342,7 +4342,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -4387,7 +4387,7 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash] = expectedAssetState @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetEligibility fails if asset not found`` () =
+    let ``Processing.processChanges SetAssetEligibility fails if asset not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -4463,7 +4463,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -4505,7 +4505,7 @@ module ProcessingTests =
         test <@ output.Assets = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetEligibility fails is sender is not asset controller`` () =
+    let ``Processing.processChanges SetAssetEligibility fails is sender is not asset controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -4582,7 +4582,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -4637,7 +4637,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet ChangeKycControllerAddress`` () =
+    let ``Processing.processChanges ChangeKycControllerAddress`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -4720,7 +4720,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -4769,7 +4769,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.[(accountHash, assetHash)] = expectedEligibilityState @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChangeKycControllerAddress fails if asset or account not found`` () =
+    let ``Processing.processChanges ChangeKycControllerAddress fails if asset or account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -4882,7 +4882,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -4930,7 +4930,7 @@ module ProcessingTests =
         test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChangeKycControllerAddress fails if no eligibility`` () =
+    let ``Processing.processChanges ChangeKycControllerAddress fails if no eligibility`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5009,7 +5009,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5052,7 +5052,7 @@ module ProcessingTests =
         test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChangeKycControllerAddress fails SenderIsKycCtrlNotApprovedKycProvider`` () =
+    let ``Processing.processChanges ChangeKycControllerAddress fails SenderIsKycCtrlNotApprovedKycProvider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5140,7 +5140,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5183,7 +5183,7 @@ module ProcessingTests =
         test <@ output.Eligibilities = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChangeKycControllerAddress ok SenderIsNotApprovedKycProviderButAssetCtrl`` () =
+    let ``Processing.processChanges ChangeKycControllerAddress ok SenderIsNotApprovedKycProviderButAssetCtrl`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5266,7 +5266,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5315,7 +5315,7 @@ module ProcessingTests =
         test <@ output.Eligibilities.[(accountHash, assetHash)] = expectedEligibilityState @>
 
     [<Fact>]
-    let ``Processing.processTxSet ChangeKycControllerAddress fails SenderIsNotAssetCtrlOrApprovedKycProvider`` () =
+    let ``Processing.processChanges ChangeKycControllerAddress fails SenderIsNotAssetCtrlOrApprovedKycProvider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5403,7 +5403,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5450,7 +5450,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet AddKycProvider`` () =
+    let ``Processing.processChanges AddKycProvider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -5526,7 +5526,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5565,7 +5565,7 @@ module ProcessingTests =
         test <@ output.KycProviders.[assetHash].[senderWallet.Address] = Add @>
 
     [<Fact>]
-    let ``Processing.processTxSet AddKycProvider various errors`` () =
+    let ``Processing.processChanges AddKycProvider various errors`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5666,7 +5666,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5719,7 +5719,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet RemoveKycProvider`` () =
+    let ``Processing.processChanges RemoveKycProvider`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let validatorWallet = Signing.generateWallet ()
@@ -5795,7 +5795,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5834,7 +5834,7 @@ module ProcessingTests =
         test <@ output.KycProviders.[assetHash].[senderWallet.Address] = Remove @>
 
     [<Fact>]
-    let ``Processing.processTxSet RemoveKycProvider various errors`` () =
+    let ``Processing.processChanges RemoveKycProvider various errors`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -5935,7 +5935,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -5984,7 +5984,7 @@ module ProcessingTests =
         test <@ output.KycProviders = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet Add and RemoveKycProvider mixed`` () =
+    let ``Processing.processChanges Add and RemoveKycProvider mixed`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet()
         let otherWallet = Signing.generateWallet()
@@ -6077,7 +6077,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -6121,7 +6121,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet CreateAssetEmission`` () =
+    let ``Processing.processChanges CreateAssetEmission`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -6201,7 +6201,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -6247,7 +6247,7 @@ module ProcessingTests =
         test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
     [<Fact>]
-    let ``Processing.processTxSet CreateAssetEmission additional emission`` () =
+    let ``Processing.processChanges CreateAssetEmission additional emission`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let someOtherWallet = Signing.generateWallet ()
@@ -6333,7 +6333,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -6380,7 +6380,7 @@ module ProcessingTests =
         test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
     [<Fact>]
-    let ``Processing.processTxSet CreateAssetEmission fails if sender not current controller`` () =
+    let ``Processing.processChanges CreateAssetEmission fails if sender not current controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let someOtherWallet = Signing.generateWallet ()
@@ -6466,7 +6466,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -6514,7 +6514,7 @@ module ProcessingTests =
         test <@ output.Holdings = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet CreateAssetEmission fails if asset not found`` () =
+    let ``Processing.processChanges CreateAssetEmission fails if asset not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let someOtherWallet = Signing.generateWallet ()
@@ -6595,7 +6595,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -6643,7 +6643,7 @@ module ProcessingTests =
         test <@ output.Holdings = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet CreateAssetEmission fails if account not found`` () =
+    let ``Processing.processChanges CreateAssetEmission fails if account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -6728,7 +6728,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -6780,7 +6780,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet CreateAccount`` () =
+    let ``Processing.processChanges CreateAccount`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -6861,7 +6861,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -6911,7 +6911,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet CreateAsset`` () =
+    let ``Processing.processChanges CreateAsset`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -6992,7 +6992,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7048,7 +7048,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountController`` () =
+    let ``Processing.processChanges SetAccountController`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -7125,7 +7125,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7170,7 +7170,7 @@ module ProcessingTests =
         test <@ output.Accounts.[accountHash] = {AccountState.ControllerAddress = newControllerWallet.Address} @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountController fails if account not found`` () =
+    let ``Processing.processChanges SetAccountController fails if account not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -7247,7 +7247,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7296,7 +7296,7 @@ module ProcessingTests =
         test <@ output.Accounts = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAccountController fails if sender not current controller`` () =
+    let ``Processing.processChanges SetAccountController fails if sender not current controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -7374,7 +7374,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7428,7 +7428,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetController`` () =
+    let ``Processing.processChanges SetAssetController`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -7505,7 +7505,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7550,7 +7550,7 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash].ControllerAddress = newControllerWallet.Address @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetController fails if asset not found`` () =
+    let ``Processing.processChanges SetAssetController fails if asset not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -7627,7 +7627,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7676,7 +7676,7 @@ module ProcessingTests =
         test <@ output.Assets = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetController fails if sender not current controller`` () =
+    let ``Processing.processChanges SetAssetController fails if sender not current controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -7759,7 +7759,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7813,7 +7813,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetCode`` () =
+    let ``Processing.processChanges SetAssetCode`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -7890,7 +7890,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -7935,7 +7935,7 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash].AssetCode = Some assetCode @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetCode fails if asset not found`` () =
+    let ``Processing.processChanges SetAssetCode fails if asset not found`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8012,7 +8012,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8061,7 +8061,7 @@ module ProcessingTests =
         test <@ output.Assets = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetCode fails if assetCode already exists`` () =
+    let ``Processing.processChanges SetAssetCode fails if assetCode already exists`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8143,7 +8143,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8186,7 +8186,7 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash].AssetCode = None @>
 
     [<Fact>]
-    let ``Processing.processTxSet SetAssetCode fails if sender not current controller`` () =
+    let ``Processing.processChanges SetAssetCode fails if sender not current controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8269,7 +8269,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8322,7 +8322,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.processTxSet ConfigureValidator - updating existing config`` () =
+    let ``Processing.processChanges ConfigureValidator - updating existing config`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8404,7 +8404,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8450,7 +8450,7 @@ module ProcessingTests =
         test <@ output.Validators.[senderWallet.Address].SharedRewardPercent = newSharedRewardPercent @>
 
     [<Fact>]
-    let ``Processing.processTxSet ConfigureValidator - inserting new config`` () =
+    let ``Processing.processChanges ConfigureValidator - inserting new config`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8527,7 +8527,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8579,7 +8579,7 @@ module ProcessingTests =
     [<Theory>]
     [<InlineData(40, 10, 50)>]
     [<InlineData(40, -10, 30)>]
-    let ``Processing.processTxSet DelegateStake - increasing existing stake``
+    let ``Processing.processChanges DelegateStake - increasing existing stake``
         (currentStakeAmount, stakeChangeAmount, newStakeAmount)
         =
 
@@ -8661,7 +8661,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8706,7 +8706,7 @@ module ProcessingTests =
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = newStakeAmount @>
 
     [<Fact>]
-    let ``Processing.processTxSet DelegateStake - setting new stake`` () =
+    let ``Processing.processChanges DelegateStake - setting new stake`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8783,7 +8783,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8828,7 +8828,7 @@ module ProcessingTests =
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = stakeAmount @>
 
     [<Fact>]
-    let ``Processing.processTxSet DelegateStake - staking more than available balance`` () =
+    let ``Processing.processChanges DelegateStake - staking more than available balance`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8905,7 +8905,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -8954,7 +8954,7 @@ module ProcessingTests =
         test <@ output.Stakes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet DelegateStake - staking more than available balance due to the staked CHX`` () =
+    let ``Processing.processChanges DelegateStake - staking more than available balance due to the staked CHX`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -9032,7 +9032,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature
@@ -9081,7 +9081,7 @@ module ProcessingTests =
         test <@ output.Stakes = Map.empty @>
 
     [<Fact>]
-    let ``Processing.processTxSet DelegateStake - decreasing stake for more than already staked`` () =
+    let ``Processing.processChanges DelegateStake - decreasing stake for more than already staked`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -9159,7 +9159,7 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processTxSet
+            Processing.processChanges
                 getTx
                 getEquivocationProof
                 Signing.verifySignature

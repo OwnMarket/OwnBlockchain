@@ -1072,7 +1072,7 @@ module Processing =
 
         state
 
-    let processTxSet
+    let processChanges
         getTx
         getEquivocationProof
         verifySignature
