@@ -1054,7 +1054,7 @@ module Processing =
                     state
                 | Error err -> failwithf "Cannot process reward distribution: (%A)." err
 
-    let updateLastActiveConfigBlockForValidators
+    let updateTimeToLockDepositForValidators
         validatorDepositLockTime
         (blockNumber : BlockNumber)
         (blockchainConfiguration : BlockchainConfiguration option)
@@ -1167,6 +1167,6 @@ module Processing =
                 validators
                 equivocationProofs
             |> distributeReward processTxActions getTopStakers validatorAddress sharedRewardPercent
-            |> updateLastActiveConfigBlockForValidators validatorDepositLockTime blockNumber blockchainConfiguration
+            |> updateTimeToLockDepositForValidators validatorDepositLockTime blockNumber blockchainConfiguration
 
         state.ToProcessingOutput()
