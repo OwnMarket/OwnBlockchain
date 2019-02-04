@@ -515,34 +515,42 @@ module Processing =
             Error TxErrorCode.SenderIsNotAssetController
 
     let processConfigureValidatorTxAction
+        validatorDeposit
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
         (action : ConfigureValidatorTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
-        match state.GetValidator(senderAddress) with
-        | None ->
-            // TODO: Prevent filling the validator table with junk.
-            state.SetValidator(
-                senderAddress,
-                {
-                    ValidatorState.NetworkAddress = action.NetworkAddress
-                    SharedRewardPercent = action.SharedRewardPercent
-                    TimeToLockDeposit = 0s
-                    TimeToBlacklist = 0s
-                }
-            )
-            Ok state
-        | Some validatorState ->
-            state.SetValidator(
-                senderAddress,
-                { validatorState with
-                    NetworkAddress = action.NetworkAddress
-                    SharedRewardPercent = action.SharedRewardPercent
-                }
-            )
-            Ok state
+        let senderState = state.GetChxBalance(senderAddress)
+        let totalChxStaked = state.GetTotalChxStaked(senderAddress)
+
+        let availableBalance = senderState.Amount - totalChxStaked
+
+        if availableBalance < validatorDeposit then
+            Error TxErrorCode.InsufficientChxBalance
+        else
+            match state.GetValidator(senderAddress) with
+            | None ->
+                state.SetValidator(
+                    senderAddress,
+                    {
+                        ValidatorState.NetworkAddress = action.NetworkAddress
+                        SharedRewardPercent = action.SharedRewardPercent
+                        TimeToLockDeposit = 0s
+                        TimeToBlacklist = 0s
+                    }
+                )
+                Ok state
+            | Some validatorState ->
+                state.SetValidator(
+                    senderAddress,
+                    { validatorState with
+                        NetworkAddress = action.NetworkAddress
+                        SharedRewardPercent = action.SharedRewardPercent
+                    }
+                )
+                Ok state
 
     let processDelegateStakeTxAction
         validatorDeposit
@@ -912,7 +920,7 @@ module Processing =
         | SetAccountController action -> processSetAccountControllerTxAction state senderAddress action
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
-        | ConfigureValidator action -> processConfigureValidatorTxAction state senderAddress action
+        | ConfigureValidator action -> processConfigureValidatorTxAction validatorDeposit state senderAddress action
         | DelegateStake action -> processDelegateStakeTxAction validatorDeposit state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
