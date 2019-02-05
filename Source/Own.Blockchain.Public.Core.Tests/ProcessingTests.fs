@@ -3092,9 +3092,11 @@ module ProcessingTests =
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.VoteIsAlreadyWeighted) |> TxActionError |> Failure
 
+        let voteId = {AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash}
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Votes = Map.empty @>
+        test <@ output.Votes.Count = 1 @>
+        test <@ output.Votes.[voteId].VoteHash = voteHashNo @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SubmitVoteWeight
@@ -4215,7 +4217,8 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities = Map.empty @>
+        test <@ output.Eligibilities.Count = 1 @>
+        test <@ output.Eligibilities.[(accountHash, assetHash)].KycControllerAddress = otherWallet.Address @>
 
     [<Fact>]
     let ``Processing.processChanges SetAccountEligibility insert and update fails if asset or account not found`` () =
@@ -5328,7 +5331,8 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities = Map.empty @>
+        test <@ output.Eligibilities.Count = 1 @>
+        test <@ output.Eligibilities.[(accountHash, assetHash)].KycControllerAddress = senderWallet.Address @>
 
     [<Fact>]
     let ``Processing.processChanges ChangeKycControllerAddress ok SenderIsNotApprovedKycProviderButAssetCtrl`` () =
@@ -5599,7 +5603,8 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Eligibilities = Map.empty @>
+        test <@ output.Eligibilities.Count = 1 @>
+        test <@ output.Eligibilities.[(accountHash, assetHash)].KycControllerAddress = otherWallet.Address @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // AddKycProvider
