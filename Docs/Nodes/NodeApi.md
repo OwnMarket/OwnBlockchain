@@ -202,3 +202,19 @@ Response JSON payload:
     ]
 }
 ```
+
+## `GET /asset/{assetHash}`
+
+Request URL:
+```
+/asset/FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU
+```
+
+Response JSON payload:
+```json
+{
+    "assetCode": "ATP",
+    "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
+    "isEligibilityRequired": false
+}
+```
