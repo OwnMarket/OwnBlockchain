@@ -103,8 +103,7 @@ module Transport =
     let closeAllConnections () =
         poller.Dispose()
         connectionPool
-        |> Map.ofDict
-        |> Map.toList
+        |> List.ofDict
         |> List.iter (fun (_, (socket, queue)) ->
             socket.Dispose()
             queue.Dispose()
