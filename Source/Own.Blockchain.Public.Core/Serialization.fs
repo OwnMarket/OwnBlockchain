@@ -115,7 +115,7 @@ module Serialization =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let deserializeBinary<'T> (serializedMessageData : byte[]) =
-        LZ4MessagePackSerializer.Deserialize<'T> (serializedMessageData)
+        LZ4MessagePackSerializer.Deserialize<'T> serializedMessageData
 
     let private deserializeHandler<'T> = fun m -> m |> deserializeBinary<'T> |> box
 
@@ -134,11 +134,11 @@ module Serialization =
 
     let deserializePeerMessage (message : byte[]) : Result<PeerMessageDto, AppErrors> =
         try
-            let peerMessageDto = LZ4MessagePackSerializer.Deserialize<PeerMessageDto> (message)
+            let peerMessageDto = LZ4MessagePackSerializer.Deserialize<PeerMessageDto> message
             let deserialize = peerMessageTypeToObjectMapping.[peerMessageDto.MessageType]
             {
                 MessageType = peerMessageDto.MessageType
-                MessageData = deserialize (peerMessageDto.MessageData :?> byte[])
+                MessageData = peerMessageDto.MessageData :?> byte[] |> deserialize
             }
             |> Ok
         with
