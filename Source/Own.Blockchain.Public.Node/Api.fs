@@ -117,6 +117,15 @@ module Api =
             return! response next ctx
         }
 
+    let getAssetHandler (assetHash : string): HttpHandler = fun next ctx ->
+        task {
+
+            let response =
+                Composition.getAssetApi (AssetHash assetHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,6 +142,7 @@ module Api =
                 routef "/address/%s/assets" getAddressAssetsHandler
                 routef "/address/%s" getAddressHandler
                 routef "/account/%s" getAccountHandler
+                routef "/asset/%s" getAssetHandler
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler

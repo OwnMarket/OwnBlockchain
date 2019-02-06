@@ -967,3 +967,17 @@ module Workflows =
             |? []
             |> Mapping.accountHoldingDtosToGetAccoungHoldingsResponseDto accountHash accountState
             |> Ok
+
+    let getAssetApi
+        (getAssetState : AssetHash -> AssetStateDto option)
+        (assetHash : AssetHash)
+        : Result<AssetStateDto, AppErrors>
+        =
+
+        match getAssetState assetHash with
+        | None ->
+            sprintf "Asset %s does not exist." assetHash.Value
+            |> Result.appError
+        | Some assetState ->
+            assetState
+            |> Ok
