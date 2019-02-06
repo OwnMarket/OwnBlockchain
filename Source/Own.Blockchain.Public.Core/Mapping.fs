@@ -610,6 +610,18 @@ module Mapping =
             Holdings = List.map mapFn holdings
         }
 
+    let accountVotesDtosToGetAccoungVotesResponseDto
+        (AccountHash accountHash)
+        (accountState : AccountStateDto)
+        (votes : AccountVoteDto list)
+        =
+
+        {
+            AccountHash = accountHash
+            ControllerAddress = accountState.ControllerAddress
+            Votes = votes
+        }
+
     let blockEnvelopeDtoToGetBlockApiResponseDto (blockEnvelopeDto : BlockEnvelopeDto) =
         let blockDto = blockEnvelopeDto.Block
 

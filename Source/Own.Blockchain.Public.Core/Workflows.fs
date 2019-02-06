@@ -968,6 +968,24 @@ module Workflows =
             |> Mapping.accountHoldingDtosToGetAccoungHoldingsResponseDto accountHash accountState
             |> Ok
 
+    let getAccountVotesApi
+        (getAccountState : AccountHash -> AccountStateDto option)
+        getAccountVotes
+        (accountHash : AccountHash)
+        (assetHash : AssetHash option)
+        : Result<GetAccountApiVoteDto, AppErrors>
+        =
+
+        match getAccountState accountHash with
+        | None ->
+            sprintf "Account %s does not exist." accountHash.Value
+            |> Result.appError
+        | Some accountState ->
+            getAccountVotes accountHash assetHash
+            |? []
+            |> Mapping.accountVotesDtosToGetAccoungVotesResponseDto accountHash accountState
+            |> Ok
+
     let getAssetApi
         (getAssetState : AssetHash -> AssetStateDto option)
         (assetHash : AssetHash)

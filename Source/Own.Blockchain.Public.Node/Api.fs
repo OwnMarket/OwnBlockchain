@@ -107,11 +107,21 @@ module Api =
 
     let getAccountHandler (accountHash : string): HttpHandler = fun next ctx ->
         task {
-
             let response =
                 ctx.TryGetQueryStringValue "asset"
                 |> Option.map AssetHash
                 |> Composition.getAccountApi (AccountHash accountHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getAccountVotesHandler (accountHash : string): HttpHandler = fun next ctx ->
+        task {
+            let response =
+                ctx.TryGetQueryStringValue "asset"
+                |> Option.map AssetHash
+                |> Composition.getAccountVotesApi (AccountHash accountHash)
                 |> toApiResponse
 
             return! response next ctx
@@ -141,6 +151,7 @@ module Api =
                 routef "/address/%s/accounts" getAddressAccountsHandler
                 routef "/address/%s/assets" getAddressAssetsHandler
                 routef "/address/%s" getAddressHandler
+                routef "/account/%s/votes" getAccountVotesHandler
                 routef "/account/%s" getAccountHandler
                 routef "/asset/%s" getAssetHandler
             ]

@@ -422,6 +422,14 @@ type AccountHoldingDto = {
     Amount : decimal
 }
 
+[<CLIMutable>]
+type AccountVoteDto = {
+    AssetHash : string
+    ResolutionHash : string
+    VoteHash : string
+    VoteWeight: decimal
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -564,4 +572,10 @@ type GetAccountApiResponseDto = {
     AccountHash : string
     ControllerAddress : string
     Holdings : GetAccountApiHoldingDto list
+}
+
+type GetAccountApiVoteDto = {
+    AccountHash : string
+    ControllerAddress : string
+    Votes : AccountVoteDto list
 }

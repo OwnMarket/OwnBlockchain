@@ -68,6 +68,7 @@ module Composition =
     let getAddressAssets = Db.getAddressAssets Config.DbEngineType Config.DbConnectionString
     let getAccountState = Db.getAccountState Config.DbEngineType Config.DbConnectionString
     let getAccountHoldings = Db.getAccountHoldings Config.DbEngineType Config.DbConnectionString
+    let getAccountVotes = Db.getAccountVotes Config.DbEngineType Config.DbConnectionString
     let getHoldingState = Db.getHoldingState Config.DbEngineType Config.DbConnectionString
 
     let getVoteState = Db.getVoteState Config.DbEngineType Config.DbConnectionString
@@ -396,6 +397,8 @@ module Composition =
     let getAddressAssetsApi = Workflows.getAddressAssetsApi getAddressAssets
 
     let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
+
+    let getAccountVotesApi = Workflows.getAccountVotesApi getAccountState getAccountVotes
 
     let getAssetApi = Workflows.getAssetApi getAssetState
 

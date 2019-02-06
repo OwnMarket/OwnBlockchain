@@ -481,6 +481,48 @@ module Db =
         | [] -> None
         | holdings -> Some holdings
 
+    let getAccountVotes
+        dbEngineType
+        (dbConnectionString : string)
+        (AccountHash accountHash)
+        (assetHash : AssetHash option)
+        : AccountVoteDto list option
+        =
+
+        let filter =
+            if assetHash.IsNone then
+                ""
+            else
+                "AND h.asset_hash = @assetHash"
+
+        let sql =
+            sprintf
+                """
+                SELECT h.asset_hash, v.resolution_hash, v.vote_hash, v.vote_weight
+                FROM account AS a
+                JOIN holding AS h USING (account_id)
+                JOIN vote AS v USING (holding_id)
+                WHERE a.account_hash = @accountHash
+                %s
+                """
+                    filter
+
+        let sqlParams =
+            match assetHash with
+            | None ->
+                [
+                    "@accountHash", accountHash |> box
+                ]
+            | Some (AssetHash hash) ->
+                [
+                    "@accountHash", accountHash |> box
+                    "@assetHash", hash |> box
+                ]
+
+        match DbTools.query<AccountVoteDto> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | votes -> Some votes
+
     let getHoldingState
         dbEngineType
         (dbConnectionString : string)
