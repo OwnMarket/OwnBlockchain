@@ -402,6 +402,26 @@ module Db =
         |> DbTools.query<string> dbEngineType dbConnectionString sql
         |> List.map AccountHash
 
+    let getAddressAssets
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockchainAddress address)
+        : AssetHash list
+        =
+
+        let sql =
+            """
+            SELECT asset_hash
+            FROM asset
+            WHERE controller_address = @controllerAddress
+            ORDER BY asset_id
+            """
+        [
+            "@controllerAddress", address |> box
+        ]
+        |> DbTools.query<string> dbEngineType dbConnectionString sql
+        |> List.map AssetHash
+
     let getAccountState dbEngineType (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
         let sql =
             """

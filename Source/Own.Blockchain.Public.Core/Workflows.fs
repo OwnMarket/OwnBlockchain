@@ -938,6 +938,18 @@ module Workflows =
 
         Ok {GetAddressAccountsApiResponseDto.Accounts = accounts}
 
+    let getAddressAssetsApi
+        (getAddressAssets : BlockchainAddress -> AssetHash list)
+        (address : BlockchainAddress)
+        : Result<GetAddressAssetsApiResponseDto, AppErrors>
+        =
+
+        let assets =
+            getAddressAssets address
+            |> List.map (fun (AssetHash h) -> h)
+
+        Ok {GetAddressAssetsApiResponseDto.Assets = assets}
+
     let getAccountApi
         (getAccountState : AccountHash -> AccountStateDto option)
         getAccountHoldings

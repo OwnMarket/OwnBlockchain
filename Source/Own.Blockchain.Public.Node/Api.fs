@@ -96,6 +96,15 @@ module Api =
             return! response next ctx
         }
 
+    let getAddressAssetsHandler blockchainAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAddressAssetsApi (BlockchainAddress blockchainAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAccountHandler (accountHash : string): HttpHandler = fun next ctx ->
         task {
 
@@ -121,6 +130,7 @@ module Api =
                 routef "/equivocation/%s" getEquivocationProofHandler
                 routef "/block/%d" getBlockHandler
                 routef "/address/%s/accounts" getAddressAccountsHandler
+                routef "/address/%s/assets" getAddressAssetsHandler
                 routef "/address/%s" getAddressHandler
                 routef "/account/%s" getAccountHandler
             ]

@@ -65,6 +65,7 @@ module Composition =
 
     let getChxBalanceState = Db.getChxBalanceState Config.DbEngineType Config.DbConnectionString
     let getAddressAccounts = Db.getAddressAccounts Config.DbEngineType Config.DbConnectionString
+    let getAddressAssets = Db.getAddressAssets Config.DbEngineType Config.DbConnectionString
     let getAccountState = Db.getAccountState Config.DbEngineType Config.DbConnectionString
     let getAccountHoldings = Db.getAccountHoldings Config.DbEngineType Config.DbConnectionString
     let getHoldingState = Db.getHoldingState Config.DbEngineType Config.DbConnectionString
@@ -391,6 +392,8 @@ module Composition =
     let getAddressApi = Workflows.getAddressApi getChxBalanceState
 
     let getAddressAccountsApi = Workflows.getAddressAccountsApi getAddressAccounts
+
+    let getAddressAssetsApi = Workflows.getAddressAssetsApi getAddressAssets
 
     let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
 

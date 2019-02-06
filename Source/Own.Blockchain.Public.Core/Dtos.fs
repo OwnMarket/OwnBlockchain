@@ -551,6 +551,10 @@ type GetAddressAccountsApiResponseDto = {
     Accounts : string list
 }
 
+type GetAddressAssetsApiResponseDto = {
+    Assets : string list
+}
+
 type GetAccountApiHoldingDto = {
     AssetHash : string
     Balance : decimal
