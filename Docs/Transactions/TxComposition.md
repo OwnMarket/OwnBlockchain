@@ -55,8 +55,8 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
     - [`SetAccountEligibility`](TxActions.md#setaccounteligibility)
     - [`SetAssetEligibility`](TxActions.md#setasseteligibility)
     - [`ChangeKycControllerAddress`](TxActions.md#changekyccontrolleraddress)
-    - [`AddKycController`](TxActions.md#addkyccontroller)
-    - [`RemoveKycController`](TxActions.md#removekyccontroller)
+    - [`AddKycProvider`](TxActions.md#addkycprovider)
+    - [`RemoveKycProvider`](TxActions.md#removekycprovider)
 - `actionData` contains the details required for the execution of the action and depends on the `actionType`.
 
 For more information about action types and related fields that must be specified in the `actionData` for specific action type, please refer to the [document about action types](TxActions.md).

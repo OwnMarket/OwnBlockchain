@@ -20,10 +20,11 @@ An action is a single command that changes the state. The action types supported
     - [`SubmitVote`](#submitvote)
     - [`SubmitVoteWeight`](#submitvoteweight)
 - Eligibility and KYC Actions
-    - [`SetEligibility`](#seteligibility)
+    - [`SetAccountEligibility`](#setaccounteligibility)
+    - [`SetAssetEligibility`](#setasseteligibility)
     - [`ChangeKycControllerAddress`](#changekyccontrolleraddress)
-    - [`AddKycController`](#addkyccontroller)
-    - [`RemoveKycController`](#removekyccontroller)
+    - [`AddKycProvider`](#addkycprovider)
+    - [`RemoveKycProvider`](#removekycprovider)
 
 ## Network Management Actions
 
@@ -289,26 +290,26 @@ Parameter | Data Type | Description
 **NOTE:**
 The transaction must be signed using the private key of the address currently set as the KYC controller for the account (and must be approved KYC provider) or using the private key of the address currently set as the asset controller (see `SetAssetController` action).
 
-### `AddKycController`
+### `AddKycProvider`
 
-`AddKycController` action adds a new KYC controller for an existing asset (represented by `AssetHash`).
+`AddKycProvider` action adds a new KYC provider for an existing asset (represented by `AssetHash`).
 
 Parameter | Data Type | Description
 --- | --- | ---
 `AssetHash` | string | Hash of the asset.
-`ControllerAddress` | string | Address of the KYC controller.
+`ProviderAddress` | string | Address of the KYC provider.
 
 **NOTE:**
 The transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action).
 
-### `RemoveKycController`
+### `RemoveKycProvider`
 
-`RemoveKycController` action removes the KYC controller for an existing asset (represented by `AssetHash`)
+`RemoveKycProvider` action removes the KYC provider for an existing asset (represented by `AssetHash`)
 
 Parameter | Data Type | Description
 --- | --- | ---
 `AssetHash` | string | Hash of the asset.
-`ControllerAddress` | string | Address of the KYC controller.
+`ProviderAddress` | string | Address of the KYC provider.
 
 **NOTE:**
 The transaction must be signed using the private key of the address currently set as the asset controller (see `SetAssetController` action).
