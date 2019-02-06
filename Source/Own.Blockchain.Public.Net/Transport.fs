@@ -104,7 +104,8 @@ module Transport =
         poller.Dispose()
         connectionPool
         |> Map.ofDict
-        |> Seq.iter (fun x ->
-            (fst x.Value).Dispose()
-            (snd x.Value).Dispose()
+        |> Map.toList
+        |> List.iter (fun (_, (socket, queue)) ->
+            socket.Dispose()
+            queue.Dispose()
         )
