@@ -15,12 +15,11 @@ module Timers =
     let getTimer timers timerId =
         let timer =
             timers
-            |> Map.ofDict
-            |> Map.filter (fun key _ -> key = timerId)
-            |> Seq.toList
+            |> List.ofDict
+            |> List.filter (fun (key, _) -> key = timerId)
 
         match timer with
-            | [t] -> Some t.Value
+            | [_, t] -> Some t
             | _ -> None
 
     let restartTimer<'T when 'T : comparison>

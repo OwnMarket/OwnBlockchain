@@ -38,11 +38,6 @@ module Peers =
         let pendingDataRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
         let cts = new CancellationTokenSource()
 
-        let extractValuesFromKeyValuePairs (pairs : KeyValuePair<_, _> seq) =
-            pairs
-            |> Seq.map (fun p -> p.Value)
-            |> Seq.toList
-
         let printActiveMembers () =
             #if DEBUG
                 Log.debug "====================== ACTIVE CONNECTIONS ======================"
@@ -125,7 +120,9 @@ module Peers =
             cts.Cancel()
 
         member __.GetActiveMembers () =
-            activeMembers |> extractValuesFromKeyValuePairs
+            activeMembers
+            |> List.ofDict
+            |> List.map (fun (_, m) -> m)
 
         member __.GetNetworkAddress () =
             config.NetworkAddress
@@ -314,9 +311,8 @@ module Peers =
         member private __.SelectRandomMembers () =
             let connectedMembers =
                 activeMembers
-                |> Map.ofDict
-                |> Map.filter (fun a _ -> a <> config.NetworkAddress)
-                |> Seq.toList
+                |> List.ofDict
+                |> List.filter (fun (a, _) -> a <> config.NetworkAddress)
 
             match connectedMembers with
             | [] -> None
@@ -325,7 +321,7 @@ module Peers =
                 |> Seq.shuffle
                 |> Seq.chunkBySize fanout
                 |> Seq.head
-                |> extractValuesFromKeyValuePairs
+                |> Seq.map (fun (_, m) -> m)
                 |> Some
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
