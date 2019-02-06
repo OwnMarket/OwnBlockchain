@@ -115,7 +115,8 @@ Formatting rules defined here apply not only to F# code, but are generally appli
         (param1 : SomeType1)
         (param2 : SomeType2)
         (param3 : SomeType3)
-        : SomeReturnType =
+        : SomeReturnType
+        =
 
         let x = 1
         ...
