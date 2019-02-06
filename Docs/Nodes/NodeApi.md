@@ -9,6 +9,7 @@ Endpoint | Verb | Description
 `/block/{blockNumber}` | `GET` | Block info
 `/address/{blockchainAddress}` | `GET` | Address info
 `/address/{blockchainAddress}/accounts` | `GET` | List of accounts controlled by the specified address
+`/address/{blockchainAddress}/assets` | `GET` | List of assets controlled by the specified address
 `/account/{accountHash}?asset={assetHash}` | `GET` | Account info with asset balances, optionally filtered for a single asset specified in `asset` query string parameter.
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
@@ -135,6 +136,22 @@ Response JSON payload:
         "wcpUPec7pNUKys9pkvPfhjkezekZ99GHpXavbS6M1R4",
         "Fr5HoamTv7W598duwGQT3p9pqK5oHYjxWqWwycaeg1YC",
         "CFdgvj8PPkmFHys3ASknhBCvnZBLPZPSBHAuMv6DpdGA"
+    ]
+}
+```
+
+## `GET /address/{blockchainAddress}/assets`
+
+Request URL:
+```
+/address/CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD/assets
+```
+
+Response JSON payload:
+```json
+{
+    "assets": [
+        "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU"
     ]
 }
 ```
