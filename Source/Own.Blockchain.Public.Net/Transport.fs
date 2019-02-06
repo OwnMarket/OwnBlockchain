@@ -31,12 +31,9 @@ module Transport =
             let senderSocket = new DealerSocket(">tcp://" + targetAddress)
             let messageQueue = new NetMQQueue<byte[]>()
             messageQueue.ReceiveReady |> Observable.subscribe (fun eventArgs ->
-                let msgList = new HashSet<byte[]>()
                 let mutable msg = Array.zeroCreate<byte> 0
                 while eventArgs.Queue.TryDequeue(&msg, TimeSpan.FromMilliseconds(100.)) do
-                    msgList.Add msg |> ignore
-
-                msgList |> Seq.iter (fun m -> senderSocket.TrySendFrame m |> ignore)
+                    senderSocket.TrySendFrame msg |> ignore
             )
             |> ignore
 
