@@ -431,7 +431,7 @@ module Db =
             SELECT validator_address, amount
             FROM stake
             WHERE staker_address = @stakerAddress
-            ORDER BY amount DESC
+            ORDER BY amount DESC, validator_address ASC
             """
         [
             "@stakerAddress", address |> box
@@ -449,7 +449,7 @@ module Db =
             SELECT staker_address, amount
             FROM stake
             WHERE validator_address = @validatorAddress
-            ORDER BY amount DESC
+            ORDER BY amount DESC, staker_address ASC
             """
         [
             "@validatorAddress", address |> box
