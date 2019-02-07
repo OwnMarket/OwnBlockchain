@@ -17,6 +17,7 @@ module Cli =
     let handleStartNodeCommand () =
         Composition.initDb ()
         Composition.initBlockchainState ()
+        Workers.startNetworkTimeSynchronizer ()
         Agents.startAgents ()
         Composition.startGossip Agents.publishEvent
         Composition.discoverNetwork ()

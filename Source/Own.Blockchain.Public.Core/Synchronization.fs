@@ -133,4 +133,4 @@ module Synchronization =
 
     let updateNetworkTimeOffset getNetworkTimeOffset =
         Utils.networkTimeOffset <- getNetworkTimeOffset ()
-        Log.noticef "Network time offset updated to %i" Utils.networkTimeOffset
+        Log.infof "Network time offset updated to %i" Utils.networkTimeOffset
