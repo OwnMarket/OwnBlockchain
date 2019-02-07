@@ -463,7 +463,7 @@ module Db =
                 WHERE a.account_hash = @accountHash
                 %s
                 """
-                    filter
+                filter
 
         let sqlParams =
             match assetHash with
@@ -503,7 +503,7 @@ module Db =
                 WHERE a.account_hash = @accountHash
                 %s
                 """
-                    filter
+                filter
 
         let sqlParams =
             match assetHash with

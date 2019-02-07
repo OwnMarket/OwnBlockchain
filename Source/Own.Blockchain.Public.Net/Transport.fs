@@ -2,7 +2,6 @@
 
 open System
 open System.Collections.Concurrent
-open System.Collections.Generic
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
