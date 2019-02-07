@@ -425,6 +425,12 @@ type AddressStakeInfoDto = {
 }
 
 [<CLIMutable>]
+type ValidatorStakeInfoDto = {
+    StakerAddress : string
+    Amount : decimal
+}
+
+[<CLIMutable>]
 type StakerInfoDto = {
     StakerAddress : string
     Amount : decimal
@@ -579,6 +585,10 @@ type GetAddressAssetsApiResponseDto = {
 
 type GetAddressStakesApiResponseDto = {
     Stakes : AddressStakeInfoDto list
+}
+
+type GetValidatorStakesApiResponseDto = {
+    Stakes : ValidatorStakeInfoDto list
 }
 
 type GetAccountApiHoldingDto = {

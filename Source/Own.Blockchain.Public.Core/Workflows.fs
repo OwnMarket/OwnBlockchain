@@ -1035,3 +1035,17 @@ module Workflows =
                 getKycProvidersState assetHash
                 |> List.map (fun provider -> provider.Value)
             Ok {KycProviders = kycProviders}
+
+    let getValidatorStakesApi
+        getValidatorState
+        (getValidatorStakes : BlockchainAddress -> ValidatorStakeInfoDto list)
+        (address : BlockchainAddress)
+        : Result<GetValidatorStakesApiResponseDto, AppErrors>
+        =
+
+        match getValidatorState address with
+        | None ->
+            sprintf "Validator %s does not exist." address.Value
+            |> Result.appError
+        | Some _ ->
+            Ok {GetValidatorStakesApiResponseDto.Stakes = getValidatorStakes address}

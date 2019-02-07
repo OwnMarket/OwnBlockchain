@@ -67,6 +67,7 @@ module Composition =
     let getAddressAccounts = Db.getAddressAccounts Config.DbEngineType Config.DbConnectionString
     let getAddressAssets = Db.getAddressAssets Config.DbEngineType Config.DbConnectionString
     let getAddressStakes = Db.getAddressStakes Config.DbEngineType Config.DbConnectionString
+    let getValidatorStakes = Db.getValidatorStakes Config.DbEngineType Config.DbConnectionString
 
     let getAccountState = Db.getAccountState Config.DbEngineType Config.DbConnectionString
     let getAccountHoldings = Db.getAccountHoldings Config.DbEngineType Config.DbConnectionString
@@ -408,7 +409,10 @@ module Composition =
     let getAccountEligibilitiesApi = Workflows.getAccountEligibilitiesApi getAccountState getAccountEligibilities
 
     let getAssetApi = Workflows.getAssetApi getAssetState
+
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getKycProvidersState
+
+    let getValidatorStakesApi = Workflows.getValidatorStakesApi getValidatorState getValidatorStakes
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network

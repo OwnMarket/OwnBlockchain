@@ -385,7 +385,6 @@ module Db =
         dbEngineType
         (dbConnectionString : string)
         (BlockchainAddress address)
-        : AccountHash list
         =
 
         let sql =
@@ -406,7 +405,6 @@ module Db =
         dbEngineType
         (dbConnectionString : string)
         (BlockchainAddress address)
-        : AssetHash list
         =
 
         let sql =
@@ -433,11 +431,30 @@ module Db =
             SELECT validator_address, amount
             FROM stake
             WHERE staker_address = @stakerAddress
+            ORDER BY amount DESC
             """
         [
             "@stakerAddress", address |> box
         ]
         |> DbTools.query<AddressStakeInfoDto> dbEngineType dbConnectionString sql
+
+    let getValidatorStakes
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockchainAddress address)
+        =
+
+        let sql =
+            """
+            SELECT staker_address, amount
+            FROM stake
+            WHERE validator_address = @validatorAddress
+            ORDER BY amount DESC
+            """
+        [
+            "@validatorAddress", address |> box
+        ]
+        |> DbTools.query<ValidatorStakeInfoDto> dbEngineType dbConnectionString sql
 
     let getAccountState dbEngineType (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
         let sql =

@@ -163,6 +163,15 @@ module Api =
             return! response next ctx
         }
 
+    let getValidatorStakesHandler blockchainAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getValidatorStakesApi (BlockchainAddress blockchainAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +193,7 @@ module Api =
                 routef "/account/%s" getAccountHandler
                 routef "/asset/%s/kyc-providers" getAssetKycProvidersHandler
                 routef "/asset/%s" getAssetHandler
+                routef "/validator/%s/stakes" getValidatorStakesHandler
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler
