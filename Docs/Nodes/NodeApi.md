@@ -11,6 +11,8 @@ Endpoint | Verb | Description
 `/address/{blockchainAddress}/accounts` | `GET` | List of accounts controlled by the specified address
 `/address/{blockchainAddress}/assets` | `GET` | List of assets controlled by the specified address
 `/account/{accountHash}?asset={assetHash}` | `GET` | Account info with asset balances, optionally filtered for a single asset specified in `asset` query string parameter.
+`/account/{accountHash}/votes?asset={assetHash}` | `GET` | Account info with votes, optionally filtered for a single asset specified in `asset` query string parameter.
+`/asset/{assetHash}` | `GET` | Asset info
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
 
@@ -198,6 +200,64 @@ Response JSON payload:
         {
             "assetHash": "ETktHKf3kySqS6uTN321y1N5iBf1SYsjuzmE4x8FWS3B",
             "balance": 500000
+        }
+    ]
+}
+```
+
+## `GET /account/{accountHash}/votes?asset={assetHash}`
+
+Request URL:
+```
+/account/4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9/votes
+```
+
+Response JSON payload:
+```json
+{
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
+    "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
+    "votes": [
+        {
+            "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
+            "resolutionHash": "RSH1",
+            "voteHash": "Yes",
+            "voteWeight": 0
+        },
+        {
+            "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
+            "resolutionHash": "RSH2",
+            "voteHash": "No",
+            "voteWeight": 0
+        }
+    ]
+}
+```
+
+If optional `asset` query string parameter is specified, only the votes for that asset will be returned in the `votes` array:
+
+Request URL:
+```
+/account/4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9/votes?asset=FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU
+```
+
+Response JSON payload:
+```json
+{
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
+    "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
+    "votes": [
+        {
+            "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
+            "resolutionHash": "RSH1",
+            "voteHash": "Yes",
+            "voteWeight": 0
+        },
+        {
+            "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
+            "resolutionHash": "RSH2",
+            "voteHash": "No",
+            "voteWeight": 0
         }
     ]
 }
