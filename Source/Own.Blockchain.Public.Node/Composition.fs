@@ -295,6 +295,10 @@ module Composition =
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let updateNetworkTimeOffset () =
+        Synchronization.updateNetworkTimeOffset
+            Ntp.getNetworkTimeOffset
+
     let tryApplyNextBlock publishEvent =
         Synchronization.tryApplyNextBlock
             getLastAppliedBlockNumber

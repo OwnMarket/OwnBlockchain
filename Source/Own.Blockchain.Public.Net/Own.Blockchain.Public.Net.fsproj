@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\AssemblyInfo.fs" />
+    <Compile Include="Ntp.fs" />
     <Compile Include="Timers.fs" />
     <Compile Include="Peers.fs" />
     <Compile Include="Transport.fs" />

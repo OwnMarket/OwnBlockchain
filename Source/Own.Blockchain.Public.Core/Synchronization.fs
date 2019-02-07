@@ -130,3 +130,7 @@ module Synchronization =
                         removeOrphanEquivocationProofResults ()
                     )
             )
+
+    let updateNetworkTimeOffset getNetworkTimeOffset =
+        Utils.networkTimeOffset <- getNetworkTimeOffset ()
+        Log.noticef "Network time offset updated to %i" Utils.networkTimeOffset
