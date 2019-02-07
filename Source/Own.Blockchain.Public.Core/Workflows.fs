@@ -964,7 +964,6 @@ module Workflows =
             |> Result.appError
         | Some accountState ->
             getAccountHoldings accountHash assetHash
-            |? []
             |> Mapping.accountHoldingDtosToGetAccoungHoldingsResponseDto accountHash accountState
             |> Ok
 
@@ -982,7 +981,6 @@ module Workflows =
             |> Result.appError
         | Some accountState ->
             getAccountVotes accountHash assetHash
-            |? []
             |> Mapping.accountVotesDtosToGetAccoungVotesResponseDto accountHash accountState
             |> Ok
 

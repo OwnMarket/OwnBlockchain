@@ -445,7 +445,7 @@ module Db =
         (dbConnectionString : string)
         (AccountHash accountHash)
         (assetHash : AssetHash option)
-        : AccountHoldingDto list option
+        : AccountHoldingDto list
         =
 
         let filter =
@@ -477,16 +477,14 @@ module Db =
                     "@assetHash", hash |> box
                 ]
 
-        match DbTools.query<AccountHoldingDto> dbEngineType dbConnectionString sql sqlParams with
-        | [] -> None
-        | holdings -> Some holdings
+        DbTools.query<AccountHoldingDto> dbEngineType dbConnectionString sql sqlParams
 
     let getAccountVotes
         dbEngineType
         (dbConnectionString : string)
         (AccountHash accountHash)
         (assetHash : AssetHash option)
-        : AccountVoteDto list option
+        : AccountVoteDto list
         =
 
         let filter =
@@ -519,9 +517,7 @@ module Db =
                     "@assetHash", hash |> box
                 ]
 
-        match DbTools.query<AccountVoteDto> dbEngineType dbConnectionString sql sqlParams with
-        | [] -> None
-        | votes -> Some votes
+        DbTools.query<AccountVoteDto> dbEngineType dbConnectionString sql sqlParams
 
     let getHoldingState
         dbEngineType
