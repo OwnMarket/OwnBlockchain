@@ -5,8 +5,9 @@ open System
 [<RequireQualifiedAccess>]
 module Utils =
 
+    /// Unix timestamp in milliseconds.
     let getUnixTimestamp () =
-        System.DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
 
     /// Truncates a decimal number to blockchain default of 7 decimal digits.
     let round (x : decimal) =

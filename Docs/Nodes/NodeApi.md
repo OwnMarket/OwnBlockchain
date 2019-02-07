@@ -95,7 +95,7 @@ Response JSON payload:
     "number": 2,
     "hash": "9VMtBESNLXWFRQXrd2HbXc2CGWUkdyPQjAKP5MciU59k",
     "previousHash": "D8ViZH31RHBYrDfUhUC1DK49pY1dxCvgRMsbnS9Lbn3p",
-    "timestamp": 1536869618,
+    "timestamp": 1549530022179,
     "validator": "CHT72YWjChhv5xYeDono6Nn4Z5Qe5Q7aRyq",
     "txSetRoot": "CRjqV3DLh7jyCKZqj2pCdfw3s3ynXxEf5JMVm1rCYjmp",
     "txResultSetRoot": "5zZ72DnUkLd5LRMX6hxXuTrxd8trGrNTDasaP51RMWdX",

@@ -209,7 +209,7 @@ type BlockchainConfiguration = {
 // Block
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type Timestamp = Timestamp of int64 // UNIX Timestamp
+type Timestamp = Timestamp of int64 // Unix timestamp in milliseconds
 type BlockNumber = BlockNumber of int64
 type BlockHash = BlockHash of string
 type MerkleTreeRoot = MerkleTreeRoot of string
