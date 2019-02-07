@@ -180,6 +180,25 @@ Response JSON payload:
 }
 ```
 
+## `GET /validator/{blockchainAddress}/stakes`
+
+Request URL:
+```
+/validator/CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ/stakes
+```
+
+Response JSON payload:
+```json
+{
+    "stakes": [
+        {
+            "stakerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
+            "amount": 100
+        }
+    ]
+}
+```
+
 
 ## `GET /account/{accountHash}?asset={assetHash}`
 
