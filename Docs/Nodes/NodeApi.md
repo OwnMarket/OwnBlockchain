@@ -13,6 +13,7 @@ Endpoint | Verb | Description
 `/account/{accountHash}?asset={assetHash}` | `GET` | Account info with asset balances, optionally filtered for a single asset specified in `asset` query string parameter.
 `/account/{accountHash}/votes?asset={assetHash}` | `GET` | Account info with votes, optionally filtered for a single asset specified in `asset` query string parameter.
 `/asset/{assetHash}` | `GET` | Asset info
+`/asset/{assetHash}/kyc-providers` | `GET` | Asset info with KYC providers
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
 
@@ -276,5 +277,24 @@ Response JSON payload:
     "assetCode": "ATP",
     "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
     "isEligibilityRequired": false
+}
+```
+
+## `GET /asset/{assetHash}/kyc-providers`
+
+Request URL:
+```
+/asset/FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU/kyc-providers
+```
+
+Response JSON payload:
+```json
+{
+    "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
+    "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
+    "isEligibilityRequired": false,
+    "kycProviders": [
+        "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ"
+    ]
 }
 ```
