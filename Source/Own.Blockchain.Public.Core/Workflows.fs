@@ -694,7 +694,7 @@ module Workflows =
                 |> Serialization.deserializeBinary<TxEnvelopeDto>
                 |> fun txEnvelopeDto ->
                     (txHash, txEnvelopeDto)
-                    |> (if isResponse then TxFetched else TxReceived)
+                    |> if isResponse then TxFetched else TxReceived
                     |> Some
             |> Ok
 
@@ -706,7 +706,7 @@ module Workflows =
                 |> Serialization.deserializeBinary<EquivocationProofDto>
                 |> fun equivocationProofDto ->
                     equivocationProofDto
-                    |> (if isResponse then EquivocationProofFetched else EquivocationProofReceived)
+                    |> if isResponse then EquivocationProofFetched else EquivocationProofReceived
                     |> Some
             |> Ok
 
@@ -721,7 +721,7 @@ module Workflows =
                     | Ok _ -> None
                     | _ ->
                         (receivedBlock.Header.Number, blockEnvelopeDto)
-                        |> (if isResponse then BlockFetched else BlockReceived)
+                        |> if isResponse then BlockFetched else BlockReceived
                         |> Some
             }
 
