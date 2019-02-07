@@ -145,6 +145,7 @@ Response JSON payload:
 }
 ```
 
+
 ## `GET /address/{blockchainAddress}/assets`
 
 Request URL:
@@ -160,6 +161,7 @@ Response JSON payload:
     ]
 }
 ```
+
 
 ## `GET /address/{blockchainAddress}/stakes`
 
@@ -179,6 +181,7 @@ Response JSON payload:
     ]
 }
 ```
+
 
 ## `GET /validator/{blockchainAddress}/stakes`
 
@@ -246,6 +249,7 @@ Response JSON payload:
 }
 ```
 
+
 ## `GET /account/{accountHash}/votes?asset={assetHash}`
 
 Request URL:
@@ -294,6 +298,7 @@ Response JSON payload:
 }
 ```
 
+
 ## `GET /account/{accountHash}/eligibilities`
 
 Request URL:
@@ -315,6 +320,7 @@ Response JSON payload:
 }
 ```
 
+
 ## `GET /asset/{assetHash}`
 
 Request URL:
@@ -330,6 +336,7 @@ Response JSON payload:
     "isEligibilityRequired": false
 }
 ```
+
 
 ## `GET /asset/{assetHash}/kyc-providers`
 
