@@ -10,6 +10,7 @@ Endpoint | Verb | Description
 `/address/{blockchainAddress}` | `GET` | Address info
 `/address/{blockchainAddress}/accounts` | `GET` | List of accounts controlled by the specified address
 `/address/{blockchainAddress}/assets` | `GET` | List of assets controlled by the specified address
+`/address/{blockchainAddress}/stakes` | `GET` | Address' stakes
 `/account/{accountHash}?asset={assetHash}` | `GET` | Account info with asset balances, optionally filtered for a single asset specified in `asset` query string parameter.
 `/account/{accountHash}/votes?asset={assetHash}` | `GET` | List of votes for the account, optionally filtered for a single asset specified in `asset` query string parameter.
 `/account/{accountHash}/eligibilities` | `GET` | List of eligibilities for the account.
@@ -156,6 +157,25 @@ Response JSON payload:
 {
     "assets": [
         "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU"
+    ]
+}
+```
+
+## `GET /address/{blockchainAddress}/stakes`
+
+Request URL:
+```
+/address/CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD/stakes
+```
+
+Response JSON payload:
+```json
+{
+    "stakes": [
+        {
+            "validatorAddress": "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
+            "amount": 100
+        }
     ]
 }
 ```
