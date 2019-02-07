@@ -28,6 +28,8 @@ module Validation =
 
             if blockDto.Header.Timestamp < 0L then
                 yield AppError "Block.Header.Timestamp cannot be negative."
+            if blockDto.Header.Timestamp > Utils.getNetworkTimestamp () then
+                yield AppError "Block.Header.Timestamp cannot be in future."
 
             if blockDto.Header.ProposerAddress.IsNullOrWhiteSpace() then
                 yield AppError "Block.Header.ProposerAddress is missing."

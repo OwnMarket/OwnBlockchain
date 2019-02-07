@@ -556,6 +556,7 @@ module Consensus =
         equivocationProofExists
         requestTx
         requestEquivocationProof
+        isValidAddress
         applyBlockToCurrentState
         decodeHash
         createHash
@@ -610,14 +611,16 @@ module Consensus =
                 None
 
         let isValidBlock block =
-            match applyBlockToCurrentState block with
-            | Ok _ ->
-                true
-            | Error e ->
-                #if DEBUG
-                Log.appErrors e
-                #endif
-                false
+            block
+            |> Mapping.blockToDto
+            |> Validation.validateBlock isValidAddress
+            >>= applyBlockToCurrentState
+            |> Result.handle
+                (fun _ -> true)
+                (fun e ->
+                    Log.appErrors e
+                    false
+                )
 
         let sendConsensusMessage blockNumber consensusRound consensusMessage =
             if canParticipateInConsensus blockNumber = Some true then

@@ -479,6 +479,15 @@ module Workflows =
                 getBlock (block.Header.Number - 1)
                 |> Result.map Blocks.extractBlockFromEnvelopeDto
 
+            if block.Header.Timestamp <= previousBlock.Header.Timestamp then
+                return!
+                    sprintf
+                        "Block %i timestamp (%i) must be greater than the previous block timestamp (%i)."
+                        block.Header.Number.Value
+                        block.Header.Timestamp.Value
+                        previousBlock.Header.Timestamp.Value
+                    |> Result.appError
+
             if not (isValidSuccessorBlock previousBlock.Header.Hash block) then
                 return!
                     sprintf "Block %i is not a valid successor of the previous block." block.Header.Number.Value

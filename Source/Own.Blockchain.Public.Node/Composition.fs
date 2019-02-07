@@ -336,6 +336,7 @@ module Composition =
             equivocationProofExists
             Peers.requestTxFromPeer
             Peers.requestEquivocationProofFromPeer
+            Hashing.isValidBlockchainAddress
             applyBlockToCurrentState
             Hashing.decode
             Hashing.hash
