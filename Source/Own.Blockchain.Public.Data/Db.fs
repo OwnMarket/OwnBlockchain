@@ -422,6 +422,23 @@ module Db =
         |> DbTools.query<string> dbEngineType dbConnectionString sql
         |> List.map AssetHash
 
+    let getAddressStakes
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockchainAddress address)
+        =
+
+        let sql =
+            """
+            SELECT validator_address, amount
+            FROM stake
+            WHERE staker_address = @stakerAddress
+            """
+        [
+            "@stakerAddress", address |> box
+        ]
+        |> DbTools.query<AddressStakeInfoDto> dbEngineType dbConnectionString sql
+
     let getAccountState dbEngineType (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
         let sql =
             """
@@ -518,6 +535,29 @@ module Db =
                 ]
 
         DbTools.query<AccountVoteDto> dbEngineType dbConnectionString sql sqlParams
+
+    let getAccountEligibilities
+        dbEngineType
+        (dbConnectionString : string)
+        (AccountHash accountHash)
+        : AccountEligibilityInfoDto list
+        =
+
+        let sql =
+                """
+                SELECT a.asset_hash, e.is_primary_eligible, e.is_secondary_eligible, e.kyc_controller_address
+                FROM eligibility AS e
+                JOIN account AS ac USING (account_id)
+                JOIN asset AS a USING (asset_id)
+                WHERE ac.account_hash = @accountHash
+                """
+
+        let sqlParams =
+            [
+                "@accountHash", accountHash |> box
+            ]
+
+        DbTools.query<AccountEligibilityInfoDto> dbEngineType dbConnectionString sql sqlParams
 
     let getHoldingState
         dbEngineType

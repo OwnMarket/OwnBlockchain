@@ -105,6 +105,15 @@ module Api =
             return! response next ctx
         }
 
+    let getAddressStakesHandler blockchainAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAddressStakesApi (BlockchainAddress blockchainAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAccountHandler (accountHash : string): HttpHandler = fun next ctx ->
         task {
             let response =
@@ -122,6 +131,15 @@ module Api =
                 ctx.TryGetQueryStringValue "asset"
                 |> Option.map AssetHash
                 |> Composition.getAccountVotesApi (AccountHash accountHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getAccountEligibilitiesHandler (accountHash : string): HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAccountEligibilitiesApi (AccountHash accountHash)
                 |> toApiResponse
 
             return! response next ctx
@@ -159,8 +177,10 @@ module Api =
                 routef "/block/%d" getBlockHandler
                 routef "/address/%s/accounts" getAddressAccountsHandler
                 routef "/address/%s/assets" getAddressAssetsHandler
+                routef "/address/%s/stakes" getAddressStakesHandler
                 routef "/address/%s" getAddressHandler
                 routef "/account/%s/votes" getAccountVotesHandler
+                routef "/account/%s/eligibilities" getAccountEligibilitiesHandler
                 routef "/account/%s" getAccountHandler
                 routef "/asset/%s/kyc-providers" getAssetKycProvidersHandler
                 routef "/asset/%s" getAssetHandler

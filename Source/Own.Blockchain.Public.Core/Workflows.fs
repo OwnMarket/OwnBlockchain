@@ -950,6 +950,14 @@ module Workflows =
 
         Ok {GetAddressAssetsApiResponseDto.Assets = assets}
 
+    let getAddressStakesApi
+        (getAddressStakes : BlockchainAddress -> AddressStakeInfoDto list)
+        (address : BlockchainAddress)
+        : Result<GetAddressStakesApiResponseDto, AppErrors>
+        =
+
+        Ok {GetAddressStakesApiResponseDto.Stakes = getAddressStakes address}
+
     let getAccountApi
         (getAccountState : AccountHash -> AccountStateDto option)
         getAccountHoldings
@@ -979,9 +987,22 @@ module Workflows =
         | None ->
             sprintf "Account %s does not exist." accountHash.Value
             |> Result.appError
-        | Some accountState ->
-            getAccountVotes accountHash assetHash
-            |> Mapping.accountVotesDtosToGetAccoungVotesResponseDto accountHash accountState
+        | Some _ ->
+            Ok {Votes = getAccountVotes accountHash assetHash}
+
+    let getAccountEligibilitiesApi
+        (getAccountState : AccountHash -> AccountStateDto option)
+        getAccountEligibilities
+        (accountHash : AccountHash)
+        : Result<GetAccountApiEligibilitiesDto, AppErrors>
+        =
+
+        match getAccountState accountHash with
+        | None ->
+            sprintf "Account %s does not exist." accountHash.Value
+            |> Result.appError
+        | Some _ ->
+            {Eligibilities = getAccountEligibilities accountHash}
             |> Ok
 
     let getAssetApi
@@ -1009,7 +1030,8 @@ module Workflows =
         | None ->
             sprintf "Asset %s does not exist." assetHash.Value
             |> Result.appError
-        | Some assetState ->
-            getKycProvidersState assetHash
-            |> Mapping.assetKycProvidersDtosToGetAssetKycProvidersResponseDto assetHash assetState
-            |> Ok
+        | Some _ ->
+            let kycProviders =
+                getKycProvidersState assetHash
+                |> List.map (fun provider -> provider.Value)
+            Ok {KycProviders = kycProviders}

@@ -11,9 +11,10 @@ Endpoint | Verb | Description
 `/address/{blockchainAddress}/accounts` | `GET` | List of accounts controlled by the specified address
 `/address/{blockchainAddress}/assets` | `GET` | List of assets controlled by the specified address
 `/account/{accountHash}?asset={assetHash}` | `GET` | Account info with asset balances, optionally filtered for a single asset specified in `asset` query string parameter.
-`/account/{accountHash}/votes?asset={assetHash}` | `GET` | Account info with votes, optionally filtered for a single asset specified in `asset` query string parameter.
+`/account/{accountHash}/votes?asset={assetHash}` | `GET` | List of votes for the account, optionally filtered for a single asset specified in `asset` query string parameter.
+`/account/{accountHash}/eligibilities` | `GET` | List of eligibilities for the account.
 `/asset/{assetHash}` | `GET` | Asset info
-`/asset/{assetHash}/kyc-providers` | `GET` | Asset info with KYC providers
+`/asset/{assetHash}/kyc-providers` | `GET` | List of KYC providers for the asset
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
 
@@ -216,8 +217,6 @@ Request URL:
 Response JSON payload:
 ```json
 {
-    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
-    "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
     "votes": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
@@ -226,8 +225,8 @@ Response JSON payload:
             "voteWeight": 0
         },
         {
-            "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
-            "resolutionHash": "RSH2",
+            "assetHash": "ETrivt162Fao3yEdsE1ZaBAdq9s6iRsGHQEBwDwUQYCd",
+            "resolutionHash": "RSH1",
             "voteHash": "No",
             "voteWeight": 0
         }
@@ -245,20 +244,33 @@ Request URL:
 Response JSON payload:
 ```json
 {
-    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
-    "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
     "votes": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
             "resolutionHash": "RSH1",
             "voteHash": "Yes",
             "voteWeight": 0
-        },
+        }
+    ]
+}
+```
+
+## `GET /account/{accountHash}/eligibilities`
+
+Request URL:
+```
+/account/4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9/eligibilities
+```
+
+Response JSON payload:
+```json
+{
+    "eligibilities": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
-            "resolutionHash": "RSH2",
-            "voteHash": "No",
-            "voteWeight": 0
+            "isPrimaryEligible": true,
+            "isSecondaryEligible": true,
+            "kycControllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ"
         }
     ]
 }
@@ -290,9 +302,6 @@ Request URL:
 Response JSON payload:
 ```json
 {
-    "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
-    "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
-    "isEligibilityRequired": false,
     "kycProviders": [
         "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ"
     ]

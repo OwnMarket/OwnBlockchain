@@ -314,6 +314,14 @@ type EligibilityStateDto = {
 }
 
 [<CLIMutable>]
+type AccountEligibilityInfoDto = {
+    AssetHash : string
+    IsPrimaryEligible : bool
+    IsSecondaryEligible : bool
+    KycControllerAddress : string
+}
+
+[<CLIMutable>]
 type AccountStateDto = {
     ControllerAddress : string
 }
@@ -408,6 +416,12 @@ type StakeInfoDto = {
     StakerAddress : string
     ValidatorAddress : string
     StakeState : StakeStateDto
+}
+
+[<CLIMutable>]
+type AddressStakeInfoDto = {
+    ValidatorAddress : string
+    Amount : decimal
 }
 
 [<CLIMutable>]
@@ -563,6 +577,10 @@ type GetAddressAssetsApiResponseDto = {
     Assets : string list
 }
 
+type GetAddressStakesApiResponseDto = {
+    Stakes : AddressStakeInfoDto list
+}
+
 type GetAccountApiHoldingDto = {
     AssetHash : string
     Balance : decimal
@@ -575,14 +593,13 @@ type GetAccountApiResponseDto = {
 }
 
 type GetAccountApiVoteDto = {
-    AccountHash : string
-    ControllerAddress : string
     Votes : AccountVoteDto list
 }
 
+type GetAccountApiEligibilitiesDto = {
+    Eligibilities : AccountEligibilityInfoDto list
+}
+
 type GetAssetApiKycProvidersDto = {
-    AssetHash : string
-    ControllerAddress : string
-    IsEligibilityRequired : bool
     KycProviders : string list
 }

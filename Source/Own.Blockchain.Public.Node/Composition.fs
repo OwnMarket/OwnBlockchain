@@ -66,12 +66,14 @@ module Composition =
     let getChxBalanceState = Db.getChxBalanceState Config.DbEngineType Config.DbConnectionString
     let getAddressAccounts = Db.getAddressAccounts Config.DbEngineType Config.DbConnectionString
     let getAddressAssets = Db.getAddressAssets Config.DbEngineType Config.DbConnectionString
+    let getAddressStakes = Db.getAddressStakes Config.DbEngineType Config.DbConnectionString
 
     let getAccountState = Db.getAccountState Config.DbEngineType Config.DbConnectionString
     let getAccountHoldings = Db.getAccountHoldings Config.DbEngineType Config.DbConnectionString
     let getHoldingState = Db.getHoldingState Config.DbEngineType Config.DbConnectionString
 
     let getAccountVotes = Db.getAccountVotes Config.DbEngineType Config.DbConnectionString
+    let getAccountEligibilities = Db.getAccountEligibilities Config.DbEngineType Config.DbConnectionString
     let getVoteState = Db.getVoteState Config.DbEngineType Config.DbConnectionString
 
     let getEligibilityState = Db.getEligibilityState Config.DbEngineType Config.DbConnectionString
@@ -397,9 +399,13 @@ module Composition =
 
     let getAddressAssetsApi = Workflows.getAddressAssetsApi getAddressAssets
 
+    let getAddressStakesApi = Workflows.getAddressStakesApi getAddressStakes
+
     let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
 
     let getAccountVotesApi = Workflows.getAccountVotesApi getAccountState getAccountVotes
+
+    let getAccountEligibilitiesApi = Workflows.getAccountEligibilitiesApi getAccountState getAccountEligibilities
 
     let getAssetApi = Workflows.getAssetApi getAssetState
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getKycProvidersState

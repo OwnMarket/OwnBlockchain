@@ -610,31 +610,6 @@ module Mapping =
             Holdings = List.map mapFn holdings
         }
 
-    let accountVotesDtosToGetAccoungVotesResponseDto
-        (AccountHash accountHash)
-        (accountState : AccountStateDto)
-        (votes : AccountVoteDto list)
-        =
-
-        {
-            AccountHash = accountHash
-            ControllerAddress = accountState.ControllerAddress
-            Votes = votes
-        }
-
-    let assetKycProvidersDtosToGetAssetKycProvidersResponseDto
-        (AssetHash assetHash)
-        (assetState : AssetStateDto)
-        (kycProviders : BlockchainAddress list)
-        =
-
-        {
-            AssetHash = assetHash
-            ControllerAddress = assetState.ControllerAddress
-            IsEligibilityRequired = assetState.IsEligibilityRequired
-            KycProviders = kycProviders |> List.map (fun a -> a.Value)
-        }
-
     let blockEnvelopeDtoToGetBlockApiResponseDto (blockEnvelopeDto : BlockEnvelopeDto) =
         let blockDto = blockEnvelopeDto.Block
 
