@@ -999,3 +999,19 @@ module Workflows =
         | Some assetState ->
             assetState
             |> Ok
+
+    let getAssetKycProvidersApi
+        (getAssetState : AssetHash -> AssetStateDto option)
+        (getKycProvidersState : AssetHash -> BlockchainAddress list)
+        (assetHash : AssetHash)
+        : Result<GetAssetApiKycProvidersDto, AppErrors>
+        =
+
+        match getAssetState assetHash with
+        | None ->
+            sprintf "Asset %s does not exist." assetHash.Value
+            |> Result.appError
+        | Some assetState ->
+            getKycProvidersState assetHash
+            |> Mapping.assetKycProvidersDtosToGetAssetKycProvidersResponseDto assetHash assetState
+            |> Ok

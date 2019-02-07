@@ -622,6 +622,19 @@ module Mapping =
             Votes = votes
         }
 
+    let assetKycProvidersDtosToGetAssetKycProvidersResponseDto
+        (AssetHash assetHash)
+        (assetState : AssetStateDto)
+        (kycProviders : BlockchainAddress list)
+        =
+
+        {
+            AssetHash = assetHash
+            ControllerAddress = assetState.ControllerAddress
+            IsEligibilityRequired = assetState.IsEligibilityRequired
+            KycProviders = kycProviders |> List.map (fun a -> a.Value)
+        }
+
     let blockEnvelopeDtoToGetBlockApiResponseDto (blockEnvelopeDto : BlockEnvelopeDto) =
         let blockDto = blockEnvelopeDto.Block
 

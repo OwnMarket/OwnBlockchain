@@ -127,6 +127,16 @@ module Api =
             return! response next ctx
         }
 
+    let getAssetKycProvidersHandler (assetHash : string): HttpHandler = fun next ctx ->
+        task {
+
+            let response =
+                Composition.getAssetKycProvidersApi (AssetHash assetHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAssetHandler (assetHash : string): HttpHandler = fun next ctx ->
         task {
 
@@ -153,6 +163,7 @@ module Api =
                 routef "/address/%s" getAddressHandler
                 routef "/account/%s/votes" getAccountVotesHandler
                 routef "/account/%s" getAccountHandler
+                routef "/asset/%s/kyc-providers" getAssetKycProvidersHandler
                 routef "/asset/%s" getAssetHandler
             ]
             POST >=> choose [

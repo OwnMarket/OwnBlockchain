@@ -579,3 +579,10 @@ type GetAccountApiVoteDto = {
     ControllerAddress : string
     Votes : AccountVoteDto list
 }
+
+type GetAssetApiKycProvidersDto = {
+    AssetHash : string
+    ControllerAddress : string
+    IsEligibilityRequired : bool
+    KycProviders : string list
+}
