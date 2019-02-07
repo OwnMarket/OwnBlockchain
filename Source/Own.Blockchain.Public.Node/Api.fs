@@ -127,9 +127,17 @@ module Api =
             return! response next ctx
         }
 
+    let getAssetHandler (assetHash : string): HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAssetApi (AssetHash assetHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAssetKycProvidersHandler (assetHash : string): HttpHandler = fun next ctx ->
         task {
-
             let response =
                 Composition.getAssetKycProvidersApi (AssetHash assetHash)
                 |> toApiResponse
@@ -137,15 +145,6 @@ module Api =
             return! response next ctx
         }
 
-    let getAssetHandler (assetHash : string): HttpHandler = fun next ctx ->
-        task {
-
-            let response =
-                Composition.getAssetApi (AssetHash assetHash)
-                |> toApiResponse
-
-            return! response next ctx
-        }
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
