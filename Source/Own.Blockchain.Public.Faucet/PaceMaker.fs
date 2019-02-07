@@ -11,7 +11,7 @@ module PaceMaker =
 
             let lastDistributionTime =
                 try
-                    let timeSinceLastDistribution = Utils.getUnixTimestamp () - lastDistributionTime
+                    let timeSinceLastDistribution = Utils.getMachineTimestamp () - lastDistributionTime
                     if timeSinceLastDistribution >= distributionInterval then
                         match Composition.distributeChx (), Composition.distributeAsset () with
                         | None, None -> lastDistributionTime
@@ -21,7 +21,7 @@ module PaceMaker =
                                 | Some data ->
                                     Log.infof "Distribution output: %s" data
                                 | None -> ()
-                            Utils.getUnixTimestamp ()
+                            Utils.getMachineTimestamp ()
                     else
                         lastDistributionTime
                 with

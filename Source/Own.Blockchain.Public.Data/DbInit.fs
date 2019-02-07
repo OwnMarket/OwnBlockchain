@@ -66,7 +66,7 @@ module DbInit =
                 """
                 dbChange.Script
                 dbChange.Number
-                (Utils.getUnixTimestamp ())
+                (Utils.getMachineTimestamp ())
 
         match dbEngineType with
         | Firebird ->

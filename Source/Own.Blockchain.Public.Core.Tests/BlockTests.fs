@@ -678,7 +678,7 @@ module BlockTests =
         let proposerWallet = Signing.generateWallet ()
         let blockNumber = BlockNumber 1L
         let configurationBlockNumber = BlockNumber 0L
-        let timestamp = Utils.getUnixTimestamp () |> Timestamp
+        let timestamp = Utils.getNetworkTimestamp () |> Timestamp
 
         let previousBlockHash =
             Signing.generateRandomBytes 64
@@ -1032,7 +1032,7 @@ module BlockTests =
         let proposerWallet = Signing.generateWallet ()
         let blockNumber = BlockNumber 1L
         let configurationBlockNumber = BlockNumber 0L
-        let timestamp = Utils.getUnixTimestamp () |> Timestamp
+        let timestamp = Utils.getNetworkTimestamp () |> Timestamp
 
         let previousBlockHash =
             "RIGHT_PREVIOUS_BLOCK_HASH"

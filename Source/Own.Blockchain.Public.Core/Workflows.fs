@@ -294,7 +294,7 @@ module Workflows =
         : Result<Block, AppErrors> option
         =
 
-        let timestamp = Utils.getUnixTimestamp () |> Timestamp
+        let timestamp = Utils.getNetworkTimestamp () |> Timestamp
 
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage

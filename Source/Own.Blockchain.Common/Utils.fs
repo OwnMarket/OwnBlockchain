@@ -5,9 +5,16 @@ open System
 [<RequireQualifiedAccess>]
 module Utils =
 
-    /// Unix timestamp in milliseconds.
-    let getUnixTimestamp () =
+    /// Machine time as Unix timestamp in milliseconds.
+    let getMachineTimestamp () =
         System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+
+    /// Number of milliseconds network time is ahead (+) or behind (-) local machine time.
+    let mutable networkTimeOffset = 0L
+
+    /// Network time as Unix timestamp in milliseconds (local timestamp adjusted for network time offset).
+    let getNetworkTimestamp () =
+        getMachineTimestamp () + networkTimeOffset
 
     /// Truncates a decimal number to blockchain default of 7 decimal digits.
     let round (x : decimal) =
