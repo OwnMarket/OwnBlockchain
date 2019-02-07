@@ -294,6 +294,7 @@ type TxErrorCode =
     | SenderIsNotAssetControllerOrApprovedKycProvider = 640s
     | NotEligibleInPrimary = 650s
     | NotEligibleInSecondary = 660s
+    | KycProviderAldreadyExists = 670s
 
     // Validators
     | InsufficientStake = 910s

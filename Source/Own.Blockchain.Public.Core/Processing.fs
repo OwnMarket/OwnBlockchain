@@ -735,8 +735,14 @@ module Processing =
         | None ->
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
-            state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some Add)
-            Ok state
+            let providerExists =
+                state.GetKycProviders action.AssetHash
+                |> List.exists (fun provider -> provider = action.ProviderAddress)
+            if providerExists then
+                Error TxErrorCode.KycProviderAldreadyExists
+            else
+                state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some Add)
+                Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 

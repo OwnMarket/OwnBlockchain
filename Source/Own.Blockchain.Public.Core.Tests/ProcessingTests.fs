@@ -5664,7 +5664,7 @@ module ProcessingTests =
             None
 
         let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
+            []
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -5728,6 +5728,129 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.KycProviders.Count = 1 @>
         test <@ output.KycProviders.[assetHash].[senderWallet.Address] = Add @>
+
+    [<Fact>]
+    let ``Processing.processChanges AddKycProvider fails if provider already exists`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash = AssetHash "EQ1"
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "AddKycProvider"
+                    ActionData =
+                        {
+                            AssetHash = assetHash.Value
+                            ProviderAddress = senderWallet.Address.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            None
+
+        let getEligibilityState _ =
+            None
+
+        let getKycProvidersState _ =
+            [senderWallet.Address]
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
+        let getLockedAndBlacklistedValidators _ =
+            []
+
+        let getValidatorState _ =
+            None
+
+        let getStakeState _ =
+            failwith "getStakeState should not be called"
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processChanges
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycProvidersState
+                getAccountState
+                getAssetState
+                getAssetHashByCode
+                getValidatorState
+                getStakeState
+                getTotalChxStaked
+                getTopStakers
+                getLockedAndBlacklistedValidators
+                (ChxAmount 0m)
+                0s
+                0s
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                None
+                []
+                txSet
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.KycProviderAldreadyExists)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.KycProviders.Count = 1 @>
 
     [<Fact>]
     let ``Processing.processChanges AddKycProvider various errors`` () =
@@ -6231,7 +6354,7 @@ module ProcessingTests =
             None
 
         let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
+            []
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
