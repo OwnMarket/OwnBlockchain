@@ -544,13 +544,13 @@ module Db =
         =
 
         let sql =
-                """
-                SELECT a.asset_hash, e.is_primary_eligible, e.is_secondary_eligible, e.kyc_controller_address
-                FROM eligibility AS e
-                JOIN account AS ac USING (account_id)
-                JOIN asset AS a USING (asset_id)
-                WHERE ac.account_hash = @accountHash
-                """
+            """
+            SELECT a.asset_hash, e.is_primary_eligible, e.is_secondary_eligible, e.kyc_controller_address
+            FROM eligibility AS e
+            JOIN account AS ac USING (account_id)
+            JOIN asset AS a USING (asset_id)
+            WHERE ac.account_hash = @accountHash
+            """
 
         let sqlParams =
             [
