@@ -24,7 +24,7 @@
         - Network > Adapter 2:
             - Attached To: `Host-only Adapter`
 
-- Install [Ubuntu 16.04.x LTS](https://www.ubuntu.com/download/desktop) on the virtual machine. If you experience performance issues, you can install [Xubuntu](https://xubuntu.org) instead, which is less resource intensive.
+- Install [Ubuntu 18.04.x LTS](https://www.ubuntu.com/download/desktop) on the virtual machine. If you experience performance issues, you can install [Xubuntu](https://xubuntu.org) instead, which is less resource intensive.
     - Username: `developer`
     - Machine name: `own`
 

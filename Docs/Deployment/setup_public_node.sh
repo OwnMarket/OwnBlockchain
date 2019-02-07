@@ -15,7 +15,7 @@ sudo -u postgres psql -c 'CREATE EXTENSION adminpack'
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// .NET Core'
 echo '////////////////////////////////////////////////////////////////////////////////'
-wget -q -O /tmp/packages-microsoft-prod.deb https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+wget -q -O /tmp/packages-microsoft-prod.deb https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
 sudo dpkg -i /tmp/packages-microsoft-prod.deb
 sudo apt install -y apt-transport-https
 sudo apt update -y

@@ -17,7 +17,7 @@ sudo apt upgrade -y
 sudo apt install -y curl git vim tmux htop mc
 
 # .NET Core
-wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 sudo apt install -y apt-transport-https
 sudo apt update
