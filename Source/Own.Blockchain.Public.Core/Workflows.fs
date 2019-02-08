@@ -947,7 +947,7 @@ module Workflows =
         : Result<GetAddressApiResponseDto, AppErrors>
         =
 
-        let chxDetailedBalance = getDetailedChxBalance blockchainAddress
+        let detailedChxBalance = getDetailedChxBalance blockchainAddress
         let nonce =
             match getChxBalanceState blockchainAddress with
             | Some state -> state.Nonce
@@ -955,7 +955,7 @@ module Workflows =
 
         {
             BlockchainAddress = blockchainAddress.Value
-            Balance = chxDetailedBalance
+            Balance = detailedChxBalance
             Nonce = nonce
         }
         |> Ok
