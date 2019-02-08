@@ -224,8 +224,8 @@ module Composition =
             getValidatorState
             (ChxAmount Config.ValidatorDeposit)
 
-    let getChxDetailedBalance =
-        Workflows.getChxDetailedBalance
+    let getDetailedChxBalance =
+        Workflows.getDetailedChxBalance
             getChxBalanceState
             getTotalChxStaked
             getValidatorState
@@ -407,7 +407,7 @@ module Composition =
 
     let getBlockApi = Workflows.getBlockApi getLastAppliedBlockNumber getBlock
 
-    let getAddressApi = Workflows.getAddressApi getChxBalanceState getChxDetailedBalance
+    let getAddressApi = Workflows.getAddressApi getChxBalanceState getDetailedChxBalance
 
     let getAddressAccountsApi = Workflows.getAddressAccountsApi getAddressAccounts
 

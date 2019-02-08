@@ -9,7 +9,7 @@ open Own.Blockchain.Public.Core.Events
 
 module Workflows =
 
-    let getChxDetailedBalance
+    let getDetailedChxBalance
         getChxBalanceState
         (getTotalChxStaked : BlockchainAddress -> ChxAmount)
         getValidatorState
@@ -50,7 +50,7 @@ module Workflows =
         =
 
         let detailedBalance =
-            getChxDetailedBalance
+            getDetailedChxBalance
                 getChxBalanceState
                 getTotalChxStaked
                 getValidatorState
@@ -942,12 +942,12 @@ module Workflows =
 
     let getAddressApi
         (getChxBalanceState : BlockchainAddress -> ChxBalanceStateDto option)
-        getChxDetailedBalance
+        getDetailedChxBalance
         (blockchainAddress : BlockchainAddress)
         : Result<GetAddressApiResponseDto, AppErrors>
         =
 
-        let chxDetailedBalance = getChxDetailedBalance blockchainAddress
+        let chxDetailedBalance = getDetailedChxBalance blockchainAddress
         let nonce =
             match getChxBalanceState blockchainAddress with
             | Some state -> state.Nonce
