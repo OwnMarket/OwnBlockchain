@@ -83,6 +83,7 @@ module Composition =
     let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
     let getAssetHashByCode = Db.getAssetHashByCode Config.DbEngineType Config.DbConnectionString
 
+    let getAllValidators () = Db.getAllValidators Config.DbEngineType Config.DbConnectionString
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
     let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString
     let getLockedAndBlacklistedValidators () =
@@ -416,6 +417,8 @@ module Composition =
     let getAssetApi = Workflows.getAssetApi getAssetState
 
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getKycProvidersState
+
+    let getValidatorsApi = Workflows.getValidatorsApi getCurrentValidators getAllValidators
 
     let getValidatorStakesApi = Workflows.getValidatorStakesApi getValidatorState getValidatorStakes
 

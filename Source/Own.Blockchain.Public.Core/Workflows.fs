@@ -1045,6 +1045,45 @@ module Workflows =
                 |> List.map (fun provider -> provider.Value)
             Ok {KycProviders = kycProviders}
 
+    let getValidatorsApi
+        (getCurrentValidators : unit -> ValidatorSnapshot list)
+        (getAllValidators : unit -> GetValidatorInfoApiDto list)
+        (activeOnly : bool option)
+        : Result<GetValidatorsApiDto, AppErrors>
+        =
+
+        let currentValidators =
+            getCurrentValidators()
+            |> List.map (fun v ->
+                {
+                    ValidatorAddress = v.ValidatorAddress.Value
+                    NetworkAddress = v.NetworkAddress.Value
+                    SharedRewardPercent = v.SharedRewardPercent
+                    IsActive = true
+                }
+            )
+
+        let allValidators =
+            getAllValidators()
+            |> List.map (fun v ->
+                let isActive =
+                    currentValidators
+                    |> List.map (fun c -> c.ValidatorAddress)
+                    |> List.contains v.ValidatorAddress
+                {v with IsActive = isActive}
+            )
+
+        let validators =
+            match activeOnly with
+            | None -> allValidators
+            | Some isActive ->
+                if isActive then
+                    currentValidators
+                else
+                    allValidators
+
+        Ok {Validators = validators}
+
     let getValidatorStakesApi
         getValidatorState
         (getValidatorStakes : BlockchainAddress -> ValidatorStakeInfoDto list)

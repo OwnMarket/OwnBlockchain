@@ -727,6 +727,21 @@ module Db =
         | [assetHash] -> assetHash |> AssetHash |> Some
         | _ -> failwithf "Multiple asset hashes found for asset code %A" assetCode
 
+    let getAllValidators
+        dbEngineType
+        (dbConnectionString : string)
+        : GetValidatorInfoApiDto list
+        =
+
+        let sql =
+            """
+            SELECT validator_address, network_address, shared_reward_percent
+            FROM validator
+            ORDER by validator_address
+            """
+
+        DbTools.query<GetValidatorInfoApiDto> dbEngineType dbConnectionString sql []
+
     let getValidatorState
         dbEngineType
         (dbConnectionString : string)

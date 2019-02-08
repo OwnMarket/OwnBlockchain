@@ -163,6 +163,17 @@ module Api =
             return! response next ctx
         }
 
+    let getValidatorsHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                ctx.TryGetQueryStringValue "activeOnly"
+                |> Option.map (bool.TryParse >> snd)
+                |> Composition.getValidatorsApi
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getValidatorStakesHandler blockchainAddress : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -181,6 +192,7 @@ module Api =
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
                 route "/stats" >=> getStatsHandler
+                route "/validators" >=> getValidatorsHandler
                 routef "/tx/%s" getTxHandler
                 routef "/equivocation/%s" getEquivocationProofHandler
                 routef "/block/%d" getBlockHandler

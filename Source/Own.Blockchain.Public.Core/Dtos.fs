@@ -519,6 +519,14 @@ type SubmitTxResponseDto = {
     TxHash : string
 }
 
+[<CLIMutable>]
+type GetValidatorInfoApiDto = {
+    ValidatorAddress : string
+    NetworkAddress : string
+    SharedRewardPercent : decimal
+    IsActive : bool
+}
+
 type GetTxApiResponseDto = {
     TxHash : string
     SenderAddress : string
@@ -612,4 +620,8 @@ type GetAccountApiEligibilitiesDto = {
 
 type GetAssetApiKycProvidersDto = {
     KycProviders : string list
+}
+
+type GetValidatorsApiDto = {
+    Validators : GetValidatorInfoApiDto list
 }
