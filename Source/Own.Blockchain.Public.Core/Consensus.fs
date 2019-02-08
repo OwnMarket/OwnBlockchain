@@ -610,7 +610,7 @@ module Consensus =
             else
                 None
 
-        let isValidBlock block =
+        let isValidBlock = memoizeBy (fun (b : Block) -> b.Header.Hash) <| fun block ->
             block
             |> Mapping.blockToDto
             |> Validation.validateBlock isValidAddress

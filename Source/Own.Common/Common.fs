@@ -22,6 +22,11 @@ module Common =
         let cache = ConcurrentDictionary<int * 'TIn, 'TOut>()
         fun x -> cache.GetOrAdd((Thread.CurrentThread.ManagedThreadId, x), fun _ -> f x)
 
+    /// Memoize by key created from the input value to avoid storing large keys.
+    let memoizeBy (keyPredicate : 'TIn -> 'TKey) (f : 'TIn -> 'TOut) =
+        let cache = ConcurrentDictionary<'TKey, 'TOut>()
+        fun x -> cache.GetOrAdd(keyPredicate x, fun _ -> f x)
+
     /// Memoize the value once the calculated output satisfies the condition.
     let memoizeWhen (condition : 'TOut -> bool) (f : 'TIn -> 'TOut) =
         let cache = ConcurrentDictionary<'TIn, 'TOut>()
