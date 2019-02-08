@@ -212,7 +212,6 @@ module Composition =
             Consensus.createConsensusMessageHash
             Hashing.merkleTree
             calculateConfigurationBlockNumberForNewBlock
-            (ChxAmount Config.MinTxActionFee)
             (ChxAmount Config.ValidatorDeposit)
             (Convert.ToInt16 Config.ValidatorDepositLockTime)
             (Convert.ToInt16 Config.ValidatorBlacklistTime)
@@ -242,6 +241,7 @@ module Composition =
             getPendingEquivocationProofs
             getChxBalanceState
             getAvailableChxBalance
+            (ChxAmount Config.MinTxActionFee)
             Config.MaxTxCountPerBlock
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)

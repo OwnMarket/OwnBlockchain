@@ -202,7 +202,6 @@ module Workflows =
         createConsensusMessageHash
         createMerkleTree
         (calculateConfigurationBlockNumberForNewBlock : BlockNumber -> BlockNumber)
-        minTxActionFee
         validatorDeposit
         validatorDepositLockTime
         validatorBlacklistTime
@@ -311,6 +310,7 @@ module Workflows =
         (getPendingEquivocationProofs : BlockNumber -> EquivocationInfoDto list)
         getChxBalanceStateFromStorage
         getAvailableChxBalanceFromStorage
+        minTxActionFee
         maxTxCountPerBlock
         addressFromPrivateKey
         validatorPrivateKey
@@ -329,6 +329,7 @@ module Workflows =
                 getPendingTxs
                 getChxBalanceState
                 getAvailableChxBalance
+                minTxActionFee
                 maxTxCountPerBlock
             with
         | [] -> None // Nothing to propose.

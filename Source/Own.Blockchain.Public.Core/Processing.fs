@@ -823,6 +823,7 @@ module Processing =
         getPendingTxs
         getChxBalanceState
         getAvailableChxBalance
+        minTxActionFee
         maxTxCountPerBlock
         : PendingTxInfo list
         =
@@ -830,7 +831,7 @@ module Processing =
         let rec getTxSet txHashesToSkip (txSet : PendingTxInfo list) =
             let txCountToFetch = maxTxCountPerBlock - txSet.Length
             let fetchedTxs =
-                getPendingTxs txHashesToSkip txCountToFetch
+                getPendingTxs minTxActionFee txHashesToSkip txCountToFetch
                 |> List.map Mapping.pendingTxInfoFromDto
             let txSet = excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance (txSet @ fetchedTxs)
             if txSet.Length = maxTxCountPerBlock || fetchedTxs.Length = 0 then

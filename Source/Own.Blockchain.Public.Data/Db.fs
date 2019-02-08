@@ -65,6 +65,7 @@ module Db =
     let getPendingTxs
         dbEngineType
         (dbConnectionString : string)
+        (ChxAmount minTxFee)
         (txsToSkip : TxHash list)
         (txCountToFetch : int)
         : PendingTxInfoDto list
@@ -78,7 +79,7 @@ module Db =
 
         let skipConditionPattern =
             if txsToSkipParamValue <> "" then
-                sprintf "WHERE tx_hash NOT IN (%s)" (txsToSkipParamValue.TrimEnd(','))
+                sprintf "AND tx_hash NOT IN (%s)" (txsToSkipParamValue.TrimEnd(','))
             else
                 ""
 
@@ -89,6 +90,7 @@ module Db =
                     """
                     SELECT FIRST @txCountToFetch tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
                     FROM tx
+                    WHERE fee >= @minTxFee
                     %s
                     ORDER BY fee DESC, tx_id
                     """
@@ -98,6 +100,7 @@ module Db =
                     """
                     SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
                     FROM tx
+                    WHERE fee >= @minTxFee
                     %s
                     ORDER BY fee DESC, tx_id
                     LIMIT @txCountToFetch
@@ -106,6 +109,7 @@ module Db =
 
         let sqlParams =
             [
+                "@minTxFee", minTxFee |> box
                 "@txCountToFetch", txCountToFetch |> box
             ]
 
