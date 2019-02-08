@@ -9,13 +9,13 @@ open Own.Blockchain.Public.Core.Events
 
 module Workflows =
 
-    let getAvailableChxBalance
+    let getChxDetailedBalance
         getChxBalanceState
-        getTotalChxStaked
+        (getTotalChxStaked : BlockchainAddress -> ChxAmount)
         getValidatorState
         validatorDeposit
         senderAddress
-        : ChxAmount
+        : ChxDetailedBalanceDto
         =
 
         let chxBalance =
@@ -33,7 +33,31 @@ module Workflows =
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
 
-        chxBalance - chxStaked - validatorDeposit
+        {
+            Total = chxBalance.Value
+            Staked = chxStaked.Value
+            Deposit = validatorDeposit.Value
+            Available = (chxBalance - chxStaked - validatorDeposit).Value
+        }
+
+    let getAvailableChxBalance
+        getChxBalanceState
+        getTotalChxStaked
+        getValidatorState
+        validatorDeposit
+        senderAddress
+        : ChxAmount
+        =
+
+        let detailedBalance =
+            getChxDetailedBalance
+                getChxBalanceState
+                getTotalChxStaked
+                getValidatorState
+                validatorDeposit
+                senderAddress
+
+        ChxAmount detailedBalance.Available
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain
@@ -917,23 +941,24 @@ module Workflows =
             >>= (Mapping.blockEnvelopeDtoToGetBlockApiResponseDto >> Ok)
 
     let getAddressApi
-        getChxBalanceState
+        (getChxBalanceState : BlockchainAddress -> ChxBalanceStateDto option)
+        getChxDetailedBalance
         (blockchainAddress : BlockchainAddress)
         : Result<GetAddressApiResponseDto, AppErrors>
         =
 
-        match getChxBalanceState blockchainAddress with
-        | Some addressState ->
-            addressState
-            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto blockchainAddress
-            |> Ok
-        | None ->
-            {
-                ChxBalanceStateDto.Amount = 0m
-                Nonce = 0L
-            }
-            |> Mapping.chxBalanceStateDtoToGetAddressApiResponseDto blockchainAddress
-            |> Ok
+        let chxDetailedBalance = getChxDetailedBalance blockchainAddress
+        let nonce =
+            match getChxBalanceState blockchainAddress with
+            | Some state -> state.Nonce
+            | None -> 0L
+
+        {
+            BlockchainAddress = blockchainAddress.Value
+            Balance = chxDetailedBalance
+            Nonce = nonce
+        }
+        |> Ok
 
     let getAddressAccountsApi
         (getAddressAccounts : BlockchainAddress -> AccountHash list)

@@ -581,17 +581,6 @@ module Mapping =
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let chxBalanceStateDtoToGetAddressApiResponseDto
-        (BlockchainAddress blockchainAddress)
-        (chxBalanceState : ChxBalanceStateDto)
-        =
-
-        {
-            BlockchainAddress = blockchainAddress
-            Balance = chxBalanceState.Amount
-            Nonce = chxBalanceState.Nonce
-        }
-
     let accountHoldingDtosToGetAccoungHoldingsResponseDto
         (AccountHash accountHash)
         (accountState : AccountStateDto)

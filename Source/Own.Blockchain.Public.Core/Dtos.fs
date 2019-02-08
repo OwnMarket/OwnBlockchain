@@ -577,9 +577,16 @@ type GetBlockApiResponseDto = {
     Signatures : string list
 }
 
+type ChxDetailedBalanceDto = {
+    Total : decimal
+    Staked : decimal
+    Deposit : decimal
+    Available : decimal
+}
+
 type GetAddressApiResponseDto = {
     BlockchainAddress : string
-    Balance : decimal
+    Balance : ChxDetailedBalanceDto
     Nonce : int64
 }
 
