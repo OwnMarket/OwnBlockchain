@@ -328,12 +328,14 @@ module Mapping =
 
     let blockchainConfigurationFromDto (dto : BlockchainConfigurationDto) : BlockchainConfiguration =
         {
-            BlockchainConfiguration.Validators = dto.Validators |> List.map validatorSnapshotFromDto
+            BlockchainConfiguration.ConfigurationBlockDelta = dto.ConfigurationBlockDelta
+            Validators = dto.Validators |> List.map validatorSnapshotFromDto
         }
 
     let blockchainConfigurationToDto (config : BlockchainConfiguration) : BlockchainConfigurationDto =
         {
-            BlockchainConfigurationDto.Validators = config.Validators |> List.map validatorSnapshotToDto
+            BlockchainConfigurationDto.ConfigurationBlockDelta = config.ConfigurationBlockDelta
+            Validators = config.Validators |> List.map validatorSnapshotToDto
         }
 
     let blockFromDto (dto : BlockDto) : Block =

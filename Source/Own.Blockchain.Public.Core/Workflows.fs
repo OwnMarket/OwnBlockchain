@@ -73,6 +73,7 @@ module Workflows =
         genesisAddress
         genesisValidators
         validatorDepositLockTime
+        configurationBlockDelta
         =
 
         let genesisValidators =
@@ -92,7 +93,7 @@ module Workflows =
 
         let genesisBlock =
             Blocks.assembleGenesisBlock
-                decodeHash createHash createMerkleTree zeroHash zeroAddress genesisState
+                decodeHash createHash createMerkleTree zeroHash zeroAddress configurationBlockDelta genesisState
 
         genesisBlock, genesisState
 
@@ -201,7 +202,6 @@ module Workflows =
         createHash
         createConsensusMessageHash
         createMerkleTree
-        (calculateConfigurationBlockNumberForNewBlock : BlockNumber -> BlockNumber)
         validatorDeposit
         validatorDepositLockTime
         validatorBlacklistTime
@@ -209,6 +209,7 @@ module Workflows =
         (previousBlockHash : BlockHash)
         (blockNumber : BlockNumber)
         timestamp
+        configurationBlockNumber
         txSet
         equivocationProofs
         blockchainConfiguration
@@ -280,9 +281,6 @@ module Workflows =
                 equivocationProofs
                 txSet
 
-        let configurationBlockNumber =
-            calculateConfigurationBlockNumberForNewBlock blockNumber
-
         let block =
             Blocks.assembleBlock
                 decodeHash
@@ -303,7 +301,6 @@ module Workflows =
     let proposeBlock
         (getLastAppliedBlockNumber : unit -> BlockNumber)
         createBlock
-        isConfigurationBlock
         createNewBlockchainConfiguration
         getBlock
         getPendingTxs
@@ -359,9 +356,12 @@ module Workflows =
                     )
                     |> List.map (fun p -> p.EquivocationProofHash |> EquivocationProofHash)
 
-                let blockchainConfiguration =
-                    if isConfigurationBlock blockNumber then
-                        createNewBlockchainConfiguration ()
+                let configBlockNumber, currentConfiguration =
+                    Blocks.getConfigurationAtHeight getBlock lastAppliedBlock.Header.Number
+
+                let newConfiguration =
+                    if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = blockNumber then
+                        createNewBlockchainConfiguration currentConfiguration.ConfigurationBlockDelta
                         |> Some
                     else
                         None
@@ -372,9 +372,10 @@ module Workflows =
                         lastAppliedBlock.Header.Hash
                         blockNumber
                         timestamp
+                        configBlockNumber
                         txSet
                         equivocationProofs
-                        blockchainConfiguration
+                        newConfiguration
 
                 return block
             }
@@ -542,6 +543,7 @@ module Workflows =
                     previousBlock.Header.Hash
                     block.Header.Number
                     block.Header.Timestamp
+                    block.Header.ConfigurationBlockNumber
                     block.TxSet
                     block.EquivocationProofs
                     block.Configuration

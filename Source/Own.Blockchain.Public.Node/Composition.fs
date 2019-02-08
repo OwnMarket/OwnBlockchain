@@ -139,17 +139,7 @@ module Composition =
     // Blockchain Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let isConfigurationBlock =
-        Config.ConfigurationBlockDelta
-        |> int64
-        |> Blocks.isConfigurationBlock
-
-    let calculateConfigurationBlockNumberForNewBlock =
-        Config.ConfigurationBlockDelta
-        |> int64
-        |> Blocks.calculateConfigurationBlockNumberForNewBlock
-
-    let createNewBlockchainConfiguration () =
+    let createNewBlockchainConfiguration =
         Blocks.createNewBlockchainConfiguration getTopValidators
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,6 +157,7 @@ module Composition =
             (BlockchainAddress Config.GenesisAddress)
             Config.GenesisValidators
             (Convert.ToInt16 Config.ValidatorDepositLockTime)
+            Config.ConfigurationBlockDelta
 
     let signGenesisBlock =
         Workflows.signGenesisBlock
@@ -211,7 +202,6 @@ module Composition =
             Hashing.hash
             Consensus.createConsensusMessageHash
             Hashing.merkleTree
-            calculateConfigurationBlockNumberForNewBlock
             (ChxAmount Config.ValidatorDeposit)
             (Convert.ToInt16 Config.ValidatorDepositLockTime)
             (Convert.ToInt16 Config.ValidatorBlacklistTime)
@@ -234,7 +224,6 @@ module Composition =
         Workflows.proposeBlock
             getLastAppliedBlockNumber
             createBlock
-            isConfigurationBlock
             createNewBlockchainConfiguration
             getBlock
             getPendingTxs
@@ -331,7 +320,6 @@ module Composition =
             Peers.requestTxFromPeer
             Peers.requestEquivocationProofFromPeer
             publishEvent
-            Config.ConfigurationBlockDelta
             Config.MaxNumberOfBlocksToFetchInParallel
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

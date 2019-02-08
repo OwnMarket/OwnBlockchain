@@ -536,7 +536,8 @@ module BlockTests =
         // Blockchain Configuration
         let config =
             {
-                BlockchainConfiguration.Validators =
+                BlockchainConfiguration.ConfigurationBlockDelta = 4
+                Validators =
                     [
                         {
                             ValidatorSnapshot.ValidatorAddress = BlockchainAddress "AAAAA"
@@ -618,6 +619,7 @@ module BlockTests =
 
         let configRoot =
             [
+                "...D" // ConfigurationBlockDelta
                 "AAAAAGGG...A...............D............" // Validator 1
                 "BBBBBHHH...B...............E............" // Validator 2
                 "CCCCCIII...C...............F............" // Validator 3

@@ -178,7 +178,8 @@ type ValidatorSnapshotDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type BlockchainConfigurationDto = {
-    [<Key(0)>] Validators : ValidatorSnapshotDto list
+    [<Key(0)>] ConfigurationBlockDelta : int
+    [<Key(1)>] Validators : ValidatorSnapshotDto list
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

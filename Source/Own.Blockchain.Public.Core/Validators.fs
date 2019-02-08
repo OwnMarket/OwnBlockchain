@@ -31,26 +31,10 @@ module Validators =
         |> List.map Mapping.validatorSnapshotFromDto
 
     let getValidatorsAtHeight getBlock blockNumber =
-        let configBlock =
-            getBlock blockNumber
-            |> Result.map Blocks.extractBlockFromEnvelopeDto
-            >>= (fun b ->
-                if b.Configuration.IsSome then
-                    Ok b // This block is the configuration block
-                else
-                    getBlock b.Header.ConfigurationBlockNumber
-                    |> Result.map Blocks.extractBlockFromEnvelopeDto
-            )
-
-        match configBlock with
-        | Error e -> failwithf "Cannot get configuration block at height %i." blockNumber.Value
-        | Ok block ->
-            match block.Configuration with
-            | None -> failwithf "Cannot find configuration in configuration block %i." block.Header.Number.Value
-            | Some config ->
-                match config.Validators with
-                | [] -> failwithf "Cannot find validators in configuration block %i." block.Header.Number.Value
-                | validators -> validators
+        let configBlockNumber, config = Blocks.getConfigurationAtHeight getBlock blockNumber
+        match config.Validators with
+        | [] -> failwithf "Cannot find validators in configuration block %i." configBlockNumber.Value
+        | validators -> validators
 
     let getCurrentValidators getLastAppliedBlockNumber getBlock =
         getLastAppliedBlockNumber ()

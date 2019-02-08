@@ -232,7 +232,8 @@ module Blocks =
                 c.Validators
                 |> List.sortBy (fun v -> v.ValidatorAddress) // Ensure a predictable order
                 |> List.map (createValidatorSnapshotHash decodeHash createHash)
-            validatorSnapshotHashes
+
+            (c.ConfigurationBlockDelta |> int32ToBytes |> createHash) :: validatorSnapshotHashes
         |> createMerkleTree
 
     let createBlockHash
@@ -504,6 +505,7 @@ module Blocks =
         (createMerkleTree : string list -> MerkleTreeRoot)
         zeroHash
         zeroAddress
+        configurationBlockDelta
         (output : ProcessingOutput)
         : Block
         =
@@ -528,7 +530,8 @@ module Blocks =
 
         let blockchainConfiguration =
             {
-                BlockchainConfiguration.Validators = validatorSnapshots
+                BlockchainConfiguration.ConfigurationBlockDelta = configurationBlockDelta
+                Validators = validatorSnapshots
             }
             |> Some
 
@@ -545,31 +548,6 @@ module Blocks =
             equivocationProofs
             output
             blockchainConfiguration
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Configuration blocks
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let calculateConfigurationBlockNumberForNewBlock configurationBlockDelta (BlockNumber blockNumber) =
-        let offset =
-            match blockNumber % configurationBlockDelta with
-            | 0L -> configurationBlockDelta
-            | o -> o
-
-        BlockNumber (blockNumber - offset)
-
-    let isConfigurationBlock configurationBlockDelta (BlockNumber blockNumber) =
-        blockNumber % configurationBlockDelta = 0L
-
-    let createNewBlockchainConfiguration
-        (getTopValidators : unit -> ValidatorSnapshot list)
-        =
-
-        let validators = getTopValidators ()
-
-        {
-            BlockchainConfiguration.Validators = validators
-        }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Helpers
@@ -665,3 +643,39 @@ module Blocks =
             errors
             |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't happen either.")
             |> Error
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Configuration blocks
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let createNewBlockchainConfiguration
+        (getTopValidators : unit -> ValidatorSnapshot list)
+        configurationBlockDelta
+        =
+
+        let validators = getTopValidators ()
+
+        {
+            BlockchainConfiguration.ConfigurationBlockDelta = configurationBlockDelta
+            Validators = validators
+        }
+
+    let getConfigBlockAtHeight getBlock blockNumber =
+        getBlock blockNumber
+        |> Result.map extractBlockFromEnvelopeDto
+        >>= (fun b ->
+            if b.Configuration.IsSome then
+                Ok b // This block is the configuration block
+            else
+                getBlock b.Header.ConfigurationBlockNumber
+                |> Result.map extractBlockFromEnvelopeDto
+        )
+        |> Result.handle
+            id
+            (fun _ -> failwithf "Cannot get configuration block at height %i." blockNumber.Value)
+
+    let getConfigurationAtHeight getBlock blockNumber =
+        let configBlock = getConfigBlockAtHeight getBlock blockNumber
+        match configBlock.Configuration with
+        | None -> failwithf "Cannot find configuration in configuration block %i." configBlock.Header.Number.Value
+        | Some config -> configBlock.Header.Number, config

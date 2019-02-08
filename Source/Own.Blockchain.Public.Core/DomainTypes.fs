@@ -202,6 +202,7 @@ type ValidatorSnapshot = {
 }
 
 type BlockchainConfiguration = {
+    ConfigurationBlockDelta : int
     Validators : ValidatorSnapshot list
 }
 

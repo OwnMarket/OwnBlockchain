@@ -28,7 +28,6 @@ module Synchronization =
         requestTxFromPeer
         requestEquivocationProofFromPeer
         publishEvent
-        (configurationBlockDelta : int)
         maxNumberOfBlocksToFetchInParallel
         =
 
@@ -48,8 +47,13 @@ module Synchronization =
             )
             |> Result.handle id (fun _ -> failwith "Cannot get last verified configuration block.")
 
-        // TODO: Use delta from block configuration
-        let nextConfigBlockNumber = lastVerifiedConfigBlock.Header.Number + configurationBlockDelta
+        let lastVerifiedConfiguration =
+            lastVerifiedConfigBlock.Configuration
+            |?> fun _ ->
+                failwithf "Cannot find configuration in config block %i" lastVerifiedConfigBlock.Header.Number.Value
+
+        let nextConfigBlockNumber =
+            lastVerifiedConfigBlock.Header.Number + lastVerifiedConfiguration.ConfigurationBlockDelta
 
         unverifiedBlocks.Keys
         |> Seq.sortDescending
