@@ -353,3 +353,88 @@ Response JSON payload:
     ]
 }
 ```
+
+
+## `GET /validators`
+
+Request URL:
+```
+/validators
+```
+
+Response JSON payload:
+```json
+{
+    "validators": [
+        {
+            "validatorAddress": "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
+            "networkAddress": "localhost:25701",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        },
+        {
+            "validatorAddress": "CHN5FmdEhjKHynhdbzXxsNB35oxL5195XE5",
+            "networkAddress": "localhost:25703",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        },
+        {
+            "validatorAddress": "CHStDQ5ZFeFW9rbMhw83f7FXg19okxQD9E7",
+            "networkAddress": "localhost:25704",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        },
+        {
+            "validatorAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
+            "networkAddress": "localhost:25705",
+            "sharedRewardPercent": 0,
+            "isActive": false
+        },          
+        {
+            "validatorAddress": "CHXr1u8DvLmRrnBpVmPcEH43qBhjezuRRtq",
+            "networkAddress": "localhost:25702",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        }      
+    ]
+}
+```
+
+If optional `activeOnly` query string parameter is specified and is has value `true` (i.e `activeOnly=true`), only the current validators will be returned in the `validators` array:
+
+Request URL:
+```
+/validators?activeOnly=true
+```
+
+Response JSON payload:
+```json
+{
+    "validators": [
+        {
+            "validatorAddress": "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
+            "networkAddress": "localhost:25701",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        },
+        {
+            "validatorAddress": "CHN5FmdEhjKHynhdbzXxsNB35oxL5195XE5",
+            "networkAddress": "localhost:25703",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        },
+        {
+            "validatorAddress": "CHStDQ5ZFeFW9rbMhw83f7FXg19okxQD9E7",
+            "networkAddress": "localhost:25704",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        },          
+        {
+            "validatorAddress": "CHXr1u8DvLmRrnBpVmPcEH43qBhjezuRRtq",
+            "networkAddress": "localhost:25702",
+            "sharedRewardPercent": 0,
+            "isActive": true
+        }      
+    ]
+}
+```
