@@ -115,7 +115,7 @@ module Blocks =
         let stateHash =
             state
             |> Map.toList
-            |> List.collect (fun (k, v) -> [decodeHash k.Value; boolToBytes (v = Add)])
+            |> List.collect (fun (k, v) -> [decodeHash k.Value; boolToBytes (v = KycProviderChange.Add)])
 
         decodeHash assetHash :: stateHash
         |> Array.concat

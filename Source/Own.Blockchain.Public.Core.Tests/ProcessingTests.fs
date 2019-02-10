@@ -5727,7 +5727,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.KycProviders.Count = 1 @>
-        test <@ output.KycProviders.[assetHash].[senderWallet.Address] = Add @>
+        test <@ output.KycProviders.[assetHash].[senderWallet.Address] = KycProviderChange.Add @>
 
     [<Fact>]
     let ``Processing.processChanges AddKycProvider fails if provider already exists`` () =
@@ -6127,7 +6127,7 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.KycProviders.Count = 1 @>
-        test <@ output.KycProviders.[assetHash].[senderWallet.Address] = Remove @>
+        test <@ output.KycProviders.[assetHash].[senderWallet.Address] = KycProviderChange.Remove @>
 
     [<Fact>]
     let ``Processing.processChanges RemoveKycProvider various errors`` () =
@@ -6417,8 +6417,8 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash1].Status = Success @>
         test <@ output.TxResults.[txHash2].Status = Success @>
         test <@ output.KycProviders.Count = 2 @>
-        test <@ output.KycProviders.[assetHash1].[senderWallet.Address] = Add @>
-        test <@ output.KycProviders.[assetHash2].[senderWallet.Address] = Remove @>
+        test <@ output.KycProviders.[assetHash1].[senderWallet.Address] = KycProviderChange.Add @>
+        test <@ output.KycProviders.[assetHash2].[senderWallet.Address] = KycProviderChange.Remove @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // CreateAssetEmission

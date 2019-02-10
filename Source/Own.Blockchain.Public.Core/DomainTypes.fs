@@ -116,6 +116,10 @@ type ConfigureValidatorTxAction = {
     SharedRewardPercent : decimal
 }
 
+type RemoveValidatorTxAction = {
+    ValidatorAddress : BlockchainAddress
+}
+
 type DelegateStakeTxAction = {
     ValidatorAddress : BlockchainAddress
     Amount : ChxAmount
@@ -168,6 +172,7 @@ type TxAction =
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction
     | ConfigureValidator of ConfigureValidatorTxAction
+    | RemoveValidator of RemoveValidatorTxAction
     | DelegateStake of DelegateStakeTxAction
     | SubmitVote of SubmitVoteTxAction
     | SubmitVoteWeight of SubmitVoteWeightTxAction
@@ -367,6 +372,11 @@ type ValidatorState = {
     TimeToLockDeposit : int16
     TimeToBlacklist : int16
 }
+
+type ValidatorChange =
+    | Add
+    | Remove
+    | Update
 
 type StakeState = {
     Amount : ChxAmount

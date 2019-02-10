@@ -85,6 +85,11 @@ module Mapping =
                 SharedRewardPercent = a.SharedRewardPercent
             }
             |> ConfigureValidator
+        | :? RemoveValidatorTxActionDto as a ->
+            {
+                RemoveValidatorTxAction.ValidatorAddress = BlockchainAddress a.ValidatorAddress
+            }
+            |> RemoveValidator
         | :? DelegateStakeTxActionDto as a ->
             {
                 DelegateStakeTxAction.ValidatorAddress = BlockchainAddress a.ValidatorAddress
@@ -544,7 +549,7 @@ module Mapping =
         let kycProviders =
             output.KycProviders
             |> Map.remap (fun (AssetHash assetHash, providers) ->
-                assetHash, providers |> Map.remap (fun (BlockchainAddress a, c) -> a, c = Add)
+                assetHash, providers |> Map.remap (fun (BlockchainAddress a, c) -> a, c = KycProviderChange.Add)
             )
 
         let accounts =

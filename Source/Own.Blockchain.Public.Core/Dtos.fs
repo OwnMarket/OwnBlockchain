@@ -58,6 +58,12 @@ type ConfigureValidatorTxActionDto = {
     SharedRewardPercent : decimal
 }
 
+
+[<CLIMutable>]
+type RemoveValidatorTxActionDto = {
+    ValidatorAddress : string
+}
+
 [<CLIMutable>]
 type DelegateStakeTxActionDto = {
     ValidatorAddress : string

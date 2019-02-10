@@ -162,7 +162,7 @@ module BlockTests =
         let state =
             [
                 BlockchainAddress "CC",
-                Add
+                KycProviderChange.Add
             ]
             |> Map.ofList
 
@@ -431,23 +431,23 @@ module BlockTests =
                 AssetHash "EEE",
                 [
                     BlockchainAddress "AAA",
-                    Add
+                    KycProviderChange.Add
                     BlockchainAddress "BBB",
-                    Add
+                    KycProviderChange.Add
                 ]
                 |> Map.ofList
 
                 AssetHash "FFF",
                 [
                     BlockchainAddress "AAA",
-                    Add
+                    KycProviderChange.Add
                 ]
                 |> Map.ofList
 
                 AssetHash "GGG",
                 [
                     BlockchainAddress "BBB",
-                    Remove
+                    KycProviderChange.Remove
                 ]
                 |> Map.ofList
             ]
@@ -814,23 +814,23 @@ module BlockTests =
                 AssetHash "EEE",
                 [
                     BlockchainAddress "AAA",
-                    Add
+                    KycProviderChange.Add
                     BlockchainAddress "BBB",
-                    Add
+                    KycProviderChange.Add
                 ]
                 |> Map.ofList
 
                 AssetHash "FFF",
                 [
                     BlockchainAddress "AAA",
-                    Add
+                    KycProviderChange.Add
                 ]
                 |> Map.ofList
 
                 AssetHash "GGG",
                 [
                     BlockchainAddress "AAA",
-                    Add
+                    KycProviderChange.Add
                 ]
                 |> Map.ofList
             ]
@@ -1169,18 +1169,18 @@ module BlockTests =
                 AssetHash "EEE",
                 [
                     BlockchainAddress "AAA",
-                    Add
+                    KycProviderChange.Add
                     BlockchainAddress "BBB",
-                    Add
+                    KycProviderChange.Add
                     BlockchainAddress "BBB",
-                    Remove
+                    KycProviderChange.Remove
                 ]
                 |> Map.ofList
 
                 AssetHash "FFF",
                 [
                     BlockchainAddress "AAA",
-                    Add
+                    KycProviderChange.Add
                 ]
                 |> Map.ofList
             ]

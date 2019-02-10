@@ -165,7 +165,7 @@ module Processing =
                 |> ConcurrentDictionary
             )
             |> List.ofDict
-            |> List.filter (fun (_, change) -> change <> Some Remove)
+            |> List.filter (fun (_, change) -> change <> Some KycProviderChange.Remove)
             |> List.map fst
 
         member __.GetAccount (accountHash : AccountHash) =
@@ -216,8 +216,10 @@ module Processing =
                         fun _ _ -> providerChange)
                     |> ignore
                 | true, existingChange ->
-                    if existingChange = Some Add && providerChange = Some Remove
-                        || existingChange = Some Remove && providerChange = Some Add
+                    if existingChange = Some KycProviderChange.Add
+                        && providerChange = Some KycProviderChange.Remove
+                        || existingChange = Some KycProviderChange.Remove
+                        && providerChange = Some KycProviderChange.Add
                     then
                         existingProvider.AddOrUpdate (providerAddress, None, fun _ _ -> None) |> ignore
                     else
@@ -552,6 +554,16 @@ module Processing =
                 )
                 Ok state
 
+    let processRemoveValidatorTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : RemoveValidatorTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        // TODO: implement this
+        Error TxErrorCode.NonceTooLow
+
     let processDelegateStakeTxAction
         validatorDeposit
         (state : ProcessingState)
@@ -741,7 +753,7 @@ module Processing =
             if providerExists then
                 Error TxErrorCode.KycProviderAldreadyExists
             else
-                state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some Add)
+                state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some KycProviderChange.Add)
                 Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
@@ -757,7 +769,7 @@ module Processing =
         | None ->
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
-            state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some Remove)
+            state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some KycProviderChange.Remove)
             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
@@ -928,6 +940,7 @@ module Processing =
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
         | ConfigureValidator action -> processConfigureValidatorTxAction validatorDeposit state senderAddress action
+        | RemoveValidator action -> processRemoveValidatorTxAction state senderAddress action
         | DelegateStake action -> processDelegateStakeTxAction validatorDeposit state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action

@@ -1799,6 +1799,37 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert validator state."
 
+    let private removeValidator
+        conn
+        transaction
+        (validatorAddress : string)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            DELETE FROM validator
+            WHERE validator_address = @validatorAddress
+            """
+
+        let sqlParams =
+            [
+                "@validatorAddress", validatorAddress |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0
+            | 1 -> Ok ()
+            | _ ->
+                sprintf "Didn't remove validator: %s" validatorAddress
+                |> Result.appError
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            sprintf "Failed to remove validator: %s" validatorAddress
+            |> Result.appError
+
     let private updateValidator
         conn
         transaction

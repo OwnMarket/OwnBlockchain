@@ -42,6 +42,7 @@ module Serialization =
             "SetAssetController", tokenToAction<SetAssetControllerTxActionDto>
             "SetAssetCode", tokenToAction<SetAssetCodeTxActionDto>
             "ConfigureValidator", tokenToAction<ConfigureValidatorTxActionDto>
+            "RemoveValidator", tokenToAction<RemoveValidatorTxActionDto>
             "DelegateStake", tokenToAction<DelegateStakeTxActionDto>
             "SubmitVote", tokenToAction<SubmitVoteTxActionDto>
             "SubmitVoteWeight", tokenToAction<SubmitVoteWeightTxActionDto>
