@@ -5,7 +5,6 @@ open Own.Blockchain.Common
 open Own.Blockchain.Common.Conversion
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
-open Own.Blockchain.Public.Core.Dtos
 
 module Blocks =
 
