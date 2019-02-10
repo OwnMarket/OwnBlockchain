@@ -118,8 +118,6 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     static member NetworkTimeUpdateInterval = 1 // Minutes
 
-    static member ConfigurationBlockDelta = 100
-
     static member MaxNumberOfBlocksToFetchInParallel = 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,14 +128,20 @@ type Config () =
 
     static member ValidatorThreshold = 500_000m
     static member ValidatorDeposit = 5_000m
-    static member ValidatorDepositLockTime = 2 // Number of config blocks to keep the deposit locked after leaving.
-    static member ValidatorBlacklistTime = 5 // Number of config blocks to keep the validator blacklisted.
 
     static member MaxRewardedStakesCount = 100
 
-    static member ConsensusMessageRetryingInterval = 1000
-    static member ConsensusProposeRetryingInterval = 1000
+    static member ConsensusMessageRetryingInterval = 1000 // Milliseconds
+    static member ConsensusProposeRetryingInterval = 1000 // Milliseconds
 
     static member ConsensusTimeoutPropose = 5000
     static member ConsensusTimeoutVote = 5000
     static member ConsensusTimeoutCommit = 5000
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Blockchain Configuration (initial values)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member ConfigurationBlockDelta = 100 // Number of blocks between two config blocks.
+
+    static member ValidatorDepositLockTime = 2 // Number of config blocks to keep the deposit locked after leaving.
+    static member ValidatorBlacklistTime = 5 // Number of config blocks to keep the validator blacklisted.
