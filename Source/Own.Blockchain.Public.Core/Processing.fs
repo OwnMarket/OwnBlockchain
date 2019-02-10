@@ -962,7 +962,6 @@ module Processing =
         createConsensusMessageHash
         decodeHash
         createHash
-        processTxActions
         validatorDeposit
         validatorBlacklistTime
         (blockNumber : BlockNumber)
@@ -1184,7 +1183,6 @@ module Processing =
                 createConsensusMessageHash
                 decodeHash
                 createHash
-                processTxActions
                 validatorDeposit
                 validatorBlacklistTime
                 blockNumber
