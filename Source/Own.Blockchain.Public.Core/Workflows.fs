@@ -1103,12 +1103,8 @@ module Workflows =
 
         let validators =
             match activeOnly with
-            | None -> allValidators
-            | Some isActive ->
-                if isActive then
-                    currentValidators
-                else
-                    allValidators
+            | Some isActive when isActive -> currentValidators
+            | _ -> allValidators
 
         Ok {Validators = validators}
 
