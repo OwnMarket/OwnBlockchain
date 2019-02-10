@@ -256,7 +256,12 @@ module SharedTests =
                 (BlockchainAddress Config.GenesisAddress)
                 genesisValidators
             |> Blocks.assembleGenesisBlock
-                Hashing.decode Hashing.hash Hashing.merkleTree Hashing.zeroHash Hashing.zeroAddress
+                Hashing.decode
+                Hashing.hash
+                Hashing.merkleTree
+                Hashing.zeroHash
+                Hashing.zeroAddress
+                0
 
         // ACT
         let loadedBlockDto =
