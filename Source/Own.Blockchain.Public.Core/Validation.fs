@@ -450,8 +450,8 @@ module Validation =
                             equivocationProofDto.BlockNumber |> Conversion.int64ToBytes
                             equivocationProofDto.ConsensusRound |> Conversion.int32ToBytes
                             [| equivocationProofDto.ConsensusStep |]
-                            equivocationProofDto.BlockHash1 |> Option.ofObj |> Option.map decodeHash |? [|0uy|]
-                            equivocationProofDto.BlockHash2 |> Option.ofObj |> Option.map decodeHash |? [|0uy|]
+                            equivocationProofDto.BlockHash1 |> Option.ofObj |> Option.map decodeHash |? [| 0uy |]
+                            equivocationProofDto.BlockHash2 |> Option.ofObj |> Option.map decodeHash |? [| 0uy |]
                             equivocationProofDto.Signature1 |> decodeHash
                             equivocationProofDto.Signature2 |> decodeHash
                         ]
