@@ -464,7 +464,7 @@ module BlockTests =
             [
                 AssetHash "EEEE",
                 {
-                    AssetState.AssetCode = None
+                    AssetState.AssetCode = Some (AssetCode "XXX") // X = 88 = 8 = H
                     ControllerAddress = BlockchainAddress "FFFF"
                     IsEligibilityRequired = false
                 }
@@ -472,7 +472,7 @@ module BlockTests =
                 {
                     AssetState.AssetCode = None
                     ControllerAddress = BlockchainAddress "HHHH"
-                    IsEligibilityRequired = false
+                    IsEligibilityRequired = true
                 }
             ]
             |> Map.ofList
@@ -599,10 +599,10 @@ module BlockTests =
                 "EEEAAAABBBA" // Add Kyc controllers for Asset 1
                 "FFFAAAA" // Add Kyc controllers for Asset 2
                 "GGGBBB." // Remove Kyc controllers for Asset 3
-                "AAAABBBB" // Account controller 1
-                "CCCCDDDD" // Account controller 2
-                "EEEEFFFF." // Asset controller 1
-                "GGGGHHHH." // Asset controller 2
+                "AAAABBBB" // Account 1
+                "CCCCDDDD" // Account 2
+                "EEEEHHHFFFF." // Asset 1
+                "GGGG.HHHHA" // Asset 2
                 "AAAAAGGG...A.............C.D" // Validator 1
                 "BBBBBHHH...B.............C.E" // Validator 2
                 "CCCCCIII...C.............C.F" // Validator 3

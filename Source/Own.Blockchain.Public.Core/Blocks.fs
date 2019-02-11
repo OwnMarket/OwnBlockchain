@@ -77,7 +77,7 @@ module Blocks =
         let (VoteHash voteHash) = state.VoteHash
         let voteWeightBytes =
             match state.VoteWeight with
-            | None -> Array.empty
+            | None -> [| 0uy |]
             | Some (VoteWeight voteWeight) -> decimalToBytes voteWeight
 
         [
@@ -146,7 +146,7 @@ module Blocks =
         let assetCodeBytes =
             match state.AssetCode with
             | Some (AssetCode code) -> code |> stringToBytes |> createHash |> decodeHash
-            | None -> Array.empty
+            | None -> [| 0uy |]
 
         [
             decodeHash assetHash
