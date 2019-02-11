@@ -58,7 +58,6 @@ type ConfigureValidatorTxActionDto = {
     SharedRewardPercent : decimal
 }
 
-
 [<CLIMutable>]
 type RemoveValidatorTxActionDto = {
     ValidatorAddress : string

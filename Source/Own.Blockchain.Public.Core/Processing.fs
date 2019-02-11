@@ -216,10 +216,8 @@ module Processing =
                         fun _ _ -> providerChange)
                     |> ignore
                 | true, existingChange ->
-                    if existingChange = Some KycProviderChange.Add
-                        && providerChange = Some KycProviderChange.Remove
-                        || existingChange = Some KycProviderChange.Remove
-                        && providerChange = Some KycProviderChange.Add
+                    if existingChange = Some KycProviderChange.Add && providerChange = Some KycProviderChange.Remove
+                        || existingChange = Some KycProviderChange.Remove && providerChange = Some KycProviderChange.Add
                     then
                         existingProvider.AddOrUpdate (providerAddress, None, fun _ _ -> None) |> ignore
                     else
