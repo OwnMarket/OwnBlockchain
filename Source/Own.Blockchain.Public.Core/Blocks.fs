@@ -232,7 +232,12 @@ module Blocks =
                 |> List.sortBy (fun v -> v.ValidatorAddress) // Ensure a predictable order
                 |> List.map (createValidatorSnapshotHash decodeHash createHash)
 
-            (c.ConfigurationBlockDelta |> int32ToBytes |> createHash) :: validatorSnapshotHashes
+            [
+                yield c.ConfigurationBlockDelta |> int32ToBytes |> createHash
+                yield! validatorSnapshotHashes
+                yield c.ValidatorDepositLockTime |> int16ToBytes |> createHash
+                yield c.ValidatorBlacklistTime |> int16ToBytes |> createHash
+            ]
         |> createMerkleTree
 
     let createBlockHash
@@ -505,6 +510,8 @@ module Blocks =
         zeroHash
         zeroAddress
         configurationBlockDelta
+        validatorDepositLockTime
+        validatorBlacklistTime
         (output : ProcessingOutput)
         : Block
         =
@@ -531,6 +538,8 @@ module Blocks =
             {
                 BlockchainConfiguration.ConfigurationBlockDelta = configurationBlockDelta
                 Validators = validatorSnapshots
+                ValidatorDepositLockTime = validatorDepositLockTime
+                ValidatorBlacklistTime = validatorBlacklistTime
             }
             |> Some
 
@@ -650,6 +659,8 @@ module Blocks =
     let createNewBlockchainConfiguration
         (getTopValidators : unit -> ValidatorSnapshot list)
         configurationBlockDelta
+        validatorDepositLockTime
+        validatorBlacklistTime
         =
 
         let validators = getTopValidators ()
@@ -657,6 +668,8 @@ module Blocks =
         {
             BlockchainConfiguration.ConfigurationBlockDelta = configurationBlockDelta
             Validators = validators
+            ValidatorDepositLockTime = validatorDepositLockTime
+            ValidatorBlacklistTime = validatorBlacklistTime
         }
 
     let getConfigBlockAtHeight getBlock blockNumber =

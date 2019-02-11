@@ -209,6 +209,8 @@ type ValidatorSnapshot = {
 type BlockchainConfiguration = {
     ConfigurationBlockDelta : int
     Validators : ValidatorSnapshot list
+    ValidatorDepositLockTime : int16
+    ValidatorBlacklistTime : int16
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

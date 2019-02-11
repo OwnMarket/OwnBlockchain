@@ -156,8 +156,9 @@ module Composition =
             (ChxAmount Config.GenesisChxSupply)
             (BlockchainAddress Config.GenesisAddress)
             Config.GenesisValidators
-            (Convert.ToInt16 Config.ValidatorDepositLockTime)
             Config.ConfigurationBlockDelta
+            (Convert.ToInt16 Config.ValidatorDepositLockTime)
+            (Convert.ToInt16 Config.ValidatorBlacklistTime)
 
     let signGenesisBlock =
         Workflows.signGenesisBlock
@@ -203,8 +204,6 @@ module Composition =
             Consensus.createConsensusMessageHash
             Hashing.merkleTree
             (ChxAmount Config.ValidatorDeposit)
-            (Convert.ToInt16 Config.ValidatorDepositLockTime)
-            (Convert.ToInt16 Config.ValidatorBlacklistTime)
 
     let getAvailableChxBalance =
         Workflows.getAvailableChxBalance

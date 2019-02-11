@@ -261,7 +261,9 @@ module SharedTests =
                 Hashing.merkleTree
                 Hashing.zeroHash
                 Hashing.zeroAddress
-                0
+                Config.ConfigurationBlockDelta
+                (Convert.ToInt16 Config.ValidatorDepositLockTime)
+                (Convert.ToInt16 Config.ValidatorBlacklistTime)
 
         // ACT
         let loadedBlockDto =

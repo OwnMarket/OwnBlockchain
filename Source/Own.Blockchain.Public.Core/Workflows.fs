@@ -72,8 +72,9 @@ module Workflows =
         genesisChxSupply
         genesisAddress
         genesisValidators
-        validatorDepositLockTime
         configurationBlockDelta
+        validatorDepositLockTime
+        validatorBlacklistTime
         =
 
         let genesisValidators =
@@ -93,7 +94,15 @@ module Workflows =
 
         let genesisBlock =
             Blocks.assembleGenesisBlock
-                decodeHash createHash createMerkleTree zeroHash zeroAddress configurationBlockDelta genesisState
+                decodeHash
+                createHash
+                createMerkleTree
+                zeroHash
+                zeroAddress
+                configurationBlockDelta
+                validatorDepositLockTime
+                validatorBlacklistTime
+                genesisState
 
         genesisBlock, genesisState
 
@@ -203,13 +212,13 @@ module Workflows =
         createConsensusMessageHash
         createMerkleTree
         validatorDeposit
-        validatorDepositLockTime
-        validatorBlacklistTime
         validatorAddress
         (previousBlockHash : BlockHash)
         (blockNumber : BlockNumber)
         timestamp
         configurationBlockNumber
+        validatorDepositLockTime
+        validatorBlacklistTime
         txSet
         equivocationProofs
         blockchainConfiguration
@@ -361,7 +370,10 @@ module Workflows =
 
                 let newConfiguration =
                     if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = blockNumber then
-                        createNewBlockchainConfiguration currentConfiguration.ConfigurationBlockDelta
+                        createNewBlockchainConfiguration
+                            currentConfiguration.ConfigurationBlockDelta
+                            currentConfiguration.ValidatorDepositLockTime
+                            currentConfiguration.ValidatorBlacklistTime
                         |> Some
                     else
                         None
@@ -373,6 +385,8 @@ module Workflows =
                         blockNumber
                         timestamp
                         configBlockNumber
+                        currentConfiguration.ValidatorDepositLockTime
+                        currentConfiguration.ValidatorBlacklistTime
                         txSet
                         equivocationProofs
                         newConfiguration
@@ -537,13 +551,18 @@ module Workflows =
                             block.Header.Number.Value
                         |> Result.appError
 
+            let configBlockNumber, currentConfiguration =
+                Blocks.getConfigurationAtHeight getBlock previousBlock.Header.Number
+
             let createdBlock, output =
                 createBlock
                     block.Header.ProposerAddress
                     previousBlock.Header.Hash
                     block.Header.Number
                     block.Header.Timestamp
-                    block.Header.ConfigurationBlockNumber
+                    configBlockNumber
+                    currentConfiguration.ValidatorDepositLockTime
+                    currentConfiguration.ValidatorBlacklistTime
                     block.TxSet
                     block.EquivocationProofs
                     block.Configuration

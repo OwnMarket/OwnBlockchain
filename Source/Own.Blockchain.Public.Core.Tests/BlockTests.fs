@@ -558,6 +558,8 @@ module BlockTests =
                             TotalStake = ChxAmount 6m
                         }
                     ]
+                ValidatorDepositLockTime = 7s
+                ValidatorBlacklistTime = 8s
             }
 
         // Merkle Roots
@@ -623,6 +625,8 @@ module BlockTests =
                 "AAAAAGGG...A...............D............" // Validator 1
                 "BBBBBHHH...B...............E............" // Validator 2
                 "CCCCCIII...C...............F............" // Validator 3
+                ".G" // ValidatorDepositLockTime
+                ".H" // ValidatorBlacklistTime
             ]
             |> String.Concat
 
