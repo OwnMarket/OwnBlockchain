@@ -9076,8 +9076,11 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
         let validatorState = output.Validators.[senderWallet.Address] |> fst
+        let validatorChange = output.Validators.[senderWallet.Address] |> snd
+
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
         test <@ validatorState.SharedRewardPercent = newSharedRewardPercent @>
+        test <@ validatorChange = ValidatorChange.Update @>
 
     [<Fact>]
     let ``Processing.processChanges ConfigureValidator - inserting new config`` () =
@@ -9209,8 +9212,580 @@ module ProcessingTests =
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
         let validatorState = output.Validators.[senderWallet.Address] |> fst
+        let validatorChange = output.Validators.[senderWallet.Address] |> snd
+
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
         test <@ validatorState.SharedRewardPercent = newSharedRewardPercent @>
+        test <@ validatorChange = ValidatorChange.Add @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // RemoveValidator
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processChanges RemoveValidator`` () =
+        // INIT STATE
+        let senderValidatorWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let newNetworkAddress = NetworkAddress "localhost:5000"
+        let stakerAddress1, stakerAddress2 = BlockchainAddress "AAA", BlockchainAddress "BBB"
+
+        let initialChxState =
+            [
+                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "RemoveValidator"
+                    ActionData = RemoveValidatorTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderValidatorWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
+
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
+        let getLockedAndBlacklistedValidators _ =
+            []
+
+        let getValidatorState _ =
+            {
+                ValidatorState.NetworkAddress = newNetworkAddress
+                SharedRewardPercent = 5m
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 0s
+            }
+            |> Some
+
+        let getStakeState (stakerAddress, _) =
+            if stakerAddress = stakerAddress1 then
+                {StakeState.Amount = ChxAmount 100m}
+            elif stakerAddress = stakerAddress2 then
+                {StakeState.Amount = ChxAmount 80m}
+            else
+                failwithf "getStakeState should not be called for %A" stakerAddress
+            |> Some
+
+        let getStakers _ =
+            [
+                stakerAddress1
+                stakerAddress2
+            ]
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processChanges
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycProvidersState
+                getAccountState
+                getAssetState
+                getAssetHashByCode
+                getValidatorState
+                getStakeState
+                getStakers
+                getTotalChxStaked
+                getTopStakers
+                getLockedAndBlacklistedValidators
+                (ChxAmount 0m)
+                0s
+                0s
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                None
+                []
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+        let validatorState = output.Validators.[senderValidatorWallet.Address] |> fst
+        let validatorChange = output.Validators.[senderValidatorWallet.Address] |> snd
+
+        test <@ validatorState.NetworkAddress = newNetworkAddress @>
+        test <@ validatorChange = ValidatorChange.Remove @>
+        test <@ output.Stakes.[(stakerAddress1, senderValidatorWallet.Address)].Amount = ChxAmount 0m @>
+        test <@ output.Stakes.[(stakerAddress2, senderValidatorWallet.Address)].Amount = ChxAmount 0m @>
+
+    [<Fact>]
+    let ``Processing.processChanges RemoveValidator fails if validator not found`` () =
+        // INIT STATE
+        let senderValidatorWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let newNetworkAddress = NetworkAddress "localhost:5000"
+        let stakerAddress1, stakerAddress2 = BlockchainAddress "AAA", BlockchainAddress "BBB"
+
+        let initialChxState =
+            [
+                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "RemoveValidator"
+                    ActionData = RemoveValidatorTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderValidatorWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
+
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
+        let getLockedAndBlacklistedValidators _ =
+            []
+
+        let getValidatorState _ =
+            None
+
+        let getStakeState (stakerAddress, _) =
+            if stakerAddress = stakerAddress1 then
+                {StakeState.Amount = ChxAmount 100m}
+            elif stakerAddress = stakerAddress2 then
+                {StakeState.Amount = ChxAmount 80m}
+            else
+                failwithf "getStakeState should not be called for %A" stakerAddress
+            |> Some
+
+        let getStakers _ =
+            [
+                stakerAddress1
+                stakerAddress2
+            ]
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processChanges
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycProvidersState
+                getAccountState
+                getAssetState
+                getAssetHashByCode
+                getValidatorState
+                getStakeState
+                getStakers
+                getTotalChxStaked
+                getTopStakers
+                getLockedAndBlacklistedValidators
+                (ChxAmount 0m)
+                0s
+                0s
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                None
+                []
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorNotFound) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+    [<Fact>]
+    let ``Processing.processChanges RemoveValidator fails if validator is blacklisted`` () =
+        // INIT STATE
+        let senderValidatorWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let newNetworkAddress = NetworkAddress "localhost:5000"
+        let stakerAddress1, stakerAddress2 = BlockchainAddress "AAA", BlockchainAddress "BBB"
+
+        let initialChxState =
+            [
+                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "RemoveValidator"
+                    ActionData = RemoveValidatorTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderValidatorWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
+
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
+        let getLockedAndBlacklistedValidators _ =
+            []
+
+        let getValidatorState _ =
+            {
+                ValidatorState.NetworkAddress = newNetworkAddress
+                SharedRewardPercent = 5m
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 2s
+            }
+            |> Some
+
+        let getStakeState (stakerAddress, _) =
+            if stakerAddress = stakerAddress1 then
+                {StakeState.Amount = ChxAmount 100m}
+            elif stakerAddress = stakerAddress2 then
+                {StakeState.Amount = ChxAmount 80m}
+            else
+                failwithf "getStakeState should not be called for %A" stakerAddress
+            |> Some
+
+        let getStakers _ =
+            [
+                stakerAddress1
+                stakerAddress2
+            ]
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processChanges
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycProvidersState
+                getAccountState
+                getAssetState
+                getAssetHashByCode
+                getValidatorState
+                getStakeState
+                getStakers
+                getTotalChxStaked
+                getTopStakers
+                getLockedAndBlacklistedValidators
+                (ChxAmount 0m)
+                0s
+                0s
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                None
+                []
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorIsBlacklisted) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+
+    [<Fact>]
+    let ``Processing.processChanges RemoveValidator fails if validator deposit is locked`` () =
+        // INIT STATE
+        let senderValidatorWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let newNetworkAddress = NetworkAddress "localhost:5000"
+        let stakerAddress1, stakerAddress2 = BlockchainAddress "AAA", BlockchainAddress "BBB"
+
+        let initialChxState =
+            [
+                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let fee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "RemoveValidator"
+                    ActionData = RemoveValidatorTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderValidatorWallet nonce fee
+
+        let txSet = [txHash]
+        let blockNumber = BlockNumber 1L;
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getEquivocationProof _ =
+            failwith "getEquivocationProof should not be called"
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            failwith "getHoldingState should not be called"
+
+        let getVoteState _ =
+            failwith "getVoteState should not be called"
+
+        let getEligibilityState _ =
+            failwith "getEligibilityState should not be called"
+
+        let getKycProvidersState _ =
+            failwith "getKycProvidersState should not be called"
+
+        let getAccountState _ =
+            failwith "getAccountState should not be called"
+
+        let getAssetState _ =
+            failwith "getAssetState should not be called"
+
+        let getAssetHashByCode _ =
+            failwith "getAssetHashByCode should not be called"
+
+        let getLockedAndBlacklistedValidators _ =
+            []
+
+        let getValidatorState _ =
+            {
+                ValidatorState.NetworkAddress = newNetworkAddress
+                SharedRewardPercent = 5m
+                TimeToLockDeposit = 2s
+                TimeToBlacklist = 0s
+            }
+            |> Some
+
+        let getStakeState (stakerAddress, _) =
+            if stakerAddress = stakerAddress1 then
+                {StakeState.Amount = ChxAmount 100m}
+            elif stakerAddress = stakerAddress2 then
+                {StakeState.Amount = ChxAmount 80m}
+            else
+                failwithf "getStakeState should not be called for %A" stakerAddress
+            |> Some
+
+        let getStakers _ =
+            [
+                stakerAddress1
+                stakerAddress2
+            ]
+
+        let getTotalChxStaked _ = ChxAmount 0m
+
+        let getTopStakers _ = []
+
+        // ACT
+        let output =
+            Processing.processChanges
+                getTx
+                getEquivocationProof
+                Signing.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.deriveHash
+                Hashing.decode
+                Hashing.hash
+                Consensus.createConsensusMessageHash
+                getChxBalanceState
+                getHoldingState
+                getVoteState
+                getEligibilityState
+                getKycProvidersState
+                getAccountState
+                getAssetState
+                getAssetHashByCode
+                getValidatorState
+                getStakeState
+                getStakers
+                getTotalChxStaked
+                getTopStakers
+                getLockedAndBlacklistedValidators
+                (ChxAmount 0m)
+                0s
+                0s
+                []
+                validatorWallet.Address
+                0m
+                blockNumber
+                None
+                []
+                txSet
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorDepositLocked) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // DelegateStake
