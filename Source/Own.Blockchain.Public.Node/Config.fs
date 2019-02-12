@@ -86,7 +86,7 @@ type Config () =
         with get () =
             genesis.GetSection("GenesisValidators").GetChildren()
             |> Seq.map (fun e ->
-                match e.Value.Split(",") with
+                match e.Value.Split("@") with
                 | [| validatorAddress; networkAddress |] -> validatorAddress, networkAddress
                 | _ -> failwith "Invalid GenesisValidators configuration."
             )

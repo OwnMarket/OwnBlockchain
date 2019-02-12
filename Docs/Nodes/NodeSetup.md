@@ -113,10 +113,10 @@ Setting Name | Description
     ],
     "GenesisAddress": "CHggggggggggggggggggggggggggggggggg",
     "GenesisValidators": [
-        "CHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,validator1.weown.com:25718",
-        "CHbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,validator2.weown.com:25718",
-        "CHccccccccccccccccccccccccccccccccc,validator3.weown.com:25718",
-        "CHddddddddddddddddddddddddddddddddd,validator4.weown.com:25718"
+        "CHaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@validator1.weown.com:25718",
+        "CHbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb@validator2.weown.com:25718",
+        "CHccccccccccccccccccccccccccccccccc@validator3.weown.com:25718",
+        "CHddddddddddddddddddddddddddddddddd@validator4.weown.com:25718"
     ]
 }
 ```
