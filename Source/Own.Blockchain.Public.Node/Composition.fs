@@ -229,9 +229,10 @@ module Composition =
             getPendingEquivocationProofs
             getChxBalanceState
             getAvailableChxBalance
+            addressFromPrivateKey
             (ChxAmount Config.MinTxActionFee)
             Config.MaxTxCountPerBlock
-            addressFromPrivateKey
+            Config.MinValidatorCount
             (PrivateKey Config.ValidatorPrivateKey)
 
     let storeReceivedBlock =
@@ -278,6 +279,7 @@ module Composition =
             txResultExists
             equivocationProofResultExists
             createBlock
+            Config.MinValidatorCount
 
     let applyBlock =
         Workflows.applyBlock

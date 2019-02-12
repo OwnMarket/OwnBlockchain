@@ -1,5 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Core
 
+open System
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
@@ -316,9 +317,10 @@ module Workflows =
         (getPendingEquivocationProofs : BlockNumber -> EquivocationInfoDto list)
         getChxBalanceStateFromStorage
         getAvailableChxBalanceFromStorage
+        addressFromPrivateKey
         minTxActionFee
         maxTxCountPerBlock
-        addressFromPrivateKey
+        minValidatorCount
         validatorPrivateKey
         (blockNumber : BlockNumber)
         : Result<Block, AppErrors> option
@@ -370,10 +372,24 @@ module Workflows =
 
                 let newConfiguration =
                     if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = blockNumber then
-                        createNewBlockchainConfiguration
-                            currentConfiguration.ConfigurationBlockDelta
-                            currentConfiguration.ValidatorDepositLockTime
-                            currentConfiguration.ValidatorBlacklistTime
+                        let newConfiguration : BlockchainConfiguration =
+                            createNewBlockchainConfiguration
+                                currentConfiguration.ConfigurationBlockDelta
+                                currentConfiguration.ValidatorDepositLockTime
+                                currentConfiguration.ValidatorBlacklistTime
+
+                        if newConfiguration.Validators.Length < minValidatorCount then
+                            String.Format(
+                                "Due to insufficient number of validators ({0}), "
+                                    + "configuration block {1} is taking over previous configuration.",
+                                newConfiguration.Validators.Length,
+                                configBlockNumber.Value
+                            )
+                            |> Log.warning
+
+                            currentConfiguration
+                        else
+                            newConfiguration
                         |> Some
                     else
                         None
@@ -423,37 +439,49 @@ module Workflows =
                 getBlock block.Header.ConfigurationBlockNumber
                 |> Result.map Blocks.extractBlockFromEnvelopeDto
 
-            let validators =
-                configBlock.Configuration
-                |> Option.map (fun c -> c.Validators |> List.map (fun v -> v.ValidatorAddress) |> Set.ofList)
-                |? Set.empty
+            match configBlock.Configuration with
+            | None -> failwithf "Missing configuration in existing block %i." configBlock.Header.Number.Value
+            | Some c ->
+                let validators =
+                    c.Validators
+                    |> List.map (fun v -> v.ValidatorAddress)
+                    |> Set.ofList
 
-            if validators.IsEmpty then
-                return!
-                    sprintf "No validators found in configuration block %i to validate block %i."
-                        block.Header.ConfigurationBlockNumber.Value
-                        block.Header.Number.Value
-                    |> Result.appError
-
-            if validators.Count < minValidatorCount then
-                return!
-                    sprintf "Configuration block %i must have at least %i validators in the configuration."
-                        block.Header.ConfigurationBlockNumber.Value
+                if validators.Count < minValidatorCount then
+                    failwithf "Block %i must have at least %i validators in configuration to verify block %i. Found %i."
+                        configBlock.Header.Number.Value
                         minValidatorCount
-                    |> Result.appError
-
-            let! blockSigners =
-                Blocks.verifyBlockSignatures createConsensusMessageHash verifySignature blockEnvelope
-                |> Result.map (Set.ofList >> Set.intersect validators)
-
-            let qualifiedMajority = Validators.calculateQualifiedMajority validators.Count
-            if blockSigners.Count < qualifiedMajority then
-                return!
-                    sprintf "Block %i is not signed by qualified majority. Expected (min): %i / Actual: %i"
                         block.Header.Number.Value
-                        qualifiedMajority
-                        blockSigners.Count
-                    |> Result.appError
+                        validators.Count
+
+                // Verify signatures
+                let! blockSigners =
+                    Blocks.verifyBlockSignatures createConsensusMessageHash verifySignature blockEnvelope
+                    |> Result.map (Set.ofList >> Set.intersect validators)
+
+                let qualifiedMajority = Validators.calculateQualifiedMajority validators.Count
+                if blockSigners.Count < qualifiedMajority then
+                    return!
+                        sprintf "Block %i is not signed by qualified majority. Expected (min): %i / Actual: %i"
+                            block.Header.Number.Value
+                            qualifiedMajority
+                            blockSigners.Count
+                        |> Result.appError
+
+                // Validate configuration of the incoming block
+                if configBlock.Header.Number + c.ConfigurationBlockDelta = block.Header.Number then
+                    match block.Configuration with
+                    | None ->
+                        return!
+                            sprintf "Configuration missing from incoming block %i." block.Header.Number.Value
+                            |> Result.appError
+                    | Some c ->
+                        if c.Validators.Length < minValidatorCount then
+                            return!
+                                sprintf "Configuration block %i must have at least %i validators in the configuration."
+                                    block.Header.Number.Value
+                                    minValidatorCount
+                                |> Result.appError
 
             do! saveBlock block.Header.Number blockEnvelopeDto
 
@@ -511,6 +539,7 @@ module Workflows =
         txResultExists
         equivocationProofResultExists
         createBlock
+        minValidatorCount
         (block : Block)
         =
 
@@ -553,6 +582,20 @@ module Workflows =
 
             let configBlockNumber, currentConfiguration =
                 Blocks.getConfigurationAtHeight getBlock previousBlock.Header.Number
+
+            if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = block.Header.Number then
+                match block.Configuration with
+                | None ->
+                    return!
+                        sprintf "Configuration missing from block %i." block.Header.Number.Value
+                        |> Result.appError
+                | Some c ->
+                    if c.Validators.Length < minValidatorCount then
+                        return!
+                            sprintf "Configuration block %i must have at least %i validators in the configuration."
+                                block.Header.Number.Value
+                                minValidatorCount
+                            |> Result.appError
 
             let createdBlock, output =
                 createBlock
