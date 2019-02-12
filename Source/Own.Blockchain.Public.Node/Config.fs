@@ -141,7 +141,7 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration (initial values)
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member ConfigurationBlockDelta = 100 // Number of blocks between two config blocks.
+    static member ConfigurationBlockDelta = 3 // Number of blocks between two config blocks.
 
     static member ValidatorDepositLockTime = 2 // Number of config blocks to keep the deposit locked after leaving.
     static member ValidatorBlacklistTime = 5 // Number of config blocks to keep the validator blacklisted.
