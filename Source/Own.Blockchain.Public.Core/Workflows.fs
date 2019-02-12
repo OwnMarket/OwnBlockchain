@@ -388,7 +388,7 @@ module Workflows =
                                 "Due to insufficient number of validators ({0}), "
                                     + "configuration block {1} is taking over previous configuration.",
                                 newConfiguration.Validators.Length,
-                                configBlockNumber.Value
+                                blockNumber.Value
                             )
                             |> Log.warning
 
