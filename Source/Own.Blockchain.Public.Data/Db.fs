@@ -925,12 +925,10 @@ module Db =
             WHERE validator_address = @validatorAddress
             """
 
-        let sqlParams =
-            [
-                "@validatorAddress", validatorAddress |> box
-            ]
-
-        DbTools.query<string> dbEngineType dbConnectionString sql sqlParams
+        [
+            "@validatorAddress", validatorAddress |> box
+        ]
+        |> DbTools.query<string> dbEngineType dbConnectionString sql
         |> List.map BlockchainAddress
 
     let getTotalChxStaked
