@@ -58,10 +58,8 @@ type ConfigureValidatorTxActionDto = {
     SharedRewardPercent : decimal
 }
 
-[<CLIMutable>]
-type RemoveValidatorTxActionDto = {
-    ValidatorAddress : string
-}
+type RemoveValidatorTxActionDto () =
+    class end // Using empty class to satisfy the deserialization logic (class because record cannot be empty).
 
 [<CLIMutable>]
 type DelegateStakeTxActionDto = {
@@ -349,6 +347,11 @@ type ValidatorStateDto = {
     TimeToBlacklist : int16
 }
 
+type ValidatorChangeCode =
+    | Add = 0uy
+    | Remove = 1uy
+    | Update = 2uy
+
 [<CLIMutable>]
 type StakeStateDto = {
     Amount : decimal
@@ -364,7 +367,7 @@ type ProcessingOutputDto = {
     KycProviders : Map<string, Map<string, bool>>
     Accounts : Map<string, AccountStateDto>
     Assets : Map<string, AssetStateDto>
-    Validators : Map<string, ValidatorStateDto>
+    Validators : Map<string, ValidatorStateDto * ValidatorChangeCode>
     Stakes : Map<string * string, StakeStateDto>
 }
 

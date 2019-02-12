@@ -160,8 +160,10 @@ module Blocks =
     let createValidatorStateHash
         decodeHash
         createHash
-        (BlockchainAddress validatorAddress, state : ValidatorState)
+        (BlockchainAddress validatorAddress, (state : ValidatorState, change : ValidatorChange))
         =
+
+        let validatorChangeToByte = [| (match change with | Add -> 0uy | Remove -> 1uy | Update -> 2uy) |]
 
         [
             decodeHash validatorAddress
@@ -169,6 +171,7 @@ module Blocks =
             decimalToBytes state.SharedRewardPercent
             int16ToBytes state.TimeToLockDeposit
             int16ToBytes state.TimeToBlacklist
+            validatorChangeToByte
         ]
         |> Array.concat
         |> createHash
@@ -472,7 +475,7 @@ module Blocks =
     let createGenesisState
         genesisChxSupply
         genesisAddress
-        (genesisValidators : Map<BlockchainAddress, ValidatorState>)
+        (genesisValidators : Map<BlockchainAddress, ValidatorState * ValidatorChange>)
         : ProcessingOutput
         =
 
@@ -525,7 +528,7 @@ module Blocks =
         let validatorSnapshots =
             output.Validators
             |> Map.toList
-            |> List.map (fun (validatorAddress, state) ->
+            |> List.map (fun (validatorAddress, (state, _)) ->
                 {
                     ValidatorSnapshot.ValidatorAddress = validatorAddress
                     NetworkAddress = state.NetworkAddress

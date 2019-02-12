@@ -159,14 +159,6 @@ module Validation =
                 yield AppError "SharedRewardPercent cannot be greater than 100."
         ]
 
-    let private validateRemoveValidator isValidAddress (action : RemoveValidatorTxActionDto) =
-        [
-            if action.ValidatorAddress.IsNullOrWhiteSpace() then
-                yield AppError "ValidatorAddress is not provided."
-            elif action.ValidatorAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "ValidatorAddress is not valid."
-        ]
-
     let private validateDelegateStake isValidAddress (action : DelegateStakeTxActionDto) =
         [
             if action.ValidatorAddress.IsNullOrWhiteSpace() then
@@ -304,8 +296,8 @@ module Validation =
                 validateSetAssetCode a
             | :? ConfigureValidatorTxActionDto as a ->
                 validateConfigureValidator a
-            | :? RemoveValidatorTxActionDto as a ->
-                validateRemoveValidator isValidAddress a
+            | :? RemoveValidatorTxActionDto ->
+                [] // Nothing to validate
             | :? DelegateStakeTxActionDto as a ->
                 validateDelegateStake isValidAddress a
             | :? SubmitVoteTxActionDto as a ->

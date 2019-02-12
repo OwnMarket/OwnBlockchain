@@ -24,7 +24,7 @@ module Helpers =
         | SetAssetController action -> box action :?> 'T
         | SetAssetCode action -> box action :?> 'T
         | ConfigureValidator action -> box action :?> 'T
-        | RemoveValidator action -> box action :?> 'T
+        | RemoveValidator -> failwith "RemoveValidator TxAction has no data to extract."
         | DelegateStake action -> box action :?> 'T
         | SubmitVote action -> box action :?> 'T
         | SubmitVoteWeight action -> box action :?> 'T

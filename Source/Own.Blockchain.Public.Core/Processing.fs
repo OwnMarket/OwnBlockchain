@@ -21,6 +21,7 @@ module Processing =
         getAssetHashByCodeFromStorage : AssetCode -> AssetHash option,
         getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
         getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option,
+        getStakersFromStorage : BlockchainAddress -> BlockchainAddress list,
         getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
@@ -33,8 +34,9 @@ module Processing =
         accounts : ConcurrentDictionary<AccountHash, AccountState option>,
         assets : ConcurrentDictionary<AssetHash, AssetState option>,
         assetHashesByCode : ConcurrentDictionary<AssetCode, AssetHash option>,
-        validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option>,
+        validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option * ValidatorChange option>,
         stakes : ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>,
+        stakers : ConcurrentDictionary<BlockchainAddress, BlockchainAddress list>, // Not part of the blockchain state
         totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not part of the blockchain state
         stakingRewards : ConcurrentDictionary<BlockchainAddress, ChxAmount>,
         collectedReward : ChxAmount
@@ -59,6 +61,7 @@ module Processing =
             getAssetHashByCodeFromStorage : AssetCode -> AssetHash option,
             getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
             getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option,
+            getStakersFromStorage : BlockchainAddress -> BlockchainAddress list,
             getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
             ) =
             ProcessingState(
@@ -72,6 +75,7 @@ module Processing =
                 getAssetHashByCodeFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
+                getStakersFromStorage,
                 getTotalChxStakedFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
@@ -83,8 +87,9 @@ module Processing =
                 ConcurrentDictionary<AccountHash, AccountState option>(),
                 ConcurrentDictionary<AssetHash, AssetState option>(),
                 ConcurrentDictionary<AssetCode, AssetHash option>(),
-                ConcurrentDictionary<BlockchainAddress, ValidatorState option>(),
+                ConcurrentDictionary<BlockchainAddress, ValidatorState option * ValidatorChange option>(),
                 ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>(),
+                ConcurrentDictionary<BlockchainAddress, BlockchainAddress list>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
                 ChxAmount 0m
@@ -104,6 +109,7 @@ module Processing =
                 getAssetHashByCodeFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
+                getStakersFromStorage,
                 getTotalChxStakedFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(equivocationProofResults),
@@ -117,6 +123,7 @@ module Processing =
                 ConcurrentDictionary(assetHashesByCode),
                 ConcurrentDictionary(validators),
                 ConcurrentDictionary(stakes),
+                ConcurrentDictionary(stakers),
                 ConcurrentDictionary(totalChxStaked),
                 ConcurrentDictionary(stakingRewards),
                 __.CollectedReward
@@ -178,10 +185,20 @@ module Processing =
             assetHashesByCode.GetOrAdd(assetCode, getAssetHashByCodeFromStorage)
 
         member __.GetValidator (address : BlockchainAddress) =
-            validators.GetOrAdd(address, getValidatorStateFromStorage)
+            validators.GetOrAdd(address, fun _ ->
+                getValidatorStateFromStorage address
+                |> fun state -> state, None
+            )
+            |> fun (state, change) ->
+                match change with
+                | Some c when c = ValidatorChange.Remove -> None
+                | _ -> state
 
         member __.GetStake (stakerAddress : BlockchainAddress, validatorAddress : BlockchainAddress) =
             stakes.GetOrAdd((stakerAddress, validatorAddress), getStakeStateFromStorage)
+
+        member __.GetStakers validatorAddress =
+            stakers.GetOrAdd(validatorAddress, getStakersFromStorage)
 
         // Not part of the blockchain state
         member __.GetTotalChxStaked (address) =
@@ -235,9 +252,19 @@ module Processing =
             let state = Some state
             assets.AddOrUpdate (assetHash, state, fun _ _ -> state) |> ignore
 
-        member __.SetValidator (address, state : ValidatorState) =
-            let state = Some state
-            validators.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
+        member __.SetValidator (address, state, change) =
+            let state, change = Some state, Some change
+            let processingChange =
+                match validators.TryGetValue address with
+                | false, _ -> change
+                | true, (_, existingChange) ->
+                    if existingChange = Some ValidatorChange.Add && change = Some ValidatorChange.Remove
+                        || existingChange = Some ValidatorChange.Remove && change = Some ValidatorChange.Add
+                    then
+                        None
+                    else
+                        change
+            validators.AddOrUpdate(address, (state, processingChange), fun _ _ -> (state, processingChange)) |> ignore
 
         member __.SetStake (stakerAddress, validatorAddress, state : StakeState) =
             let state = Some state
@@ -297,7 +324,9 @@ module Processing =
                 Validators =
                     validators
                     |> Seq.ofDict
-                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
+                    |> Seq.choose (fun (a, (st, c)) ->
+                        st |> Option.map (fun s -> a, (s, c)))
+                    |> Seq.choose (fun (a, (s, ch)) -> ch |> Option.map (fun c -> a, (s, c)))
                     |> Map.ofSeq
                 Stakes =
                     stakes
@@ -325,7 +354,6 @@ module Processing =
 
         let validatorDeposit =
             state.GetValidator(senderAddress)
-            |> Option.filter (fun v -> v.TimeToLockDeposit > 0s)
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
 
@@ -539,7 +567,8 @@ module Processing =
                         SharedRewardPercent = action.SharedRewardPercent
                         TimeToLockDeposit = 0s
                         TimeToBlacklist = 0s
-                    }
+                    },
+                    ValidatorChange.Add
                 )
                 Ok state
             | Some validatorState ->
@@ -548,19 +577,31 @@ module Processing =
                     { validatorState with
                         NetworkAddress = action.NetworkAddress
                         SharedRewardPercent = action.SharedRewardPercent
-                    }
+                    },
+                    ValidatorChange.Update
                 )
                 Ok state
 
     let processRemoveValidatorTxAction
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
-        (action : RemoveValidatorTxAction)
         : Result<ProcessingState, TxErrorCode>
         =
 
-        // TODO: implement this
-        Error TxErrorCode.NonceTooLow
+        match state.GetValidator(senderAddress) with
+        | None -> Error TxErrorCode.ValidatorNotFound
+        | Some validatorState ->
+            if validatorState.TimeToBlacklist > 0s then
+                Error TxErrorCode.ValidatorIsBlacklisted
+            elif validatorState.TimeToLockDeposit > 0s then
+                Error TxErrorCode.ValidatorDepositLocked
+            else
+                state.GetStakers senderAddress
+                |> List.iter (fun stakerAddress ->
+                    state.SetStake (stakerAddress, senderAddress, {StakeState.Amount = ChxAmount 0m})
+                )
+                state.SetValidator(senderAddress, validatorState, ValidatorChange.Remove)
+                Ok state
 
     let processDelegateStakeTxAction
         validatorDeposit
@@ -575,7 +616,6 @@ module Processing =
 
         let validatorDeposit =
             state.GetValidator(senderAddress)
-            |> Option.filter (fun v -> v.TimeToLockDeposit > 0s)
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
 
@@ -938,7 +978,7 @@ module Processing =
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
         | ConfigureValidator action -> processConfigureValidatorTxAction validatorDeposit state senderAddress action
-        | RemoveValidator action -> processRemoveValidatorTxAction state senderAddress action
+        | RemoveValidator -> processRemoveValidatorTxAction state senderAddress
         | DelegateStake action -> processDelegateStakeTxAction validatorDeposit state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
@@ -999,7 +1039,11 @@ module Processing =
 
             match state.GetValidator(proof.ValidatorAddress) with
             | Some s ->
-                state.SetValidator(proof.ValidatorAddress, {s with TimeToBlacklist = validatorBlacklistTime})
+                state.SetValidator(
+                    proof.ValidatorAddress,
+                    {s with TimeToBlacklist = validatorBlacklistTime},
+                    ValidatorChange.Update
+                )
             | None -> failwithf "Cannot get validator state for %s" proof.ValidatorAddress.Value
 
             let amountToTake =
@@ -1085,7 +1129,8 @@ module Processing =
                     {s with
                         TimeToLockDeposit = s.TimeToLockDeposit - 1s |> max 0s
                         TimeToBlacklist = s.TimeToBlacklist - 1s |> max 0s
-                    }
+                    },
+                    ValidatorChange.Update
                 )
             | None -> failwithf "Cannot get validator state for %s" validatorAddress.Value
 
@@ -1101,7 +1146,11 @@ module Processing =
             for v in c.Validators do
                 match state.GetValidator(v.ValidatorAddress) with
                 | Some s ->
-                    state.SetValidator(v.ValidatorAddress, {s with TimeToLockDeposit = validatorDepositLockTime})
+                    state.SetValidator(
+                        v.ValidatorAddress,
+                        {s with TimeToLockDeposit = validatorDepositLockTime},
+                        ValidatorChange.Update
+                    )
                 | None -> failwithf "Cannot get validator state for %s" v.ValidatorAddress.Value
         )
 
@@ -1124,6 +1173,7 @@ module Processing =
         (getAssetHashByCodeFromStorage : AssetCode -> AssetHash option)
         (getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option)
         (getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option)
+        (getStakersFromStorage : BlockchainAddress -> BlockchainAddress list)
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
         (getTopStakers : BlockchainAddress -> StakerInfo list)
         getLockedAndBlacklistedValidators
@@ -1182,6 +1232,7 @@ module Processing =
                 getAssetHashByCodeFromStorage,
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
+                getStakersFromStorage,
                 getTotalChxStakedFromStorage
             )
 

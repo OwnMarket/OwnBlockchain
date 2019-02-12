@@ -92,6 +92,7 @@ module Composition =
     let getTopStakersByStake =
         Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakesCount
     let getStakeState = Db.getStakeState Config.DbEngineType Config.DbConnectionString
+    let getStakers = Db.getStakers Config.DbEngineType Config.DbConnectionString
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbEngineType Config.DbConnectionString
 
     let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
@@ -194,6 +195,7 @@ module Composition =
             getAssetHashByCode
             getValidatorState
             getStakeState
+            getStakers
             getTotalChxStaked
             getTopStakersByStake
             getValidatorsAtHeight

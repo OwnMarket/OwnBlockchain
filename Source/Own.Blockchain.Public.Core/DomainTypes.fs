@@ -116,10 +116,6 @@ type ConfigureValidatorTxAction = {
     SharedRewardPercent : decimal
 }
 
-type RemoveValidatorTxAction = {
-    ValidatorAddress : BlockchainAddress
-}
-
 type DelegateStakeTxAction = {
     ValidatorAddress : BlockchainAddress
     Amount : ChxAmount
@@ -172,7 +168,7 @@ type TxAction =
     | SetAssetController of SetAssetControllerTxAction
     | SetAssetCode of SetAssetCodeTxAction
     | ConfigureValidator of ConfigureValidatorTxAction
-    | RemoveValidator of RemoveValidatorTxAction
+    | RemoveValidator
     | DelegateStake of DelegateStakeTxAction
     | SubmitVote of SubmitVoteTxAction
     | SubmitVoteWeight of SubmitVoteWeightTxAction
@@ -305,7 +301,10 @@ type TxErrorCode =
     | KycProviderAldreadyExists = 670s
 
     // Validators
-    | InsufficientStake = 910s
+    | ValidatorNotFound = 910s
+    | InsufficientStake = 920s
+    | ValidatorIsBlacklisted = 930s
+    | ValidatorDepositLocked = 940s
 
 type TxError =
     | TxError of TxErrorCode
@@ -399,7 +398,7 @@ type ProcessingOutput = {
     KycProviders : Map<AssetHash, Map<BlockchainAddress, KycProviderChange>>
     Accounts : Map<AccountHash, AccountState>
     Assets : Map<AssetHash, AssetState>
-    Validators : Map<BlockchainAddress, ValidatorState>
+    Validators : Map<BlockchainAddress, ValidatorState * ValidatorChange>
     Stakes : Map<BlockchainAddress * BlockchainAddress, StakeState>
     StakingRewards : Map<BlockchainAddress, ChxAmount>
 }

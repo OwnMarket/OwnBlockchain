@@ -85,11 +85,8 @@ module Mapping =
                 SharedRewardPercent = a.SharedRewardPercent
             }
             |> ConfigureValidator
-        | :? RemoveValidatorTxActionDto as a ->
-            {
-                RemoveValidatorTxAction.ValidatorAddress = BlockchainAddress a.ValidatorAddress
-            }
-            |> RemoveValidator
+        | :? RemoveValidatorTxActionDto ->
+            RemoveValidator
         | :? DelegateStakeTxActionDto as a ->
             {
                 DelegateStakeTxAction.ValidatorAddress = BlockchainAddress a.ValidatorAddress
@@ -504,6 +501,12 @@ module Mapping =
             TimeToBlacklist = state.TimeToBlacklist
         }
 
+    let validatorChangeToCode (change : ValidatorChange) =
+        match change with
+        | Add -> ValidatorChangeCode.Add
+        | Remove -> ValidatorChangeCode.Remove
+        | Update -> ValidatorChangeCode.Update
+
     let stakeStateFromDto (dto : StakeStateDto) : StakeState =
         {
             Amount = ChxAmount dto.Amount
@@ -566,7 +569,7 @@ module Mapping =
 
         let validators =
             output.Validators
-            |> Map.remap (fun (BlockchainAddress a, s : ValidatorState) -> a, validatorStateToDto s)
+            |> Map.remap (fun (BlockchainAddress a, (s, c)) -> a, (validatorStateToDto s, validatorChangeToCode c))
 
         let stakes =
             output.Stakes

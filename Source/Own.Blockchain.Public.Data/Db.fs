@@ -911,6 +911,28 @@ module Db =
         | [stakeState] -> Some stakeState
         | _ -> failwithf "Multiple stakes from address %A found for validator %A" stakerAddress validatorAddress
 
+    let getStakers
+        dbEngineType
+        (dbConnectionString : string)
+        (BlockchainAddress validatorAddress)
+        : BlockchainAddress list
+        =
+
+        let sql =
+            """
+            SELECT staker_address
+            FROM stake
+            WHERE validator_address = @validatorAddress
+            """
+
+        let sqlParams =
+            [
+                "@validatorAddress", validatorAddress |> box
+            ]
+
+        DbTools.query<string> dbEngineType dbConnectionString sql sqlParams
+        |> List.map BlockchainAddress
+
     let getTotalChxStaked
         dbEngineType
         (dbConnectionString : string)
@@ -1858,7 +1880,6 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 -> addValidator conn transaction validatorInfo
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't update validator state."
         with
@@ -1869,21 +1890,29 @@ module Db =
     let private updateValidators
         (conn : DbConnection)
         (transaction : DbTransaction)
-        (validators : Map<string, ValidatorStateDto>)
+        (validators : Map<string, ValidatorStateDto * ValidatorChangeCode>)
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (validatorAddress, (state : ValidatorStateDto)) =
+        let foldFn result (validatorAddress, (state : ValidatorStateDto, change : ValidatorChangeCode)) =
             result
             >>= (fun _ ->
-                {
-                    ValidatorAddress = validatorAddress
-                    NetworkAddress = state.NetworkAddress
-                    SharedRewardPercent = state.SharedRewardPercent
-                    TimeToLockDeposit = state.TimeToLockDeposit
-                    TimeToBlacklist = state.TimeToBlacklist
-                }
-                |> updateValidator conn transaction
+                let validatorState =
+                    {
+                        ValidatorAddress = validatorAddress
+                        NetworkAddress = state.NetworkAddress
+                        SharedRewardPercent = state.SharedRewardPercent
+                        TimeToLockDeposit = state.TimeToLockDeposit
+                        TimeToBlacklist = state.TimeToBlacklist
+                    }
+                match change with
+                | ValidatorChangeCode.Add ->
+                    addValidator conn transaction validatorState
+                | ValidatorChangeCode.Remove ->
+                    removeValidator conn transaction validatorAddress
+                | ValidatorChangeCode.Update ->
+                    updateValidator conn transaction validatorState
+                | _ -> Result.appError (sprintf "Invalid validator change : %A" change)
             )
 
         validators
@@ -1912,6 +1941,33 @@ module Db =
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert stake state."
+
+    let private removeStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            DELETE FROM stake
+            WHERE staker_address = @stakerAddress
+            AND validator_address = @validatorAddress
+            """
+
+        let sqlParams =
+            [
+                "@stakerAddress", stakeInfo.StakerAddress |> box
+                "@validatorAddress", stakeInfo.ValidatorAddress |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0
+            | 1 -> Ok ()
+            | _ ->
+                sprintf "Didn't remove stake: (%s %s)" stakeInfo.StakerAddress stakeInfo.ValidatorAddress
+                |> Result.appError
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            sprintf "Failed to remove stake: (%s %s)" stakeInfo.StakerAddress stakeInfo.ValidatorAddress
+            |> Result.appError
 
     let private updateStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -1949,15 +2005,19 @@ module Db =
         let foldFn result ((stakerAddress, validatorAddress), stakeState : StakeStateDto) =
             result
             >>= fun _ ->
-                {
-                    StakerAddress = stakerAddress
-                    ValidatorAddress = validatorAddress
-                    StakeState =
-                        {
-                            Amount = stakeState.Amount
-                        }
-                }
-                |> updateStake conn transaction
+                let stakeStateDto =
+                    {
+                        StakerAddress = stakerAddress
+                        ValidatorAddress = validatorAddress
+                        StakeState =
+                            {
+                                Amount = stakeState.Amount
+                            }
+                    }
+                if stakeState.Amount = 0m then
+                    removeStake conn transaction stakeStateDto
+                else
+                    updateStake conn transaction stakeStateDto
 
         stakes
         |> Map.toList

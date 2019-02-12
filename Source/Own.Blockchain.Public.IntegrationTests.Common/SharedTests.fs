@@ -241,12 +241,15 @@ module SharedTests =
             Config.GenesisValidators
             |> List.map (fun (ba, na) ->
                 BlockchainAddress ba,
-                    {
-                        ValidatorState.NetworkAddress = NetworkAddress na
-                        SharedRewardPercent = 0m
-                        TimeToLockDeposit = Config.ValidatorDepositLockTime |> Convert.ToInt16
-                        TimeToBlacklist = 0s
-                    }
+                    (
+                        {
+                            ValidatorState.NetworkAddress = NetworkAddress na
+                            SharedRewardPercent = 0m
+                            TimeToLockDeposit = Config.ValidatorDepositLockTime |> Convert.ToInt16
+                            TimeToBlacklist = 0s
+                        },
+                        ValidatorChange.Add
+                    )
             )
             |> Map.ofList
 

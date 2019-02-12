@@ -30,7 +30,6 @@ module Workflows =
         let validatorDeposit =
             getValidatorState(senderAddress)
             |> Option.map Mapping.validatorStateFromDto
-            |> Option.filter (fun v -> v.TimeToLockDeposit > 0s)
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
 
@@ -82,12 +81,15 @@ module Workflows =
             genesisValidators
             |> List.map (fun (ba, na) ->
                 BlockchainAddress ba,
-                    {
-                        ValidatorState.NetworkAddress = NetworkAddress na
-                        SharedRewardPercent = 0m
-                        TimeToLockDeposit = validatorDepositLockTime
-                        TimeToBlacklist = 0s
-                    }
+                    (
+                        {
+                            ValidatorState.NetworkAddress = NetworkAddress na
+                            SharedRewardPercent = 0m
+                            TimeToLockDeposit = validatorDepositLockTime
+                            TimeToBlacklist = 0s
+                        },
+                        ValidatorChange.Add
+                    )
             )
             |> Map.ofList
 
@@ -203,6 +205,7 @@ module Workflows =
         getAssetHashByCodeFromStorage
         getValidatorStateFromStorage
         getStakeStateFromStorage
+        getStakersFromStorage
         getTotalChxStakedFromStorage
         getTopStakersFromStorage
         (getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list)
@@ -235,6 +238,7 @@ module Workflows =
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
         let getValidatorState = memoize (getValidatorStateFromStorage >> Option.map Mapping.validatorStateFromDto)
         let getStakeState = memoize (getStakeStateFromStorage >> Option.map Mapping.stakeStateFromDto)
+        let getStakers = memoize getStakersFromStorage
         let getTotalChxStaked = memoize getTotalChxStakedFromStorage
 
         let getTopStakers = getTopStakersFromStorage >> List.map Mapping.stakerInfoFromDto
@@ -277,6 +281,7 @@ module Workflows =
                 getAssetHashByCode
                 getValidatorState
                 getStakeState
+                getStakers
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
