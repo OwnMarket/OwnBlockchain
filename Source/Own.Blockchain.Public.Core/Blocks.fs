@@ -163,7 +163,7 @@ module Blocks =
         (BlockchainAddress validatorAddress, (state : ValidatorState, change : ValidatorChange))
         =
 
-        let validatorChangeToByte = [| (match change with | Add -> 0uy | Remove -> 1uy | Update -> 2uy) |]
+        let validatorChangeCodeBytes = [| change |> Mapping.validatorChangeToCode |> byte |]
 
         [
             decodeHash validatorAddress
@@ -172,7 +172,7 @@ module Blocks =
             int16ToBytes state.TimeToLockDeposit
             int16ToBytes state.TimeToBlacklist
             boolToBytes state.IsEnabled
-            validatorChangeToByte
+            validatorChangeCodeBytes
         ]
         |> Array.concat
         |> createHash
