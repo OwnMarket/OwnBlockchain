@@ -206,6 +206,9 @@ module DbChanges =
 
                     ALTER TABLE validator ADD time_to_blacklist SMALLINT DEFAULT 0 NOT NULL;
                     ALTER TABLE validator ALTER time_to_blacklist DROP DEFAULT;
+
+                    ALTER TABLE validator ADD is_enabled BOOLEAN DEFAULT TRUE NOT NULL;
+                    ALTER TABLE validator ALTER is_enabled DROP DEFAULT;
                     """
             }
         ]
@@ -409,6 +412,9 @@ module DbChanges =
 
                     ALTER TABLE validator ADD time_to_blacklist SMALLINT DEFAULT 0 NOT NULL;
                     ALTER TABLE validator ALTER time_to_blacklist DROP DEFAULT;
+
+                    ALTER TABLE validator ADD is_enabled BOOLEAN DEFAULT TRUE NOT NULL;
+                    ALTER TABLE validator ALTER is_enabled DROP DEFAULT;
                     """
             }
         ]

@@ -728,6 +728,7 @@ module ValidationTests =
             {
                 ConfigureValidatorTxActionDto.NetworkAddress = "A"
                 SharedRewardPercent = 42m
+                IsEnabled = true
             }
 
         let tx = {
@@ -756,6 +757,7 @@ module ValidationTests =
             {
                 ConfigureValidatorTxActionDto.NetworkAddress = ""
                 SharedRewardPercent = 0m
+                IsEnabled = true
             }
 
         let tx = {

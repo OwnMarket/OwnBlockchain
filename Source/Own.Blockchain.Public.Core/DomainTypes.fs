@@ -114,6 +114,7 @@ type SetAssetCodeTxAction = {
 type ConfigureValidatorTxAction = {
     NetworkAddress : NetworkAddress
     SharedRewardPercent : decimal
+    IsEnabled : bool
 }
 
 type DelegateStakeTxAction = {
@@ -372,6 +373,7 @@ type ValidatorState = {
     SharedRewardPercent : decimal
     TimeToLockDeposit : int16
     TimeToBlacklist : int16
+    IsEnabled : bool
 }
 
 type ValidatorChange =

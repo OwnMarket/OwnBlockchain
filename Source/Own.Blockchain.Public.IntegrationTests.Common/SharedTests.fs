@@ -247,6 +247,7 @@ module SharedTests =
                             SharedRewardPercent = 0m
                             TimeToLockDeposit = Config.ValidatorDepositLockTime |> Convert.ToInt16
                             TimeToBlacklist = 0s
+                            IsEnabled = true
                         },
                         ValidatorChange.Add
                     )
@@ -496,6 +497,7 @@ module SharedTests =
                 SharedRewardPercent = 42m
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
+                IsEnabled = true
             }
         let sender = Signing.generateWallet()
         let initialSenderChxBalance = 10m
@@ -518,6 +520,7 @@ module SharedTests =
                         {
                             ConfigureValidatorTxActionDto.NetworkAddress = expectedConfig.NetworkAddress.Value
                             SharedRewardPercent = expectedConfig.SharedRewardPercent
+                            IsEnabled = true
                         }
                 }
             ]

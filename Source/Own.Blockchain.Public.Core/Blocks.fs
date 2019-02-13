@@ -171,6 +171,7 @@ module Blocks =
             decimalToBytes state.SharedRewardPercent
             int16ToBytes state.TimeToLockDeposit
             int16ToBytes state.TimeToBlacklist
+            boolToBytes state.IsEnabled
             validatorChangeToByte
         ]
         |> Array.concat

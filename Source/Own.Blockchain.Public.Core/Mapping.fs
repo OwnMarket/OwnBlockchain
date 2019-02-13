@@ -83,6 +83,7 @@ module Mapping =
             {
                 ConfigureValidatorTxAction.NetworkAddress = NetworkAddress a.NetworkAddress
                 SharedRewardPercent = a.SharedRewardPercent
+                IsEnabled = a.IsEnabled
             }
             |> ConfigureValidator
         | :? RemoveValidatorTxActionDto ->
@@ -491,6 +492,7 @@ module Mapping =
             SharedRewardPercent = dto.SharedRewardPercent
             TimeToLockDeposit = dto.TimeToLockDeposit
             TimeToBlacklist = dto.TimeToBlacklist
+            IsEnabled = dto.IsEnabled
         }
 
     let validatorStateToDto (state : ValidatorState) : ValidatorStateDto =
@@ -499,6 +501,7 @@ module Mapping =
             SharedRewardPercent = state.SharedRewardPercent
             TimeToLockDeposit = state.TimeToLockDeposit
             TimeToBlacklist = state.TimeToBlacklist
+            IsEnabled = state.IsEnabled
         }
 
     let validatorChangeToCode (change : ValidatorChange) =

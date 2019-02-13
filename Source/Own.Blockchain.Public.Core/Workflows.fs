@@ -87,6 +87,7 @@ module Workflows =
                             SharedRewardPercent = 0m
                             TimeToLockDeposit = validatorDepositLockTime
                             TimeToBlacklist = 0s
+                            IsEnabled = true
                         },
                         ValidatorChange.Add
                     )

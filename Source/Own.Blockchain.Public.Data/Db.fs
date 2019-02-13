@@ -755,7 +755,7 @@ module Db =
 
         let sql =
             """
-            SELECT network_address, shared_reward_percent, time_to_lock_deposit, time_to_blacklist
+            SELECT network_address, shared_reward_percent, time_to_lock_deposit, time_to_blacklist, is_enabled
             FROM validator
             WHERE validator_address = @validatorAddress
             """
@@ -800,6 +800,7 @@ module Db =
                 ) d ON
                     d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
+                AND is_enabled
                 AND (chx_balance.amount - coalesce(d.total_delegation, 0)) >= @deposit
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 """
@@ -822,6 +823,7 @@ module Db =
                 ) d ON
                     d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
+                AND is_enabled
                 AND (chx_balance.amount - coalesce(d.total_delegation, 0)) >= @deposit
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 LIMIT @topCount
@@ -1790,14 +1792,16 @@ module Db =
                 network_address,
                 shared_reward_percent,
                 time_to_lock_deposit,
-                time_to_blacklist
+                time_to_blacklist,
+                is_enabled
             )
             VALUES (
                 @validatorAddress,
                 @networkAddress,
                 @sharedRewardPercent,
                 @timeToLockDeposit,
-                @timeToBlacklist
+                @timeToBlacklist,
+                @isEnabled
             )
             """
 
@@ -1808,6 +1812,7 @@ module Db =
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
                 "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
                 "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
+                "@isEnabled", validatorInfo.IsEnabled |> box
             ]
 
         try
@@ -1863,7 +1868,8 @@ module Db =
             SET network_address = @networkAddress,
                 shared_reward_percent = @sharedRewardPercent,
                 time_to_lock_deposit = @timeToLockDeposit,
-                time_to_blacklist = @timeToBlacklist
+                time_to_blacklist = @timeToBlacklist,
+                is_enabled = @isEnabled
             WHERE validator_address = @validatorAddress
             """
 
@@ -1874,6 +1880,7 @@ module Db =
                 "@sharedRewardPercent", validatorInfo.SharedRewardPercent |> box
                 "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
                 "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
+                "@isEnabled", validatorInfo.IsEnabled |> box
             ]
 
         try
@@ -1902,6 +1909,7 @@ module Db =
                         SharedRewardPercent = state.SharedRewardPercent
                         TimeToLockDeposit = state.TimeToLockDeposit
                         TimeToBlacklist = state.TimeToBlacklist
+                        IsEnabled = state.IsEnabled
                     }
                 match change with
                 | ValidatorChangeCode.Add ->

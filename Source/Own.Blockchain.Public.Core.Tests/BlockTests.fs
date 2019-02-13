@@ -212,6 +212,7 @@ module BlockTests =
                 SharedRewardPercent = 4m
                 TimeToLockDeposit = 3s
                 TimeToBlacklist = 5s
+                IsEnabled = true
             }
 
         // ACT
@@ -222,7 +223,7 @@ module BlockTests =
                 (validatorAddress, (state, ValidatorChange.Add))
 
         // ASSERT
-        test <@ stateHash = "AAAHHH...D.............C.E." @>
+        test <@ stateHash = "AAAHHH...D.............C.EA." @>
 
     [<Fact>]
     let ``Blocks.createValidatorSnapshotHash`` () =
@@ -490,6 +491,7 @@ module BlockTests =
                         SharedRewardPercent = 1m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 4s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -500,6 +502,7 @@ module BlockTests =
                         SharedRewardPercent = 2m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 5s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -510,6 +513,7 @@ module BlockTests =
                         SharedRewardPercent = 3m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 6s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -616,9 +620,9 @@ module BlockTests =
                 "CCCCDDDD" // Account 2
                 "EEEEHHHFFFF." // Asset 1
                 "GGGG.HHHHA" // Asset 2
-                "AAAAAGGG...A.............C.D." // Validator 1
-                "BBBBBHHH...B.............C.E." // Validator 2
-                "CCCCCIII...C.............C.F." // Validator 3
+                "AAAAAGGG...A.............C.DA." // Validator 1
+                "BBBBBHHH...B.............C.EA." // Validator 2
+                "CCCCCIII...C.............C.FA." // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
             ]
@@ -886,6 +890,7 @@ module BlockTests =
                         SharedRewardPercent = 1m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 4s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -896,6 +901,7 @@ module BlockTests =
                         SharedRewardPercent = 2m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 5s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -906,6 +912,7 @@ module BlockTests =
                         SharedRewardPercent = 3m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 6s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -1245,6 +1252,7 @@ module BlockTests =
                         SharedRewardPercent = 1m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 4s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -1255,6 +1263,7 @@ module BlockTests =
                         SharedRewardPercent = 2m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 5s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )
@@ -1265,6 +1274,7 @@ module BlockTests =
                         SharedRewardPercent = 3m
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 6s
+                        IsEnabled = true
                     },
                     ValidatorChange.Add
                 )

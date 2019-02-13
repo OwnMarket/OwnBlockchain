@@ -339,6 +339,7 @@ module SerializationTests =
                     {
                         ConfigureValidatorTxActionDto.NetworkAddress = "localhost:5000"
                         SharedRewardPercent = 0m
+                        IsEnabled = true
                     }
             }
 

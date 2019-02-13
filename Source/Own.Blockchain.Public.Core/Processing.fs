@@ -567,6 +567,7 @@ module Processing =
                         SharedRewardPercent = action.SharedRewardPercent
                         TimeToLockDeposit = 0s
                         TimeToBlacklist = 0s
+                        IsEnabled = action.IsEnabled
                     },
                     ValidatorChange.Add
                 )
@@ -577,6 +578,7 @@ module Processing =
                     { validatorState with
                         NetworkAddress = action.NetworkAddress
                         SharedRewardPercent = action.SharedRewardPercent
+                        IsEnabled = action.IsEnabled
                     },
                     ValidatorChange.Update
                 )

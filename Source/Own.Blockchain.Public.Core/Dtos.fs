@@ -56,6 +56,7 @@ type SetAssetCodeTxActionDto = {
 type ConfigureValidatorTxActionDto = {
     NetworkAddress : string
     SharedRewardPercent : decimal
+    IsEnabled : bool
 }
 
 type RemoveValidatorTxActionDto () =
@@ -345,6 +346,7 @@ type ValidatorStateDto = {
     SharedRewardPercent : decimal
     TimeToLockDeposit : int16
     TimeToBlacklist : int16
+    IsEnabled : bool
 }
 
 type ValidatorChangeCode =
@@ -420,6 +422,7 @@ type ValidatorInfoDto = {
     SharedRewardPercent : decimal
     TimeToLockDeposit : int16
     TimeToBlacklist : int16
+    IsEnabled : bool
 }
 
 [<CLIMutable>]

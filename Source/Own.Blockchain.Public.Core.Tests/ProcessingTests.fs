@@ -8968,6 +8968,7 @@ module ProcessingTests =
                         {
                             ConfigureValidatorTxActionDto.NetworkAddress = newNetworkAddress.Value
                             SharedRewardPercent = newSharedRewardPercent
+                            IsEnabled = false
                         }
                 } :> obj
             ]
@@ -9016,6 +9017,7 @@ module ProcessingTests =
                 SharedRewardPercent = 6m
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
+                IsEnabled = true
             }
 
         let getStakeState _ =
@@ -9078,6 +9080,7 @@ module ProcessingTests =
         let validatorState, validatorChange = output.Validators.[senderWallet.Address]
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
         test <@ validatorState.SharedRewardPercent = newSharedRewardPercent @>
+        test <@ validatorState.IsEnabled = false @>
         test <@ validatorChange = ValidatorChange.Update @>
 
     [<Fact>]
@@ -9107,6 +9110,7 @@ module ProcessingTests =
                         {
                             ConfigureValidatorTxActionDto.NetworkAddress = newNetworkAddress.Value
                             SharedRewardPercent = newSharedRewardPercent
+                            IsEnabled = true
                         }
                 } :> obj
             ]
@@ -9289,6 +9293,7 @@ module ProcessingTests =
                 SharedRewardPercent = 5m
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
+                IsEnabled = true
             }
             |> Some
 
@@ -9570,6 +9575,7 @@ module ProcessingTests =
                 SharedRewardPercent = 5m
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 2s
+                IsEnabled = true
             }
             |> Some
 
@@ -9711,6 +9717,7 @@ module ProcessingTests =
                 SharedRewardPercent = 5m
                 TimeToLockDeposit = 2s
                 TimeToBlacklist = 0s
+                IsEnabled = true
             }
             |> Some
 
