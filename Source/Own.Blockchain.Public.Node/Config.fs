@@ -74,29 +74,11 @@ type Config () =
     static member NetworkDiscoveryTime = 30 // Seconds
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Genesis
+    // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member GenesisChxSupply = 168_956_522.0930844m
+    static member NetworkTimeUpdateInterval = 1 // Minutes
 
-    static member GenesisAddress
-        with get () =
-            genesis.["GenesisAddress"]
-
-    static member GenesisValidators
-        with get () =
-            genesis.GetSection("GenesisValidators").GetChildren()
-            |> Seq.map (fun e ->
-                match e.Value.Split("@") with
-                | [| validatorAddress; networkAddress |] -> validatorAddress, networkAddress
-                | _ -> failwith "Invalid GenesisValidators configuration."
-            )
-            |> Seq.toList
-
-    static member GenesisSignatures
-        with get () =
-            genesis.GetSection("GenesisSignatures").GetChildren()
-            |> Seq.map (fun e -> e.Value)
-            |> Seq.toList
+    static member MaxNumberOfBlocksToFetchInParallel = 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Processing
@@ -112,13 +94,6 @@ type Config () =
     static member ValidatorPrivateKey
         with get () =
             config.["ValidatorPrivateKey"]
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Synchronization
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member NetworkTimeUpdateInterval = 1 // Minutes
-
-    static member MaxNumberOfBlocksToFetchInParallel = 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
@@ -145,3 +120,28 @@ type Config () =
 
     static member ValidatorDepositLockTime = 2 // Number of config blocks to keep the deposit locked after leaving.
     static member ValidatorBlacklistTime = 5 // Number of config blocks to keep the validator blacklisted.
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Genesis
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member GenesisChxSupply = 168_956_522.0930844m
+
+    static member GenesisAddress
+        with get () =
+            genesis.["GenesisAddress"]
+
+    static member GenesisValidators
+        with get () =
+            genesis.GetSection("GenesisValidators").GetChildren()
+            |> Seq.map (fun e ->
+                match e.Value.Split("@") with
+                | [| validatorAddress; networkAddress |] -> validatorAddress, networkAddress
+                | _ -> failwith "Invalid GenesisValidators configuration."
+            )
+            |> Seq.toList
+
+    static member GenesisSignatures
+        with get () =
+            genesis.GetSection("GenesisSignatures").GetChildren()
+            |> Seq.map (fun e -> e.Value)
+            |> Seq.toList
