@@ -76,6 +76,7 @@ Parameter | Data Type | Description
 --- | --- | ---
 `NetworkAddress` | string | Network address of the validator being configured. (e.g. `validator1.weown.com:25718`)
 `SharedRewardPercent` | decimal | Percent of the reward shared with stakers. (0 - 100)
+`IsEnabled` | bool | Decides if the validator gets excluded from the next configuration block
 
 **NOTE:** The transaction must be signed using the private key of the validator wallet address with enough stake to participate in consensus.
 
