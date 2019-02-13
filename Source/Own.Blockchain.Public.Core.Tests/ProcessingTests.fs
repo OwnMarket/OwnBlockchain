@@ -9075,9 +9075,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
-        let validatorState = output.Validators.[senderWallet.Address] |> fst
-        let validatorChange = output.Validators.[senderWallet.Address] |> snd
-
+        let validatorState, validatorChange = output.Validators.[senderWallet.Address]
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
         test <@ validatorState.SharedRewardPercent = newSharedRewardPercent @>
         test <@ validatorChange = ValidatorChange.Update @>
@@ -9211,9 +9209,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
-        let validatorState = output.Validators.[senderWallet.Address] |> fst
-        let validatorChange = output.Validators.[senderWallet.Address] |> snd
-
+        let validatorState, validatorChange = output.Validators.[senderWallet.Address]
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
         test <@ validatorState.SharedRewardPercent = newSharedRewardPercent @>
         test <@ validatorChange = ValidatorChange.Add @>
@@ -9362,9 +9358,7 @@ module ProcessingTests =
         test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
 
-        let validatorState = output.Validators.[senderValidatorWallet.Address] |> fst
-        let validatorChange = output.Validators.[senderValidatorWallet.Address] |> snd
-
+        let validatorState, validatorChange = output.Validators.[senderValidatorWallet.Address]
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
         test <@ validatorChange = ValidatorChange.Remove @>
         test <@ output.Stakes.[(stakerAddress1, senderValidatorWallet.Address)].Amount = ChxAmount 0m @>
