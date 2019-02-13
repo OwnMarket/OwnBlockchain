@@ -8,6 +8,7 @@ An action is a single command that changes the state. The action types supported
     - [`TransferChx`](#transferchx)
     - [`DelegateStake`](#delegatestake)
     - [`ConfigureValidator`](#configurevalidator)
+    - [`RemoveValidator`](#removevalidator)    
 - Asset Management Actions
     - [`TransferAsset`](#transferasset)
     - [`CreateAssetEmission`](#createassetemission)
@@ -78,6 +79,13 @@ Parameter | Data Type | Description
 
 **NOTE:** The transaction must be signed using the private key of the validator wallet address with enough stake to participate in consensus.
 
+### `RemoveValidator`
+
+This action type is used by a validator to remove itself from the list of validators.
+
+This action has no parameters and is specified as `"actionData": {}` in JSON representation of the transaction.
+
+**NOTE:** The transaction must be signed using the private key of the validator wallet address with enough stake to participate in consensus, not blacklisted and not having its deposit locked.
 
 ## Asset Management Actions
 

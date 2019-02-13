@@ -43,6 +43,7 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
     - [`TransferChx`](TxActions.md#transferchx)
     - [`DelegateStake`](TxActions.md#delegatestake)
     - [`ConfigureValidator`](TxActions.md#configurevalidator)
+    - [`RemoveValidator`](TxActions.md#removevalidator)    
     - [`TransferAsset`](TxActions.md#transferasset)
     - [`CreateAssetEmission`](TxActions.md#createassetemission)
     - [`CreateAsset`](TxActions.md#createasset)
