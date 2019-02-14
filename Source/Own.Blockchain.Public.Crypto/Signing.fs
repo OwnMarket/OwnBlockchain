@@ -67,12 +67,6 @@ module Signing =
         |> Hashing.decode
         |> signHashBytes (Some networkCode) privateKey
 
-    /// Creates a hash of the message and signs it.
-    let signMessage privateKey (message : byte[]) =
-        message
-        |> Hashing.hashBytes
-        |> signHashBytes None privateKey
-
     let verifySignature networkCode (Signature signature) messageHash : BlockchainAddress option =
         let signatureBytes = signature |> Hashing.decode
         let messageHashBytes = messageHash |> Hashing.decode

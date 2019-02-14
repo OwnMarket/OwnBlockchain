@@ -26,12 +26,13 @@ module Cli =
         |> Signing.addressFromPrivateKey
         |> fun (BlockchainAddress a) -> printfn "Address: %s" a
 
-    let handleSignMessageCommand privateKey message =
-        let privateKey = PrivateKey privateKey
+    let handleSignMessageCommand networkCode privateKey message =
+        let privateKey = PrivateKey privateKey // TODO: Use key file path, to prevent logging keys in terminal history.
 
         message
         |> Convert.FromBase64String // TODO: Provide input as a file path, so the raw data can be read.
-        |> Signing.signMessage privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.
+        |> Hashing.hash
+        |> Signing.signHash networkCode privateKey
         |> fun (Signature signature) -> printfn "Signature: %s" signature
 
     let handleHelpCommand args =
@@ -46,5 +47,5 @@ module Cli =
         | ["--version"] -> handleShowVersionCommand ()
         | ["--generate"] -> handleGenerateWalletCommand ()
         | ["--address"; privateKey] -> handleDeriveAddressCommand privateKey
-        | ["--sign"; privateKey; message] -> handleSignMessageCommand privateKey message
+        | ["--sign"; networkCode; privateKey; message] -> handleSignMessageCommand networkCode privateKey message
         | ["--help"] | _ -> handleHelpCommand args
