@@ -829,7 +829,7 @@ module Processing =
             |> Option.map (fun s -> s.Nonce)
             |? Nonce 0L
 
-        let (destinedToFailDueToLowNonce, rest) =
+        let destinedToFailDueToLowNonce, rest =
             txSet
             |> List.partition(fun tx -> tx.Nonce <= stateNonce)
 
@@ -903,7 +903,7 @@ module Processing =
             match unorderedSet with
             | [] -> orderedSet
             | head :: tail ->
-                let (precedingTxsForSameSender, rest) =
+                let precedingTxsForSameSender, rest =
                     tail
                     |> List.partition (fun tx ->
                         tx.Sender = head.Sender

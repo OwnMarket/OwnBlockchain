@@ -58,7 +58,7 @@ module MerkleTree =
     // Builds the upper level list of nodes by computing parent nodes from ordered pairs of 2 (child) nodes.
     // The pairs are constructed left-to-right.
     let rec private buildParentLevel hashFunc parentNodes (nodes : MerkleNode option list) =
-        let (pair, remainingNodes) =
+        let pair, remainingNodes =
             match nodes with
             | [_] -> ([nodes.Head; nodes.Head], List.Empty)
             | [] -> (List.Empty, parentNodes)

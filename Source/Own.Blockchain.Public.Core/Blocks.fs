@@ -40,13 +40,10 @@ module Blocks =
         |> createHash
 
     let createChxBalanceStateHash decodeHash createHash (BlockchainAddress address, state : ChxBalanceState) =
-        let (ChxAmount amount) = state.Amount
-        let (Nonce nonce) = state.Nonce
-
         [
             decodeHash address
-            decimalToBytes amount
-            int64ToBytes nonce
+            decimalToBytes state.Amount.Value
+            int64ToBytes state.Nonce.Value
         ]
         |> Array.concat
         |> createHash
@@ -57,12 +54,10 @@ module Blocks =
         (AccountHash accountHash, AssetHash assetHash, state : HoldingState)
         =
 
-        let (AssetAmount amount) = state.Amount
-
         [
             decodeHash accountHash
             decodeHash assetHash
-            decimalToBytes amount
+            decimalToBytes state.Amount.Value
             boolToBytes state.IsEmission
         ]
         |> Array.concat
@@ -74,7 +69,6 @@ module Blocks =
         (AccountHash accountHash, AssetHash assetHash, VotingResolutionHash resolutionHash, state : VoteState)
         =
 
-        let (VoteHash voteHash) = state.VoteHash
         let voteWeightBytes =
             match state.VoteWeight with
             | Some (VoteWeight voteWeight) -> decimalToBytes voteWeight
@@ -84,7 +78,7 @@ module Blocks =
             decodeHash accountHash
             decodeHash assetHash
             decodeHash resolutionHash
-            decodeHash voteHash
+            decodeHash state.VoteHash.Value
             voteWeightBytes
         ]
         |> Array.concat
@@ -183,12 +177,10 @@ module Blocks =
         (BlockchainAddress stakerAddress, BlockchainAddress validatorAddress, state : StakeState)
         =
 
-        let (ChxAmount amount) = state.Amount
-
         [
             decodeHash stakerAddress
             decodeHash validatorAddress
-            decimalToBytes amount
+            decimalToBytes state.Amount.Value
         ]
         |> Array.concat
         |> createHash

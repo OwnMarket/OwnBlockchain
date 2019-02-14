@@ -18,9 +18,7 @@ module Cli =
 
     let handleGenerateWalletCommand () =
         let wallet = Signing.generateWallet ()
-        let (PrivateKey pk) = wallet.PrivateKey
-        let (BlockchainAddress address) = wallet.Address
-        printfn "Private Key: %s\nAddress: %s" pk address
+        printfn "Private Key: %s\nAddress: %s" wallet.PrivateKey.Value wallet.Address.Value
 
     let handleDeriveAddressCommand privateKey =
         privateKey // TODO: Use key file path, to prevent keys being logged in terminal history.

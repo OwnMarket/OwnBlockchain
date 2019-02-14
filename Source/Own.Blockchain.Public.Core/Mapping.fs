@@ -211,10 +211,10 @@ module Mapping =
             | 2uy ->
                 match dto.ErrorCode.HasValue, dto.FailedActionNumber.HasValue with
                 | true, false ->
-                    let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
+                    let errorCode : TxErrorCode = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
                     TxError errorCode
                 | true, true ->
-                    let (errorCode : TxErrorCode) = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
+                    let errorCode : TxErrorCode = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
                     TxActionError (TxActionNumber dto.FailedActionNumber.Value, errorCode)
                 | _, _ -> failwith "Invalid error code and action number state in TxResult."
                 |> Failure
