@@ -25,7 +25,7 @@ type Config () =
         with get () =
             let networkCode = config.["NetworkCode"]
             if networkCode.IsNullOrWhiteSpace() then
-                "OWN_PUBLIC_BLOCKCHAIN_DEV_MACHINE"
+                "OWN_PUBLIC_BLOCKCHAIN_DEVNET"
             elif Regex.IsMatch(networkCode, "^[A-Z_0-9]+$") then
                 networkCode
             else

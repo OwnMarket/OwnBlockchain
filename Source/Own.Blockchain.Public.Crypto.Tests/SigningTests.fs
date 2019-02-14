@@ -66,25 +66,25 @@ module SigningTests =
         let expectedSignatures =
             [
                 "2C6sgXHMLkwiWeUK4fpyVFa3XG59MBa221pkW7kq2KB8",
-                "NpWshZ58Z5PjCYGt5ERd1X7LidvNkAHKKCs5CzVtTwBRrkJigcR9LcVtCtYeFByTqXEco9CT5jzyHho23d5ca2VTN"
+                    "HzzxUvKq3ZRghq9q51zwVnFE7KKjG2KNTrh3qKRjK3WLPghxB1S6MNSZbp6HWyVeqonH9BPQcDpsqMApKg8SLNvKZ"
                 "3H2V8pM1h4wJEzCfuBHbNBC4w2FvXszKXx6nMEs3mUcC",
-                "NUo5XKiMNfh1bKQDLQPAuBw9aS6RonNJwMKUKGgcwYTXHcz6XnjKiU6CqFNbkqmbx9NduVeLwe3JfCHL55ikWsKb5"
+                    "DXKvHdvyzhUh4hJKEAsYB7sKLmpmjqCUQ4Wjdp4FUgnNBeNnv2ZD5EGUuaSyvE6XGqHWmxetWDmFHx9joDViP18EL"
                 "CpxNZ1YsPCmVrLwJzP7H88gHthSjBSySgVR3iK1c1VBk",
-                "HViz1vmVcT6RN1PhTZGhEuo2LkK8wibYnSYcoCRiHysP7v1MfmhmjVraFhHvFdGqx41mYfwqKP3vS23csBRMRinB2"
+                    "9LbveLpmtFDx4bi81wrsyw4XvuKzAi6VDHis4hD6dnYCPLhh4cxcfC9wr52zEGpuvLWvGyUmAJouHZ7r1qyQvkaun"
                 "GzsiWSoVZtDKwGeLELjpqRW618eBsWmFxJhE2wobkzmP",
-                "MtmL3y4RV8QtXc2U9iQ5m6CkGtTdtjg9tWmdgjpHPYUUM6S3QVDNfg4J9tNvRedgorAFHUsSRijYDvWStSBdU3Aw2"
+                    "6zpUK6L5EW6LMAHwguUrvkStXA8W2FN6MV9rFXF31rBTM4to3zTsGPnCZLawbHV1sMGCptPUQmVbyVBWTsra2YCfJ"
                 "Ai6m6px88vHv9L3uVtqSGMRoRDatem7xYXdUyAgg7fon",
-                "5z6EjhTdpTf5osbENz6UJU6r9NKThBF4gaBA23SyMnJvt6RbF577dW4nLYsaBHGZ8Xd54bmehEgbHwqapxt11pEaU"
+                    "C6vhP9zxGRrVCmncFm3tsKaRC1Big21rY67Lry4HxdJzHXAYYckW6SJLjoqjCMF5BKXxLLLCcKNocfRXSraHwqbew"
                 "DdJtweNMxs6vfL3dGUMzZHM3GM7gi6RbGyHHwDcQaxXT",
-                "LgUETDP6czyLyZhaxqfR17bTtTUxEw2HdmARgzbpi6Yy8ePqwnaoZHUuBFdDCbyQBnZR79XiWKPXk2YWmiTakBfkB"
+                    "99vvuzR94rwLJx28pa5PYXHi2gJyKS4Hpsv2FtUuPu5UmM6RNJKUvrFv4hwj13Xu6zRfacsegR7HHTWJHkT1LNytT"
                 "9hYD2Xsky8PUpQStvE8UhPaHmhaqxhJth8VuQT5TDTjA",
-                "PMn2a8Cxq8KCe6sGS2F6tnV2y7K9d5FgJFL1U6h53u5dG27d8fiAgVpeDuMu7r8Bb6ZwPcVmdNHPrCDkB6uZKHXWP"
+                    "4x1t4GJcF5GGAYmR3No1pkD9UxTSPjwECyNJoqmDV1P5Z3tTJntuYXq2SUeb7GPrLF2mKbfbAw9SGuaXxML9UV7iF"
                 "AAscexBi2v8agKdHwbDgfiKzs9eMbH8JQQB3vzvx5k7X",
-                "GC7AbefoXdTAoj5U6fQpzdVpoqddxxbyuJjtd9nhKJYj2AEoFwLpo6L3c8J42bGbVpz8bgshpir11D5tkEuphZDJQ"
+                    "P5w79pZ4VicHuALKZWvoAQ9a8zSrMQpnJR5kVx1jsWwHoq5KpCHKVvrYKgKpyY3bdedGe3YPJeBuxDUEkJGEdBHaQ"
                 "9exbLv213SGiHnSppnLYsRVTQqW96BHcMDg9ECZZEBCt",
-                "6Ng73M2ReLhETgvmNvv8obg3eaEySZJkYdpyNBAMa6tsZ7q6WjPq4wNNQnWJ8Azr2FV7Rmw21cuLxLFJv7zMsmsFE"
+                    "KV16M4ZZV45cCZt2sWcZj28YAiCH8UJtGKMJPd6547XM5Sfdd6huhyFvwtLZBU721DfEcT9i2d6eaijH5tvUkf4Fi"
                 "AvLDKGB7SAqjjs4RhT87GCdBdxyyJHSqcALvWRrQnggd",
-                "Cw6aqjNxfa2myJhP2VFhWH7NrjBrqNdHFJfGPUxAzRxnnPUTgX9tCq8JbAnNuxGy16VsVejAQV2CZ9K6e4jMZrJR6"
+                    "LoPRxU8s1gwMZVEmc3qtGhzxB2qM4q4qJoTzDLDVFPdstN4sYFwNoxnF9i6YPCZmDhStfUC7GZic1TPXWKtQA981N"
             ]
             |> List.map (fun (pk, signature) -> pk, (Signature signature))
 
