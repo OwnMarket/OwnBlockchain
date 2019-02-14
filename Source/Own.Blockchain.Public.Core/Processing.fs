@@ -291,7 +291,10 @@ module Processing =
             {
                 TxResults = txResults |> Map.ofDict
                 EquivocationProofResults = equivocationProofResults |> Map.ofDict
-                ChxBalances = chxBalances |> Map.ofDict
+                ChxBalances =
+                    chxBalances
+                    |> Map.ofDict
+                    |> Map.filter (fun _ a -> a.Nonce.Value <> 0L || a.Amount.Value <> 0m)
                 Holdings = holdings |> Map.ofDict
                 Votes =
                     votes
