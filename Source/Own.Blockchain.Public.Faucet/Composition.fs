@@ -18,7 +18,7 @@ module Composition =
             getAddressNonce
             submitTx
             Hashing.hash
-            Signing.signHash
+            (Signing.signHash Config.NetworkCode)
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)
@@ -30,7 +30,7 @@ module Composition =
             getAddressNonce
             submitTx
             Hashing.hash
-            Signing.signHash
+            (Signing.signHash Config.NetworkCode)
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)

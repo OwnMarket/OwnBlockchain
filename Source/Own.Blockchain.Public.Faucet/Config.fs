@@ -3,7 +3,9 @@ namespace Own.Blockchain.Public.Faucet
 open System
 open System.IO
 open System.Reflection
+open System.Text.RegularExpressions
 open Microsoft.Extensions.Configuration
+open Own.Common
 
 type Config () =
 
@@ -18,6 +20,16 @@ type Config () =
     static member NodeApiUrl
         with get () =
             config.["NodeApiUrl"]
+
+    static member NetworkCode
+        with get () =
+            let networkCode = config.["NetworkCode"]
+            if networkCode.IsNullOrWhiteSpace() then
+                "OWN_PUBLIC_BLOCKCHAIN_DEV_MACHINE"
+            elif Regex.IsMatch(networkCode, "^[A-Z_0-9]+$") then
+                networkCode
+            else
+                failwithf "Invalid NetworkCode: %s" networkCode
 
     static member FaucetSupplyHolderPrivateKey
         with get () =
