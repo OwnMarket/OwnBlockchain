@@ -248,7 +248,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -413,7 +413,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -561,7 +561,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -694,7 +694,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -828,7 +828,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -961,7 +961,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -1089,7 +1089,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -1237,7 +1237,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -1386,7 +1386,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -1528,7 +1528,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -1670,7 +1670,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -1813,7 +1813,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -1952,7 +1952,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -2102,7 +2102,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -2249,7 +2249,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -2396,7 +2396,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -2569,7 +2569,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -2701,7 +2701,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -2867,7 +2867,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3002,7 +3002,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3141,7 +3141,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3278,7 +3278,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3418,7 +3418,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3553,7 +3553,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3717,7 +3717,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3852,7 +3852,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -3991,7 +3991,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -4158,7 +4158,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -4294,7 +4294,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -4458,7 +4458,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -4594,7 +4594,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -4723,7 +4723,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -4850,7 +4850,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -4996,7 +4996,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -5166,7 +5166,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -5301,7 +5301,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -5440,7 +5440,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -5575,7 +5575,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -5720,7 +5720,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -5852,7 +5852,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -5975,7 +5975,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -6127,7 +6127,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -6264,7 +6264,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -6412,7 +6412,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -6562,7 +6562,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -6694,7 +6694,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -6834,7 +6834,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -6975,7 +6975,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -7112,7 +7112,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -7253,7 +7253,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -7394,7 +7394,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -7533,7 +7533,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -7674,7 +7674,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -7804,7 +7804,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -7939,7 +7939,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -8078,7 +8078,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -8208,7 +8208,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -8348,7 +8348,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -8487,7 +8487,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -8617,7 +8617,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -8756,7 +8756,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -8890,7 +8890,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -9035,7 +9035,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -9171,7 +9171,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -9321,7 +9321,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -9461,7 +9461,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -9603,7 +9603,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -9745,7 +9745,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -9886,7 +9886,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -10016,7 +10016,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -10146,7 +10146,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -10281,7 +10281,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode
@@ -10416,7 +10416,7 @@ module ProcessingTests =
             Processing.processChanges
                 getTx
                 getEquivocationProof
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.deriveHash
                 Hashing.decode

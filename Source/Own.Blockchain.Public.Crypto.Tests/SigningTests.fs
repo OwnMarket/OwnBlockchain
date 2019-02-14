@@ -90,7 +90,7 @@ module SigningTests =
 
         let actualSignatures =
             expectedSignatures
-            |> List.map (fun (pk, _) -> pk, Signing.signHash (PrivateKey pk) messageHash)
+            |> List.map (fun (pk, _) -> pk, Signing.signHash Helpers.networkCode (PrivateKey pk) messageHash)
 
         let matches =
             List.zip actualSignatures expectedSignatures
@@ -102,13 +102,13 @@ module SigningTests =
             test <@ actual = expected @>
 
     [<Fact>]
-    let ``Signing.signHash same message for multiple users`` () =
+    let ``Signing.signHash Helpers.networkCode same message for multiple users`` () =
         let numOfReps = 100
         let messageHash = Conversion.stringToBytes "Own" |> Hashing.hash
 
         let generateSignature () =
             let wallet = Signing.generateWallet ()
-            Signing.signHash wallet.PrivateKey messageHash
+            Signing.signHash Helpers.networkCode wallet.PrivateKey messageHash
 
         let distinctMessages =
             [1 .. numOfReps]
@@ -122,8 +122,8 @@ module SigningTests =
         let messageHash = Conversion.stringToBytes "Own" |> Hashing.hash
         let wallet = Signing.generateWallet ()
 
-        let signature = Signing.signHash wallet.PrivateKey messageHash
-        let address = Signing.verifySignature signature messageHash
+        let signature = Signing.signHash Helpers.networkCode wallet.PrivateKey messageHash
+        let address = Signing.verifySignature Helpers.networkCode signature messageHash
 
         test <@ address = Some wallet.Address @>
 
@@ -135,8 +135,8 @@ module SigningTests =
 
         for i in [1 .. 100] do
             let messageHash = sprintf "%s %i" messagePrefix i |> Conversion.stringToBytes |> Hashing.hash
-            let signature = Signing.signHash wallet.PrivateKey messageHash
-            let address = Signing.verifySignature signature messageHash
+            let signature = Signing.signHash Helpers.networkCode wallet.PrivateKey messageHash
+            let address = Signing.verifySignature Helpers.networkCode signature messageHash
 
             test <@ address = Some wallet.Address @>
 
@@ -148,8 +148,8 @@ module SigningTests =
         let generateRandomMessageAndTest messageSize =
             let messageHash = Signing.generateRandomBytes messageSize |> Hashing.hash
 
-            let signature = Signing.signHash privateKey messageHash
-            let address = Signing.verifySignature signature messageHash
+            let signature = Signing.signHash Helpers.networkCode privateKey messageHash
+            let address = Signing.verifySignature Helpers.networkCode signature messageHash
 
             test <@ address = expectedAddress @>
 

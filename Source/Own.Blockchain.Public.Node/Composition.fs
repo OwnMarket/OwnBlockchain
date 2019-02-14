@@ -102,6 +102,16 @@ module Composition =
     let persistStateChanges = Db.persistStateChanges Config.DbEngineType Config.DbConnectionString
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Crypto
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let signHash =
+        Signing.signHash Config.NetworkCode
+
+    let verifySignature =
+        Signing.verifySignature Config.NetworkCode
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Validators
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -165,7 +175,7 @@ module Composition =
         Workflows.signGenesisBlock
             createGenesisBlock
             createConsensusMessageHash
-            Signing.signHash
+            signHash
 
     let initBlockchainState () =
         Workflows.initBlockchainState
@@ -176,14 +186,14 @@ module Composition =
             saveBlockToDb
             persistStateChanges
             createConsensusMessageHash
-            Signing.verifySignature
+            verifySignature
             Config.GenesisSignatures
 
     let createBlock =
         Workflows.createBlock
             getTx
             getEquivocationProof
-            Signing.verifySignature
+            verifySignature
             Hashing.isValidBlockchainAddress
             getChxBalanceState
             getHoldingState
@@ -242,7 +252,7 @@ module Composition =
             Hashing.isValidBlockchainAddress
             getBlock
             createConsensusMessageHash
-            Signing.verifySignature
+            verifySignature
             blockExists
             saveBlock
             saveBlockToDb
@@ -343,7 +353,7 @@ module Composition =
             applyBlockToCurrentState
             Hashing.decode
             Hashing.hash
-            Signing.signHash
+            signHash
             Peers.sendMessage
             publishEvent
             addressFromPrivateKey
@@ -359,11 +369,11 @@ module Composition =
             Hashing.decode
             Hashing.hash
             getCurrentValidators
-            Signing.verifySignature
+            verifySignature
 
     let storeEquivocationProof =
         Workflows.storeEquivocationProof
-            Signing.verifySignature
+            verifySignature
             Consensus.createConsensusMessageHash
             Hashing.decode
             Hashing.hash
@@ -376,7 +386,7 @@ module Composition =
 
     let submitTx =
         Workflows.submitTx
-            Signing.verifySignature
+            verifySignature
             Hashing.isValidBlockchainAddress
             Hashing.hash
             getAvailableChxBalance
@@ -385,7 +395,7 @@ module Composition =
             saveTxToDb
             (ChxAmount Config.MinTxActionFee)
 
-    let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Hashing.hash Signing.verifySignature
+    let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Hashing.hash verifySignature
 
     let getEquivocationProofApi =
         Workflows.getEquivocationProofApi
@@ -394,7 +404,7 @@ module Composition =
             getEquivocationProofResult
             Hashing.decode
             Hashing.hash
-            Signing.verifySignature
+            verifySignature
 
     let getBlockApi = Workflows.getBlockApi getLastAppliedBlockNumber getBlock
 

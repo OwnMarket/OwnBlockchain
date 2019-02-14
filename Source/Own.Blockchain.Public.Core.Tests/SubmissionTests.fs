@@ -70,7 +70,7 @@ module SubmissionTests =
         // ACT
         let result =
             Workflows.submitTx
-                Signing.verifySignature
+                Helpers.verifySignature
                 Hashing.isValidBlockchainAddress
                 Hashing.hash
                 getAvailableChxBalance

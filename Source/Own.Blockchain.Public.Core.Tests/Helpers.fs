@@ -10,6 +10,10 @@ open Own.Blockchain.Public.Crypto
 
 module Helpers =
 
+    let networkCode = "UNIT_TESTS"
+
+    let verifySignature = Signing.verifySignature networkCode
+
     let randomString () = Guid.NewGuid().ToString("N")
 
     let minTxActionFee = ChxAmount 0.001m
@@ -88,7 +92,7 @@ module Helpers =
         let txHash =
             rawTx |> Hashing.hash |> TxHash
 
-        let (Signature signature) = Signing.signHash sender.PrivateKey txHash.Value
+        let (Signature signature) = Signing.signHash networkCode sender.PrivateKey txHash.Value
 
         let txEnvelopeDto =
             {

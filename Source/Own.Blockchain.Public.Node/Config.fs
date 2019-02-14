@@ -3,6 +3,7 @@
 open System
 open System.Globalization
 open System.IO
+open System.Text.RegularExpressions
 open Microsoft.Extensions.Configuration
 open Own.Common
 open Own.Blockchain.Public.Core.DomainTypes
@@ -72,6 +73,16 @@ type Config () =
             |> Seq.toList
 
     static member NetworkDiscoveryTime = 30 // Seconds
+
+    static member NetworkCode
+        with get () =
+            let networkCode = config.["NetworkCode"]
+            if networkCode.IsNullOrWhiteSpace() then
+                "OWN_PUBLIC_BLOCKCHAIN_DEV_MACHINE"
+            elif Regex.IsMatch(networkCode, "^[A-Z_0-9]+$") then
+                networkCode
+            else
+                failwithf "Invalid NetworkCode: %s" networkCode
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization

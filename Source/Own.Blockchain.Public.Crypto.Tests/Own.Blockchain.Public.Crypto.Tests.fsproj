@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="..\AssemblyInfo.fs" />
+    <Compile Include="Helpers.fs" />
     <Compile Include="HashingTests.fs" />
     <Compile Include="MerkleTreeTests.fs" />
     <Compile Include="SigningTests.fs" />
