@@ -5,6 +5,7 @@ const chainiumSdk = require('chainium-sdk/src/index')
 // Test Parameters
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+const networkCode = "OWN_PUBLIC_BLOCKCHAIN_DEVNET"
 const genesisPrivateKey = "1EQKWYpFtKZ1rMTqAH8CSLVjE5TN1nPpofzWF68io1HPV"
 const genesisAddress = "CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2"
 
@@ -84,10 +85,10 @@ function composeTx(senderAddress, nonce, recipientAddress, amount) {
     }
 }
 
-function signTx(privateKey, tx){
+function signTx(networkCode, privateKey, tx){
     const txRaw = chainiumSdk.crypto.utf8ToHex(JSON.stringify(tx));
     const txBase64 = chainiumSdk.crypto.encode64(txRaw);
-    const signature = chainiumSdk.crypto.signMessage(privateKey, txRaw);
+    const signature = chainiumSdk.crypto.signMessage(networkCode, privateKey, txRaw);
 
     return JSON.stringify({
         tx: txBase64,
@@ -108,13 +109,17 @@ function txToCommand(tx) {
 
 const wallets = [...Array(walletCount).keys()].map(() => chainiumSdk.crypto.generateWallet())
 
-const initialTx = signTx(genesisPrivateKey, composeInitialTx(validatorAddresses, wallets.map(w => w.address)))
+const initialTx = signTx(
+    networkCode,
+    genesisPrivateKey,
+    composeInitialTx(validatorAddresses, wallets.map(w => w.address)))
+
 fs.writeFileSync(outputFile, txToCommand(initialTx))
 fs.appendFileSync(outputFile, 'read -p "Press any key..."\n')
 
 for (var nonce of [...Array(transfersPerWallet).keys()]) {
     for (var w of wallets) {
-        const tx = signTx(w.privateKey, composeTx(w.address, nonce + 1, genesisAddress, 1))
+        const tx = signTx(networkCode, w.privateKey, composeTx(w.address, nonce + 1, genesisAddress, 1))
         fs.appendFileSync(outputFile, txToCommand(tx))
     }
 }
