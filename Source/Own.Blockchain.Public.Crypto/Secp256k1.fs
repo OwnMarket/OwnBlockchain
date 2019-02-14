@@ -45,7 +45,10 @@ module internal Secp256k1 =
         let publicKey = calculatePublicKey privateKey
         (privateKey, publicKey)
 
-    let signRecoverable messageHash privateKey =
+    let signRecoverable (messageHash : byte[]) privateKey =
+        if messageHash.Length > Secp256k1.HASH_LENGTH then
+            failwithf "messageHash too long (%i)." messageHash.Length
+
         let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE
         let secp256k1 = getSecp256k1 ()
         if secp256k1.SignRecoverable(Span signature, Span messageHash, Span privateKey) then
@@ -63,8 +66,8 @@ module internal Secp256k1 =
             failwith "[Secp256k1] Error serializing signature"
 
     let sign messageHash privateKey =
-        let signature = signRecoverable messageHash privateKey
-        serializeSignature signature
+        signRecoverable messageHash privateKey
+        |> serializeSignature
 
     let parseSignature recoveryId serializedSignature =
         let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE
@@ -74,7 +77,10 @@ module internal Secp256k1 =
         else
             failwith "[Secp256k1] Error parsing signature"
 
-    let recoverPublicKeyFromSignature signature messageHash =
+    let recoverPublicKeyFromSignature signature (messageHash : byte[]) =
+        if messageHash.Length > Secp256k1.HASH_LENGTH then
+            failwithf "messageHash too long (%i)." messageHash.Length
+
         let publicKey = Array.zeroCreate<byte> (Secp256k1.PUBKEY_LENGTH)
         let secp256k1 = getSecp256k1 ()
         if secp256k1.Recover(Span publicKey, Span signature, Span messageHash) then
@@ -82,6 +88,9 @@ module internal Secp256k1 =
         else
             failwith "[Secp256k1] Error recovering publicKey"
 
-    let verifySignature signature messageHash publicKey =
+    let verifySignature signature (messageHash : byte[]) publicKey =
+        if messageHash.Length > Secp256k1.HASH_LENGTH then
+            failwithf "messageHash too long (%i)." messageHash.Length
+
         let secp256k1 = getSecp256k1 ()
         secp256k1.Verify(Span signature, Span messageHash, Span publicKey)
