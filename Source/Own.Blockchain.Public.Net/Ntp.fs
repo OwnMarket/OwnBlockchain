@@ -11,16 +11,18 @@ module Ntp =
     let ntpServers =
         [
             "pool.ntp.org"
+
             "europe.pool.ntp.org"
             "north-america.pool.ntp.org"
             "asia.pool.ntp.org"
             "oceania.pool.ntp.org"
             "south-america.pool.ntp.org"
             "africa.pool.ntp.org"
-            "time.google.com" // Uses leap second smearing
+
             "time.windows.com"
             "time.apple.com"
             "time.nist.gov"
+            "time.google.com" // Uses leap second smearing
         ]
 
     let private getNetworkTimeOffsetFromNtpServer ntpServerName =
