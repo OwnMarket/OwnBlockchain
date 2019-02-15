@@ -160,9 +160,7 @@ module Processing =
                 Holdings =
                     holdings
                     |> Map.ofDict
-                    |> Map.filter (fun k h ->
-                        h.Amount <> AssetAmount 0m || k |> getHoldingStateFromStorage |> Option.isSome
-                    )
+                    |> Map.filter (fun key h -> h.Amount <> AssetAmount 0m || getHoldingStateFromStorage key <> None)
                     |> Map.ofDict
                 Accounts =
                     accounts

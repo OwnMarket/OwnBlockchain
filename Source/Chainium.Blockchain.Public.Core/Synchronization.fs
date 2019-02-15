@@ -109,7 +109,7 @@ module Synchronization =
             firstBlockToFetch + (maxNumberOfBlocksToFetchInParallel * configurationBlockDelta)
             |> min lastKnownConfigurationBlockNumber
 
-        for blockNumber in [firstBlockToFetch .. configurationBlockDelta  .. lastBlockToFetch] do
+        for blockNumber in [firstBlockToFetch .. configurationBlockDelta .. lastBlockToFetch] do
             requestBlockFromPeer blockNumber
 
     let acquireAndApplyMissingBlocks
