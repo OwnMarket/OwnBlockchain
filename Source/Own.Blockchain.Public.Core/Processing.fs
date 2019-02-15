@@ -295,7 +295,13 @@ module Processing =
                     chxBalances
                     |> Map.ofDict
                     |> Map.filter (fun _ a -> a.Nonce.Value <> 0L || a.Amount.Value <> 0m)
-                Holdings = holdings |> Map.ofDict
+                Holdings =
+                    holdings
+                    |> Map.ofDict
+                    |> Map.filter (fun k h ->
+                        h.Amount.Value <> 0m || k |> getHoldingStateFromStorage |> Option.isSome
+                    )
+                    |> Map.ofDict
                 Votes =
                     votes
                     |> Seq.ofDict
