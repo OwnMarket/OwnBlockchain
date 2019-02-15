@@ -1,15 +1,15 @@
 {
-    "GenesisAddress": "CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2",
+    "GenesisAddress": "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg",
     "GenesisValidators": [
-        "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ@localhost:25701",
-        "CHXr1u8DvLmRrnBpVmPcEH43qBhjezuRRtq@localhost:25702",
-        "CHN5FmdEhjKHynhdbzXxsNB35oxL5195XE5@localhost:25703",
-        "CHStDQ5ZFeFW9rbMhw83f7FXg19okxQD9E7@localhost:25704"
+        "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSw42Q2@localhost:25701",
+        "CHXr1u8DvLmRrnBpVmPcEH43qBhjez6dc4N@localhost:25702",
+        "CHN5FmdEhjKHynhdbzXxsNB35oxL559gRLH@localhost:25703",
+        "CHStDQ5ZFeFW9rbMhw83f7FXg19okxVVScM@localhost:25704"
     ],
     "GenesisSignatures": [
-        "91k2dzAskwPRF4QYHYcJqpg6DtKRR8dLXcBLGzKPMyMgTBcqqTEv16othXQBd8kvj3zwzT6MjTRt3ABakWRm2aejJ",
-        "5KiiiweREhpeF5vt6tMLVfTNQB7jmKGBXgBxh2MBZMuWNmrSZ52Y1dN9yHdCKorKh9PxQN24ZqhsWM6EqW2Eq84Gw",
-        "PUxfdS9XCVbe419NCgSWzkQ2kVfxQzoh4KbSPE6FWVfGxkMhU8ipHar6Qs5zSx54LgcF6GgRPS8EU9c5fiomrFStp",
-        "DGTiBth5Nz1NVJdAXM7NLPbF7Qmyq2Wk4qC6sx4A7sBHHsYosX8F1BntxxWxHVCkMSu1i4Uo77PsKAyKyU1oSmMeX"
+        "CRUknjFk7FA6btTSKCbRSaC8hjq1Eq8ABBDZywEUm7YpNFtbmD13cqwkvoxVGZHjkppWajhHQuctdx6jy9GpeEeBJ",
+        "D4PpQQGdiSinxAT6bwgn9aNjbFahZ1KgcqZC5si1bR4aagUzTudnkxsb8bw73W83e7g1MkQg8RLfg41pKBJpnErxp",
+        "HQ9cTraGwaSUeEcTuUjHEoVCoUxi2kwsPwBTQw32BAEfZGRqYrB6gW8FvTG79stMpuUwR6i8T23iYs316J6KJguN",
+        "8ZojLXZXXNH256KP5RbqaFhnJhFPSwHRXW964qVSz6VqtxxMmQzcKPzK2X6y7W1qVQnaEL39vet9LdQoRyUQJuD9q"
     ]
 }

@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "chainium-sdk": "^0.2.0"
+    "chainium-sdk": "^0.3.1"
   }
 }

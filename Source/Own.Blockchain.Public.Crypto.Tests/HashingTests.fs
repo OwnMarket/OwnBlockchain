@@ -95,10 +95,10 @@ module HashingTests =
         test <@ longerThan26Bytes.Length = 0 @>
 
     [<Theory>]
-    [<InlineData ("CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG", true)>]
-    [<InlineData ("XRPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG", false)>]
-    [<InlineData ("CHPvS1Hxs4oLcgKccYmubSBjurjUHmRMG", false)>]
-    [<InlineData ("CHPvS1Hxs4oLcrbgKccYmubSBjurjUHmRMG", false)>]
+    [<InlineData ("CHPvS1Hxs4oLcrbgKWYYmubSBjurjUdvjg8", true)>]
+    [<InlineData ("XRPvS1Hxs4oLcrbgKWYYmubSBjurjUdvjg8", false)>]
+    [<InlineData ("CHPvS1Hxs4oLcgKccYmubSBjurjUdvjg8", false)>]
+    [<InlineData ("CHPvS1Hxs4oLcrbgKccYmubSBjurjUdvjg8", false)>]
     let ``Hashing.isValidBlockchainAddress validate various BlockchainAddress`` (blockchainAddress, expectedValid) =
         // ARRANGE
         let address = BlockchainAddress blockchainAddress;

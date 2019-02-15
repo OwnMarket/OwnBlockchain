@@ -6,15 +6,15 @@ const chainiumSdk = require('chainium-sdk/src/index')
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const networkCode = "OWN_PUBLIC_BLOCKCHAIN_DEVNET"
-const genesisPrivateKey = "1EQKWYpFtKZ1rMTqAH8CSLVjE5TN1nPpofzWF68io1HPV"
-const genesisAddress = "CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2"
+const genesisPrivateKey = "ZXXkM41yHhkzb2k5KjeWuGCzYj7AXAfJdMXqKM4TGKq"
+const genesisAddress = "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg"
 
 const validatorAddresses =
     [
-        "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
-        "CHXr1u8DvLmRrnBpVmPcEH43qBhjezuRRtq",
-        "CHN5FmdEhjKHynhdbzXxsNB35oxL5195XE5",
-        "CHStDQ5ZFeFW9rbMhw83f7FXg19okxQD9E7"
+        "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSw42Q2",
+        "CHXr1u8DvLmRrnBpVmPcEH43qBhjez6dc4N",
+        "CHN5FmdEhjKHynhdbzXxsNB35oxL559gRLH",
+        "CHStDQ5ZFeFW9rbMhw83f7FXg19okxVVScM"
     ]
 
 const validatorStake = 500000

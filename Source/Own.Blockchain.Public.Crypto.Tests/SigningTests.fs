@@ -37,16 +37,16 @@ module SigningTests =
     let ``Signing.addressFromPrivateKey keys from JS`` () =
         let keys =
             [
-                "2C6sgXHMLkwiWeUK4fpyVFa3XG59MBa221pkW7kq2KB8", "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD"
-                "3H2V8pM1h4wJEzCfuBHbNBC4w2FvXszKXx6nMEs3mUcC", "CHfDeuB1y1eJnWd6aWfYaRvpS9Qgrh1eqe7"
-                "CpxNZ1YsPCmVrLwJzP7H88gHthSjBSySgVR3iK1c1VBk", "CHb5Sgdq1MNDVDUG8UPLHBKzUGZZ7ZtAuzy"
-                "GzsiWSoVZtDKwGeLELjpqRW618eBsWmFxJhE2wobkzmP", "CHJeYbKnr8icRezrdrEQsLXrxpDbXxri6j4"
-                "Ai6m6px88vHv9L3uVtqSGMRoRDatem7xYXdUyAgg7fon", "CHTjSrn385LBC7rzbqRvE9csKPJS8BT725y"
-                "DdJtweNMxs6vfL3dGUMzZHM3GM7gi6RbGyHHwDcQaxXT", "CHZzZNYPCGfyC5zZyjpJAV68njzcqK3YYsE"
-                "9hYD2Xsky8PUpQStvE8UhPaHmhaqxhJth8VuQT5TDTjA", "CHWcs2fFSaPbDYuMosuUYRazZEahVEV96nc"
-                "AAscexBi2v8agKdHwbDgfiKzs9eMbH8JQQB3vzvx5k7X", "CHfRWRaiVVcQvb8CpNmPfBhRX1BLgXURDWg"
-                "9exbLv213SGiHnSppnLYsRVTQqW96BHcMDg9ECZZEBCt", "CHM1QepZLdazpGpVVPEmcmMP2mQn1HeMniJ"
-                "AvLDKGB7SAqjjs4RhT87GCdBdxyyJHSqcALvWRrQnggd", "CHTEKKKTSCt32C9yEaKHvckgKYNKcKXuryw"
+                "B6WNNx9oK8qRUU52PpzjXHZuv4NUb3Z33hdju3hhrceS", "CHc3pxkiUEZAFu1N54bxJFJWQc3vAqdWDtG"
+                "BYeryGRWErwcHD6MDPYeUpYBH5Z2viXSDS827hPMmVvU", "CHZJY8KFVsRN3Km6MWQKtc9wb534qVDpKaR"
+                "3uwbboWnx2BGcWGBASXQ6AAzooi4xKA6fV3psPgvt8Ja", "CHamNi4qk1QykonzgH4nHvvG9gZUAhX1RRg"
+                "3UtEGN2Wbmm5jVE3W5iFgeCw9NJ5AueFTqfWcPbdFGMk", "CHLVMMaGe1r76jJNQTj1AzgN6GQWCq4ewEc"
+                "7hYZ9bHuhbJZcGhPzxeRdFYVr24DFMExduLgcqF1U4k8", "CHfhy5m8Giz4QDR1UgiPKdqMf5DNaJXmbvx"
+                "Hg4GsWvBDKxdZ76dYmjm6L39JoukD23acQS2KA7eoGLy", "CHJL383gLhi3GXXPjdMV5rtHPzPYT9q5wHF"
+                "2bnW9tKokbneHvUzZ6SaUkwM8XwudDxdyWr6FnLtCHnT", "CHUYZSZSMH6pmJ4Sg3mh83mbsTyWK38io44"
+                "BENFVdPfpb8e1jRKZkf7Wmo4Re71qg1Xzfu5cH73JFWG", "CHaKtHwMb6a9bxum1h4NWiidU9sRW59Gbbf"
+                "BFRzCfhZFBq2mBtSSXz27i3SdNsPh4FtHe9QLeZchySg", "CHX677op16Bro38SqpPs51WYJgPERKdwQa8"
+                "ZXXkM41yHhkzb2k5KjeWuGCzYj7AXAfJdMXqKM4TGKq", "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg"
             ]
 
         let expected =
@@ -65,26 +65,26 @@ module SigningTests =
 
         let expectedSignatures =
             [
-                "2C6sgXHMLkwiWeUK4fpyVFa3XG59MBa221pkW7kq2KB8",
-                    "HzzxUvKq3ZRghq9q51zwVnFE7KKjG2KNTrh3qKRjK3WLPghxB1S6MNSZbp6HWyVeqonH9BPQcDpsqMApKg8SLNvKZ"
-                "3H2V8pM1h4wJEzCfuBHbNBC4w2FvXszKXx6nMEs3mUcC",
-                    "DXKvHdvyzhUh4hJKEAsYB7sKLmpmjqCUQ4Wjdp4FUgnNBeNnv2ZD5EGUuaSyvE6XGqHWmxetWDmFHx9joDViP18EL"
-                "CpxNZ1YsPCmVrLwJzP7H88gHthSjBSySgVR3iK1c1VBk",
-                    "9LbveLpmtFDx4bi81wrsyw4XvuKzAi6VDHis4hD6dnYCPLhh4cxcfC9wr52zEGpuvLWvGyUmAJouHZ7r1qyQvkaun"
-                "GzsiWSoVZtDKwGeLELjpqRW618eBsWmFxJhE2wobkzmP",
-                    "6zpUK6L5EW6LMAHwguUrvkStXA8W2FN6MV9rFXF31rBTM4to3zTsGPnCZLawbHV1sMGCptPUQmVbyVBWTsra2YCfJ"
-                "Ai6m6px88vHv9L3uVtqSGMRoRDatem7xYXdUyAgg7fon",
-                    "C6vhP9zxGRrVCmncFm3tsKaRC1Big21rY67Lry4HxdJzHXAYYckW6SJLjoqjCMF5BKXxLLLCcKNocfRXSraHwqbew"
-                "DdJtweNMxs6vfL3dGUMzZHM3GM7gi6RbGyHHwDcQaxXT",
-                    "99vvuzR94rwLJx28pa5PYXHi2gJyKS4Hpsv2FtUuPu5UmM6RNJKUvrFv4hwj13Xu6zRfacsegR7HHTWJHkT1LNytT"
-                "9hYD2Xsky8PUpQStvE8UhPaHmhaqxhJth8VuQT5TDTjA",
-                    "4x1t4GJcF5GGAYmR3No1pkD9UxTSPjwECyNJoqmDV1P5Z3tTJntuYXq2SUeb7GPrLF2mKbfbAw9SGuaXxML9UV7iF"
-                "AAscexBi2v8agKdHwbDgfiKzs9eMbH8JQQB3vzvx5k7X",
-                    "P5w79pZ4VicHuALKZWvoAQ9a8zSrMQpnJR5kVx1jsWwHoq5KpCHKVvrYKgKpyY3bdedGe3YPJeBuxDUEkJGEdBHaQ"
-                "9exbLv213SGiHnSppnLYsRVTQqW96BHcMDg9ECZZEBCt",
-                    "KV16M4ZZV45cCZt2sWcZj28YAiCH8UJtGKMJPd6547XM5Sfdd6huhyFvwtLZBU721DfEcT9i2d6eaijH5tvUkf4Fi"
-                "AvLDKGB7SAqjjs4RhT87GCdBdxyyJHSqcALvWRrQnggd",
-                    "LoPRxU8s1gwMZVEmc3qtGhzxB2qM4q4qJoTzDLDVFPdstN4sYFwNoxnF9i6YPCZmDhStfUC7GZic1TPXWKtQA981N"
+                "B6WNNx9oK8qRUU52PpzjXHZuv4NUb3Z33hdju3hhrceS",
+                    "6Hhxz2eP3AagR56mP4AAaKViUxHi3gM9c5weLDR48x4X4ynRBDfxsHGjhX9cni1mtCkNxbnZ783YPgMwVYV52X1w5"
+                "BYeryGRWErwcHD6MDPYeUpYBH5Z2viXSDS827hPMmVvU",
+                    "5d6ZJQPuQNWJNGcYhm2tNonWkqrMKinb9z39Lnhr7LYBJHMYQmkw5fejC32HMwV4FoLAxnkiYvoNyPog3fAYVo6Mu"
+                "3uwbboWnx2BGcWGBASXQ6AAzooi4xKA6fV3psPgvt8Ja",
+                    "HSfYVfXxk9mXK9Z5kDc3VW2yjFfzectdynznQb6ewNEEScpr5hhMnqje4CB6LAATU8nTpaS99ZUzXKRS7yFGEcicf"
+                "3UtEGN2Wbmm5jVE3W5iFgeCw9NJ5AueFTqfWcPbdFGMk",
+                    "6Rkmo83paLfRAmmCWH7VawZKzYzddSmrZCUGcD7nPhis8AfkDku9jwMQLv2vFUu8TdmXLHvYTPgdpWXk2giWnDmnG"
+                "7hYZ9bHuhbJZcGhPzxeRdFYVr24DFMExduLgcqF1U4k8",
+                    "PQhZNUmgA1BWPYLMUHKXstm2qLrA4PgTMb5S8oP2anQBB6Y53Gq7ZDMdtpRFU3iydotTsTXuQbSszzRbQ4SQNVaaL"
+                "Hg4GsWvBDKxdZ76dYmjm6L39JoukD23acQS2KA7eoGLy",
+                    "DrWbKDQB5sqBLXreyFifvFs1tteXGj6Gf6k3Wjh5pKXybVapmS3sZ1gN7eGrRPjQYRTNDBHWtv2j5yWtwcDkQTotU"
+                "2bnW9tKokbneHvUzZ6SaUkwM8XwudDxdyWr6FnLtCHnT",
+                    "858f2hxuMETR9Dtj3GzYGrF2C4BttBPMNwSdH5uHyCNUiWhGNkEYQNqRuG2utxLRb9To4ViLyFrrbaR4Q8ARgdri4"
+                "BENFVdPfpb8e1jRKZkf7Wmo4Re71qg1Xzfu5cH73JFWG",
+                    "CYFwokRvVJzR5sry3kzPEufeL9H4sf8undTEr1N7wWdij4pzHtTxtMnFWFGsoz7CG4FJdw3AFyvp71KfnW7ussr8P"
+                "BFRzCfhZFBq2mBtSSXz27i3SdNsPh4FtHe9QLeZchySg",
+                    "NtDNBubtvhmQf8UqFGfX2kFy4naNaH38aNDuNWbYDCUtAc6qxkQ4t39wx3zF599zJ4jdvNVncEPW55AYSoeJXekLX"
+                "ZXXkM41yHhkzb2k5KjeWuGCzYj7AXAfJdMXqKM4TGKq",
+                    "L6Wydc2igH5Ck6BJEeZNYavimG7CjWQFW7EVtbJt9QYdMNFXE6Gcqy4WF6YJtnx7eESvsG8HqMop8LZorskyyMq4s"
             ]
             |> List.map (fun (pk, signature) -> pk, (Signature signature))
 
@@ -143,7 +143,7 @@ module SigningTests =
     [<Fact>]
     let ``Signing.verifyMessage sign, verify random generated longer messages`` () =
         let privateKey = PrivateKey "9DeKWSbveJnzgawry3SG6uby3xE1s26UR4X5uXwdG8WT"
-        let expectedAddress = Some (BlockchainAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUHmRMG")
+        let expectedAddress = Some (BlockchainAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUdvjg8")
 
         let generateRandomMessageAndTest messageSize =
             let messageHash = Signing.generateRandomBytes messageSize |> Hashing.hash

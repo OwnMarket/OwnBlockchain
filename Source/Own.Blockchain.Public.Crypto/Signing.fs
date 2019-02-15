@@ -30,13 +30,10 @@ module Signing =
         }
 
     let addressFromPrivateKey (PrivateKey privateKey) =
-        let publicKey =
-            privateKey
-            |> Hashing.decode
-            |> Secp256k1.calculatePublicKey
-            |> Hashing.blockchainAddress
-
-        publicKey
+        privateKey
+        |> Hashing.decode
+        |> Secp256k1.calculatePublicKey
+        |> Hashing.blockchainAddress
 
     let private signHashBytes (networkCode : string option) (PrivateKey privateKey) (hashBytes : byte[]) : Signature =
         if hashBytes.Length <> 32 then

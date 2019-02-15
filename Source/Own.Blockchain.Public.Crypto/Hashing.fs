@@ -58,18 +58,19 @@ module Hashing =
     let blockchainAddress (publicKey : byte[]) =
         let prefix = [| 6uy; 90uy |] // "CH"
 
-        let hash =
+        let publicKeyHashWithPrefix =
             publicKey
             |> sha256
             |> sha160
+            |> Array.append prefix
 
         let checksum =
-            hash
+            publicKeyHashWithPrefix
             |> sha256
             |> sha256
             |> Array.take 4
 
-        [prefix; hash; checksum]
+        [publicKeyHashWithPrefix; checksum]
         |> Array.concat
         |> encode
         |> BlockchainAddress
@@ -78,27 +79,26 @@ module Hashing =
         if address.IsNullOrWhiteSpace() || not (address.StartsWith("CH")) then
             false
         else
-            let hash = decode address
+            let addressBytes = decode address
 
-            if Array.length hash <> 26 then
+            if Array.length addressBytes <> 26 then
                 false
             else
-                let addressChecksum =
-                    hash
+                let publicKeyHashWithPrefix =
+                    addressBytes
+                    |> Array.take 22
+
+                let checksum =
+                    addressBytes
                     |> Array.skip 22
 
-                let address20ByteHash =
-                    hash
-                    |> Array.skip 2
-                    |> Array.take 20
-
-                let address20ByteHashChecksum =
-                    address20ByteHash
+                let calculatedChecksum =
+                    publicKeyHashWithPrefix
                     |> sha256
                     |> sha256
                     |> Array.take 4
 
-                addressChecksum = address20ByteHashChecksum
+                checksum = calculatedChecksum
 
     let merkleTree (hashes : string list) =
         hashes

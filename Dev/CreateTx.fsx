@@ -5,7 +5,7 @@ open System.Text
 
 """
 {
-    SenderAddress: "CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2",
+    SenderAddress: "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg",
     Nonce: 1,
     Fee: 0.001,
     Actions: [
@@ -25,8 +25,8 @@ open System.Text
 
 (*
 // Transfer faucet CHX supply from genesis to faucet supply holder
-Private Key: 1EQKWYpFtKZ1rMTqAH8CSLVjE5TN1nPpofzWF68io1HPV
-Address: CHQcJKysWbbqyRm5ho44jexA8radTZzNQQ2
+Private Key: ZXXkM41yHhkzb2k5KjeWuGCzYj7AXAfJdMXqKM4TGKq
+Address: CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg
 {
     Nonce: 1,
     Fee: 0.001,
