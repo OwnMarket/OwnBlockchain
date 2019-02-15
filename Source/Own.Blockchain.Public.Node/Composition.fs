@@ -483,4 +483,6 @@ module Composition =
 
     let stopGossip () = Peers.stopGossip ()
 
+    let startNetworkAgents () = Peers.startNetworkAgents ()
+
     let discoverNetwork () = Peers.discoverNetwork Config.NetworkDiscoveryTime

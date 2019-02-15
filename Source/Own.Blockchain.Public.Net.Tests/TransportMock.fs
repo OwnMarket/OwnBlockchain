@@ -8,7 +8,7 @@ open Own.Blockchain.Public.Core.Dtos
 
 module TransportMock =
 
-    let messageQueue = new ConcurrentDictionary<string, Set<byte[]>>()
+    let messageQueue = new ConcurrentDictionary<string, ConcurrentQueue<byte[]>>()
 
     let private packMessage message =
         message |> Serialization.serializeBinary
@@ -17,11 +17,17 @@ module TransportMock =
         message |> Serialization.deserializePeerMessage
 
     let private send (msg : byte[]) targetAddress =
-        match messageQueue.TryGetValue targetAddress with
-        | true, messages ->
-            let set = messages.Add(msg)
-            messageQueue.AddOrUpdate (targetAddress, messages.Add(msg), fun _ _ -> messages.Add(msg)) |> ignore
-        | _ -> messageQueue.AddOrUpdate (targetAddress, Set.empty.Add(msg), fun _ _ -> Set.empty.Add(msg)) |> ignore
+        let set =
+            match messageQueue.TryGetValue targetAddress with
+            | true, messages ->
+                messages.Enqueue(msg)
+                messages
+            | _ ->
+                let queue = new ConcurrentQueue<byte[]>()
+                queue.Enqueue(msg)
+                queue
+
+        messageQueue.AddOrUpdate (targetAddress, set, fun _ _ -> set) |> ignore
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
@@ -55,14 +61,12 @@ module TransportMock =
         let rec loop address callback =
             async {
                 match messageQueue.TryGetValue address with
-                | true, messages ->
-                    messages
-                    |> Set.iter(fun message ->
+                | true, queue ->
+                    let mutable message = Array.zeroCreate 0
+                    while queue.TryDequeue &message do
                         match unpackMessage message with
                         | Ok peerMessage -> callback peerMessage
                         | Error error -> Log.error error
-                    )
-                    messageQueue.TryRemove address |> ignore
                 | _ -> ()
                 do! Async.Sleep(100)
                 return! loop address callback

@@ -13,37 +13,38 @@ open Newtonsoft.Json
 module Transport =
 
     let private poller = new NetMQPoller()
-    let mutable private receiverSocket : PullSocket option = None
-    let private connectionPool = new ConcurrentDictionary<string, DealerSocket * NetMQQueue<byte[]>>()
+    let mutable receiverSocket : PullSocket option = None
+    let private senderSockets = new ConcurrentDictionary<string, DealerSocket>()
+    let messageQueue = new NetMQQueue<string * byte[]>()
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Send
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    messageQueue.ReceiveReady |> Observable.subscribe (fun _ ->
+        let mutable message = "", Array.zeroCreate<byte> 0
+        while messageQueue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
+            let targetAddress, payload = message
+            match senderSockets.TryGetValue targetAddress with
+            | true, socket -> socket.TrySendFrame payload |> ignore
+            | _ -> failwithf "Socket not found for target %s" targetAddress
+    )
+    |> ignore
+
+    poller.Add messageQueue
+
+    let private send (msg : byte[]) targetAddress =
+        let found, _ = senderSockets.TryGetValue targetAddress
+        if not found then
+            let senderSocket = new DealerSocket(">tcp://" + targetAddress)
+            senderSockets.AddOrUpdate (targetAddress, senderSocket, fun _ _ -> senderSocket) |> ignore
+        messageQueue.Enqueue (targetAddress, msg)
 
     let private packMessage message =
         message |> Serialization.serializeBinary
 
     let private unpackMessage message =
         message |> Serialization.deserializePeerMessage
-
-    let private send (msg : byte[]) targetAddress =
-        match connectionPool.TryGetValue targetAddress with
-        | true, (_, queue) ->
-            queue.Enqueue msg
-        | _ ->
-            let senderSocket = new DealerSocket(">tcp://" + targetAddress)
-            let messageQueue = new NetMQQueue<byte[]>()
-            messageQueue.ReceiveReady |> Observable.subscribe (fun eventArgs ->
-                let mutable msg = Array.zeroCreate<byte> 0
-                while eventArgs.Queue.TryDequeue(&msg, TimeSpan.FromMilliseconds(100.)) do
-                    senderSocket.TrySendFrame msg |> ignore
-            )
-            |> ignore
-
-            connectionPool.AddOrUpdate (
-                targetAddress,
-                (senderSocket, messageQueue),
-                fun _ _ -> (senderSocket, messageQueue))
-            |> ignore
-
-            poller.Add messageQueue
-            messageQueue.Enqueue msg
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
@@ -67,13 +68,16 @@ module Transport =
         | _ ->
             multicastAddresses
             |> Seq.shuffle
-            |> Seq.toList
-            |> List.iter (fun networkAddress ->
+            |> Seq.iter (fun networkAddress ->
                 let msg = packMessage multicastMessage
                 send msg networkAddress
             )
 
-    let receiveMessage networkAddress receiveCallback =
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Receive
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let receiveMessage networkAddress receiveHandler =
         match receiverSocket with
         | Some _ -> ()
         | None -> receiverSocket <- new PullSocket("@tcp://" + networkAddress) |> Some
@@ -85,25 +89,36 @@ module Transport =
                 let received, message = eventArgs.Socket.TryReceiveFrameBytes()
                 if received then
                     match unpackMessage message with
-                    | Ok peerMessage -> receiveCallback peerMessage
+                    | Ok peerMessage -> receiveHandler peerMessage
                     | Error error -> Log.error error
             )
             |> ignore
         )
-        poller.RunAsync()
+        if not poller.IsRunning then
+            poller.RunAsync()
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Cleanup
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let closeConnection networkAddress =
-        match connectionPool.TryGetValue networkAddress with
-        | true, (socket, _) ->
-            connectionPool.TryRemove networkAddress |> ignore
+        match senderSockets.TryGetValue networkAddress with
+        | true, socket ->
+            senderSockets.TryRemove networkAddress |> ignore
             socket.Dispose()
         | _ -> ()
 
     let closeAllConnections () =
-        poller.Dispose()
-        connectionPool
+        if poller.IsRunning then
+            poller.StopAsync()
+            messageQueue.Dispose()
+
+        senderSockets
         |> List.ofDict
-        |> List.iter (fun (_, (socket, queue)) ->
+        |> List.iter (fun (_, socket) ->
             socket.Dispose()
-            queue.Dispose()
         )
+        senderSockets.Clear()
+
+        receiverSocket |> Option.iter (fun socket -> socket.Dispose())
+        receiverSocket <- None

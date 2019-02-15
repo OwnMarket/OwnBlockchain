@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.Data
 
+open System
 open System.IO
 open MessagePack
 open Own.Common
@@ -55,7 +56,9 @@ module Raw =
             let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
-                File.ReadAllBytes path
+                use fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+                use br = new BinaryReader(fs)
+                br.ReadBytes (fs.Length |> Convert.ToInt32)
                 |> LZ4MessagePackSerializer.Deserialize<'T>
                 |> Ok
             else

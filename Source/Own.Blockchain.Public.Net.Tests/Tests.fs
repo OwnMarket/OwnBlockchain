@@ -1,9 +1,10 @@
 namespace Own.Blockchain.Public.Net.Tests
 
 open System.Threading
+open System.Collections.Concurrent
 open Own.Common
 open Own.Blockchain.Common
-open Own.Blockchain.Public.Net.Peers
+open Own.Blockchain.Public.Net
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Events
 open Xunit
@@ -21,7 +22,6 @@ module PeerTests =
     let testCleanup () =
         DbMock.reset()
         RawMock.reset()
-        TransportMock.closeAllConnections()
         Thread.Sleep(2000)
 
     let setupTest() =
@@ -83,11 +83,19 @@ module PeerTests =
     let private blockPropagator node blockNumber =
         gossipBlock node blockNumber
 
+    let private peerMessageHandlers = new ConcurrentDictionary<NetworkAddress, MailboxProcessor<PeerMessage> option>()
+    let private invokePeerMessageHandler (node : NetworkNode) m =
+        let found, peerMessageHandler = peerMessageHandlers.TryGetValue (node.GetNetworkAddress())
+        if found then
+            match peerMessageHandler with
+            | Some h -> h.Post m
+            | None -> Log.error "PeerMessageHandler agent not started for node %s."
+
     // TODO: Fix the network tests by adjusting the mocked propagation logic.
     let publishEvent node appEvent =
         match appEvent with
         | PeerMessageReceived message ->
-            ()
+            invokePeerMessageHandler node message
         | TxSubmitted txHash ->
             txPropagator node txHash
         | TxReceived (txHash, txEnvelopeDto)
@@ -117,8 +125,33 @@ module PeerTests =
         | EquivocationProofStored (equivocationProofHash, isFetched) ->
             ()
 
+    let private startPeerMessageHandler (node : NetworkNode) =
+        let found, _ = peerMessageHandlers.TryGetValue (node.GetNetworkAddress())
+        if not found then
+            let peerMessageHandler =
+                Agent.start <| fun (peerMessage) ->
+                    async {
+                        WorkflowsMock.processPeerMessage
+                            (node.GetNetworkAddress())
+                            (respondToPeer node)
+                            peerMessage
+                        |> Option.iter (
+                            Result.handle
+                                (Option.iter (publishEvent node))
+                                Log.appErrors
+                        )
+                    }
+                |> Some
+
+            peerMessageHandlers.AddOrUpdate (
+                (node.GetNetworkAddress()),
+                peerMessageHandler,
+                fun _ _ -> peerMessageHandler
+            )
+            |> ignore
+
     let startGossip (node : NetworkNode) =
-        let processPeerMessage = WorkflowsMock.processPeerMessage (node.GetNetworkAddress()) (respondToPeer node)
+        startPeerMessageHandler node
         node.StartGossip (publishEvent node)
 
     let stopGossip (node : NetworkNode) =
@@ -147,6 +180,8 @@ module PeerTests =
             let nodeHasReceivedTx = RawMock.hasData (n.GetNetworkAddress()) networkMessageId
             test <@ nodeHasReceivedTx = true @>
         )
+
+        nodeList |> List.iter(fun n -> stopGossip n)
 
     let checkResponseReceived (node : NetworkNode) networkMessageId messageExists =
         let nodeHasReceivedTx = RawMock.hasData (node.GetNetworkAddress()) networkMessageId
@@ -396,6 +431,8 @@ module PeerTests =
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash) txExists
 
+        nodeList |> List.iter(fun n -> stopGossip n)
+
     let testRequestResponseMultipleDifferentMessageTypes nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
@@ -424,6 +461,8 @@ module PeerTests =
         checkResponseReceived nodeList.[0] (Tx txHash) true
         checkResponseReceived nodeList.[0] (Block blockNr) true
 
+        nodeList |> List.iter(fun n -> stopGossip n)
+
     let testRequestResponseMultipleSameMessageTypes nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
@@ -451,6 +490,8 @@ module PeerTests =
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash1) true
         checkResponseReceived nodeList.[0] (Tx txHash2) true
+
+        nodeList |> List.iter(fun n -> stopGossip n)
 
     [<Fact>]
     let ``Network - GossipDiscovery 3 nodes same bootstrap node`` () =

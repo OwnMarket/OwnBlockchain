@@ -19,6 +19,7 @@ module Cli =
         Composition.initBlockchainState ()
         Workers.startNetworkTimeSynchronizer ()
         Agents.startAgents ()
+        Composition.startNetworkAgents ()
         Composition.startGossip Agents.publishEvent
         Composition.discoverNetwork ()
         Composition.requestLastBlockFromPeer ()

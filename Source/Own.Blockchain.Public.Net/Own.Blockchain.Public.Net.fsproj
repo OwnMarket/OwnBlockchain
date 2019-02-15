@@ -5,9 +5,10 @@
   <ItemGroup>
     <Compile Include="..\AssemblyInfo.fs" />
     <Compile Include="Ntp.fs" />
-    <Compile Include="Timers.fs" />
-    <Compile Include="Peers.fs" />
     <Compile Include="Transport.fs" />
+    <Compile Include="NetworkNode.fs" />
+    <Compile Include="PeerMessageHandler.fs" />
+    <Compile Include="Peers.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NetMQ" Version="4.0.0.1" />
