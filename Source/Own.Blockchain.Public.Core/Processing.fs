@@ -298,10 +298,7 @@ module Processing =
                 Holdings =
                     holdings
                     |> Map.ofDict
-                    |> Map.filter (fun k h ->
-                        h.Amount.Value <> 0m || k |> getHoldingStateFromStorage |> Option.isSome
-                    )
-                    |> Map.ofDict
+                    |> Map.filter (fun key h -> h.Amount.Value <> 0m || getHoldingStateFromStorage key <> None)
                 Votes =
                     votes
                     |> Seq.ofDict
