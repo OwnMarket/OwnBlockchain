@@ -153,8 +153,17 @@ module Processing =
         member __.ToProcessingOutput () : ProcessingOutput =
             {
                 TxResults = txResults |> Map.ofDict
-                ChxBalances = chxBalances |> Map.ofDict
-                Holdings = holdings |> Map.ofDict
+                ChxBalances =
+                    chxBalances
+                    |> Map.ofDict
+                    |> Map.filter (fun _ a -> a.Nonce <> Nonce 0L || a.Amount <> ChxAmount 0m)
+                Holdings =
+                    holdings
+                    |> Map.ofDict
+                    |> Map.filter (fun k h ->
+                        h.Amount <> AssetAmount 0m || k |> getHoldingStateFromStorage |> Option.isSome
+                    )
+                    |> Map.ofDict
                 Accounts =
                     accounts
                     |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
