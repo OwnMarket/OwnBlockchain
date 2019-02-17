@@ -32,7 +32,9 @@ module internal PeerMessageHandler =
             NetworkAddress = NetworkAddress networkAddress
         }
 
-        let fanout, tCycle, tFail = 2, 10000, 50000
+        let fanout = 2
+        let tCycle = 10000 // Cycle duration in milliseconds.
+        let tFail = 5 * tCycle
 
         let n =
             NetworkNode (

@@ -62,7 +62,7 @@ module TransportMock =
             async {
                 match messageQueue.TryGetValue address with
                 | true, queue ->
-                    let mutable message = Array.zeroCreate 0
+                    let mutable message = Array.empty
                     while queue.TryDequeue &message do
                         match unpackMessage message with
                         | Ok peerMessage -> callback peerMessage
