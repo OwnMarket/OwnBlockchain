@@ -14,7 +14,7 @@ Own blockchain uses [SHA256](https://en.wikipedia.org/wiki/SHA-256) as the main 
 
 All cryptographic artifacts (private/public keys, hashes, etc.) are encoded as [Base58](https://en.wikipedia.org/wiki/Base58) strings and used as such throughout the application and external interfaces. Base58 dictionary used is the same as the one used in Bitcoin implementation.
 
-Own blockchain uses the implementation of Base58 encoding from [Multiformats project](https://multiformats.io).
+Own blockchain uses the implementation of Base58 encoding from [SimpleBase project](https://github.com/ssg/SimpleBase).
 
 ## Own Blockchain Address
 
@@ -26,6 +26,6 @@ Here is a sample address generated from a private key using this algorithm:
 
 Private Key | Address
 ---|---
-`1ApCvGVAk3qZVY3VGLxLVvAw3Azuhf5SXBWYDag3oUie2` | `CHbcUgieDDKQBVzCw2vsKvArNkt6Sr8VdkM`
+`48wM487Ti6XGJW1oHopFfLiUKb5FLgArPTrZCcS4QHF3` | `CHa52gXkAcfZ8RNnuTszdE3XvxaNhtrdFrM`
 
 **DO NOT USE THIS PRIVATE KEY AND ADDRESS ON THE NETWORK!!!**
