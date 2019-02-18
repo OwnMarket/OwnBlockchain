@@ -192,7 +192,6 @@ module Api =
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
                 route "/stats" >=> getStatsHandler
-                route "/validators" >=> getValidatorsHandler
                 routef "/tx/%s" getTxHandler
                 routef "/equivocation/%s" getEquivocationProofHandler
                 routef "/block/%d" getBlockHandler
@@ -205,6 +204,7 @@ module Api =
                 routef "/account/%s" getAccountHandler
                 routef "/asset/%s/kyc-providers" getAssetKycProvidersHandler
                 routef "/asset/%s" getAssetHandler
+                route "/validators" >=> getValidatorsHandler
                 routef "/validator/%s/stakes" getValidatorStakesHandler
             ]
             POST >=> choose [
