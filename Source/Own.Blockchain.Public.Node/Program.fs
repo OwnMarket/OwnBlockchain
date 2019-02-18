@@ -23,7 +23,6 @@ let main argv =
     with
     | ex -> Log.error ex.AllMessagesAndStackTraces
 
-    Thread.Sleep 500 // Give some time to logger to write the messages.
     Log.stopLogging ()
 
     0 // Exit code

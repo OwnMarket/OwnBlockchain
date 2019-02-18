@@ -27,6 +27,7 @@ module Log =
         )
 
     let stopLogging () =
+        Thread.Sleep 500 // Give some time to logger to write the messages.
         cts.Cancel()
 
     let private printInColor color text =
