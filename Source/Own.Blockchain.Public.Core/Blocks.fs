@@ -637,7 +637,7 @@ module Blocks =
                     sprintf "Cannot verify block signature %s." s.Value
                     |> Result.appError
             )
-            |> List.partition (function | Ok _ -> true | _ -> false)
+            |> List.partition Result.isOk
 
         if errors.IsEmpty then
             values

@@ -2,6 +2,13 @@ namespace Own.Common
 
 module Result =
 
+    let isOk = function
+        | Ok _ -> true
+        | Error _ -> false
+
+    let isError r =
+        not (isOk r)
+
     let iter f = function
         | Ok v -> f v
         | Error _ -> ()
