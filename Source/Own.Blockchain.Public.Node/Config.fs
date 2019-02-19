@@ -104,7 +104,7 @@ type Config () =
                     failwith "MinTxActionFee must be at least 0.0000001 CHX."
             | _ -> 0.001m // Default value if not explicitly configured.
 
-    static member MaxTxCountPerBlock = 100
+    static member MaxTxCountPerBlock = 1000
 
     static member ValidatorPrivateKey
         with get () =
