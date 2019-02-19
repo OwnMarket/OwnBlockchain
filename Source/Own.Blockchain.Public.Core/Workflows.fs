@@ -75,6 +75,7 @@ module Workflows =
         configurationBlockDelta
         validatorDepositLockTime
         validatorBlacklistTime
+        maxTxCountPerBlock
         =
 
         let genesisValidators =
@@ -106,6 +107,7 @@ module Workflows =
                 configurationBlockDelta
                 validatorDepositLockTime
                 validatorBlacklistTime
+                maxTxCountPerBlock
                 genesisState
 
         genesisBlock, genesisState
@@ -325,7 +327,6 @@ module Workflows =
         getAvailableChxBalanceFromStorage
         addressFromPrivateKey
         minTxActionFee
-        maxTxCountPerBlock
         minValidatorCount
         validatorPrivateKey
         (blockNumber : BlockNumber)
@@ -337,85 +338,87 @@ module Workflows =
         let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
         let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage
 
-        let validatorAddress = validatorPrivateKey |> addressFromPrivateKey
-        match
-            Processing.getTxSetForNewBlock
-                getPendingTxs
-                getChxBalanceState
-                getAvailableChxBalance
-                minTxActionFee
-                maxTxCountPerBlock
-            with
-        | [] -> None // Nothing to propose.
-        | txSet ->
-            result {
-                let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+        let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
 
-                if blockNumber <> lastAppliedBlockNumber + 1 then
-                    return!
-                        sprintf "Cannot propose block %i due to block %i being last applied block."
-                            blockNumber.Value
-                            lastAppliedBlockNumber.Value
-                        |> Result.appError
+        if blockNumber <> lastAppliedBlockNumber + 1 then
+            sprintf "Cannot propose block %i due to block %i being last applied block."
+                blockNumber.Value
+                lastAppliedBlockNumber.Value
+            |> Result.appError
+            |> Some
+        else
+            let lastAppliedBlockResult =
+                getBlock lastAppliedBlockNumber
+                |> Result.map Blocks.extractBlockFromEnvelopeDto
 
-                let! lastAppliedBlock =
-                    getBlock lastAppliedBlockNumber
-                    |> Result.map Blocks.extractBlockFromEnvelopeDto
-
-                let txSet =
-                    txSet
-                    |> Processing.orderTxSet
-
-                let equivocationProofs =
-                    getPendingEquivocationProofs blockNumber
-                    |> List.sortBy (fun p ->
-                        p.BlockNumber, p.ConsensusRound, p.ConsensusStep, p.ValidatorAddress, p.EquivocationProofHash
-                    )
-                    |> List.map (fun p -> p.EquivocationProofHash |> EquivocationProofHash)
-
+            match lastAppliedBlockResult with
+            | Error _ -> Some lastAppliedBlockResult
+            | Ok lastAppliedBlock ->
                 let configBlockNumber, currentConfiguration =
                     Blocks.getConfigurationAtHeight getBlock lastAppliedBlock.Header.Number
 
-                let newConfiguration =
-                    if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = blockNumber then
-                        let newConfiguration : BlockchainConfiguration =
-                            createNewBlockchainConfiguration
-                                currentConfiguration.ConfigurationBlockDelta
-                                currentConfiguration.ValidatorDepositLockTime
-                                currentConfiguration.ValidatorBlacklistTime
-
-                        if newConfiguration.Validators.Length < minValidatorCount then
-                            String.Format(
-                                "Due to insufficient number of validators ({0}), "
-                                    + "configuration block {1} is taking over previous configuration.",
-                                newConfiguration.Validators.Length,
-                                blockNumber.Value
-                            )
-                            |> Log.warning
-
-                            currentConfiguration
-                        else
-                            newConfiguration
-                        |> Some
-                    else
-                        None
-
-                let block, _ =
-                    createBlock
-                        validatorAddress
-                        lastAppliedBlock.Header.Hash
-                        blockNumber
-                        timestamp
-                        configBlockNumber
-                        currentConfiguration.ValidatorDepositLockTime
-                        currentConfiguration.ValidatorBlacklistTime
+                match
+                    Processing.getTxSetForNewBlock
+                        getPendingTxs
+                        getChxBalanceState
+                        getAvailableChxBalance
+                        minTxActionFee
+                        currentConfiguration.MaxTxCountPerBlock
+                    with
+                | [] -> None // Nothing to propose.
+                | txSet ->
+                    let txSet =
                         txSet
-                        equivocationProofs
-                        newConfiguration
+                        |> Processing.orderTxSet
 
-                return block
-            }
-            |> Some
+                    let equivocationProofs =
+                        getPendingEquivocationProofs blockNumber
+                        |> List.sortBy (fun p ->
+                            p.BlockNumber, p.ConsensusRound, p.ConsensusStep, p.ValidatorAddress, p.EquivocationProofHash
+                        )
+                        |> List.map (fun p -> p.EquivocationProofHash |> EquivocationProofHash)
+
+                    let newConfiguration =
+                        if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = blockNumber then
+                            let newConfiguration : BlockchainConfiguration =
+                                createNewBlockchainConfiguration
+                                    currentConfiguration.ConfigurationBlockDelta
+                                    currentConfiguration.ValidatorDepositLockTime
+                                    currentConfiguration.ValidatorBlacklistTime
+                                    currentConfiguration.MaxTxCountPerBlock
+
+                            if newConfiguration.Validators.Length < minValidatorCount then
+                                String.Format(
+                                    "Due to insufficient number of validators ({0}), "
+                                        + "configuration block {1} is taking over previous configuration.",
+                                    newConfiguration.Validators.Length,
+                                    blockNumber.Value
+                                )
+                                |> Log.warning
+
+                                currentConfiguration
+                            else
+                                newConfiguration
+                            |> Some
+                        else
+                            None
+
+                    let validatorAddress = addressFromPrivateKey validatorPrivateKey
+
+                    let block, _ =
+                        createBlock
+                            validatorAddress
+                            lastAppliedBlock.Header.Hash
+                            blockNumber
+                            timestamp
+                            configBlockNumber
+                            currentConfiguration.ValidatorDepositLockTime
+                            currentConfiguration.ValidatorBlacklistTime
+                            txSet
+                            equivocationProofs
+                            newConfiguration
+
+                    block |> Ok |> Some
 
     let storeReceivedBlock
         isValidAddress

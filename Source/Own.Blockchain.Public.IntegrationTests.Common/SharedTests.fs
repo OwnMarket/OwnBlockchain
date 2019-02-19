@@ -268,6 +268,7 @@ module SharedTests =
                 Config.ConfigurationBlockDelta
                 (Convert.ToInt16 Config.ValidatorDepositLockTime)
                 (Convert.ToInt16 Config.ValidatorBlacklistTime)
+                Config.MaxTxCountPerBlock
 
         // ACT
         let loadedBlockDto =

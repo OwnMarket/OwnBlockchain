@@ -208,6 +208,7 @@ type BlockchainConfiguration = {
     Validators : ValidatorSnapshot list
     ValidatorDepositLockTime : int16
     ValidatorBlacklistTime : int16
+    MaxTxCountPerBlock : int
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

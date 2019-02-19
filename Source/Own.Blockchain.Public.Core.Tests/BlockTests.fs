@@ -577,6 +577,7 @@ module BlockTests =
                     ]
                 ValidatorDepositLockTime = 7s
                 ValidatorBlacklistTime = 8s
+                MaxTxCountPerBlock = 9
             }
 
         // Merkle Roots
@@ -644,6 +645,7 @@ module BlockTests =
                 "CCCCCIII...C...............F............" // Validator 3
                 ".G" // ValidatorDepositLockTime
                 ".H" // ValidatorBlacklistTime
+                "...I" // MaxTxCountPerBlock
             ]
             |> String.Concat
 

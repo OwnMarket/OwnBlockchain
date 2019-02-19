@@ -335,6 +335,7 @@ module Mapping =
             Validators = dto.Validators |> List.map validatorSnapshotFromDto
             ValidatorDepositLockTime = dto.ValidatorDepositLockTime
             ValidatorBlacklistTime = dto.ValidatorBlacklistTime
+            MaxTxCountPerBlock = dto.MaxTxCountPerBlock
         }
 
     let blockchainConfigurationToDto (config : BlockchainConfiguration) : BlockchainConfigurationDto =
@@ -343,6 +344,7 @@ module Mapping =
             Validators = config.Validators |> List.map validatorSnapshotToDto
             ValidatorDepositLockTime = config.ValidatorDepositLockTime
             ValidatorBlacklistTime = config.ValidatorBlacklistTime
+            MaxTxCountPerBlock = config.MaxTxCountPerBlock
         }
 
     let blockFromDto (dto : BlockDto) : Block =

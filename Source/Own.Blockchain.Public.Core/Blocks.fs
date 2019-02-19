@@ -233,6 +233,7 @@ module Blocks =
                 yield! validatorSnapshotHashes
                 yield c.ValidatorDepositLockTime |> int16ToBytes |> createHash
                 yield c.ValidatorBlacklistTime |> int16ToBytes |> createHash
+                yield c.MaxTxCountPerBlock |> int32ToBytes |> createHash
             ]
         |> createMerkleTree
 
@@ -508,6 +509,7 @@ module Blocks =
         configurationBlockDelta
         validatorDepositLockTime
         validatorBlacklistTime
+        maxTxCountPerBlock
         (output : ProcessingOutput)
         : Block
         =
@@ -536,6 +538,7 @@ module Blocks =
                 Validators = validatorSnapshots
                 ValidatorDepositLockTime = validatorDepositLockTime
                 ValidatorBlacklistTime = validatorBlacklistTime
+                MaxTxCountPerBlock = maxTxCountPerBlock
             }
             |> Some
 
@@ -659,6 +662,7 @@ module Blocks =
         configurationBlockDelta
         validatorDepositLockTime
         validatorBlacklistTime
+        maxTxCountPerBlock
         =
 
         let validators = getTopValidators ()
@@ -668,6 +672,7 @@ module Blocks =
             Validators = validators
             ValidatorDepositLockTime = validatorDepositLockTime
             ValidatorBlacklistTime = validatorBlacklistTime
+            MaxTxCountPerBlock = maxTxCountPerBlock
         }
 
     let getConfigBlockAtHeight getBlock blockNumber =

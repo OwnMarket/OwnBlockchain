@@ -170,6 +170,7 @@ module Composition =
             Config.ConfigurationBlockDelta
             (Convert.ToInt16 Config.ValidatorDepositLockTime)
             (Convert.ToInt16 Config.ValidatorBlacklistTime)
+            Config.MaxTxCountPerBlock
 
     let signGenesisBlock =
         Workflows.signGenesisBlock
@@ -243,7 +244,6 @@ module Composition =
             getAvailableChxBalance
             addressFromPrivateKey
             (ChxAmount Config.MinTxActionFee)
-            Config.MaxTxCountPerBlock
             Config.MinValidatorCount
             (PrivateKey Config.ValidatorPrivateKey)
 

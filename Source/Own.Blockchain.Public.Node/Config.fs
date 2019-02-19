@@ -94,8 +94,6 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member MaxTxCountPerBlock = 1000
-
     static member MinTxActionFee // In CHX
         with get () =
             match Decimal.TryParse(config.["MinTxActionFee"], NumberStyles.Number, CultureInfo.InvariantCulture) with
@@ -135,6 +133,8 @@ type Config () =
 
     static member ValidatorDepositLockTime = 2 // Number of config blocks to keep the deposit locked after leaving.
     static member ValidatorBlacklistTime = 5 // Number of config blocks to keep the validator blacklisted.
+
+    static member MaxTxCountPerBlock = 1000
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Genesis
