@@ -94,6 +94,8 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member MaxTxCountPerBlock = 1000
+
     static member MinTxActionFee // In CHX
         with get () =
             match Decimal.TryParse(config.["MinTxActionFee"], NumberStyles.Number, CultureInfo.InvariantCulture) with
@@ -103,8 +105,6 @@ type Config () =
                 else
                     failwith "MinTxActionFee must be at least 0.0000001 CHX."
             | _ -> 0.001m // Default value if not explicitly configured.
-
-    static member MaxTxCountPerBlock = 1000
 
     static member ValidatorPrivateKey
         with get () =
@@ -124,9 +124,9 @@ type Config () =
     static member ConsensusMessageRetryingInterval = 1000 // Milliseconds
     static member ConsensusProposeRetryingInterval = 1000 // Milliseconds
 
-    static member ConsensusTimeoutPropose = 5000
-    static member ConsensusTimeoutVote = 5000
-    static member ConsensusTimeoutCommit = 5000
+    static member ConsensusTimeoutPropose = 5000 // Milliseconds
+    static member ConsensusTimeoutVote = 5000 // Milliseconds
+    static member ConsensusTimeoutCommit = 5000 // Milliseconds
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration (initial values)
