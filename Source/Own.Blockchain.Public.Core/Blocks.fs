@@ -623,7 +623,8 @@ module Blocks =
 
         let values, errors =
             blockEnvelope.Signatures
-            |> List.map (fun s ->
+            |> List.toArray
+            |> Array.Parallel.map (fun s ->
                 let messageHash =
                     createConsensusMessageHash
                         block.Header.Number
@@ -637,6 +638,7 @@ module Blocks =
                     sprintf "Cannot verify block signature %s." s.Value
                     |> Result.appError
             )
+            |> Array.toList
             |> List.partition Result.isOk
 
         if errors.IsEmpty then
