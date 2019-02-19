@@ -265,12 +265,15 @@ module Validation =
         [
             if t.SenderAddress <> signerAddress then
                 yield AppError "Sender address doesn't match the signature."
+
             if t.Nonce <= 0L then
                 yield AppError "Nonce must be positive."
+
             if t.Fee <= 0m then
                 yield AppError "Fee must be positive."
             if not (Utils.isRounded t.Fee) then
-                yield AppError "Fee must be at most 7 decimal places."
+                yield AppError "Fee must have at most 7 decimal places."
+
             if t.Actions |> List.isEmpty then
                 yield AppError "There are no actions provided for this transaction."
         ]

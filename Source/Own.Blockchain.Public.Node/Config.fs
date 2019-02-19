@@ -97,8 +97,12 @@ type Config () =
     static member MinTxActionFee // In CHX
         with get () =
             match Decimal.TryParse(config.["MinTxActionFee"], NumberStyles.Number, CultureInfo.InvariantCulture) with
-            | true, value -> if value > 0m then value else failwith "MinTxActionFee must be a positive number."
-            | _ -> 0.001m
+            | true, value ->
+                if value >= 0.0000001m then // Smallest possible CHX value (7 decimal places).
+                    value
+                else
+                    failwith "MinTxActionFee must be at least 0.0000001 CHX."
+            | _ -> 0.001m // Default value if not explicitly configured.
 
     static member MaxTxCountPerBlock = 100
 
