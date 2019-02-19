@@ -570,6 +570,8 @@ module Consensus =
         timeoutPropose
         timeoutVote
         timeoutCommit
+        timeoutDelta
+        timeoutIncrements
         =
 
         let validatorAddress =
@@ -716,7 +718,7 @@ module Consensus =
                         consensusRound.Value
                         (unionCaseName consensusStep)
 
-                    do! Async.Sleep timeout
+                    do! Async.Sleep (timeout + timeoutDelta * min consensusRound.Value timeoutIncrements)
 
                     Log.debugf "Timeout elapsed: %i / %i / %s"
                         blockNumber.Value

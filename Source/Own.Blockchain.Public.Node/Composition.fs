@@ -363,6 +363,8 @@ module Composition =
             Config.ConsensusTimeoutPropose
             Config.ConsensusTimeoutVote
             Config.ConsensusTimeoutCommit
+            Config.ConsensusTimeoutDelta
+            Config.ConsensusTimeoutIncrements
 
     let handleReceivedConsensusMessage =
         Workflows.handleReceivedConsensusMessage
