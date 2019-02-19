@@ -92,7 +92,28 @@ type Config () =
     static member MaxNumberOfBlocksToFetchInParallel = 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Processing
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member MinValidatorCount = 4
+    static member MaxValidatorCount = 100
+
+    static member MaxRewardedStakesCount = 100
+
+    static member ValidatorThreshold = 500_000m
+    static member ValidatorDeposit = 5_000m
+
+    static member ConsensusMessageRetryingInterval = 1000 // Milliseconds
+    static member ConsensusProposeRetryingInterval = 1000 // Milliseconds
+
+    static member ConsensusTimeoutPropose = 3000 // Milliseconds
+    static member ConsensusTimeoutVote = 3000 // Milliseconds
+    static member ConsensusTimeoutCommit = 3000 // Milliseconds
+
+    static member ConsensusTimeoutDelta = 1000 // Milliseconds
+    static member ConsensusTimeoutIncrements = 10
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Validators
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     static member MinTxActionFee // In CHX
         with get () =
@@ -107,27 +128,6 @@ type Config () =
     static member ValidatorPrivateKey
         with get () =
             config.["ValidatorPrivateKey"]
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Consensus
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member MinValidatorCount = 4
-    static member MaxValidatorCount = 100
-
-    static member ValidatorThreshold = 500_000m
-    static member ValidatorDeposit = 5_000m
-
-    static member MaxRewardedStakesCount = 100
-
-    static member ConsensusMessageRetryingInterval = 1000 // Milliseconds
-    static member ConsensusProposeRetryingInterval = 1000 // Milliseconds
-
-    static member ConsensusTimeoutPropose = 3000 // Milliseconds
-    static member ConsensusTimeoutVote = 3000 // Milliseconds
-    static member ConsensusTimeoutCommit = 3000 // Milliseconds
-
-    static member ConsensusTimeoutDelta = 1000 // Milliseconds
-    static member ConsensusTimeoutIncrements = 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration (initial values)
