@@ -55,14 +55,14 @@ module Hashing =
         |> Array.concat
         |> hash
 
-    let blockchainAddress (publicKey : byte[]) =
-        let prefix = [| 6uy; 90uy |] // "CH"
+    let private addressPrefix = [| 6uy; 90uy |] // "CH"
 
+    let blockchainAddress (publicKey : byte[]) =
         let publicKeyHashWithPrefix =
             publicKey
             |> sha256
             |> sha160
-            |> Array.append prefix
+            |> Array.append addressPrefix
 
         let checksum =
             publicKeyHashWithPrefix
@@ -81,7 +81,7 @@ module Hashing =
         else
             let addressBytes = decode address
 
-            if Array.length addressBytes <> 26 then
+            if addressBytes.Length <> 26 || addressBytes.[0 .. 1] <> addressPrefix then
                 false
             else
                 let publicKeyHashWithPrefix =
