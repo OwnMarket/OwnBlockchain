@@ -103,8 +103,12 @@ type Config () =
     static member ConsensusTimeoutIncrements = 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Validators
+    // Validator
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member ValidatorPrivateKey
+        with get () =
+            config.["ValidatorPrivateKey"]
+
     static member MinTxActionFee // In CHX
         with get () =
             match Decimal.TryParse(config.["MinTxActionFee"], NumberStyles.Number, CultureInfo.InvariantCulture) with
@@ -114,10 +118,6 @@ type Config () =
                 else
                     failwith "MinTxActionFee must be at least 0.0000001 CHX."
             | _ -> 0.001m // Default value if not explicitly configured.
-
-    static member ValidatorPrivateKey
-        with get () =
-            config.["ValidatorPrivateKey"]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx
