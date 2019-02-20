@@ -51,11 +51,11 @@ module ProcessingTests =
         test <@ txHashes = ["Tx1"; "Tx2"; "Tx3"; "Tx5"] @>
 
     [<Theory>]
-    [<InlineData (1, 0, "Tx1")>]
-    [<InlineData (3, 0, "Tx1; Tx3")>]
-    [<InlineData (4, 1, "Tx1; Tx3")>]
-    [<InlineData (4, 0, "Tx1; Tx3; Tx5")>]
-    [<InlineData (5, 1, "Tx1; Tx3; Tx5")>]
+    [<InlineData(1, 0, "Tx1")>]
+    [<InlineData(3, 0, "Tx1; Tx3")>]
+    [<InlineData(4, 1, "Tx1; Tx3")>]
+    [<InlineData(4, 0, "Tx1; Tx3; Tx5")>]
+    [<InlineData(5, 1, "Tx1; Tx3; Tx5")>]
     let ``Processing.excludeUnprocessableTxs excludes txs if CHX balance cannot cover the fees``
         (balance : decimal, staked : decimal, txHashes : string)
         =
