@@ -39,6 +39,7 @@ Description=Own Public Blockchain Node
 After=network.target postgresql.service
 
 [Service]
+Environment=DOTNET_CLI_HOME=/tmp
 WorkingDirectory=$DATA_DIR/%i
 ExecStart=/usr/bin/dotnet "$NODE_DIR/Own.Blockchain.Public.Node.dll"
 Restart=always
