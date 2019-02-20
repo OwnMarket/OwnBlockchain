@@ -376,7 +376,11 @@ module Workflows =
                     let equivocationProofs =
                         getPendingEquivocationProofs blockNumber
                         |> List.sortBy (fun p ->
-                            p.BlockNumber, p.ConsensusRound, p.ConsensusStep, p.ValidatorAddress, p.EquivocationProofHash
+                            p.BlockNumber,
+                            p.ConsensusRound,
+                            p.ConsensusStep,
+                            p.ValidatorAddress,
+                            p.EquivocationProofHash
                         )
                         |> List.map (fun p -> p.EquivocationProofHash |> EquivocationProofHash)
 

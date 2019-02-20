@@ -108,7 +108,7 @@ function txToCommand(tx) {
     invocation++
     let port = 10701 + (invocation % 4)
     //return `curl -H "Content-Type: application/json" -d ${JSON.stringify(tx)} http://localhost:${port}/tx\n`
-    return `curl -H "Content-Type: application/json" -d @- http://localhost:${port}/tx <<JSON\n${tx}\nJSON\n`
+    return `curl -H "Content-Type: application/json" -d @- http://localhost:${port}/tx << JSON\n${tx}\nJSON\n`
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
