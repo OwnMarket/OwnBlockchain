@@ -160,7 +160,7 @@ module Mapping =
             TxHash = hash
             Sender = sender
             Nonce = Nonce dto.Nonce
-            Fee = ChxAmount dto.Fee
+            ActionFee = ChxAmount dto.ActionFee
             Actions = dto.Actions |> List.map txActionFromDto
         }
 
@@ -169,7 +169,7 @@ module Mapping =
             TxHash = tx.TxHash.Value
             SenderAddress = tx.Sender.Value
             Nonce = tx.Nonce.Value
-            Fee = tx.Fee.Value
+            ActionFee = tx.ActionFee.Value
             ActionCount = Convert.ToInt16 tx.Actions.Length
         }
 
@@ -178,7 +178,7 @@ module Mapping =
             TxHash = TxHash dto.TxHash
             Sender = BlockchainAddress dto.SenderAddress
             Nonce = Nonce dto.Nonce
-            Fee = ChxAmount dto.Fee
+            ActionFee = ChxAmount dto.ActionFee
             ActionCount = dto.ActionCount
             AppearanceOrder = dto.AppearanceOrder
         }
@@ -659,7 +659,7 @@ module Mapping =
             TxHash = txHash
             SenderAddress = senderAddress
             Nonce = txDto.Nonce
-            Fee = txDto.Fee
+            ActionFee = txDto.ActionFee
             Actions = txDto.Actions
             Status = txStatus |> txStatusNumberToString
             ErrorCode = txErrorCode |> txErrorCodeNumberToString

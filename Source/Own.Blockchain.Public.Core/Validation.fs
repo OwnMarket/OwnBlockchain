@@ -269,10 +269,10 @@ module Validation =
             if t.Nonce <= 0L then
                 yield AppError "Nonce must be positive."
 
-            if t.Fee <= 0m then
-                yield AppError "Fee must be positive."
-            if not (Utils.isRounded t.Fee) then
-                yield AppError "Fee must have at most 7 decimal places."
+            if t.ActionFee <= 0m then
+                yield AppError "ActionFee must be positive."
+            if not (Utils.isRounded t.ActionFee) then
+                yield AppError "ActionFee must have at most 7 decimal places."
 
             if t.Actions.IsEmpty then
                 yield AppError "There are no actions provided for this transaction."
@@ -335,18 +335,18 @@ module Validation =
         (getAvailableBalance : BlockchainAddress -> ChxAmount)
         getTotalFeeForPendingTxs
         senderAddress
-        txFee
+        totalTxFee
         : Result<unit, AppErrors>
         =
 
         let availableBalance = getAvailableBalance senderAddress
 
-        if txFee > availableBalance then
+        if totalTxFee > availableBalance then
             Result.appError "Available CHX balance is insufficient to cover the fee."
         else
             let totalFeeForPendingTxs = getTotalFeeForPendingTxs senderAddress
 
-            if (totalFeeForPendingTxs + txFee) > availableBalance then
+            if (totalFeeForPendingTxs + totalTxFee) > availableBalance then
                 Result.appError "Available CHX balance is insufficient to cover the fee for all pending transactions."
             else
                 Ok ()

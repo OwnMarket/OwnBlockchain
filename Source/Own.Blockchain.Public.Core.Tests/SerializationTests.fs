@@ -15,7 +15,7 @@ module SerializationTests =
             {
                 SenderAddress = "SomeAddress"
                 Nonce = 10L
-                Fee = 20m
+                ActionFee = 20m
                 Actions =
                     [
                         {
@@ -59,7 +59,7 @@ module SerializationTests =
             """
             {
                 "Nonce": 120,
-                "Fee": 20,
+                "ActionFee": 20,
                 "Actions": [
                     {
                         "ActionType": "TransferChx",
@@ -116,7 +116,7 @@ module SerializationTests =
             """
             {
                 "Nonce": 120,
-                "Fee": 20,
+                "ActionFee": 20,
                 "Actions": [
                     {
                         "ActionType": "TransferChx",
@@ -173,7 +173,7 @@ module SerializationTests =
             """
             {
                 "Nonce":"InvaliValue",
-                "Fee": 20,
+                "ActionFee": 20,
                 "Actions":
                     {
                         "ActionType": "TransferAsset",

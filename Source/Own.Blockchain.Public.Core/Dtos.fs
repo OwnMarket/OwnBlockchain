@@ -127,7 +127,7 @@ type TxActionDto = {
 type TxDto = {
     SenderAddress : string
     Nonce : int64
-    Fee : decimal
+    ActionFee : decimal
     Actions : TxActionDto list
 }
 
@@ -143,7 +143,7 @@ type TxInfoDto = {
     TxHash : string
     SenderAddress : string
     Nonce : int64
-    Fee : decimal
+    ActionFee : decimal
     ActionCount : int16
 }
 
@@ -152,7 +152,7 @@ type PendingTxInfoDto = {
     TxHash : string
     SenderAddress : string
     Nonce : int64
-    Fee : decimal
+    ActionFee : decimal
     ActionCount : int16
     AppearanceOrder : int64
 }
@@ -546,7 +546,7 @@ type GetTxApiResponseDto = {
     TxHash : string
     SenderAddress : string
     Nonce : int64
-    Fee : decimal
+    ActionFee : decimal
     Actions : TxActionDto list
     Status : string
     // Result

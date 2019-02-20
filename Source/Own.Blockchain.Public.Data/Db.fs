@@ -36,7 +36,7 @@ module Db =
                     "@tx_hash", txInfoDto.TxHash |> box
                     "@sender_address", txInfoDto.SenderAddress |> box
                     "@nonce", txInfoDto.Nonce |> box
-                    "@fee", txInfoDto.Fee |> box
+                    "@action_fee", txInfoDto.ActionFee |> box
                     "@action_count", txInfoDto.ActionCount |> box
                 ]
 
@@ -65,7 +65,7 @@ module Db =
     let getPendingTxs
         dbEngineType
         (dbConnectionString : string)
-        (ChxAmount minTxFee)
+        (ChxAmount minActionFee)
         (txsToSkip : TxHash list)
         (txCountToFetch : int)
         : PendingTxInfoDto list
@@ -88,28 +88,28 @@ module Db =
             | Firebird ->
                 sprintf
                     """
-                    SELECT FIRST @txCountToFetch tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
+                    SELECT FIRST @txCountToFetch tx_hash, sender_address, nonce, action_fee, tx_id AS appearance_order
                     FROM tx
-                    WHERE fee >= @minTxFee
+                    WHERE action_fee >= @minActionFee
                     %s
-                    ORDER BY fee DESC, tx_id
+                    ORDER BY action_fee DESC, tx_id
                     """
                     skipConditionPattern
             | Postgres ->
                 sprintf
                     """
-                    SELECT tx_hash, sender_address, nonce, fee, tx_id AS appearance_order
+                    SELECT tx_hash, sender_address, nonce, action_fee, tx_id AS appearance_order
                     FROM tx
-                    WHERE fee >= @minTxFee
+                    WHERE action_fee >= @minActionFee
                     %s
-                    ORDER BY fee DESC, tx_id
+                    ORDER BY action_fee DESC, tx_id
                     LIMIT @txCountToFetch
                     """
                     skipConditionPattern
 
         let sqlParams =
             [
-                "@minTxFee", minTxFee |> box
+                "@minActionFee", minActionFee |> box
                 "@txCountToFetch", txCountToFetch |> box
             ]
 
@@ -133,7 +133,7 @@ module Db =
     let getTx dbEngineType (dbConnectionString : string) (TxHash txHash) : TxInfoDto option =
         let sql =
             """
-            SELECT tx_hash, sender_address, nonce, fee, action_count
+            SELECT tx_hash, sender_address, nonce, action_fee, action_count
             FROM tx
             WHERE tx_hash = @txHash
             """
@@ -157,7 +157,7 @@ module Db =
 
         let sql =
             """
-            SELECT sum(fee * action_count)
+            SELECT sum(action_fee * action_count)
             FROM tx
             WHERE sender_address = @senderAddress
             """

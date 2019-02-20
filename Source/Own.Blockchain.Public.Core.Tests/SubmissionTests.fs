@@ -19,8 +19,8 @@ module SubmissionTests =
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
         let nonce = Nonce 5L
-        let txFee = ChxAmount 1m
-        let totalTxFee = txFee * 2m // Two actions
+        let actionFee = ChxAmount 1m
+        let totalTxFee = actionFee * 2m // Two actions
         let totalPendingTxsFee = ChxAmount 9m
         let senderBalance = ChxAmount balance
 
@@ -43,7 +43,7 @@ module SubmissionTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce txFee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let expectedResult : Result<TxHash, AppErrors> = Error [AppError error]
 
@@ -93,7 +93,7 @@ module SubmissionTests =
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()
         let nonce = Nonce 5L
-        let txFee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let senderBalance = ChxAmount 100m
 
         let txHash, txEnvelopeDto =
@@ -119,7 +119,7 @@ module SubmissionTests =
                     ActionData = new CreateAccountTxActionDto ()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce txFee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let expectedError = sprintf "Max allowed number of actions per transaction is %i." maxActionCountPerTx
         let expectedResult : Result<TxHash, AppErrors> = Error [AppError expectedError]

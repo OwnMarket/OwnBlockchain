@@ -17,7 +17,7 @@ module DomainTypesTests =
                 Tx.TxHash = TxHash ""
                 Sender = BlockchainAddress ""
                 Nonce = Nonce 0L
-                Fee = ChxAmount 2m
+                ActionFee = ChxAmount 2m
                 Actions =
                     [
                         TransferChx {
@@ -36,7 +36,7 @@ module DomainTypesTests =
                 PendingTxInfo.TxHash = tx.TxHash
                 Sender = tx.Sender
                 Nonce = tx.Nonce
-                Fee = tx.Fee
+                ActionFee = tx.ActionFee
                 ActionCount = tx.Actions.Length |> Convert.ToInt16
                 AppearanceOrder = 0L
             }

@@ -43,7 +43,7 @@ module Workflows =
         (signHash : PrivateKey -> string -> Signature)
         (faucetSupplyHolderPrivateKey : PrivateKey)
         (faucetSupplyHolderAddress : BlockchainAddress)
-        (ChxAmount txFee)
+        (ChxAmount actionFee)
         distributionBatchSize
         createAction
         queue
@@ -59,9 +59,9 @@ module Workflows =
                 |> List.map createAction
 
             let rawTx =
-                sprintf """{Nonce: %i, Fee: %s, Actions: [%s]}"""
+                sprintf """{Nonce: %i, ActionFee: %s, Actions: [%s]}"""
                     (addressNonce + 1L)
-                    (txFee.ToString())
+                    (actionFee.ToString())
                     (String.Join(", ", actions))
                 |> Conversion.stringToBytes
 
@@ -104,7 +104,7 @@ module Workflows =
         signHash
         faucetSupplyHolderPrivateKey
         faucetSupplyHolderAddress
-        txFee
+        actionFee
         distributionBatchSize
         (ChxAmount chxAmountPerAddress)
         =
@@ -121,7 +121,7 @@ module Workflows =
             signHash
             faucetSupplyHolderPrivateKey
             faucetSupplyHolderAddress
-            txFee
+            actionFee
             distributionBatchSize
             createAction
             chxClaimQueue
@@ -133,7 +133,7 @@ module Workflows =
         signHash
         faucetSupplyHolderPrivateKey
         faucetSupplyHolderAddress
-        txFee
+        actionFee
         distributionBatchSize
         (AssetAmount assetAmountPerAddress)
         (AssetHash faucetSupplyHolderAssetHash)
@@ -165,7 +165,7 @@ module Workflows =
             signHash
             faucetSupplyHolderPrivateKey
             faucetSupplyHolderAddress
-            txFee
+            actionFee
             distributionBatchSize
             createAction
             assetClaimQueue

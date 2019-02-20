@@ -22,7 +22,8 @@ const validatorDeposit = 5000
 const initialBalance = 10000
 const walletCount = 100
 const transfersPerWallet = 10
-const fee = 0.001
+const actionsPerTx = 1
+const actionFee = 0.001
 
 const outputFile = "../run_test.sh"
 
@@ -63,26 +64,32 @@ function composeInitialTx(validators, recipients) {
     return {
         SenderAddress: genesisAddress,
         Nonce: 1,
-        Fee: fee,
+        ActionFee: actionFee,
         Actions: actions
     }
 }
 
 function composeTx(senderAddress, nonce, recipientAddress, amount) {
-    return {
+    var tx = {
         SenderAddress: senderAddress,
         Nonce: nonce,
-        Fee: fee,
-        Actions: [
+        ActionFee: actionFee,
+        Actions: []
+    }
+
+    Array(actionsPerTx).fill().forEach(_ => {
+        tx.Actions.push(
             {
                 ActionType: "TransferChx",
                 ActionData: {
                     RecipientAddress: recipientAddress,
-                    Amount: amount
+                    Amount: (amount / actionsPerTx)
                 }
             }
-        ]
-    }
+        )
+    })
+
+    return tx
 }
 
 function signTx(networkCode, privateKey, tx){
@@ -100,14 +107,15 @@ let invocation = 0
 function txToCommand(tx) {
     invocation++
     let port = 10701 + (invocation % 4)
-    return `curl -H "Content-Type: application/json" -d ${JSON.stringify(tx)} http://localhost:${port}/tx\n`
+    //return `curl -H "Content-Type: application/json" -d ${JSON.stringify(tx)} http://localhost:${port}/tx\n`
+    return `curl -H "Content-Type: application/json" -d @- http://localhost:${port}/tx <<JSON\n${tx}\nJSON\n`
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Compose
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const wallets = [...Array(walletCount).keys()].map(() => chainiumSdk.crypto.generateWallet())
+const wallets = Array(walletCount).fill().map(_ => chainiumSdk.crypto.generateWallet())
 
 const initialTx = signTx(
     networkCode,

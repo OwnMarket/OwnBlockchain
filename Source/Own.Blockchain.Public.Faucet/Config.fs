@@ -47,9 +47,9 @@ type Config () =
         with get () =
             config.["FaucetSupplyAssetHash"]
 
-    static member TxFee
+    static member ActionFee
         with get () =
-            config.["TxFee"] |> Decimal.Parse
+            config.["ActionFee"] |> Decimal.Parse
 
     static member MaxClaimableChxAmount
         with get () =

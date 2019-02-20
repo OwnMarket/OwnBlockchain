@@ -915,12 +915,12 @@ module Processing =
                         tx.Sender = head.Sender
                         && (
                             tx.Nonce < head.Nonce
-                            || (tx.Nonce = head.Nonce && tx.Fee > head.Fee)
+                            || (tx.Nonce = head.Nonce && tx.ActionFee > head.ActionFee)
                         )
                     )
                 let precedingTxsForSameSender =
                     precedingTxsForSameSender
-                    |> List.sortBy (fun tx -> tx.Nonce, -tx.Fee.Value)
+                    |> List.sortBy (fun tx -> tx.Nonce, -tx.ActionFee.Value)
                 let orderedSet =
                     orderedSet
                     @ precedingTxsForSameSender

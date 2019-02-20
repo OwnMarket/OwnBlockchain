@@ -24,7 +24,7 @@ module Composition =
             (Signing.signHash getNetworkId)
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
-            (ChxAmount Config.TxFee)
+            (ChxAmount Config.ActionFee)
             (int Config.DistributionBatchSize)
             (ChxAmount Config.MaxClaimableChxAmount)
 
@@ -36,7 +36,7 @@ module Composition =
             (Signing.signHash getNetworkId)
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
-            (ChxAmount Config.TxFee)
+            (ChxAmount Config.ActionFee)
             (int Config.DistributionBatchSize)
             (AssetAmount Config.MaxClaimableAssetAmount)
             (AssetHash Config.FaucetSupplyAssetHash)

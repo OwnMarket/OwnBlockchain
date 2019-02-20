@@ -11,7 +11,7 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
 {
     "senderAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "nonce": 1,
-    "fee": 0.001,
+    "actionFee": 0.001,
     "actions": [
         {
             "actionType": "...",
@@ -43,7 +43,7 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
     - [`TransferChx`](TxActions.md#transferchx)
     - [`DelegateStake`](TxActions.md#delegatestake)
     - [`ConfigureValidator`](TxActions.md#configurevalidator)
-    - [`RemoveValidator`](TxActions.md#removevalidator)    
+    - [`RemoveValidator`](TxActions.md#removevalidator)
     - [`TransferAsset`](TxActions.md#transferasset)
     - [`CreateAssetEmission`](TxActions.md#createassetemission)
     - [`CreateAsset`](TxActions.md#createasset)
@@ -70,7 +70,7 @@ Here is a sample transaction containing two actions:
 {
     "senderAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "nonce": 42,
-    "fee": 0.001,
+    "actionFee": 0.001,
     "actions": [
         {
             "actionType": "TransferChx",

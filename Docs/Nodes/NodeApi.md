@@ -67,7 +67,7 @@ Response JSON payload:
     "txHash": "CRjqV3DLh7jyCKZqj2pCdfw3s3ynXxEf5JMVm1rCYjmp",
     "senderAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "nonce": 1,
-    "fee": 0.001,
+    "actionFee": 0.001,
     "actions": [
         {
             "actionType": "TransferChx",
@@ -394,13 +394,13 @@ Response JSON payload:
             "networkAddress": "localhost:25705",
             "sharedRewardPercent": 0,
             "isActive": false
-        },          
+        },
         {
             "validatorAddress": "CHXr1u8DvLmRrnBpVmPcEH43qBhjezuRRtq",
             "networkAddress": "localhost:25702",
             "sharedRewardPercent": 0,
             "isActive": true
-        }      
+        }
     ]
 }
 ```
@@ -433,13 +433,13 @@ Response JSON payload:
             "networkAddress": "localhost:25704",
             "sharedRewardPercent": 0,
             "isActive": true
-        },          
+        },
         {
             "validatorAddress": "CHXr1u8DvLmRrnBpVmPcEH43qBhjezuRRtq",
             "networkAddress": "localhost:25702",
             "sharedRewardPercent": 0,
             "isActive": true
-        }      
+        }
     ]
 }
 ```

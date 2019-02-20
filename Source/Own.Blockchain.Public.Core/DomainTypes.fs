@@ -184,7 +184,7 @@ type Tx = {
     TxHash : TxHash
     Sender : BlockchainAddress
     Nonce : Nonce
-    Fee : ChxAmount
+    ActionFee : ChxAmount
     Actions : TxAction list
 }
 
@@ -331,7 +331,7 @@ type PendingTxInfo = {
     TxHash : TxHash
     Sender : BlockchainAddress
     Nonce : Nonce
-    Fee : ChxAmount
+    ActionFee : ChxAmount
     ActionCount : int16
     AppearanceOrder : int64
 }
@@ -685,7 +685,7 @@ type AssetAmount with
         AssetAmount (a1 / a2)
 
 type Tx with
-    member __.TotalFee = __.Fee * decimal __.Actions.Length
+    member __.TotalFee = __.ActionFee * decimal __.Actions.Length
 
 type PendingTxInfo with
-    member __.TotalFee = __.Fee * decimal __.ActionCount
+    member __.TotalFee = __.ActionFee * decimal __.ActionCount

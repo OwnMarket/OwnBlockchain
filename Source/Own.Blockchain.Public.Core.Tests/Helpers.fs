@@ -47,7 +47,7 @@ module Helpers =
         (txHash : TxHash)
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
-        (fee : ChxAmount)
+        (actionFee : ChxAmount)
         (actionCount : int16)
         (appearanceOrder : int64)
         =
@@ -56,7 +56,7 @@ module Helpers =
             PendingTxInfo.TxHash = txHash
             Sender = senderAddress
             Nonce = nonce
-            Fee = fee
+            ActionFee = actionFee
             ActionCount = actionCount
             AppearanceOrder = appearanceOrder
         }
@@ -64,7 +64,7 @@ module Helpers =
     let newRawTxDto
         (BlockchainAddress senderAddress)
         (nonce : int64)
-        (fee : decimal)
+        (actionFee : decimal)
         (actions : obj list)
         =
 
@@ -74,13 +74,13 @@ module Helpers =
                 {
                     SenderAddress: "%s",
                     Nonce: %i,
-                    Fee: %s,
+                    ActionFee: %s,
                     Actions: %s
                 }
                 """
                 senderAddress
                 nonce
-                (fee.ToString())
+                (actionFee.ToString())
                 (JsonConvert.SerializeObject(actions))
 
         Conversion.stringToBytes json
@@ -88,11 +88,11 @@ module Helpers =
     let newTx
         (sender : WalletInfo)
         (Nonce nonce)
-        (ChxAmount fee)
+        (ChxAmount actionFee)
         (actions : obj list)
         =
 
-        let rawTx = newRawTxDto sender.Address nonce fee actions
+        let rawTx = newRawTxDto sender.Address nonce actionFee actions
 
         let txHash =
             rawTx |> Hashing.hash |> TxHash

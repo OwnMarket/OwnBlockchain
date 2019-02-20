@@ -20,11 +20,11 @@ module SharedTests =
 
     let private addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
-    let newTxDto (BlockchainAddress senderAddress) nonce fee actions =
+    let newTxDto (BlockchainAddress senderAddress) nonce actionFee actions =
         {
             SenderAddress = senderAddress
             Nonce = nonce
-            Fee = fee
+            ActionFee = actionFee
             Actions = actions
         }
 
@@ -99,7 +99,7 @@ module SharedTests =
                 failwith "Transaction is not stored into database"
         | Some txInfo ->
             test <@ responseDto.TxHash = txInfo.TxHash @>
-            test <@ dto.Fee = txInfo.Fee @>
+            test <@ dto.ActionFee = txInfo.ActionFee @>
             test <@ dto.Nonce = txInfo.Nonce @>
             test <@ txInfo.SenderAddress = senderWallet.Address.Value @>
 
@@ -161,9 +161,9 @@ module SharedTests =
                                 }
                         }
 
-                    let fee = 1m
+                    let actionFee = 1m
                     let nonce = 1L
-                    let txDto = newTxDto senderWallet.Address nonce fee [action]
+                    let txDto = newTxDto senderWallet.Address nonce actionFee [action]
 
                     let expectedTx = transactionEnvelope senderWallet txDto
 
@@ -342,10 +342,10 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1m
-        let totalFee = fee * (decimal txActions.Length)
+        let actionFee = 1m
+        let totalFee = actionFee * (decimal txActions.Length)
 
-        let txDto = newTxDto sender.Address nonce fee txActions
+        let txDto = newTxDto sender.Address nonce actionFee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -402,10 +402,10 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1m
-        let totalFee = fee * (decimal txActions.Length)
+        let actionFee = 1m
+        let totalFee = actionFee * (decimal txActions.Length)
 
-        let txDto = newTxDto sender.Address nonce fee txActions
+        let txDto = newTxDto sender.Address nonce actionFee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -462,10 +462,10 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1m
-        let totalFee = fee * (decimal txActions.Length)
+        let actionFee = 1m
+        let totalFee = actionFee * (decimal txActions.Length)
 
-        let txDto = newTxDto sender.Address nonce fee txActions
+        let txDto = newTxDto sender.Address nonce actionFee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -526,10 +526,10 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1m
-        let totalFee = fee * (decimal txActions.Length)
+        let actionFee = 1m
+        let totalFee = actionFee * (decimal txActions.Length)
 
-        let txDto = newTxDto sender.Address nonce fee txActions
+        let txDto = newTxDto sender.Address nonce actionFee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT
@@ -582,10 +582,10 @@ module SharedTests =
                 }
             ]
 
-        let fee = 1m
-        let totalFee = fee * (decimal txActions.Length)
+        let actionFee = 1m
+        let totalFee = actionFee * (decimal txActions.Length)
 
-        let txDto = newTxDto sender.Address nonce fee txActions
+        let txDto = newTxDto sender.Address nonce actionFee txActions
         let txEnvelope = transactionEnvelope sender txDto
 
         // ACT

@@ -85,7 +85,7 @@ A combination of an `account_id` and an `asset_hash` is unique and represents an
 | `tx_hash` | TEXT | NOT NULL | AK | Unique hash value of the transaction.
 | `sender_address` | TEXT | NOT NULL | | Blockchain address of the transaction sender.
 | `nonce` | BIGINT | NOT NULL | | Nonce prevents double-spending because Nonce<sub>tx</sub> must be equal to (Nonce<sub>sender_address</sub> + 1) for the transaction to succeed.
-| `fee` | DECIMAL (30,18) | NOT NULL | | Fee is the price offered for processing of each action included in the transaction. It is expressed in CHX and serves as a primary transaction priority criteria, as well as the incentive for the nodes to validate transactions.
+| `action_fee` | DECIMAL (30,18) | NOT NULL | | Fee is the price offered for processing of each action included in the transaction. It is expressed in CHX and serves as a primary transaction priority criteria, as well as the incentive for the nodes to validate transactions.
 | `action_count` | SMALLINT | NOT NULL | | Number of actions included in the transaction.
 | `status` | SMALLINT | NOT NULL | | Transaction status.
 | `block_number` | BIGINT | NULL | | The number of the block in which the transaction was processed.

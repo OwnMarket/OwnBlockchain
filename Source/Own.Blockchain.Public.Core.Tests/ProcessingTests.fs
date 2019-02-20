@@ -164,7 +164,7 @@ module ProcessingTests =
         let stake2 = ChxAmount 100m
         let stake3 = ChxAmount 50m
 
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let sharedRewardPercent = 60m
         let validatorReward = ChxAmount 0.4m
         let staker1Reward = ChxAmount 0.3m
@@ -186,7 +186,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -281,7 +281,7 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + validatorReward
         let staker1ChxBalance = initialChxState.[staker1Wallet.Address].Amount + staker1Reward
@@ -330,7 +330,7 @@ module ProcessingTests =
         let stake2 = ChxAmount 100m
         let stake3 = ChxAmount 100m
 
-        let fee = ChxAmount 0.0000010m
+        let actionFee = ChxAmount 0.0000010m
         let sharedRewardPercent = 100m
         let validatorReward = ChxAmount 0.0000001m // Due to rounding
         let staker1Reward = ChxAmount 0.0000003m
@@ -352,7 +352,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -447,7 +447,7 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + validatorReward
         let staker1ChxBalance = initialChxState.[staker1Wallet.Address].Amount + staker1Reward
@@ -492,7 +492,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
@@ -506,7 +506,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -596,9 +596,9 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -626,7 +626,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
@@ -640,7 +640,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -730,9 +730,9 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -761,7 +761,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
@@ -775,7 +775,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -865,9 +865,9 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -896,7 +896,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
@@ -910,7 +910,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1020,7 +1020,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = ChxAmount 10m
 
         let txHash, txEnvelope =
@@ -1034,7 +1034,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1128,9 +1128,9 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
         let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -1171,7 +1171,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -1187,7 +1187,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1277,8 +1277,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
 
@@ -1317,7 +1317,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -1333,7 +1333,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1460,7 +1460,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -1476,7 +1476,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1603,7 +1603,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -1619,7 +1619,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1747,7 +1747,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -1763,7 +1763,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1891,7 +1891,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -1907,7 +1907,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -1997,8 +1997,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount
         let expectedStatus =
@@ -2039,7 +2039,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -2055,7 +2055,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -2148,8 +2148,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.SourceAccountNotFound)
             |> TxActionError
@@ -2187,7 +2187,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let amountToTransfer = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -2203,7 +2203,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -2296,8 +2296,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.DestinationAccountNotFound)
             |> TxActionError
@@ -2339,7 +2339,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2354,7 +2354,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -2445,8 +2445,8 @@ module ProcessingTests =
 
         // ASSERT
 
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -2487,7 +2487,7 @@ module ProcessingTests =
         let nonce1 = Nonce 11L
         let nonce2 = nonce1 + 1L
 
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         // Vote Yes on RS1
         let txHash1, txEnvelope1 =
@@ -2503,7 +2503,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce1 fee
+            |> Helpers.newTx senderWallet nonce1 actionFee
 
         // Vote Yes on RS2
         let txHash2, txEnvelope2 =
@@ -2519,7 +2519,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce2 fee
+            |> Helpers.newTx senderWallet nonce2 actionFee
 
         let txSet = [txHash1; txHash2]
         let blockNumber = BlockNumber 1L;
@@ -2646,7 +2646,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2661,7 +2661,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -2781,7 +2781,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -2796,7 +2796,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -2811,7 +2811,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
         let blockNumber = BlockNumber 1L;
@@ -2949,7 +2949,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -2964,7 +2964,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -3089,7 +3089,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -3104,7 +3104,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -3227,7 +3227,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -3242,7 +3242,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -3333,8 +3333,8 @@ module ProcessingTests =
 
         // ASSERT
 
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -3368,7 +3368,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -3383,7 +3383,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -3499,7 +3499,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -3514,7 +3514,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -3637,7 +3637,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -3652,7 +3652,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -3667,7 +3667,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
         let blockNumber = BlockNumber 1L;
@@ -3805,7 +3805,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -3820,7 +3820,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -3941,7 +3941,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -3956,7 +3956,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -4082,7 +4082,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -4097,7 +4097,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -4112,7 +4112,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
         let blockNumber = BlockNumber 1L;
@@ -4246,7 +4246,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -4261,7 +4261,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -4383,7 +4383,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -4398,7 +4398,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -4413,7 +4413,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
         let blockNumber = BlockNumber 1L;
@@ -4554,7 +4554,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -4567,7 +4567,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -4684,7 +4684,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -4697,7 +4697,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -4812,7 +4812,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -4825,7 +4825,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -4954,7 +4954,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -4968,7 +4968,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -5094,7 +5094,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -5108,7 +5108,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -5122,7 +5122,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
         let blockNumber = BlockNumber 1L;
@@ -5265,7 +5265,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -5279,7 +5279,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -5396,7 +5396,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -5410,7 +5410,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -5537,7 +5537,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -5551,7 +5551,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -5678,7 +5678,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -5692,7 +5692,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -5821,7 +5821,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -5834,7 +5834,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -5945,7 +5945,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -5958,7 +5958,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -6074,7 +6074,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -6087,7 +6087,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -6100,7 +6100,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -6236,7 +6236,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -6249,7 +6249,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -6361,7 +6361,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -6374,7 +6374,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -6387,7 +6387,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -6520,7 +6520,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash1, txEnvelope1 =
             [
@@ -6533,7 +6533,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -6546,7 +6546,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) fee
+            |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -6667,7 +6667,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -6682,7 +6682,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -6772,8 +6772,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -6808,7 +6808,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -6823,7 +6823,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -6913,8 +6913,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let emittedAssetBalance = initialHoldingState.[emissionAccountHash, assetHash].Amount + emissionAmount
 
         test <@ output.TxResults.Count = 1 @>
@@ -6945,7 +6945,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -6960,7 +6960,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -7055,8 +7055,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
             |> TxActionError
@@ -7088,7 +7088,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -7103,7 +7103,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -7193,8 +7193,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.AssetNotFound)
             |> TxActionError
@@ -7225,7 +7225,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
         let emissionAmount = AssetAmount 10m
 
         let txHash, txEnvelope =
@@ -7240,7 +7240,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -7335,8 +7335,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.AccountNotFound)
             |> TxActionError
@@ -7368,7 +7368,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -7377,7 +7377,7 @@ module ProcessingTests =
                     ActionData = CreateAccountTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -7477,8 +7477,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -7508,7 +7508,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -7517,7 +7517,7 @@ module ProcessingTests =
                     ActionData = CreateAssetTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -7617,8 +7617,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedAssetState =
             {
                 AssetState.AssetCode = None
@@ -7656,7 +7656,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -7669,7 +7669,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -7759,8 +7759,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -7787,7 +7787,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -7800,7 +7800,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -7890,8 +7890,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.AccountNotFound)
             |> TxActionError
@@ -7923,7 +7923,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -7936,7 +7936,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8026,8 +8026,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotSourceAccountController)
             |> TxActionError
@@ -8063,7 +8063,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -8076,7 +8076,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8166,8 +8166,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -8194,7 +8194,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -8207,7 +8207,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8297,8 +8297,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.AssetNotFound)
             |> TxActionError
@@ -8330,7 +8330,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -8343,7 +8343,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8438,8 +8438,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
             |> TxActionError
@@ -8475,7 +8475,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -8488,7 +8488,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8578,8 +8578,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -8606,7 +8606,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -8619,7 +8619,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8709,8 +8709,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.AssetNotFound)
             |> TxActionError
@@ -8741,7 +8741,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -8754,7 +8754,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8876,7 +8876,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -8889,7 +8889,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -8984,8 +8984,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
             |> TxActionError
@@ -9020,7 +9020,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -9034,7 +9034,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -9130,8 +9130,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -9163,7 +9163,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -9177,7 +9177,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -9267,8 +9267,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -9303,7 +9303,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -9312,7 +9312,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce fee
+            |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -9418,8 +9418,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -9451,7 +9451,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -9460,7 +9460,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce fee
+            |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -9559,8 +9559,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorNotFound) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -9587,7 +9587,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -9596,7 +9596,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce fee
+            |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -9702,8 +9702,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorIsBlacklisted) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -9730,7 +9730,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -9739,7 +9739,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce fee
+            |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -9845,8 +9845,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorDepositLocked) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
@@ -9884,7 +9884,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -9897,7 +9897,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -9987,8 +9987,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -10015,7 +10015,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -10028,7 +10028,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -10118,8 +10118,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -10146,7 +10146,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -10159,7 +10159,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -10249,8 +10249,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance)
             |> TxActionError
@@ -10282,7 +10282,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -10295,7 +10295,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -10385,8 +10385,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance)
             |> TxActionError
@@ -10418,7 +10418,7 @@ module ProcessingTests =
 
         // PREPARE TX
         let nonce = Nonce 11L
-        let fee = ChxAmount 1m
+        let actionFee = ChxAmount 1m
 
         let txHash, txEnvelope =
             [
@@ -10431,7 +10431,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce fee
+            |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
         let blockNumber = BlockNumber 1L;
@@ -10521,8 +10521,8 @@ module ProcessingTests =
                 txSet
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - fee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + fee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientStake)
             |> TxActionError

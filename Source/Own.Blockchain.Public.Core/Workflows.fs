@@ -917,8 +917,8 @@ module Workflows =
 
             // Txs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
             if not isIncludedInBlock then
-                if tx.Fee < minTxActionFee then
-                    return! Result.appError "Fee is too low."
+                if tx.ActionFee < minTxActionFee then
+                    return! Result.appError "ActionFee is too low."
 
                 do!
                     Validation.checkIfBalanceCanCoverFees
