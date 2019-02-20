@@ -19,6 +19,8 @@ module Helpers =
 
     let randomString () = Guid.NewGuid().ToString("N")
 
+    let maxActionCountPerTx = 1000
+
     let minTxActionFee = ChxAmount 0.001m
 
     let extractActionData<'T> = function

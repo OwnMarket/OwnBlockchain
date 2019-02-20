@@ -932,7 +932,7 @@ module Processing =
         |> orderSet []
         |> List.map (fun tx -> tx.TxHash)
 
-    let getTxBody getTx createHash verifySignature isValidAddress txHash =
+    let getTxBody getTx createHash verifySignature isValidAddress maxActionCountPerTx txHash =
         result {
             let! txEnvelopeDto = getTx txHash
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
@@ -941,7 +941,7 @@ module Processing =
             let! tx =
                 txEnvelope.RawTx
                 |> Serialization.deserializeTx
-                >>= (Validation.validateTx isValidAddress sender txHash)
+                >>= (Validation.validateTx isValidAddress maxActionCountPerTx sender txHash)
 
             return tx
         }
@@ -1185,6 +1185,7 @@ module Processing =
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
         (getTopStakers : BlockchainAddress -> StakerInfo list)
         getLockedAndBlacklistedValidators
+        maxActionCountPerTx
         validatorDeposit
         validatorDepositLockTime
         validatorBlacklistTime
@@ -1201,7 +1202,7 @@ module Processing =
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
             let tx =
-                match getTxBody getTx createHash verifySignature isValidAddress txHash with
+                match getTxBody getTx createHash verifySignature isValidAddress maxActionCountPerTx txHash with
                 | Ok tx -> tx
                 | Error err ->
                     Log.appErrors err

@@ -218,6 +218,7 @@ module Workflows =
         createHash
         createConsensusMessageHash
         createMerkleTree
+        maxActionCountPerTx
         validatorDeposit
         validatorAddress
         (previousBlockHash : BlockHash)
@@ -288,6 +289,7 @@ module Workflows =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                maxActionCountPerTx
                 validatorDeposit
                 validatorDepositLockTime
                 validatorBlacklistTime
@@ -898,6 +900,7 @@ module Workflows =
         getTotalFeeForPendingTxs
         saveTx
         saveTxToDb
+        maxActionCountPerTx
         minTxActionFee
         isIncludedInBlock
         txEnvelopeDto
@@ -910,7 +913,7 @@ module Workflows =
             let txHash = txEnvelope.RawTx |> createHash |> TxHash
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-            let! tx = Validation.validateTx isValidAddress senderAddress txHash txDto
+            let! tx = Validation.validateTx isValidAddress maxActionCountPerTx senderAddress txHash txDto
 
             // Txs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
             if not isIncludedInBlock then

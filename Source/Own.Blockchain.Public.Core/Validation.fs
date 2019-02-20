@@ -54,7 +54,7 @@ module Validation =
         [
             match validateBlock isValidAddress blockEnvelopeDto.Block with
             | Ok _ ->
-                if blockEnvelopeDto.Signatures |> List.isEmpty then
+                if blockEnvelopeDto.Signatures.IsEmpty then
                     yield AppError "Signatures are missing from the block envelope."
             | Error errors -> yield! errors
         ]
@@ -261,7 +261,7 @@ module Validation =
     // Tx validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private validateTxFields (BlockchainAddress signerAddress) (t : TxDto) =
+    let private validateTxFields maxActionCountPerTx (BlockchainAddress signerAddress) (t : TxDto) =
         [
             if t.SenderAddress <> signerAddress then
                 yield AppError "Sender address doesn't match the signature."
@@ -274,8 +274,10 @@ module Validation =
             if not (Utils.isRounded t.Fee) then
                 yield AppError "Fee must have at most 7 decimal places."
 
-            if t.Actions |> List.isEmpty then
+            if t.Actions.IsEmpty then
                 yield AppError "There are no actions provided for this transaction."
+            elif t.Actions.Length > maxActionCountPerTx then
+                yield AppError (sprintf "Max allowed number of actions per transaction is %i." maxActionCountPerTx)
         ]
 
     let private validateTxActions isValidAddress (actions : TxActionDto list) =
@@ -324,8 +326,8 @@ module Validation =
         actions
         |> List.collect validateTxAction
 
-    let validateTx isValidAddress sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
-        validateTxFields sender txDto
+    let validateTx isValidAddress maxActionCountPerTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
+        validateTxFields maxActionCountPerTx sender txDto
         @ validateTxActions isValidAddress txDto.Actions
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
 

@@ -220,6 +220,7 @@ module Composition =
             Hashing.hash
             Consensus.createConsensusMessageHash
             Hashing.merkleTree
+            Config.MaxActionCountPerTx
             (ChxAmount Config.ValidatorDeposit)
 
     let getAvailableChxBalance =
@@ -399,6 +400,7 @@ module Composition =
             getTotalFeeForPendingTxs
             saveTx
             saveTxToDb
+            Config.MaxActionCountPerTx
             (ChxAmount Config.MinTxActionFee)
 
     let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Hashing.hash verifySignature

@@ -268,6 +268,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -433,6 +434,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -581,6 +583,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -714,6 +717,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -848,6 +852,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -981,6 +986,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1109,6 +1115,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1257,6 +1264,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1406,6 +1414,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1548,6 +1557,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1690,6 +1700,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1833,6 +1844,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -1972,6 +1984,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2122,6 +2135,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2269,6 +2283,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2416,6 +2431,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2589,6 +2605,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2721,6 +2738,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -2887,6 +2905,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3022,6 +3041,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3161,6 +3181,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3298,6 +3319,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3438,6 +3460,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3573,6 +3596,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3737,6 +3761,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -3872,6 +3897,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4011,6 +4037,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4178,6 +4205,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4314,6 +4342,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4478,6 +4507,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4614,6 +4644,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4743,6 +4774,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -4870,6 +4902,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5016,6 +5049,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5186,6 +5220,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5321,6 +5356,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5460,6 +5496,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5595,6 +5632,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5740,6 +5778,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5872,6 +5911,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -5995,6 +6035,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6147,6 +6188,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6284,6 +6326,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6432,6 +6475,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6582,6 +6626,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6714,6 +6759,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6854,6 +6900,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -6995,6 +7042,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7132,6 +7180,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7273,6 +7322,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7414,6 +7464,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7553,6 +7604,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7694,6 +7746,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7824,6 +7877,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -7959,6 +8013,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8098,6 +8153,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8228,6 +8284,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8368,6 +8425,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8507,6 +8565,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8637,6 +8696,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8776,6 +8836,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -8910,6 +8971,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9055,6 +9117,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9191,6 +9254,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9341,6 +9405,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9481,6 +9546,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9623,6 +9689,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9765,6 +9832,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -9906,6 +9974,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -10036,6 +10105,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -10166,6 +10236,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -10301,6 +10372,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s
@@ -10436,6 +10508,7 @@ module ProcessingTests =
                 getTotalChxStaked
                 getTopStakers
                 getLockedAndBlacklistedValidators
+                Helpers.maxActionCountPerTx
                 (ChxAmount 0m)
                 0s
                 0s

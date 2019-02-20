@@ -20,7 +20,7 @@ module SubmissionTests =
         let recipientWallet = Signing.generateWallet ()
         let nonce = Nonce 5L
         let txFee = ChxAmount 1m
-        let totalTxFee = txFee * 2m // Two txs
+        let totalTxFee = txFee * 2m // Two actions
         let totalPendingTxsFee = ChxAmount 9m
         let senderBalance = ChxAmount balance
 
@@ -77,6 +77,77 @@ module SubmissionTests =
                 getTotalFeeForPendingTxs
                 saveTx
                 saveTxToDb
+                Helpers.maxActionCountPerTx
+                Helpers.minTxActionFee
+                false
+                txEnvelopeDto
+
+        // ASSERT
+        test <@ result = expectedResult @>
+
+    [<Theory>]
+    [<InlineData (1)>]
+    [<InlineData (4)>]
+    let ``Workflows.submitTx fails if action count is greater than MaxActionCountPerTx`` (maxActionCountPerTx) =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let nonce = Nonce 5L
+        let txFee = ChxAmount 1m
+        let senderBalance = ChxAmount 100m
+
+        let txHash, txEnvelopeDto =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = new CreateAccountTxActionDto ()
+                } :> obj
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = new CreateAccountTxActionDto ()
+                } :> obj
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = new CreateAccountTxActionDto ()
+                } :> obj
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = new CreateAccountTxActionDto ()
+                } :> obj
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = new CreateAccountTxActionDto ()
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce txFee
+
+        let expectedError = sprintf "Max allowed number of actions per transaction is %i." maxActionCountPerTx
+        let expectedResult : Result<TxHash, AppErrors> = Error [AppError expectedError]
+
+        // COMPOSE
+        let getAvailableChxBalance _ =
+            senderBalance
+
+        let getTotalFeeForPendingTxs _ =
+            ChxAmount 0m
+
+        let saveTx _ =
+            failwith "saveTx shouldn't be called"
+
+        let saveTxToDb _ =
+            failwith "saveTxToDb shouldn't be called"
+
+        // ACT
+        let result =
+            Workflows.submitTx
+                Helpers.verifySignature
+                Hashing.isValidBlockchainAddress
+                Hashing.hash
+                getAvailableChxBalance
+                getTotalFeeForPendingTxs
+                saveTx
+                saveTxToDb
+                maxActionCountPerTx
                 Helpers.minTxActionFee
                 false
                 txEnvelopeDto
