@@ -13,12 +13,15 @@ module Composition =
 
     let claimAsset = Workflows.claimAsset (AssetAmount Config.MaxClaimableAssetAmount)
 
+    let getNetworkId () =
+        Hashing.networkId Config.NetworkCode
+
     let distributeChx () =
         Workflows.distributeChx
             getAddressNonce
             submitTx
             Hashing.hash
-            (Signing.signHash Config.NetworkCode)
+            (Signing.signHash getNetworkId)
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)
@@ -30,7 +33,7 @@ module Composition =
             getAddressNonce
             submitTx
             Hashing.hash
-            (Signing.signHash Config.NetworkCode)
+            (Signing.signHash getNetworkId)
             (PrivateKey Config.FaucetSupplyHolderPrivateKey)
             (BlockchainAddress Config.FaucetSupplyHolderAddress)
             (ChxAmount Config.TxFee)

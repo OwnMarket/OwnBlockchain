@@ -74,16 +74,6 @@ type Config () =
 
     static member NetworkDiscoveryTime = 30 // Seconds
 
-    static member NetworkCode
-        with get () =
-            let networkCode = config.["NetworkCode"]
-            if networkCode.IsNullOrWhiteSpace() then
-                "OWN_PUBLIC_BLOCKCHAIN_DEVNET"
-            elif Regex.IsMatch(networkCode, "^[A-Z_0-9]+$") then
-                networkCode
-            else
-                failwithf "Invalid NetworkCode: %s" networkCode
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,11 +132,25 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Genesis
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member NetworkCode
+        with get () =
+            let networkCode = genesis.["NetworkCode"]
+            if networkCode.IsNullOrWhiteSpace() then
+                failwith "NetworkCode not found in genesis file."
+            elif Regex.IsMatch(networkCode, "^[A-Z_0-9]+$") then
+                networkCode
+            else
+                failwithf "Invalid NetworkCode: %s" networkCode
+
     static member GenesisChxSupply = 168_956_522.0930844m
 
     static member GenesisAddress
         with get () =
-            genesis.["GenesisAddress"]
+            let genesisAddress = genesis.["GenesisAddress"]
+            if genesisAddress.IsNullOrWhiteSpace() then
+                failwith "GenesisAddress not found in genesis file."
+            else
+                genesisAddress
 
     static member GenesisValidators
         with get () =

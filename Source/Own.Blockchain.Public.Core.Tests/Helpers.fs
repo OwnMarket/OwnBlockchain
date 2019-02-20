@@ -12,7 +12,10 @@ module Helpers =
 
     let networkCode = "UNIT_TESTS"
 
-    let verifySignature = Signing.verifySignature networkCode
+    let getNetworkId () =
+        Hashing.networkId networkCode
+
+    let verifySignature = Signing.verifySignature getNetworkId
 
     let randomString () = Guid.NewGuid().ToString("N")
 
@@ -92,7 +95,7 @@ module Helpers =
         let txHash =
             rawTx |> Hashing.hash |> TxHash
 
-        let (Signature signature) = Signing.signHash networkCode sender.PrivateKey txHash.Value
+        let (Signature signature) = Signing.signHash getNetworkId sender.PrivateKey txHash.Value
 
         let txEnvelopeDto =
             {

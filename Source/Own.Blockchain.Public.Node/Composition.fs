@@ -105,11 +105,15 @@ module Composition =
     // Crypto
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let getNetworkId =
+        let networkId = lazy (Hashing.networkId Config.NetworkCode) // Avoid repeated hashing.
+        fun () -> networkId.Value
+
     let signHash =
-        Signing.signHash Config.NetworkCode
+        Signing.signHash getNetworkId
 
     let verifySignature =
-        Signing.verifySignature Config.NetworkCode
+        Signing.verifySignature getNetworkId
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Validators

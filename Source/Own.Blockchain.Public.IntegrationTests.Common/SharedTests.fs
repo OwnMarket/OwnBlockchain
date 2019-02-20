@@ -37,7 +37,7 @@ module SharedTests =
         let (Signature signature) =
             txBytes
             |> Hashing.hash
-            |> Signing.signHash "" sender.PrivateKey
+            |> Signing.signHash (fun _ -> NetworkId Array.empty) sender.PrivateKey
 
         {
             Tx = System.Convert.ToBase64String(txBytes)

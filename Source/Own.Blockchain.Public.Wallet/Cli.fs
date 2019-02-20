@@ -27,12 +27,14 @@ module Cli =
         |> fun (BlockchainAddress a) -> printfn "Address: %s" a
 
     let handleSignMessageCommand networkCode privateKey message =
+        let getNetworkId () =
+            Hashing.networkId networkCode
         let privateKey = PrivateKey privateKey // TODO: Use key file path, to prevent logging keys in terminal history.
 
         message
         |> Convert.FromBase64String // TODO: Provide input as a file path, so the raw data can be read.
         |> Hashing.hash
-        |> Signing.signHash networkCode privateKey
+        |> Signing.signHash getNetworkId privateKey
         |> fun (Signature signature) -> printfn "Signature: %s" signature
 
     let handleHelpCommand args =

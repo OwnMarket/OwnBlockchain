@@ -1,4 +1,5 @@
 {
+    "NetworkCode": "OWN_PUBLIC_BLOCKCHAIN_DEVNET",
     "GenesisAddress": "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg",
     "GenesisValidators": [
         "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSw42Q2@localhost:25701",

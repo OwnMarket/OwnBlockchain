@@ -106,3 +106,10 @@ module Hashing =
         |> MerkleTree.build hashBytes
         |> encode
         |> MerkleTreeRoot
+
+    let networkId networkCode =
+        networkCode
+        |> Conversion.stringToBytes
+        |> hash
+        |> decode
+        |> NetworkId

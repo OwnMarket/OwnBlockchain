@@ -3,7 +3,6 @@
 open System
 open System.Security.Cryptography
 open Own.Common
-open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 
 module Signing =
@@ -35,13 +34,13 @@ module Signing =
         |> Secp256k1.calculatePublicKey
         |> Hashing.blockchainAddress
 
-    let private signHashBytes (networkCode : string option) (PrivateKey privateKey) (hashBytes : byte[]) : Signature =
+    let private signHashBytes (networkId : NetworkId option) (PrivateKey privateKey) (hashBytes : byte[]) : Signature =
         if hashBytes.Length <> 32 then
             failwithf "Data to sign is expected to be 32 bytes long (256-bit hash). Actual length: %i" hashBytes.Length
 
         let dataToSign =
-            networkCode
-            |> Option.map (Conversion.stringToBytes >> Hashing.hashBytes)
+            networkId
+            |> Option.map (fun h -> h.Value)
             |? Array.empty
             |> Array.append hashBytes
             |> Hashing.hashBytes
@@ -59,19 +58,19 @@ module Signing =
         |> Hashing.encode
         |> Signature
 
-    let signHash networkCode privateKey hash =
+    let signHash getNetworkId privateKey hash =
+        let networkId = getNetworkId ()
         hash
         |> Hashing.decode
-        |> signHashBytes (Some networkCode) privateKey
+        |> signHashBytes (Some networkId) privateKey
 
-    let verifySignature networkCode (Signature signature) messageHash : BlockchainAddress option =
+    let verifySignature getNetworkId (Signature signature) messageHash : BlockchainAddress option =
+        let networkId : NetworkId = getNetworkId ()
         let signatureBytes = signature |> Hashing.decode
         let messageHashBytes = messageHash |> Hashing.decode
 
         let dataToVerify =
-            networkCode
-            |> Conversion.stringToBytes
-            |> Hashing.hashBytes
+            networkId.Value
             |> Array.append messageHashBytes
             |> Hashing.hashBytes
 
