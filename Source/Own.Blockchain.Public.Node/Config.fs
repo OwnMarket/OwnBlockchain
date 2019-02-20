@@ -72,7 +72,11 @@ type Config () =
             |> Seq.map (fun c -> c.Value)
             |> Seq.toList
 
-    static member NetworkDiscoveryTime = 30 // Seconds
+    static member NetworkDiscoveryTime // Seconds
+        with get () =
+            match Int32.TryParse config.["NetworkDiscoveryTime"] with
+            | true, t -> t
+            | _ -> 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
