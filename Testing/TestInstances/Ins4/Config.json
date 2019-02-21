@@ -6,5 +6,6 @@
     "NetworkBootstrapNodes": [
         "127.0.0.1:25701"
     ],
+    "NetworkDiscoveryTime": 3,
     "ValidatorPrivateKey": "8AAZc6HJQpaoLuSQUeh8GvGn7fwSYVErNCXke4bNXnUf"
 }
