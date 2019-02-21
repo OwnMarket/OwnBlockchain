@@ -21,7 +21,7 @@ const validatorStake = 500000
 const validatorDeposit = 5000
 const initialBalance = 10000
 const walletCount = 100
-const transfersPerWallet = 10
+const txsPerWallet = 10
 const actionsPerTx = 1
 const actionFee = 0.001
 
@@ -69,15 +69,18 @@ function composeInitialTx(validators, recipients) {
     }
 }
 
-function composeTx(senderAddress, nonce, recipientAddress, amount) {
-    var tx = {
+function composeTx(senderAddress, nonce, wallets, amount) {
+    const tx = {
         SenderAddress: senderAddress,
         Nonce: nonce,
         ActionFee: actionFee,
         Actions: []
     }
 
-    Array(actionsPerTx).fill().forEach(_ => {
+    const recipients = wallets.filter(w => w.address !== senderAddress)
+
+    Array(actionsPerTx).fill().forEach((_, index) => {
+        const recipientAddress = recipients[index % recipients.length].address
         tx.Actions.push(
             {
                 ActionType: "TransferChx",
@@ -93,9 +96,9 @@ function composeTx(senderAddress, nonce, recipientAddress, amount) {
 }
 
 function signTx(networkCode, privateKey, tx){
-    const txRaw = chainiumSdk.crypto.utf8ToHex(JSON.stringify(tx));
-    const txBase64 = chainiumSdk.crypto.encode64(txRaw);
-    const signature = chainiumSdk.crypto.signMessage(networkCode, privateKey, txRaw);
+    const txRaw = chainiumSdk.crypto.utf8ToHex(JSON.stringify(tx))
+    const txBase64 = chainiumSdk.crypto.encode64(txRaw)
+    const signature = chainiumSdk.crypto.signMessage(networkCode, privateKey, txRaw)
 
     return JSON.stringify({
         tx: txBase64,
@@ -106,7 +109,7 @@ function signTx(networkCode, privateKey, tx){
 let invocation = 0
 function txToCommand(tx) {
     invocation++
-    let port = 10701 + (invocation % 4)
+    const port = 10701 + (invocation % 4)
     //return `curl -H "Content-Type: application/json" -d ${JSON.stringify(tx)} http://localhost:${port}/tx\n`
     return `curl -H "Content-Type: application/json" -d @- http://localhost:${port}/tx << JSON\n${tx}\nJSON\n`
 }
@@ -125,9 +128,9 @@ const initialTx = signTx(
 fs.writeFileSync(outputFile, txToCommand(initialTx))
 fs.appendFileSync(outputFile, 'read -p "Press any key..."\n')
 
-for (var nonce of [...Array(transfersPerWallet).keys()]) {
-    for (var w of wallets) {
-        const tx = signTx(networkCode, w.privateKey, composeTx(w.address, nonce + 1, genesisAddress, 1))
+for (const nonce of [...Array(txsPerWallet).keys()]) {
+    for (const w of wallets) {
+        const tx = signTx(networkCode, w.privateKey, composeTx(w.address, nonce + 1, wallets, 1))
         fs.appendFileSync(outputFile, txToCommand(tx))
     }
 }
