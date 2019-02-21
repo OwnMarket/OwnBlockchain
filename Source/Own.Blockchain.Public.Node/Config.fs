@@ -75,7 +75,7 @@ type Config () =
     static member NetworkDiscoveryTime // Seconds
         with get () =
             match Int32.TryParse config.["NetworkDiscoveryTime"] with
-            | true, t -> t
+            | true, t -> if t > 0 then t else failwith "NetworkDiscoveryTime must be greater than zero."
             | _ -> 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
