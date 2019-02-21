@@ -530,6 +530,11 @@ type ErrorResponseDto = {
     Errors : string list
 }
 
+[<CLIMutable>]
+type GetTxPoolInfoApiDto = {
+    PendingTxs : int64
+}
+
 type SubmitTxResponseDto = {
     TxHash : string
 }

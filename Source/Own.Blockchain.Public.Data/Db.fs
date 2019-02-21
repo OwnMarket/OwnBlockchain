@@ -171,6 +171,22 @@ module Db =
         |? 0m
         |> ChxAmount
 
+    let getTxPoolInfo
+        dbEngineType
+        (dbConnectionString : string)
+        : GetTxPoolInfoApiDto
+        =
+
+        let sql =
+            """
+            SELECT count(*) AS pending_txs
+            FROM tx
+            """
+
+        match DbTools.query<GetTxPoolInfoApiDto> dbEngineType dbConnectionString sql [] with
+        | [info] -> info
+        | _ -> failwithf "Couldn't get TX pool info from DB."
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquivocationProof
     ////////////////////////////////////////////////////////////////////////////////////////////////////

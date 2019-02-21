@@ -38,6 +38,16 @@ module Api =
             return! response next ctx
         }
 
+    let getTxPoolInfoHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTxPoolInfo ()
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let submitTxHandler : HttpHandler = fun next ctx ->
         task {
             let! requestDto = ctx.BindJsonAsync<TxEnvelopeDto>()
@@ -192,6 +202,7 @@ module Api =
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
                 route "/stats" >=> getStatsHandler
+                route "/pool" >=> getTxPoolInfoHandler
                 routef "/tx/%s" getTxHandler
                 routef "/equivocation/%s" getEquivocationProofHandler
                 routef "/block/%d" getBlockHandler

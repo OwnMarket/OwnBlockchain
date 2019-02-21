@@ -49,6 +49,7 @@ module Composition =
     let getPendingTxs = Db.getPendingTxs Config.DbEngineType Config.DbConnectionString
     let getAllPendingTxHashes () = Db.getAllPendingTxHashes Config.DbEngineType Config.DbConnectionString
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
+    let getTxPoolInfo () = Db.getTxPoolInfo Config.DbEngineType Config.DbConnectionString
 
     let saveEquivocationProofToDb = Db.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
     let getEquivocationInfo = Db.getEquivocationProof Config.DbEngineType Config.DbConnectionString
