@@ -259,7 +259,7 @@ The transaction must be signed using the private key of the address currently se
 
 ## Eligibility Actions
 
-### `SetAcccountEligibility`
+### `SetAccountEligibility`
 
 `SetAccountEligibility` action sets the account eligibility in the context of primary and secondary market for an asset.
 
