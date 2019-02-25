@@ -110,7 +110,7 @@ module Transport =
 
     let closeAllConnections () =
         if poller.IsRunning then
-            poller.StopAsync()
+            poller.Dispose()
             messageQueue.Dispose()
 
         senderSockets
