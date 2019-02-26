@@ -47,7 +47,7 @@ type NetworkNode
     let isSelf networkAddress =
         config.PublicAddress.IsSome && networkAddress = config.PublicAddress.Value
 
-    let optionToArray opt = match opt with | Some x -> [x] | None -> []
+    let optionToList = function | Some x -> [x] | None -> []
 
     (*
         A member is dead if it's in the list of dead-members and
@@ -189,7 +189,7 @@ type NetworkNode
                     let networkAddressPool =
                         __.GetActiveMembers()
                         |> List.map (fun m -> m.NetworkAddress)
-                        |> List.filter(fun a -> not (isSelf a))
+                        |> List.filter (fun a -> not (isSelf a))
                         |> List.except expiredAddresses
 
                     let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
@@ -247,7 +247,7 @@ type NetworkNode
 
     member private __.StartServer publishEvent =
         Log.infof "Listen on: %s" config.ListeningAddress.Value
-        config.PublicAddress |> Option.iter(fun a -> Log.infof "Public address: %s" a.Value)
+        config.PublicAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage
             config.ListeningAddress.Value
             (__.ReceivePeerMessage publishEvent)
@@ -271,7 +271,7 @@ type NetworkNode
         printActiveMembers ()
 
     member private __.InitializeMemberList () =
-        let publicAddress = config.PublicAddress |> optionToArray
+        let publicAddress = config.PublicAddress |> optionToList
         getAllPeerNodes () @ config.BootstrapNodes @ publicAddress
         |> Set.ofList
         |> Set.iter (fun n -> __.AddMember { NetworkAddress = n; Heartbeat = 0L })
@@ -404,7 +404,7 @@ type NetworkNode
             fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
 
-            let senderAddress = gossipMessage.SenderAddress |> optionToArray
+            let senderAddress = gossipMessage.SenderAddress |> optionToList
             __.UpdateGossipMessagesProcessingQueue
                 (fanoutRecipientAddresses @ senderAddress)
                 gossipMessage.MessageId
@@ -416,7 +416,7 @@ type NetworkNode
                     __.GetActiveMembers()
                     |> List.map (fun m -> m.NetworkAddress)
 
-                let senderAddress = msg.SenderAddress |> optionToArray
+                let senderAddress = msg.SenderAddress |> optionToList
                 let remainingrecipientAddresses =
                     match gossipMessages.TryGetValue msg.MessageId with
                     | true, processedAddresses ->
