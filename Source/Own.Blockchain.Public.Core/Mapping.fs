@@ -812,7 +812,11 @@ module Mapping =
 
         {
             MessageId = gossipMessageId
-            SenderAddress = NetworkAddress dto.SenderAddress
+            SenderAddress =
+                if dto.SenderAddress.IsNullOrEmpty() then
+                    None
+                else
+                    NetworkAddress dto.SenderAddress |> Some
             Data = dto.Data
         }
 
@@ -822,7 +826,10 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
-            SenderAddress = gossipMessage.SenderAddress.Value
+            SenderAddress =
+                match gossipMessage.SenderAddress with
+                | Some a -> a.Value
+                | None -> null
             Data = gossipMessage.Data
         }
 

@@ -44,6 +44,11 @@ type NetworkNode
             ()
         #endif
 
+    let isSelf networkAddress =
+        config.PublicAddress.IsSome && networkAddress = config.PublicAddress.Value
+
+    let optionToArray opt = match opt with | Some x -> [x] | None -> []
+
     (*
         A member is dead if it's in the list of dead-members and
         the heartbeat the local node is bigger than the one passed by argument.
@@ -121,7 +126,8 @@ type NetworkNode
 
     member __.StartGossip publishEvent =
         __.StartNode publishEvent
-        __.StartGossipDiscovery publishEvent
+        __.StartGossipDiscovery ()
+        Log.info "Network layer initialized"
 
     member __.StopGossip () =
         closeAllConnections ()
@@ -132,8 +138,8 @@ type NetworkNode
         |> List.ofDict
         |> List.map (fun (_, m) -> m)
 
-    member __.GetNetworkAddress () =
-        config.NetworkAddress
+    member __.GetListenAddress () =
+        config.ListeningAddress
 
     member __.SendMessage message =
         let sendMessageTask =
@@ -152,10 +158,15 @@ type NetworkNode
 
                 | MulticastMessage _ ->
                     let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
+                    let multicastAddresses =
+                        getCurrentValidators()
+                        |> List.map (fun v -> v.NetworkAddress)
+                        |> List.filter (fun a -> not (isSelf a))
+                        |> List.map (fun a -> a.Value)
+
                     sendMulticastMessage
-                        config.NetworkAddress.Value
                         peerMessageDto
-                        (getCurrentValidators() |> List.map (fun v -> v.NetworkAddress.Value))
+                        multicastAddresses
 
                 | GossipMessage m -> __.SendGossipMessage m
                 | _ -> ()
@@ -178,7 +189,7 @@ type NetworkNode
                     let networkAddressPool =
                         __.GetActiveMembers()
                         |> List.map (fun m -> m.NetworkAddress)
-                        |> List.filter (fun a -> a <> config.NetworkAddress)
+                        |> List.filter(fun a -> not (isSelf a))
                         |> List.except expiredAddresses
 
                     let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
@@ -197,7 +208,7 @@ type NetworkNode
                 targetAddress |> Option.iter (fun address ->
                     let unicastMessage = RequestDataMessage {
                         MessageId = messageId
-                        SenderAddress = config.NetworkAddress
+                        SenderAddress = config.ListeningAddress
                     }
                     let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary unicastMessage
                     sendUnicastMessage peerMessageDto address.Value
@@ -235,22 +246,23 @@ type NetworkNode
         __.StartServer publishEvent
 
     member private __.StartServer publishEvent =
-        Log.infof "Open communication channel for %s" config.NetworkAddress.Value
+        Log.infof "Listen on: %s" config.ListeningAddress.Value
+        config.PublicAddress |> Option.iter(fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage
-            config.NetworkAddress.Value
+            config.ListeningAddress.Value
             (__.ReceivePeerMessage publishEvent)
 
-    member private __.StartGossipDiscovery publishEvent =
-        Log.info "Network layer initialized"
+    member private __.StartGossipDiscovery () =
         let rec loop () =
             async {
-                __.SendMembership publishEvent
+                __.SendMembership ()
                 do! Async.Sleep(tCycle)
                 return! loop ()
             }
-        Async.Start (loop (), cts.Token)
+        if config.PublicAddress.IsSome then
+            Async.Start (loop (), cts.Token)
 
-    member private __.SendMembership publishEvent =
+    member private __.SendMembership () =
         __.IncreaseHeartbeat()
         GossipDiscoveryMessage {
             ActiveMembers = __.GetActiveMembers()
@@ -259,7 +271,8 @@ type NetworkNode
         printActiveMembers ()
 
     member private __.InitializeMemberList () =
-        getAllPeerNodes () @ (config.NetworkAddress :: config.BootstrapNodes)
+        let publicAddress = config.PublicAddress |> optionToArray
+        getAllPeerNodes () @ config.BootstrapNodes @ publicAddress
         |> Set.ofList
         |> Set.iter (fun n -> __.AddMember { NetworkAddress = n; Heartbeat = 0L })
 
@@ -271,7 +284,7 @@ type NetworkNode
             | Ok () -> ()
             | _ -> Log.errorf "Error saving member %A" mem.NetworkAddress
 
-            if mem.NetworkAddress <> config.NetworkAddress then
+            if not (isSelf mem.NetworkAddress) then
                 monitorActiveMember mem.NetworkAddress
         loop inputMember
 
@@ -294,7 +307,7 @@ type NetworkNode
         __.MergeMemberList msg.ActiveMembers
 
     member private __.MergeMember inputMember =
-        if inputMember.NetworkAddress <> config.NetworkAddress then
+        if not (isSelf inputMember.NetworkAddress) then
             Log.debugf "Receive member: %s" inputMember.NetworkAddress.Value
             match __.GetActiveMember inputMember.NetworkAddress with
             | Some localMember ->
@@ -314,20 +327,23 @@ type NetworkNode
         | false, _ -> None
 
     member private __.IncreaseHeartbeat () =
-        match __.GetActiveMember config.NetworkAddress with
-        | Some m ->
-            let localMember = {
-                NetworkAddress = m.NetworkAddress
-                Heartbeat = m.Heartbeat + 1L
-            }
-            activeMembers.AddOrUpdate (config.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
-        | None -> ()
+        config.PublicAddress
+        |> Option.iter (fun publicAddress ->
+            __.GetActiveMember publicAddress
+            |> Option.iter (fun m ->
+                let localMember = {
+                    NetworkAddress = m.NetworkAddress
+                    Heartbeat = m.Heartbeat + 1L
+                }
+                activeMembers.AddOrUpdate (publicAddress, localMember, fun _ _ -> localMember) |> ignore
+            )
+        )
 
     member private __.SelectRandomMembers () =
         let connectedMembers =
             activeMembers
             |> List.ofDict
-            |> List.filter (fun (a, _) -> a <> config.NetworkAddress)
+            |> List.filter (fun (a, _) -> not (isSelf a))
 
         match connectedMembers with
         | [] -> None
@@ -388,8 +404,9 @@ type NetworkNode
             fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
 
+            let senderAddress = gossipMessage.SenderAddress |> optionToArray
             __.UpdateGossipMessagesProcessingQueue
-                (gossipMessage.SenderAddress :: fanoutRecipientAddresses)
+                (fanoutRecipientAddresses @ senderAddress)
                 gossipMessage.MessageId
 
     member private __.SendGossipMessage message =
@@ -398,14 +415,14 @@ type NetworkNode
                 let recipientAddresses =
                     __.GetActiveMembers()
                     |> List.map (fun m -> m.NetworkAddress)
-                    |> List.filter (fun a -> a <> config.NetworkAddress)
 
+                let senderAddress = msg.SenderAddress |> optionToArray
                 let remainingrecipientAddresses =
                     match gossipMessages.TryGetValue msg.MessageId with
                     | true, processedAddresses ->
-                        List.except (msg.SenderAddress :: processedAddresses) recipientAddresses
+                        List.except (processedAddresses @ senderAddress) recipientAddresses
                     | false, _ ->
-                        List.except [msg.SenderAddress] recipientAddresses
+                        List.except senderAddress recipientAddresses
 
                 __.ProcessGossipMessage msg remainingrecipientAddresses
 
@@ -419,15 +436,24 @@ type NetworkNode
     member private __.ReceiveGossipMessage publishEvent (gossipMessage : GossipMessage) =
         match gossipMessages.TryGetValue gossipMessage.MessageId with
         | true, processedAddresses ->
-            if not (processedAddresses |> List.contains gossipMessage.SenderAddress) then
-                gossipMessages.AddOrUpdate(
-                    gossipMessage.MessageId,
-                    gossipMessage.SenderAddress :: processedAddresses,
-                    fun _ _ -> gossipMessage.SenderAddress :: processedAddresses) |> ignore
+            gossipMessage.SenderAddress |> Option.iter (fun senderAddress ->
+                if not (processedAddresses |> List.contains senderAddress) then
+                    let addresses = senderAddress :: processedAddresses
+                    gossipMessages.AddOrUpdate(
+                        gossipMessage.MessageId,
+                        addresses,
+                        fun _ _ -> addresses) |> ignore
+            )
+
         | false, _ ->
-            Log.debugf "Received gossip message %A from %s "
+            let fromMsg =
+                match gossipMessage.SenderAddress with
+                | Some a -> sprintf "from %s" a.Value
+                | None -> ""
+
+            Log.debugf "Received gossip message %A %s"
                 gossipMessage.MessageId
-                gossipMessage.SenderAddress.Value
+                fromMsg
 
             // Make sure the message is not processed twice.
             gossipMessages.AddOrUpdate(
@@ -442,7 +468,7 @@ type NetworkNode
             // Once a node is infected, propagate the message further.
             GossipMessage {
                 MessageId = gossipMessage.MessageId
-                SenderAddress = config.NetworkAddress
+                SenderAddress = config.PublicAddress
                 Data = gossipMessage.Data
             }
             |> __.SendMessage

@@ -58,11 +58,7 @@ module Transport =
         let msg = packMessage unicastMessage
         send msg targetAddress
 
-    let sendMulticastMessage senderAddress multicastMessage multicastAddresses =
-        let multicastAddresses =
-            multicastAddresses
-            |> List.filter (fun a -> a <> senderAddress)
-
+    let sendMulticastMessage multicastMessage multicastAddresses =
         match multicastAddresses with
         | [] -> ()
         | _ ->

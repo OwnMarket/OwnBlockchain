@@ -735,20 +735,20 @@ module Workflows =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let propagateTx sendMessageToPeers networkAddress getTx (txHash : TxHash) =
+    let propagateTx publicAddress sendMessageToPeers getTx (txHash : TxHash) =
         match getTx txHash with
         | Ok (txEnvelopeDto : TxEnvelopeDto) ->
             GossipMessage {
                 MessageId = Tx txHash
-                SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
+                SenderAddress = publicAddress |> Option.map NetworkAddress
                 Data = Serialization.serializeBinary txEnvelopeDto
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" txHash.Value
 
     let propagateEquivocationProof
+        publicAddress
         sendMessageToPeers
-        networkAddress
         getEquivocationProof
         (equivocationProofHash : EquivocationProofHash)
         =
@@ -757,15 +757,15 @@ module Workflows =
         | Ok (equivocationProofDto : EquivocationProofDto) ->
             GossipMessage {
                 MessageId = EquivocationProof equivocationProofHash
-                SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
+                SenderAddress = publicAddress |> Option.map NetworkAddress
                 Data = Serialization.serializeBinary equivocationProofDto
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "EquivocationProof %s does not exist" equivocationProofHash.Value
 
     let propagateBlock
+        publicAddress
         sendMessageToPeers
-        networkAddress
         getBlock
         (blockNumber : BlockNumber)
         =
@@ -774,7 +774,7 @@ module Workflows =
         | Ok (blockEnvelopeDto : BlockEnvelopeDto) ->
             GossipMessage {
                 MessageId = Block blockNumber
-                SenderAddress = NetworkAddress networkAddress // TODO: move it into network code
+                SenderAddress = publicAddress |> Option.map NetworkAddress
                 Data = Serialization.serializeBinary blockEnvelopeDto
             }
             |> sendMessageToPeers

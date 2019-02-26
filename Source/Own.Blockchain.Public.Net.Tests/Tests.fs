@@ -39,7 +39,7 @@ module PeerTests =
     let gossipTx (node : NetworkNode) txHash =
         let gossipMessage = GossipMessage {
             MessageId = Tx txHash
-            SenderAddress = node.GetNetworkAddress()
+            SenderAddress = None
             Data = "txEnvelope" |> Conversion.stringToBytes
         }
 
@@ -59,7 +59,7 @@ module PeerTests =
     let gossipBlock (node : NetworkNode) blockNr =
         let peerMessage = GossipMessage {
             MessageId = Block blockNr
-            SenderAddress = node.GetNetworkAddress()
+            SenderAddress = None
             Data = "blockEnvelope" |> Conversion.stringToBytes
         }
 
@@ -68,7 +68,7 @@ module PeerTests =
     let multicastBlock (node : NetworkNode) blockNr =
         let peerMessage = GossipMessage {
             MessageId = Block blockNr
-            SenderAddress = node.GetNetworkAddress()
+            SenderAddress = None
             Data = "blockEnvelope" |> Conversion.stringToBytes
         }
 
@@ -85,7 +85,7 @@ module PeerTests =
 
     let private peerMessageHandlers = new ConcurrentDictionary<NetworkAddress, MailboxProcessor<PeerMessage> option>()
     let private invokePeerMessageHandler (node : NetworkNode) m =
-        let found, peerMessageHandler = peerMessageHandlers.TryGetValue (node.GetNetworkAddress())
+        let found, peerMessageHandler = peerMessageHandlers.TryGetValue (node.GetListenAddress())
         if found then
             match peerMessageHandler with
             | Some h -> h.Post m
@@ -126,13 +126,13 @@ module PeerTests =
             ()
 
     let private startPeerMessageHandler (node : NetworkNode) =
-        let found, _ = peerMessageHandlers.TryGetValue (node.GetNetworkAddress())
+        let found, _ = peerMessageHandlers.TryGetValue (node.GetListenAddress())
         if not found then
             let peerMessageHandler =
                 Agent.start <| fun (peerMessage) ->
                     async {
                         WorkflowsMock.processPeerMessage
-                            (node.GetNetworkAddress())
+                            (node.GetListenAddress())
                             (respondToPeer node)
                             peerMessage
                         |> Option.iter (
@@ -144,7 +144,7 @@ module PeerTests =
                 |> Some
 
             peerMessageHandlers.AddOrUpdate (
-                (node.GetNetworkAddress()),
+                (node.GetListenAddress()),
                 peerMessageHandler,
                 fun _ _ -> peerMessageHandler
             )
@@ -160,7 +160,7 @@ module PeerTests =
     let checkGossipDiscoveryConvergence (nodeList : NetworkNode list) =
         let expectedPeerList =
             nodeList
-            |> List.map (fun n -> n.GetNetworkAddress ())
+            |> List.map (fun n -> n.GetListenAddress ())
             |> List.sort
 
         nodeList
@@ -177,14 +177,14 @@ module PeerTests =
 
     let checkMessageReceived (nodeList : NetworkNode list) networkMessageId =
         nodeList |> List.iter(fun n ->
-            let nodeHasReceivedTx = RawMock.hasData (n.GetNetworkAddress()) networkMessageId
+            let nodeHasReceivedTx = RawMock.hasData (n.GetListenAddress()) networkMessageId
             test <@ nodeHasReceivedTx = true @>
         )
 
         nodeList |> List.iter(fun n -> stopGossip n)
 
     let checkResponseReceived (node : NetworkNode) networkMessageId messageExists =
-        let nodeHasReceivedTx = RawMock.hasData (node.GetNetworkAddress()) networkMessageId
+        let nodeHasReceivedTx = RawMock.hasData (node.GetListenAddress()) networkMessageId
         test <@ nodeHasReceivedTx = messageExists @>
 
     let createNodes nodeConfigList =
@@ -192,10 +192,10 @@ module PeerTests =
         let fanout, tCycle, tFail = 4, 1000, 60000
 
         let createNode (nodeConfig : NetworkNodeConfig) =
-            let getAllPeerNodes = DbMock.getAllPeerNodes nodeConfig.NetworkAddress
-            let savePeerNode = DbMock.savePeerNode nodeConfig.NetworkAddress
-            let removePeerNode = DbMock.removePeerNode nodeConfig.NetworkAddress
-            let getValidators = DbMock.getValidators nodeConfig.NetworkAddress
+            let getAllPeerNodes = DbMock.getAllPeerNodes nodeConfig.ListeningAddress
+            let savePeerNode = DbMock.savePeerNode nodeConfig.ListeningAddress
+            let removePeerNode = DbMock.removePeerNode nodeConfig.ListeningAddress
+            let getValidators = DbMock.getValidators nodeConfig.ListeningAddress
 
             NetworkNode (
                 getAllPeerNodes,
@@ -223,46 +223,55 @@ module PeerTests =
 
     let create3NodesConfigSameBootstrapNode () =
         let nodeConfig1 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5555"
+            PublicAddress = None
             BootstrapNodes = []
-            NetworkAddress = NetworkAddress "127.0.0.1:5555"
         }
         let nodeConfig2 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5556"
+            PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
-            NetworkAddress = NetworkAddress "127.0.0.1:5556"
         }
         let nodeConfig3 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5557"
+            PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
-            NetworkAddress = NetworkAddress "127.0.0.1:5557"
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
     let create3NodesConfigDifferentBoostrapNode () =
         let nodeConfig1 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5555"
+            PublicAddress = None
             BootstrapNodes = []
-            NetworkAddress = NetworkAddress "127.0.0.1:5555"
         }
         let nodeConfig2 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5556"
+            PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
-            NetworkAddress = NetworkAddress "127.0.0.1:5556"
         }
         let nodeConfig3 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5557"
+            PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"]
-            NetworkAddress = NetworkAddress "127.0.0.1:5557"
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
     let create3NodesMeshedNetwork () =
         let nodeConfig1 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5555"
+            PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"; NetworkAddress "127.0.0.1:5557"]
-            NetworkAddress = NetworkAddress "127.0.0.1:5555"
         }
         let nodeConfig2 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5556"
+            PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5557"]
-            NetworkAddress = NetworkAddress "127.0.0.1:5556"
         }
         let nodeConfig3 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:5557"
+            PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5556"]
-            NetworkAddress = NetworkAddress "127.0.0.1:5557"
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -289,7 +298,7 @@ module PeerTests =
 
         let txHash = TxHash "txHash"
         gossipTx nodeList.[0] txHash
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -311,8 +320,8 @@ module PeerTests =
         gossipTx nodeList.[0] txHash
         gossipBlock nodeList.[0] blockNr
 
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Block blockNr)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Block blockNr)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -335,8 +344,8 @@ module PeerTests =
         gossipTx nodeList.[0] txHash1
         gossipTx nodeList.[0] txHash2
 
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash1)
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash2)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash1)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash2)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -355,7 +364,7 @@ module PeerTests =
 
         let txHash = TxHash "txHash"
         multicastTx nodeList.[0] txHash
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash)
 
         System.Threading.Thread.Sleep (tCycle)
 
@@ -376,8 +385,8 @@ module PeerTests =
 
         multicastTx nodeList.[0] txHash
         multicastBlock nodeList.[0] blockNr
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash)
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Block blockNr)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Block blockNr)
 
         System.Threading.Thread.Sleep (tCycle)
 
@@ -399,8 +408,8 @@ module PeerTests =
 
         multicastTx nodeList.[0] txHash1
         multicastTx nodeList.[0] txHash2
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash1)
-        RawMock.savePeerData (nodeList.[0].GetNetworkAddress()) (Tx txHash2)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash1)
+        RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash2)
 
         System.Threading.Thread.Sleep (tCycle)
 
@@ -423,7 +432,7 @@ module PeerTests =
         let nodeCount = nodeList.Length
         if (txExists) then
             // Last node contains the tx.
-            RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash)
+            RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash)
 
         // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep (4 * (nodeCount - 1) * tCycle)
@@ -450,9 +459,9 @@ module PeerTests =
         let nodeCount = nodeList.Length
 
         // Last node contains the tx.
-        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash)
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash)
         // Last node contains the block.
-        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Block blockNr)
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Block blockNr)
 
         // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep (2 * 4 * (nodeCount - 1) * tCycle)
@@ -480,9 +489,9 @@ module PeerTests =
         let nodeCount = nodeList.Length
 
         // Last node contains the tx.
-        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash1)
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash1)
         // Last node contains the tx.
-        RawMock.savePeerData (nodeList.[nodeCount - 1].GetNetworkAddress()) (Tx txHash2)
+        RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash2)
 
         // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep (2 * 4 * (nodeCount - 1) * tCycle)
@@ -517,16 +526,18 @@ module PeerTests =
         setupTest()
 
         let nodeConfig1 = {
+            ListeningAddress = NetworkAddress "127.0.0.1:6555"
+            PublicAddress = None
             BootstrapNodes = []
-            NetworkAddress = NetworkAddress "127.0.0.1:6555"
         }
 
         let nodeConfigList =
             [6556..6654]
             |> List.map(fun port ->
                 {
+                    ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
+                    PublicAddress = None
                     BootstrapNodes = [NetworkAddress "127.0.0.1:6555"]
-                    NetworkAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                 }
             )
 

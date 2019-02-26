@@ -459,7 +459,8 @@ type NetworkMessageId =
     | Consensus of ConsensusMessageId
 
 type NetworkNodeConfig = {
-    NetworkAddress : NetworkAddress
+    ListeningAddress : NetworkAddress
+    PublicAddress : NetworkAddress option
     BootstrapNodes : NetworkAddress list
 }
 
@@ -474,7 +475,7 @@ type GossipDiscoveryMessage = {
 
 type GossipMessage = {
     MessageId : NetworkMessageId
-    SenderAddress : NetworkAddress
+    SenderAddress : NetworkAddress option
     Data : byte[]
 }
 

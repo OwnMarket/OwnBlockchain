@@ -445,20 +445,20 @@ module Composition =
 
     let propagateTx =
         Workflows.propagateTx
+            Config.PublicAddress
             Peers.sendMessage
-            Config.NetworkAddress
             getTx
 
     let propagateEquivocationProof =
         Workflows.propagateEquivocationProof
+            Config.PublicAddress
             Peers.sendMessage
-            Config.NetworkAddress
             getEquivocationProof
 
     let propagateBlock =
         Workflows.propagateBlock
+            Config.PublicAddress
             Peers.sendMessage
-            Config.NetworkAddress
             getBlock
 
     let requestLastBlockFromPeer () = Peers.requestLastBlockFromPeer ()
@@ -475,6 +475,9 @@ module Composition =
 
     let startGossip publishEvent =
         Peers.startGossip
+            Config.ListeningAddress
+            Config.PublicAddress
+            Config.NetworkBootstrapNodes
             getAllPeerNodes
             savePeerNode
             removePeerNode
@@ -485,8 +488,6 @@ module Composition =
             Transport.receiveMessage
             Transport.closeConnection
             Transport.closeAllConnections
-            Config.NetworkAddress
-            Config.NetworkBootstrapNodes
             getCurrentValidators
             publishEvent
 

@@ -58,13 +58,21 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member NetworkAddress
+    static member ListeningAddress
         with get () =
-            let networkAddress = config.["NetworkAddress"]
-            if networkAddress.IsNullOrWhiteSpace() then
+            let listeningAddress = config.["ListeningAddress"]
+            if listeningAddress.IsNullOrWhiteSpace() then
                 "*:25718"
             else
-                networkAddress
+                listeningAddress
+
+    static member PublicAddress
+        with get () =
+            let publicAddress = config.["PublicAddress"]
+            if publicAddress.IsNullOrWhiteSpace() then
+                None
+            else
+                Some publicAddress
 
     static member NetworkBootstrapNodes
         with get () =

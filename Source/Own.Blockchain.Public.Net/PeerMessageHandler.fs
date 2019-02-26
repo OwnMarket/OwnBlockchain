@@ -9,6 +9,9 @@ module internal PeerMessageHandler =
     let mutable private node : NetworkNode option = None
 
     let startGossip
+        listeningAddress
+        publicAddress
+        bootstrapNodes
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
         (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
@@ -19,17 +22,15 @@ module internal PeerMessageHandler =
         receiveMessage
         closeConnection
         closeAllConnections
-        networkAddress
-        bootstrapNodes
         getCurrentValidators
         publishEvent
         =
 
         let nodeConfig : NetworkNodeConfig = {
+            ListeningAddress = NetworkAddress listeningAddress
+            PublicAddress = publicAddress |> Option.map NetworkAddress
             BootstrapNodes = bootstrapNodes
             |> List.map (fun a -> NetworkAddress a)
-
-            NetworkAddress = NetworkAddress networkAddress
         }
 
         let fanout = 2
