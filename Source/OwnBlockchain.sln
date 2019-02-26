@@ -39,6 +39,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Fauce
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.Net.Tests", "Own.Blockchain.Public.Net.Tests\Own.Blockchain.Public.Net.Tests.fsproj", "{C7554501-9580-45D4-B1F7-D6BD435CE631}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Public.IntegrationTests", "Own.Blockchain.Public.IntegrationTests\Own.Blockchain.Public.IntegrationTests.fsproj", "{F06738AA-41F4-4917-B606-873C744FA0E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,10 @@ Global
 		{C7554501-9580-45D4-B1F7-D6BD435CE631}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7554501-9580-45D4-B1F7-D6BD435CE631}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7554501-9580-45D4-B1F7-D6BD435CE631}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F06738AA-41F4-4917-B606-873C744FA0E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F06738AA-41F4-4917-B606-873C744FA0E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F06738AA-41F4-4917-B606-873C744FA0E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F06738AA-41F4-4917-B606-873C744FA0E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{09FEAE5D-825C-4066-8068-6F8A4BA1ED09} = {B21B8E5B-35AE-4845-9CF8-9432222B025A}
@@ -117,5 +123,6 @@ Global
 		{71647845-4ABE-4D72-89B1-D59BB02D5FED} = {214B2395-B936-4A78-8D95-0A96DF46B4C5}
 		{01BC9F97-DC7B-4CD6-BFD5-EB5E758CB6BB} = {BC5EB361-3612-4183-A6EA-38F1B68D810C}
 		{C7554501-9580-45D4-B1F7-D6BD435CE631} = {214B2395-B936-4A78-8D95-0A96DF46B4C5}
+		{F06738AA-41F4-4917-B606-873C744FA0E0} = {214B2395-B936-4A78-8D95-0A96DF46B4C5}
 	EndGlobalSection
 EndGlobal
