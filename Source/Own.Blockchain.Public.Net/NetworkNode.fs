@@ -141,6 +141,9 @@ type NetworkNode
     member __.GetListenAddress () =
         config.ListeningAddress
 
+    member __.GetPublicAddress () =
+        config.PublicAddress
+
     member __.SendMessage message =
         let sendMessageTask =
             async {
@@ -205,13 +208,15 @@ type NetworkNode
                         |> ignore
                     selectedUnicastPeer
 
-                targetAddress |> Option.iter (fun address ->
-                    let unicastMessage = RequestDataMessage {
-                        MessageId = messageId
-                        SenderAddress = config.ListeningAddress
-                    }
-                    let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary unicastMessage
-                    sendUnicastMessage peerMessageDto address.Value
+                config.PublicAddress |> Option.iter(fun publicAddress ->
+                     targetAddress |> Option.iter (fun address ->
+                        let requestMessage = RequestDataMessage {
+                            MessageId = messageId
+                            SenderAddress = publicAddress
+                        }
+                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary requestMessage
+                        sendUnicastMessage peerMessageDto address.Value
+                    )
                 )
 
                 do! Async.Sleep(4 * tCycle)
@@ -226,7 +231,10 @@ type NetworkNode
                         return! loop messageId
                 | false, _ -> ()
             }
-        Async.Start (loop requestId, cts.Token)
+
+        match config.PublicAddress with
+        | Some _ -> Async.Start (loop requestId, cts.Token)
+        | None -> Log.warning "Node must set the public network address to request data from peers"
 
     member __.SendResponseDataMessage (targetAddress : NetworkAddress) responseMessage =
         let unicastMessageTask =
