@@ -48,7 +48,7 @@ module ValidatorTests =
                 ValidatorAddress = address
                 StakeState =
                     {
-                        Amount = 500_000m
+                        Amount = Config.ValidatorThreshold
                     }
             }
             |> Helpers.addStake
