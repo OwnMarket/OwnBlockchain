@@ -12,5 +12,9 @@
         "8xXiWRRwMdj1YEb7X3uPPbVvoVZJ7ptfBuwH52mdRXVfUk8A1ffjubacsj5zyUTp5214a7iyhytN39916zrf7x4Ej",
         "8FHmKucdpA9aNdMU2eErGTacW5Ur6jynMo5NUA6tARyc8sDjKrXoXhavTJyyByGbdrAz4KtzrP7utQUvfmXPH11k4",
         "Gb2hZ5eSsyMJCesUbsfMhMzdnCn4FqGHxNRHrufhAiCKPSqAdrhhVaNZ9uHJMaJ4bhbdEjk5DzKYUbYBkDXvCsXCk"
-    ]
+    ],
+    "ConfigurationBlockDelta": 3,
+    "ValidatorDepositLockTime": 2,
+    "ValidatorBlacklistTime": 5,
+    "MaxTxCountPerBlock": 1000
 }

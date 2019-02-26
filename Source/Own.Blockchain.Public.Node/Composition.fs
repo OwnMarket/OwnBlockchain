@@ -1,6 +1,5 @@
 ﻿namespace Own.Blockchain.Public.Node
 
-open System
 open Own.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
@@ -173,8 +172,8 @@ module Composition =
             (BlockchainAddress Config.GenesisAddress)
             Config.GenesisValidators
             Config.ConfigurationBlockDelta
-            (Convert.ToInt16 Config.ValidatorDepositLockTime)
-            (Convert.ToInt16 Config.ValidatorBlacklistTime)
+            Config.ValidatorDepositLockTime
+            Config.ValidatorBlacklistTime
             Config.MaxTxCountPerBlock
 
     let signGenesisBlock =

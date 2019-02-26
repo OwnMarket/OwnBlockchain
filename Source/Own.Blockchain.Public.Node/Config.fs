@@ -137,14 +137,31 @@ type Config () =
     static member MaxActionCountPerTx = 1000
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Blockchain Configuration (initial values)
+    // Blockchain Configuration (initial genesis values)
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    static member ConfigurationBlockDelta = 3 // Number of blocks between two config blocks.
+    static member ConfigurationBlockDelta // Number of blocks between two config blocks.
+        with get () =
+            match Int32.TryParse(genesis.["ConfigurationBlockDelta"]) with
+            | true, value when value > 0 -> value
+            | _ -> failwith "ConfigurationBlockDelta must have a valid positive 32-bit integer value in genesis file."
 
-    static member ValidatorDepositLockTime = 2 // Number of config blocks to keep the deposit locked after leaving.
-    static member ValidatorBlacklistTime = 5 // Number of config blocks to keep the validator blacklisted.
+    static member ValidatorDepositLockTime // Number of config blocks to keep the deposit locked after leaving.
+        with get () =
+            match Int16.TryParse(genesis.["ValidatorDepositLockTime"]) with
+            | true, value when value > 0s -> value
+            | _ -> failwith "ValidatorDepositLockTime must have a valid positive 16-bit integer value in genesis file."
 
-    static member MaxTxCountPerBlock = 1000
+    static member ValidatorBlacklistTime // Number of config blocks to keep the validator blacklisted.
+        with get () =
+            match Int16.TryParse(genesis.["ValidatorBlacklistTime"]) with
+            | true, value when value > 0s -> value
+            | _ -> failwith "ValidatorBlacklistTime must have a valid positive 16-bit integer value in genesis file."
+
+    static member MaxTxCountPerBlock
+        with get () =
+            match Int32.TryParse(genesis.["MaxTxCountPerBlock"]) with
+            | true, value when value > 0 -> value
+            | _ -> failwith "MaxTxCountPerBlock must have a valid positive 32-bit integer value in genesis file."
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Genesis
