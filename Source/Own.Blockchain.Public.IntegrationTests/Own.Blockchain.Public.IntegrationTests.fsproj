@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -8,10 +8,18 @@
     <ItemGroup>
         <Compile Include="Helpers.fs" />
         <Compile Include="ValidatorTests.fs" />
-        <Compile Include="Program.fs" />
         <None Include="Config.json" CopyToOutputDirectory="Always" />
         <None Include="Genesis.json" CopyToOutputDirectory="Always" />
         <None Include="Own.Blockchain.Public.IntegrationTests.xunit.runner.json" CopyToOutputDirectory="Always" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Data\Own.Blockchain.Public.Data.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Node\Own.Blockchain.Public.Node.fsproj" />
+        <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,15 +27,6 @@
         <PackageReference Include="xunit" Version="2.4.0" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
         <PackageReference Include="Unquote" Version="4.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
-      <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
-      <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
-      <ProjectReference Include="..\Own.Blockchain.Public.Data\Own.Blockchain.Public.Data.fsproj" />
-      <ProjectReference Include="..\Own.Blockchain.Public.Node\Own.Blockchain.Public.Node.fsproj" />
-      <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
     </ItemGroup>
 
 </Project>
