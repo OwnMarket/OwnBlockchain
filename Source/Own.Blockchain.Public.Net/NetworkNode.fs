@@ -45,7 +45,7 @@ type NetworkNode
         #endif
 
     let isSelf networkAddress =
-        config.PublicAddress.IsSome && networkAddress = config.PublicAddress.Value
+        config.PublicAddress = Some networkAddress
 
     let optionToList = function | Some x -> [x] | None -> []
 
