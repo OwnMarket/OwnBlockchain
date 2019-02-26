@@ -1,21 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\AssemblyInfo.fs" />
-    <Compile Include="MerkleTree.fs" />
-    <Compile Include="Hashing.fs" />
-    <Compile Include="Secp256k1.fs" />
-    <Compile Include="Signing.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Secp256k1.Net" Version="0.1.48" />
-    <PackageReference Include="SimpleBase" Version="1.7.1" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\AssemblyInfo.fs" />
+        <Compile Include="MerkleTree.fs" />
+        <Compile Include="Hashing.fs" />
+        <Compile Include="Secp256k1.fs" />
+        <Compile Include="Signing.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Secp256k1.Net" Version="0.1.48" />
+        <PackageReference Include="SimpleBase" Version="1.7.1" />
+    </ItemGroup>
+
 </Project>

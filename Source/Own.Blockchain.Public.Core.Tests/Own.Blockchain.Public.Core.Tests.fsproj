@@ -1,33 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\AssemblyInfo.fs" />
-    <Compile Include="DummyHash.fs" />
-    <Compile Include="Helpers.fs" />
-    <Compile Include="DomainTypeTests.fs" />
-    <Compile Include="ValidationTests.fs" />
-    <Compile Include="SerializationTests.fs" />
-    <Compile Include="SubmissionTests.fs" />
-    <Compile Include="ProcessingTests.fs" />
-    <Compile Include="BlockTests.fs" />
-    <Compile Include="ValidatorTests.fs" />
-    <Compile Include="ConsensusTestHelpers.fs" />
-    <Compile Include="ConsensusTests.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <PackageReference Include="Unquote" Version="4.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\AssemblyInfo.fs" />
+        <Compile Include="DummyHash.fs" />
+        <Compile Include="Helpers.fs" />
+        <Compile Include="DomainTypeTests.fs" />
+        <Compile Include="ValidationTests.fs" />
+        <Compile Include="SerializationTests.fs" />
+        <Compile Include="SubmissionTests.fs" />
+        <Compile Include="ProcessingTests.fs" />
+        <Compile Include="BlockTests.fs" />
+        <Compile Include="ValidatorTests.fs" />
+        <Compile Include="ConsensusTestHelpers.fs" />
+        <Compile Include="ConsensusTests.fs" />
+        <Compile Include="Program.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+        <PackageReference Include="xunit" Version="2.3.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+        <PackageReference Include="Unquote" Version="4.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    </ItemGroup>
+
 </Project>

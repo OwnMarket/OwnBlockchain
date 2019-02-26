@@ -1,31 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
 
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="..\AssemblyInfo.fs" />
+        <Compile Include="Helpers.fs" />
+        <Compile Include="HashingTests.fs" />
+        <Compile Include="MerkleTreeTests.fs" />
+        <Compile Include="SigningTests.fs" />
+        <Compile Include="Program.fs" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\AssemblyInfo.fs" />
-    <Compile Include="Helpers.fs" />
-    <Compile Include="HashingTests.fs" />
-    <Compile Include="MerkleTreeTests.fs" />
-    <Compile Include="SigningTests.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <PackageReference Include="Unquote" Version="4.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+        <PackageReference Include="xunit" Version="2.3.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+        <PackageReference Include="Unquote" Version="4.0.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
-  </ItemGroup>
 </Project>

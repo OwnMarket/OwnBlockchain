@@ -1,28 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\AssemblyInfo.fs" />
-    <Compile Include="DomainTypes.fs" />
-    <Compile Include="Dtos.fs" />
-    <Compile Include="Events.fs" />
-    <Compile Include="Mapping.fs" />
-    <Compile Include="Validation.fs" />
-    <Compile Include="Serialization.fs" />
-    <Compile Include="Processing.fs" />
-    <Compile Include="Blocks.fs" />
-    <Compile Include="Synchronization.fs" />
-    <Compile Include="Validators.fs" />
-    <Compile Include="Consensus.fs" />
-    <Compile Include="Workflows.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="MessagePack" Version="1.7.3.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\AssemblyInfo.fs" />
+        <Compile Include="DomainTypes.fs" />
+        <Compile Include="Dtos.fs" />
+        <Compile Include="Events.fs" />
+        <Compile Include="Mapping.fs" />
+        <Compile Include="Validation.fs" />
+        <Compile Include="Serialization.fs" />
+        <Compile Include="Processing.fs" />
+        <Compile Include="Blocks.fs" />
+        <Compile Include="Synchronization.fs" />
+        <Compile Include="Validators.fs" />
+        <Compile Include="Consensus.fs" />
+        <Compile Include="Workflows.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MessagePack" Version="1.7.3.4" />
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    </ItemGroup>
+
 </Project>

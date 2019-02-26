@@ -1,27 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\AssemblyInfo.fs" />
-    <Compile Include="RawMock.fs" />
-    <Compile Include="DbMock.fs" />
-    <Compile Include="TransportMock.fs" />
-    <Compile Include="WorkflowsMock.fs" />
-    <Compile Include="Tests.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
-    <ProjectReference Include="..\Own.Blockchain.Public.Net\Own.Blockchain.Public.Net.fsproj" />
-    <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
-  </ItemGroup>  
-  <ItemGroup>
-    <PackageReference Include="MessagePack.FSharpExtensions" Version="1.4.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="Unquote" Version="4.0.0" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\AssemblyInfo.fs" />
+        <Compile Include="RawMock.fs" />
+        <Compile Include="DbMock.fs" />
+        <Compile Include="TransportMock.fs" />
+        <Compile Include="WorkflowsMock.fs" />
+        <Compile Include="Tests.fs" />
+        <Compile Include="Program.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
+        <ProjectReference Include="..\Own.Blockchain.Public.Net\Own.Blockchain.Public.Net.fsproj" />
+        <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MessagePack.FSharpExtensions" Version="1.4.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
+        <PackageReference Include="Unquote" Version="4.0.0" />
+        <PackageReference Include="xunit" Version="2.3.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+        <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    </ItemGroup>
+
 </Project>
