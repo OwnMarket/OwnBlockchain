@@ -236,4 +236,3 @@ module Helpers =
             mockedDeps.BlockchainConfiguration
             mockedDeps.EquivocationProofs
             mockedDeps.TxSet
-

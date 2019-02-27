@@ -2,11 +2,11 @@ namespace Own.Blockchain.Public.IntegrationTests
 
 open System.IO
 open System.Data
+open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Data
 open Own.Blockchain.Public.Node
 
 module Helpers =
-    open Own.Blockchain.Public.Core.Dtos
 
     let dbExecute =
         DbTools.execute Config.DbEngineType Config.DbConnectionString

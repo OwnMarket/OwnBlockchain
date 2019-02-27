@@ -209,7 +209,7 @@ type NetworkNode
                     selectedUnicastPeer
 
                 config.PublicAddress |> Option.iter(fun publicAddress ->
-                     targetAddress |> Option.iter (fun address ->
+                    targetAddress |> Option.iter (fun address ->
                         let requestMessage = RequestDataMessage {
                             MessageId = messageId
                             SenderAddress = publicAddress

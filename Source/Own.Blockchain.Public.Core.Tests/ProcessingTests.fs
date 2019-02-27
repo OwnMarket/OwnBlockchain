@@ -3971,7 +3971,6 @@ module ProcessingTests =
 
         let txSet = [txHash1; txHash2]
 
-
         // COMPOSE
         let getTx txHash =
             if txHash = txHash1 then Ok txEnvelope1
@@ -4154,7 +4153,6 @@ module ProcessingTests =
 
         let txSet = [txHash1; txHash2]
 
-
         // COMPOSE
         let getTx txHash =
             if txHash = txHash1 then Ok txEnvelope1
@@ -4260,7 +4258,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
-
 
         // COMPOSE
         let getTx txHash =
