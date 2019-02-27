@@ -53,7 +53,7 @@ module ProcessingTests =
         let unexpectedInvocation functionName =
             failwithf "%s unexpectedly invoked." functionName
         {
-            ProcessChangesDependencies.GetTx = fun _ -> unexpectedInvocation "GetTx"
+            GetTx = fun _ -> unexpectedInvocation "GetTx"
             GetEquivocationProof = fun _ -> unexpectedInvocation "GetEquivocationProof"
             VerifySignature = Helpers.verifySignature
             IsValidAddress = Hashing.isValidBlockchainAddress
