@@ -371,14 +371,13 @@ module Processing =
         if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
         else
-            state.SetChxBalance(
-                senderAddress,
-                { fromState with Amount = fromState.Amount - action.Amount }
-            )
-            state.SetChxBalance(
-                action.RecipientAddress,
-                { toState with Amount = toState.Amount + action.Amount }
-            )
+            let newFromState = { fromState with Amount = fromState.Amount - action.Amount }
+            state.SetChxBalance(senderAddress, newFromState)
+
+            let toState = if action.RecipientAddress = senderAddress then newFromState else toState
+            let newToState = { toState with Amount = toState.Amount + action.Amount }
+            state.SetChxBalance(action.RecipientAddress, newToState)
+
             Ok state
 
     let processTransferAssetTxAction
