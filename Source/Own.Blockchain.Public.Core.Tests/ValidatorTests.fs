@@ -161,6 +161,121 @@ module ValidatorTests =
         test <@ depositLockTime = validatorDepositLockTime @>
 
     [<Fact>]
+    let ``Deposit lock - Decrease validator's time to lock deposit and time to blacklist on every config block`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let inactiveValidatorWallet = Signing.generateWallet ()
+        let validatorDepositLockTime = 2s
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAccountTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce actionFee
+
+        let txSet = [txHash]
+
+        let validatorSnapshot =
+            {
+                ValidatorSnapshot.ValidatorAddress = validatorWallet.Address
+                NetworkAddress = NetworkAddress "val01.mainnet.weown.com:25718"
+                SharedRewardPercent = 0m
+                TotalStake = ChxAmount 500_000m
+            }
+
+        let blockchainConfiguration =
+            {
+                BlockchainConfiguration.ConfigurationBlockDelta = 10
+                Validators = [validatorSnapshot]
+                ValidatorDepositLockTime = validatorDepositLockTime
+                ValidatorBlacklistTime = 5s
+                MaxTxCountPerBlock = 1000
+            }
+            |> Some
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            None
+
+        let getValidatorState validatorAddress =
+            if validatorAddress = validatorWallet.Address then
+                Some {
+                    ValidatorState.NetworkAddress = validatorSnapshot.NetworkAddress
+                    SharedRewardPercent = validatorSnapshot.SharedRewardPercent
+                    TimeToLockDeposit = 0s
+                    TimeToBlacklist = 0s
+                    IsEnabled = true
+                }
+            elif validatorAddress = inactiveValidatorWallet.Address then
+                Some {
+                    ValidatorState.NetworkAddress = NetworkAddress "some.inactive.validator.com:12345"
+                    SharedRewardPercent = 0m
+                    TimeToLockDeposit = 5s
+                    TimeToBlacklist = 2s
+                    IsEnabled = true
+                }
+            else
+                None
+
+        let getLockedAndBlacklistedValidators () =
+            [
+                validatorWallet.Address
+                inactiveValidatorWallet.Address
+            ]
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAccountStateFromStorage = getAccountState
+                GetValidatorStateFromStorage = getValidatorState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                ValidatorDepositLockTime = validatorDepositLockTime
+                ValidatorAddress = validatorWallet.Address
+                BlockchainConfiguration = blockchainConfiguration
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        test <@ output.Validators.Count = 2 @>
+
+        let activeValidatorDepositLockTime, activeValidatorBlacklistTime =
+            output.Validators.[validatorWallet.Address]
+            |> fun (s, c) -> s.TimeToLockDeposit, s.TimeToBlacklist
+
+        let inactiveValidatorDepositLockTime, inactiveValidatorBlacklistTime =
+            output.Validators.[inactiveValidatorWallet.Address]
+            |> fun (s, c) -> s.TimeToLockDeposit, s.TimeToBlacklist
+
+        test <@ activeValidatorDepositLockTime = validatorDepositLockTime @>
+        test <@ activeValidatorBlacklistTime = 0s @>
+        test <@ inactiveValidatorDepositLockTime = 4s @>
+        test <@ inactiveValidatorBlacklistTime = 1s @>
+
+    [<Fact>]
     let ``Deposit lock - Prevent transferring the deposit while it's locked`` () =
         // INIT STATE
         let recipientWallet = Signing.generateWallet ()
