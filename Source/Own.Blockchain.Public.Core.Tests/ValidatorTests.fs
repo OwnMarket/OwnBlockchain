@@ -6,6 +6,7 @@ open Own.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Crypto
 
 module ValidatorTests =
 
@@ -66,3 +67,95 @@ module ValidatorTests =
 
         // ASSERT
         test <@ actualValidator = expectedValidator @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Deposit locking and blacklisting
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Deposit lock - Set time to lock deposit for the validator included in the config block`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let validatorDepositLockTime = 2s
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAccountTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce actionFee
+
+        let txSet = [txHash]
+
+        let validatorSnapshot =
+            {
+                ValidatorSnapshot.ValidatorAddress = validatorWallet.Address
+                NetworkAddress = NetworkAddress "val01.mainnet.weown.com:25718"
+                SharedRewardPercent = 0m
+                TotalStake = ChxAmount 500_000m
+            }
+
+        let blockchainConfiguration =
+            {
+                BlockchainConfiguration.ConfigurationBlockDelta = 10
+                Validators = [validatorSnapshot]
+                ValidatorDepositLockTime = validatorDepositLockTime
+                ValidatorBlacklistTime = 5s
+                MaxTxCountPerBlock = 1000
+            }
+            |> Some
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            None
+
+        let getValidatorState _ =
+            Some {
+                ValidatorState.NetworkAddress = validatorSnapshot.NetworkAddress
+                SharedRewardPercent = validatorSnapshot.SharedRewardPercent
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 0s
+                IsEnabled = true
+            }
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAccountStateFromStorage = getAccountState
+                GetValidatorStateFromStorage = getValidatorState
+                ValidatorDepositLockTime = validatorDepositLockTime
+                ValidatorAddress = validatorWallet.Address
+                BlockchainConfiguration = blockchainConfiguration
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        test <@ output.Validators.Count = 1 @>
+
+        let depositLockTime =
+            output.Validators.[validatorWallet.Address]
+            |> fun (s, c) -> s.TimeToLockDeposit
+        test <@ depositLockTime = validatorDepositLockTime @>
