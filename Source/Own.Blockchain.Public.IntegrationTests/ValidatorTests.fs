@@ -64,3 +64,59 @@ module ValidatorTests =
         // ASSERT
         test <@ topValidators.Length = 1 @>
         test <@ topValidators.[0].ValidatorAddress = validator1Wallet.Address.Value @>
+
+    [<Fact>]
+    let ``Validator not included in the config if blacklisted`` () =
+        // ARRANGE
+        Helpers.resetTestData ()
+
+        let validator1Wallet = Signing.generateWallet ()
+        let validator2Wallet = Signing.generateWallet ()
+        let stakerWallet = Signing.generateWallet ()
+
+        [
+            validator1Wallet.Address.Value, 1s // Blacklisted
+            validator2Wallet.Address.Value, 0s
+        ]
+        |> List.iter (fun (address, timeToBlacklist) ->
+            {
+                BlockchainAddress = address
+                ChxBalanceState =
+                    {
+                        ChxBalanceStateDto.Nonce = 0L
+                        Amount = Config.ValidatorDeposit
+                    }
+            }
+            |> Helpers.addChxBalance
+
+            {
+                ValidatorAddress = address
+                NetworkAddress = sprintf "%s.weown.com:25718" address
+                SharedRewardPercent = 0m
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = timeToBlacklist
+                IsEnabled = true
+            }
+            |> Helpers.addValidator
+
+            {
+                StakeInfoDto.StakerAddress = stakerWallet.Address.Value
+                ValidatorAddress = address
+                StakeState =
+                    {
+                        Amount = Config.ValidatorThreshold
+                    }
+            }
+            |> Helpers.addStake
+        )
+
+        // ACT
+        let topValidators =
+            Composition.getTopValidatorsByStake
+                Config.MaxValidatorCount
+                (ChxAmount Config.ValidatorThreshold)
+                (ChxAmount Config.ValidatorDeposit)
+
+        // ASSERT
+        test <@ topValidators.Length = 1 @>
+        test <@ topValidators.[0].ValidatorAddress = validator2Wallet.Address.Value @>
