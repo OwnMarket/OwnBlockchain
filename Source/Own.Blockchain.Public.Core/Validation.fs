@@ -81,10 +81,10 @@ module Validation =
     let private validateTransferAsset (action : TransferAssetTxActionDto) =
         [
             if action.FromAccountHash.IsNullOrWhiteSpace() then
-                yield AppError "FromAccount value is not provided."
+                yield AppError "FromAccountHash value is not provided."
 
             if action.ToAccountHash.IsNullOrWhiteSpace() then
-                yield AppError "ToAccount value is not provided."
+                yield AppError "ToAccountHash value is not provided."
 
             if action.AssetHash.IsNullOrWhiteSpace() then
                 yield AppError "AssetHash is not provided."

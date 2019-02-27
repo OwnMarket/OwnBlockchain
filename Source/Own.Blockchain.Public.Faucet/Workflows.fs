@@ -146,8 +146,8 @@ module Workflows =
                 {
                     ActionType: "TransferAsset",
                     ActionData: {
-                        FromAccount: "%s",
-                        ToAccount: "%s",
+                        FromAccountHash: "%s",
+                        ToAccountHash: "%s",
                         AssetHash: "%s",
                         Amount: %s
                     }

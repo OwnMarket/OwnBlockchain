@@ -209,7 +209,7 @@ module ValidationTests =
             test <@ errors.Length > 0 @>
 
     [<Fact>]
-    let ``Validation.validateTx TransferAsset invalid FromAccount`` () =
+    let ``Validation.validateTx TransferAsset invalid FromAccountHash`` () =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
@@ -238,7 +238,7 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
-    let ``Validation.validateTx TransferAsset invalid ToAccount`` () =
+    let ``Validation.validateTx TransferAsset invalid ToAccountHash`` () =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L

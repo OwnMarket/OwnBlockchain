@@ -71,8 +71,8 @@ module SerializationTests =
                     {
                         "ActionType": "TransferAsset",
                         "ActionData": {
-                            "FromAccount": "A",
-                            "ToAccount": "B",
+                            "FromAccountHash": "A",
+                            "ToAccountHash": "B",
                             "AssetHash": "asset",
                             "Amount": 12.0
                         }
@@ -128,8 +128,8 @@ module SerializationTests =
                     {
                         "ActionType": "TransferAsset",
                         "ActionData": {
-                            "FromAccount": "A",
-                            "ToAccount": "B",
+                            "FromAccountHash": "A",
+                            "ToAccountHash": "B",
                             "AssetHash": "asset",
                             "Amount": 12.0
                         }
@@ -178,8 +178,8 @@ module SerializationTests =
                     {
                         "ActionType": "TransferAsset",
                         "ActionData": {
-                            "FromAccount": "A",
-                            "ToAccount": "B",
+                            "FromAccountHash": "A",
+                            "ToAccountHash": "B",
                             "AssetHash": "asset",
                             "Amount": 12.0
                         }
