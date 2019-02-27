@@ -159,3 +159,76 @@ module ValidatorTests =
             output.Validators.[validatorWallet.Address]
             |> fun (s, c) -> s.TimeToLockDeposit
         test <@ depositLockTime = validatorDepositLockTime @>
+
+    [<Fact>]
+    let ``Deposit lock - Prevent transferring the deposit while it's locked`` () =
+        // INIT STATE
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
+                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 5000.001m; Nonce = Nonce 30L}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 31L
+        let actionFee = ChxAmount 0.001m
+        let amountToTransfer = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx validatorWallet nonce actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxBalanceState address =
+            initialChxState |> Map.tryFind address
+
+        let getValidatorState _ =
+            Some {
+                ValidatorState.NetworkAddress = NetworkAddress "val01.mainnet.weown.com:25718"
+                SharedRewardPercent = 0m
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 0s
+                IsEnabled = true
+            }
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetValidatorStateFromStorage = getValidatorState
+                ValidatorDeposit = ChxAmount 5000m
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
+        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
