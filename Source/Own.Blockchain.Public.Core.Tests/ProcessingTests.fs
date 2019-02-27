@@ -5641,7 +5641,7 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                senderWallet.Address, {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
                 validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
@@ -5720,7 +5720,7 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
+                senderWallet.Address, {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
                 validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
@@ -5792,8 +5792,10 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderValidatorWallet.Address,
+                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                validatorWallet.Address,
+                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
@@ -5884,8 +5886,10 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderValidatorWallet.Address,
+                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                validatorWallet.Address,
+                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
@@ -5960,8 +5964,10 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderValidatorWallet.Address,
+                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                validatorWallet.Address,
+                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 
@@ -6047,8 +6053,10 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderValidatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderValidatorWallet.Address,
+                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                validatorWallet.Address,
+                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
 

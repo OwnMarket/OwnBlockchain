@@ -124,6 +124,10 @@ module Helpers =
     // Mock for Processing.processChanges
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let validatorDeposit = ChxAmount 5000m
+    let validatorDepositLockTime = 2s
+    let validatorBlacklistTime = 5s
+
     type ProcessChangesDependencies =
         {
             GetTx : TxHash -> Result<TxEnvelopeDto, AppErrors>
@@ -189,9 +193,9 @@ module Helpers =
             GetTopStakers = fun _ -> []
             GetLockedAndBlacklistedValidators = fun _ -> []
             MaxActionCountPerTx = maxActionCountPerTx
-            ValidatorDeposit = ChxAmount 0m
-            ValidatorDepositLockTime = 0s
-            ValidatorBlacklistTime = 0s
+            ValidatorDeposit = validatorDeposit
+            ValidatorDepositLockTime = validatorDepositLockTime
+            ValidatorBlacklistTime = validatorBlacklistTime
             Validators = []
             ValidatorAddress = BlockchainAddress ""
             SharedRewardPercent = 0m

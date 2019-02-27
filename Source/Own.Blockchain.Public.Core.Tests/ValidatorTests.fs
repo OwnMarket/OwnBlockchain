@@ -78,7 +78,6 @@ module ValidatorTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let validatorDepositLockTime = 2s
 
         let initialChxState =
             [
@@ -114,8 +113,8 @@ module ValidatorTests =
             {
                 BlockchainConfiguration.ConfigurationBlockDelta = 10
                 Validators = [validatorSnapshot]
-                ValidatorDepositLockTime = validatorDepositLockTime
-                ValidatorBlacklistTime = 5s
+                ValidatorDepositLockTime = Helpers.validatorDepositLockTime
+                ValidatorBlacklistTime = Helpers.validatorBlacklistTime
                 MaxTxCountPerBlock = 1000
             }
             |> Some
@@ -130,14 +129,17 @@ module ValidatorTests =
         let getAccountState _ =
             None
 
-        let getValidatorState _ =
-            Some {
-                ValidatorState.NetworkAddress = validatorSnapshot.NetworkAddress
-                SharedRewardPercent = validatorSnapshot.SharedRewardPercent
-                TimeToLockDeposit = 0s
-                TimeToBlacklist = 0s
-                IsEnabled = true
-            }
+        let getValidatorState validatorAddress =
+            if validatorAddress = validatorSnapshot.ValidatorAddress then
+                Some {
+                    ValidatorState.NetworkAddress = validatorSnapshot.NetworkAddress
+                    SharedRewardPercent = validatorSnapshot.SharedRewardPercent
+                    TimeToLockDeposit = 0s
+                    TimeToBlacklist = 0s
+                    IsEnabled = true
+                }
+            else
+                None
 
         // ACT
         let output =
@@ -146,7 +148,6 @@ module ValidatorTests =
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAccountStateFromStorage = getAccountState
                 GetValidatorStateFromStorage = getValidatorState
-                ValidatorDepositLockTime = validatorDepositLockTime
                 ValidatorAddress = validatorWallet.Address
                 BlockchainConfiguration = blockchainConfiguration
                 TxSet = txSet
@@ -159,7 +160,7 @@ module ValidatorTests =
         let depositLockTime =
             output.Validators.[validatorWallet.Address]
             |> fun (s, c) -> s.TimeToLockDeposit
-        test <@ depositLockTime = validatorDepositLockTime @>
+        test <@ depositLockTime = Helpers.validatorDepositLockTime @>
 
     [<Fact>]
     let ``Deposit lock - Decrease validator's time to lock deposit and time to blacklist on every config block`` () =
@@ -167,7 +168,6 @@ module ValidatorTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let inactiveValidatorWallet = Signing.generateWallet ()
-        let validatorDepositLockTime = 2s
 
         let initialChxState =
             [
@@ -203,8 +203,8 @@ module ValidatorTests =
             {
                 BlockchainConfiguration.ConfigurationBlockDelta = 10
                 Validators = [validatorSnapshot]
-                ValidatorDepositLockTime = validatorDepositLockTime
-                ValidatorBlacklistTime = 5s
+                ValidatorDepositLockTime = Helpers.validatorDepositLockTime
+                ValidatorBlacklistTime = Helpers.validatorBlacklistTime
                 MaxTxCountPerBlock = 1000
             }
             |> Some
@@ -232,8 +232,8 @@ module ValidatorTests =
                 Some {
                     ValidatorState.NetworkAddress = NetworkAddress "some.inactive.validator.com:12345"
                     SharedRewardPercent = 0m
-                    TimeToLockDeposit = 2s
-                    TimeToBlacklist = 5s
+                    TimeToLockDeposit = Helpers.validatorDepositLockTime
+                    TimeToBlacklist = Helpers.validatorBlacklistTime
                     IsEnabled = true
                 }
             else
@@ -253,7 +253,6 @@ module ValidatorTests =
                 GetAccountStateFromStorage = getAccountState
                 GetValidatorStateFromStorage = getValidatorState
                 GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                ValidatorDepositLockTime = validatorDepositLockTime
                 ValidatorAddress = validatorWallet.Address
                 BlockchainConfiguration = blockchainConfiguration
                 TxSet = txSet
@@ -271,10 +270,10 @@ module ValidatorTests =
             output.Validators.[inactiveValidatorWallet.Address]
             |> fun (s, c) -> s.TimeToLockDeposit, s.TimeToBlacklist
 
-        test <@ activeValidatorDepositLockTime = validatorDepositLockTime @>
+        test <@ activeValidatorDepositLockTime = Helpers.validatorDepositLockTime @>
         test <@ activeValidatorBlacklistTime = 0s @>
-        test <@ inactiveValidatorDepositLockTime = 1s @>
-        test <@ inactiveValidatorBlacklistTime = 4s @>
+        test <@ inactiveValidatorDepositLockTime = Helpers.validatorDepositLockTime - 1s @>
+        test <@ inactiveValidatorBlacklistTime = Helpers.validatorBlacklistTime - 1s @>
 
     [<Fact>]
     let ``Deposit lock - Prevent transferring the deposit while it's locked`` () =
@@ -331,7 +330,6 @@ module ValidatorTests =
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetValidatorStateFromStorage = getValidatorState
-                ValidatorDeposit = ChxAmount 5000m
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
@@ -358,12 +356,10 @@ module ValidatorTests =
         // INIT STATE
         let adversaryWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let validatorDeposit = ChxAmount 5000m
-        let validatorBlacklistTime = 5s
 
         let initialChxState =
             [
-                adversaryWallet.Address, {ChxBalanceState.Amount = validatorDeposit; Nonce = Nonce 10L}
+                adversaryWallet.Address, {ChxBalanceState.Amount = Helpers.validatorDeposit; Nonce = Nonce 10L}
                 validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
             ]
             |> Map.ofList
@@ -459,9 +455,6 @@ module ValidatorTests =
                 GetEquivocationProof = getEquivocationProof
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetValidatorStateFromStorage = getValidatorState
-                ValidatorDeposit = validatorDeposit
-                ValidatorDepositLockTime = 2s
-                ValidatorBlacklistTime = validatorBlacklistTime
                 Validators = [validatorWallet.Address; adversaryWallet.Address]
                 ValidatorAddress = validatorWallet.Address
                 BlockNumber = BlockNumber 2L
@@ -470,15 +463,15 @@ module ValidatorTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let adversaryChxBalance = initialChxState.[adversaryWallet.Address].Amount - validatorDeposit
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + validatorDeposit
+        let adversaryChxBalance = initialChxState.[adversaryWallet.Address].Amount - Helpers.validatorDeposit
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + Helpers.validatorDeposit
         let equivocationProofResult = output.EquivocationProofResults.[equivocationProof.EquivocationProofHash]
         let adversaryState = output.Validators.[adversaryWallet.Address] |> fst
 
         test <@ output.EquivocationProofResults.Count = 1 @>
-        test <@ equivocationProofResult.DepositTaken = validatorDeposit @>
+        test <@ equivocationProofResult.DepositTaken = Helpers.validatorDeposit @>
         test <@ output.ChxBalances.[adversaryWallet.Address].Nonce = initialChxState.[adversaryWallet.Address].Nonce @>
         test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxBalances.[adversaryWallet.Address].Amount = adversaryChxBalance @>
         test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ adversaryState.TimeToBlacklist = validatorBlacklistTime @>
+        test <@ adversaryState.TimeToBlacklist = Helpers.validatorBlacklistTime @>
