@@ -11,6 +11,119 @@ open Own.Blockchain.Public.Crypto
 
 module ProcessingTests =
 
+    type ProcessChangesDependencies =
+        {
+            GetTx : TxHash -> Result<TxEnvelopeDto, AppErrors>
+            GetEquivocationProof : EquivocationProofHash -> Result<EquivocationProofDto, AppErrors>
+            VerifySignature : Signature -> string -> BlockchainAddress option
+            IsValidAddress : BlockchainAddress -> bool
+            DeriveHash : BlockchainAddress -> Nonce -> TxActionNumber -> string
+            DecodeHash : string -> byte[]
+            CreateHash : byte[] -> string
+            CreateConsensusMessageHash :
+                (string -> byte[]) -> (byte[] -> string) -> BlockNumber -> ConsensusRound -> ConsensusMessage -> string
+            GetChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option
+            GetHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option
+            GetVoteStateFromStorage : VoteId -> VoteState option
+            GetEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option
+            GetKycProvidersFromStorage : AssetHash -> BlockchainAddress list
+            GetAccountStateFromStorage : AccountHash -> AccountState option
+            GetAssetStateFromStorage : AssetHash -> AssetState option
+            GetAssetHashByCodeFromStorage : AssetCode -> AssetHash option
+            GetValidatorStateFromStorage : BlockchainAddress -> ValidatorState option
+            GetStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option
+            GetStakersFromStorage : BlockchainAddress -> BlockchainAddress list
+            GetTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
+            GetTopStakers : BlockchainAddress -> StakerInfo list
+            GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
+            MaxActionCountPerTx : int
+            ValidatorDeposit : ChxAmount
+            ValidatorDepositLockTime : int16
+            ValidatorBlacklistTime : int16
+            Validators : BlockchainAddress list
+            ValidatorAddress : BlockchainAddress
+            SharedRewardPercent : decimal
+            BlockNumber : BlockNumber
+            BlockchainConfiguration : BlockchainConfiguration option
+            EquivocationProofs : EquivocationProofHash list
+            TxSet : TxHash list
+        }
+
+    let processChangesMockedDeps =
+        let unexpectedInvocation functionName =
+            failwithf "%s unexpectedly invoked." functionName
+        {
+            ProcessChangesDependencies.GetTx = fun _ -> unexpectedInvocation "GetTx"
+            GetEquivocationProof = fun _ -> unexpectedInvocation "GetEquivocationProof"
+            VerifySignature = Helpers.verifySignature
+            IsValidAddress = Hashing.isValidBlockchainAddress
+            DeriveHash = Hashing.deriveHash
+            DecodeHash = Hashing.decode
+            CreateHash = Hashing.hash
+            CreateConsensusMessageHash = fun _ -> unexpectedInvocation "CreateConsensusMessageHash"
+            GetChxBalanceStateFromStorage = fun _ -> unexpectedInvocation "GetChxBalanceStateFromStorage"
+            GetHoldingStateFromStorage = fun _ -> unexpectedInvocation "GetHoldingStateFromStorage"
+            GetVoteStateFromStorage = fun _ -> unexpectedInvocation "GetVoteStateFromStorage"
+            GetEligibilityStateFromStorage = fun _ -> unexpectedInvocation "GetEligibilityStateFromStorage"
+            GetKycProvidersFromStorage = fun _ -> unexpectedInvocation "GetKycProvidersFromStorage"
+            GetAccountStateFromStorage = fun _ -> unexpectedInvocation "GetAccountStateFromStorage"
+            GetAssetStateFromStorage = fun _ -> unexpectedInvocation "GetAssetStateFromStorage"
+            GetAssetHashByCodeFromStorage = fun _ -> unexpectedInvocation "GetAssetHashByCodeFromStorage"
+            GetValidatorStateFromStorage = fun _ -> unexpectedInvocation "GetValidatorStateFromStorage"
+            GetStakeStateFromStorage = fun _ -> unexpectedInvocation "GetStakeStateFromStorage"
+            GetStakersFromStorage = fun _ -> unexpectedInvocation "GetStakersFromStorage"
+            GetTotalChxStakedFromStorage = fun _ -> unexpectedInvocation "GetTotalChxStakedFromStorage"
+            GetTopStakers = fun _ -> unexpectedInvocation "GetTopStakers"
+            GetLockedAndBlacklistedValidators = fun _ -> unexpectedInvocation "GetLockedAndBlacklistedValidators"
+            MaxActionCountPerTx = Helpers.maxActionCountPerTx
+            ValidatorDeposit = ChxAmount 0m
+            ValidatorDepositLockTime = 0s
+            ValidatorBlacklistTime = 0s
+            Validators = []
+            ValidatorAddress = BlockchainAddress ""
+            SharedRewardPercent = 0m
+            BlockNumber = BlockNumber 1L
+            BlockchainConfiguration = None
+            EquivocationProofs = []
+            TxSet = []
+        }
+
+    let processChanges mockedDeps =
+        Processing.processChanges
+            mockedDeps.GetTx
+            mockedDeps.GetEquivocationProof
+            mockedDeps.VerifySignature
+            mockedDeps.IsValidAddress
+            mockedDeps.DeriveHash
+            mockedDeps.DecodeHash
+            mockedDeps.CreateHash
+            mockedDeps.CreateConsensusMessageHash
+            mockedDeps.GetChxBalanceStateFromStorage
+            mockedDeps.GetHoldingStateFromStorage
+            mockedDeps.GetVoteStateFromStorage
+            mockedDeps.GetEligibilityStateFromStorage
+            mockedDeps.GetKycProvidersFromStorage
+            mockedDeps.GetAccountStateFromStorage
+            mockedDeps.GetAssetStateFromStorage
+            mockedDeps.GetAssetHashByCodeFromStorage
+            mockedDeps.GetValidatorStateFromStorage
+            mockedDeps.GetStakeStateFromStorage
+            mockedDeps.GetStakersFromStorage
+            mockedDeps.GetTotalChxStakedFromStorage
+            mockedDeps.GetTopStakers
+            mockedDeps.GetLockedAndBlacklistedValidators
+            mockedDeps.MaxActionCountPerTx
+            mockedDeps.ValidatorDeposit
+            mockedDeps.ValidatorDepositLockTime
+            mockedDeps.ValidatorBlacklistTime
+            mockedDeps.Validators
+            mockedDeps.ValidatorAddress
+            mockedDeps.SharedRewardPercent
+            mockedDeps.BlockNumber
+            mockedDeps.BlockchainConfiguration
+            mockedDeps.EquivocationProofs
+            mockedDeps.TxSet
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx preparation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,32 +308,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -228,13 +317,8 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState (stakerAddress, validatorAddress) =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ =
             [
@@ -245,40 +329,19 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                sharedRewardPercent
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                SharedRewardPercent = sharedRewardPercent
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
@@ -361,32 +424,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -394,13 +433,8 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState (stakerAddress, validatorAddress) =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ =
             [
@@ -411,40 +445,19 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                sharedRewardPercent
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                SharedRewardPercent = sharedRewardPercent
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
@@ -515,32 +528,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -548,52 +537,25 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
@@ -649,32 +611,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -682,52 +620,25 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -784,32 +695,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -817,52 +704,25 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -919,32 +779,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -952,51 +788,24 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         let processChanges () =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         raisesWith<exn>
@@ -1043,44 +852,14 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
-
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
 
         let getTotalChxStaked address =
             if address = senderWallet.Address then
@@ -1092,40 +871,18 @@ module ProcessingTests =
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -1196,23 +953,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1220,61 +965,34 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -1342,17 +1060,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
 
         let getEligibilityState _ =
             {
@@ -1361,17 +1073,11 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -1379,52 +1085,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
@@ -1485,17 +1168,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
 
         let getEligibilityState _ =
             {
@@ -1504,17 +1181,11 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -1522,52 +1193,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
@@ -1628,17 +1276,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
 
         let getEligibilityState _ =
             {
@@ -1647,17 +1289,11 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -1665,52 +1301,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -1772,17 +1385,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
 
         let getEligibilityState _ =
             {
@@ -1791,17 +1398,11 @@ module ProcessingTests =
             }
             |> Some
 
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -1809,52 +1410,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -1916,23 +1494,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -1940,61 +1506,34 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -2064,23 +1603,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = recipientAccountHash then
@@ -2088,64 +1615,33 @@ module ProcessingTests =
             else
                 None
 
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -2212,23 +1708,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = senderAccountHash then
@@ -2236,64 +1720,33 @@ module ProcessingTests =
             else
                 None
 
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -2363,9 +1816,6 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2375,20 +1825,11 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -2396,52 +1837,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
 
@@ -2530,9 +1948,6 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2549,20 +1964,11 @@ module ProcessingTests =
             else
                 None
 
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -2570,52 +1976,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         test <@ output.TxResults.Count = 2 @>
@@ -2670,9 +2053,6 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -2682,20 +2062,11 @@ module ProcessingTests =
         let getVoteState _ =
             None
 
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -2703,52 +2074,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -2822,23 +2170,11 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
         let getVoteState _ =
             None
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = accountHash1 then
@@ -2861,61 +2197,34 @@ module ProcessingTests =
             else
                 None
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -2973,23 +2282,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
         let getVoteState _ =
             None
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = otherWallet.Address}
@@ -2997,61 +2294,34 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -3113,9 +2383,6 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
@@ -3125,20 +2392,11 @@ module ProcessingTests =
         let getVoteState _ =
             Some {VoteState.VoteHash = voteHashNo; VoteWeight = 1m |> VoteWeight |> Some}
 
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -3146,52 +2404,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -3251,23 +2486,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
         let getVoteState _ =
             Some {VoteState.VoteHash = voteHash; VoteWeight = None}
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -3275,61 +2498,34 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
 
@@ -3392,23 +2588,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
         let getVoteState _ =
             None
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -3416,61 +2600,34 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.VoteNotFound) |> TxActionError |> Failure
@@ -3523,23 +2680,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
         let getVoteState _ =
             Some {VoteState.VoteHash = voteHash; VoteWeight = None}
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -3552,61 +2697,34 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController) |> TxActionError |> Failure
@@ -3678,23 +2796,11 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
         let getVoteState _ =
             None
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState accountHash =
             if accountHash = accountHash1 then
@@ -3717,61 +2823,34 @@ module ProcessingTests =
             else
                 None
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -3829,14 +2908,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -3853,61 +2926,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -3965,14 +3013,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -3993,61 +3035,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -4123,14 +3140,8 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid txHash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -4161,61 +3172,36 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4270,14 +3256,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -4298,61 +3278,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4424,14 +3379,8 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -4463,61 +3412,36 @@ module ProcessingTests =
             else
                 None
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -4576,14 +3500,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -4600,61 +3518,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedAssetState =
@@ -4706,14 +3599,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -4730,61 +3617,36 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4834,14 +3696,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -4858,61 +3714,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4977,14 +3808,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5005,61 +3830,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -5133,14 +3933,8 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5176,61 +3970,36 @@ module ProcessingTests =
             else
                 None
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -5288,14 +4057,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5312,61 +4075,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -5419,14 +4157,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5452,61 +4184,36 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -5560,14 +4267,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5588,61 +4289,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -5701,14 +4377,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5734,61 +4404,36 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -5843,14 +4488,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5867,61 +4506,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         test <@ output.TxResults.Count = 1 @>
@@ -5967,14 +4581,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -5991,61 +4599,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatus =
@@ -6112,23 +4695,14 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
 
         let getEligibilityState _ =
             None
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -6144,61 +4718,35 @@ module ProcessingTests =
                 }
                 |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -6258,14 +4806,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -6273,17 +4815,11 @@ module ProcessingTests =
         let getEligibilityState _ =
             None
 
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -6291,52 +4827,29 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         test <@ output.TxResults.Count = 1 @>
@@ -6399,23 +4912,14 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
 
         let getEligibilityState _ =
             None
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
@@ -6431,61 +4935,35 @@ module ProcessingTests =
                 }
                 |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -6558,14 +5036,8 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
 
         let getVoteState _ =
             None
@@ -6582,61 +5054,36 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetVoteStateFromStorage = getVoteState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = Success @>
@@ -6691,23 +5138,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
             None
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -6715,61 +5150,34 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6832,23 +5240,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
             initialHoldingState |> Map.tryFind key
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -6856,61 +5252,34 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6969,23 +5338,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
             None
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -6998,61 +5355,34 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7112,23 +5442,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
             None
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             Some {AccountState.ControllerAddress = someOtherWallet.Address}
@@ -7136,61 +5454,34 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7249,23 +5540,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
             None
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
 
         let getAccountState _ =
             None
@@ -7278,61 +5557,34 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7396,32 +5648,14 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
             None
 
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             None
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -7429,52 +5663,27 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7536,32 +5745,14 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
             None
 
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
         let getAssetState _ =
             None
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -7569,52 +5760,27 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7678,32 +5844,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -7711,52 +5856,26 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAccountStateFromStorage = getAccountState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7809,32 +5928,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             None
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -7842,52 +5940,26 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAccountStateFromStorage = getAccountState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7945,32 +6017,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
         let getAccountState _ =
             Some {AccountState.ControllerAddress = currentControllerWallet.Address}
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -7978,52 +6029,26 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAccountStateFromStorage = getAccountState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -8085,32 +6110,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -8118,52 +6122,26 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -8216,32 +6194,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
         let getAssetState _ =
             None
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -8249,52 +6206,26 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -8352,26 +6283,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             {
@@ -8381,61 +6294,32 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -8497,26 +6381,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
@@ -8530,52 +6396,27 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAssetStateFromStorage = getAssetState
+                GetAssetHashByCodeFromStorage = getAssetHashByCode
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -8628,32 +6469,11 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
         let getAssetState _ =
             None
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -8661,52 +6481,26 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -8763,26 +6557,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             {
@@ -8801,52 +6577,27 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAssetStateFromStorage = getAssetState
+                GetAssetHashByCodeFromStorage = getAssetHashByCode
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let expectedTxStatus =
@@ -8898,26 +6649,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
 
         let getAssetState _ =
             {
@@ -8927,61 +6660,32 @@ module ProcessingTests =
             }
             |> Some
 
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
-
         let getLockedAndBlacklistedValidators _ =
             []
 
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetAssetStateFromStorage = getAssetState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -9043,32 +6747,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -9082,52 +6762,25 @@ module ProcessingTests =
                 IsEnabled = true
             }
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -9186,32 +6839,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -9219,52 +6848,25 @@ module ProcessingTests =
         let getValidatorState _ =
             None
 
-        let getStakeState _ =
-            failwith "getStakeState should not be called"
-
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -9321,32 +6923,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -9376,46 +6954,27 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetStakersFromStorage = getStakers
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -9469,32 +7028,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -9517,46 +7052,27 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetStakersFromStorage = getStakers
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -9605,32 +7121,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -9660,46 +7152,27 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetStakersFromStorage = getStakers
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -9748,32 +7221,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -9803,46 +7252,27 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetStakersFromStorage = getStakers
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -9906,32 +7336,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -9942,49 +7348,25 @@ module ProcessingTests =
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
 
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
         let getTotalChxStaked _ = currentStakeAmount
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -10037,32 +7419,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -10073,49 +7431,26 @@ module ProcessingTests =
         let getStakeState _ =
             None
 
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -10168,32 +7503,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -10204,49 +7515,26 @@ module ProcessingTests =
         let getStakeState _ =
             None
 
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
-        let getTotalChxStaked _ = ChxAmount 0m
+        let getTotalChxStaked _ =
+            ChxAmount 0m
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -10304,32 +7592,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -10340,49 +7604,25 @@ module ProcessingTests =
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
 
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
         let getTotalChxStaked _ = currentStakeAmount
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -10440,32 +7680,8 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getEquivocationProof _ =
-            failwith "getEquivocationProof should not be called"
-
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getHoldingState _ =
-            failwith "getHoldingState should not be called"
-
-        let getVoteState _ =
-            failwith "getVoteState should not be called"
-
-        let getEligibilityState _ =
-            failwith "getEligibilityState should not be called"
-
-        let getKycProvidersState _ =
-            failwith "getKycProvidersState should not be called"
-
-        let getAccountState _ =
-            failwith "getAccountState should not be called"
-
-        let getAssetState _ =
-            failwith "getAssetState should not be called"
-
-        let getAssetHashByCode _ =
-            failwith "getAssetHashByCode should not be called"
 
         let getLockedAndBlacklistedValidators _ =
             []
@@ -10476,49 +7692,25 @@ module ProcessingTests =
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
 
-        let getStakers _ =
-            failwith "getStakers should not be called"
-
         let getTotalChxStaked _ = currentStakeAmount
 
         let getTopStakers _ = []
 
         // ACT
         let output =
-            Processing.processChanges
-                getTx
-                getEquivocationProof
-                Helpers.verifySignature
-                Hashing.isValidBlockchainAddress
-                Hashing.deriveHash
-                Hashing.decode
-                Hashing.hash
-                Consensus.createConsensusMessageHash
-                getChxBalanceState
-                getHoldingState
-                getVoteState
-                getEligibilityState
-                getKycProvidersState
-                getAccountState
-                getAssetState
-                getAssetHashByCode
-                getValidatorState
-                getStakeState
-                getStakers
-                getTotalChxStaked
-                getTopStakers
-                getLockedAndBlacklistedValidators
-                Helpers.maxActionCountPerTx
-                (ChxAmount 0m)
-                0s
-                0s
-                []
-                validatorWallet.Address
-                0m
-                blockNumber
-                None
-                []
-                txSet
+            { processChangesMockedDeps with
+                GetTx = getTx
+                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetTotalChxStakedFromStorage = getTotalChxStaked
+                GetTopStakers = getTopStakers
+                ValidatorAddress = validatorWallet.Address
+                BlockNumber = blockNumber
+                TxSet = txSet
+            }
+            |> processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
