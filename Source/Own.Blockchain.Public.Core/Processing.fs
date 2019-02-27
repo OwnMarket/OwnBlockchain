@@ -415,16 +415,13 @@ module Processing =
                 elif not fromState.IsEmission && not isSecondaryEligible then
                     Error TxErrorCode.NotEligibleInSecondary
                 else
-                    state.SetHolding(
-                        action.FromAccountHash,
-                        action.AssetHash,
-                        { fromState with Amount = fromState.Amount - action.Amount }
-                    )
-                    state.SetHolding(
-                        action.ToAccountHash,
-                        action.AssetHash,
-                        { toState with Amount = toState.Amount + action.Amount }
-                    )
+                    let newFromState = { fromState with Amount = fromState.Amount - action.Amount }
+                    state.SetHolding(action.FromAccountHash, action.AssetHash, newFromState)
+
+                    let toState = if action.ToAccountHash = action.FromAccountHash then newFromState else toState
+                    let newToState = { toState with Amount = toState.Amount + action.Amount }
+                    state.SetHolding(action.ToAccountHash, action.AssetHash, newToState)
+
                     Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
