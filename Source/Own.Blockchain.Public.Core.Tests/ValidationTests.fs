@@ -860,3 +860,33 @@ module ValidationTests =
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 2 @>
+
+    [<Fact>]
+    let ``Validation.validateEquivocationProof rejects proof with wrong order of hashes`` () =
+        // ARRANGE
+        let equivocationProofDto : EquivocationProofDto =
+            {
+                BlockNumber = 1L
+                ConsensusRound = 0
+                ConsensusStep = 1uy
+                BlockHash1 = "B"
+                BlockHash2 = "A"
+                Signature1 = "S1"
+                Signature2 = "S2"
+            }
+
+        // ACT
+        let result =
+            Validation.validateEquivocationProof
+                (fun _ _ -> None)
+                (fun _ _ _ _ _ -> "")
+                (fun _ -> Array.empty)
+                (fun _ -> "")
+                equivocationProofDto
+
+        // ASSERT
+        match result with
+        | Ok _ -> failwith "This test should fail."
+        | Error e ->
+            test <@ e.Length = 1 @>
+            test <@ e.[0].Message.Contains("Block hashes in equivocation proof must be ordered") @>

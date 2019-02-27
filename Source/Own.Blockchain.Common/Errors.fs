@@ -1,6 +1,8 @@
 namespace Own.Blockchain.Common
 
-type AppError = AppError of string
+type AppError = AppError of string with
+    member __.Message =
+        __ |> fun (AppError m) -> m
 
 type AppErrors = AppError list
 
