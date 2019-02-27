@@ -267,6 +267,35 @@ module ValidationTests =
             test <@ errors.Length = 1 @>
 
     [<Fact>]
+    let ``Validation.validateTx TransferAsset same FromAccountHash and ToAccountHash`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = transferAssetActionType
+                        ActionData =
+                            {
+                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                ToAccountHash = "A"
+                                AssetHash = "asset"
+                                Amount = 12m
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+
+        match result with
+        | Ok t -> failwith "Validation should fail in case of this test."
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+
+    [<Fact>]
     let ``Validation.validateTx TransferAsset invalid Asset`` () =
         let testTx = {
             SenderAddress = chAddress.Value

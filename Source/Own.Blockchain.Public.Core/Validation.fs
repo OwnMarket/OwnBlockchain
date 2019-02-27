@@ -85,6 +85,8 @@ module Validation =
 
             if action.ToAccountHash.IsNullOrWhiteSpace() then
                 yield AppError "ToAccountHash value is not provided."
+            elif action.ToAccountHash = action.FromAccountHash then
+                yield AppError "ToAccountHash cannot be the same as FromAccountHash."
 
             if action.AssetHash.IsNullOrWhiteSpace() then
                 yield AppError "AssetHash is not provided."
