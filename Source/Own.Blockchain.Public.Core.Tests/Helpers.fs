@@ -4,6 +4,7 @@ open System
 open Newtonsoft.Json
 open Own.Common
 open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Crypto
@@ -118,3 +119,121 @@ module Helpers =
                 MerkleTree.calculateProof hashBytes leafs leaf
                 |> MerkleTree.verifyProof hashBytes (Hashing.decode merkleRoot) leaf
         ]
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Mock for Processing.processChanges
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    type ProcessChangesDependencies =
+        {
+            GetTx : TxHash -> Result<TxEnvelopeDto, AppErrors>
+            GetEquivocationProof : EquivocationProofHash -> Result<EquivocationProofDto, AppErrors>
+            VerifySignature : Signature -> string -> BlockchainAddress option
+            IsValidAddress : BlockchainAddress -> bool
+            DeriveHash : BlockchainAddress -> Nonce -> TxActionNumber -> string
+            DecodeHash : string -> byte[]
+            CreateHash : byte[] -> string
+            CreateConsensusMessageHash :
+                (string -> byte[]) -> (byte[] -> string) -> BlockNumber -> ConsensusRound -> ConsensusMessage -> string
+            GetChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option
+            GetHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option
+            GetVoteStateFromStorage : VoteId -> VoteState option
+            GetEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option
+            GetKycProvidersFromStorage : AssetHash -> BlockchainAddress list
+            GetAccountStateFromStorage : AccountHash -> AccountState option
+            GetAssetStateFromStorage : AssetHash -> AssetState option
+            GetAssetHashByCodeFromStorage : AssetCode -> AssetHash option
+            GetValidatorStateFromStorage : BlockchainAddress -> ValidatorState option
+            GetStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option
+            GetStakersFromStorage : BlockchainAddress -> BlockchainAddress list
+            GetTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
+            GetTopStakers : BlockchainAddress -> StakerInfo list
+            GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
+            MaxActionCountPerTx : int
+            ValidatorDeposit : ChxAmount
+            ValidatorDepositLockTime : int16
+            ValidatorBlacklistTime : int16
+            Validators : BlockchainAddress list
+            ValidatorAddress : BlockchainAddress
+            SharedRewardPercent : decimal
+            BlockNumber : BlockNumber
+            BlockchainConfiguration : BlockchainConfiguration option
+            EquivocationProofs : EquivocationProofHash list
+            TxSet : TxHash list
+        }
+
+    let processChangesMockedDeps =
+        let unexpectedInvocation functionName =
+            failwithf "%s unexpectedly invoked." functionName
+        {
+            GetTx = fun _ -> unexpectedInvocation "GetTx"
+            GetEquivocationProof = fun _ -> unexpectedInvocation "GetEquivocationProof"
+            VerifySignature = verifySignature
+            IsValidAddress = Hashing.isValidBlockchainAddress
+            DeriveHash = Hashing.deriveHash
+            DecodeHash = Hashing.decode
+            CreateHash = Hashing.hash
+            CreateConsensusMessageHash = fun _ -> unexpectedInvocation "CreateConsensusMessageHash"
+            GetChxBalanceStateFromStorage = fun _ -> unexpectedInvocation "GetChxBalanceStateFromStorage"
+            GetHoldingStateFromStorage = fun _ -> unexpectedInvocation "GetHoldingStateFromStorage"
+            GetVoteStateFromStorage = fun _ -> unexpectedInvocation "GetVoteStateFromStorage"
+            GetEligibilityStateFromStorage = fun _ -> unexpectedInvocation "GetEligibilityStateFromStorage"
+            GetKycProvidersFromStorage = fun _ -> unexpectedInvocation "GetKycProvidersFromStorage"
+            GetAccountStateFromStorage = fun _ -> unexpectedInvocation "GetAccountStateFromStorage"
+            GetAssetStateFromStorage = fun _ -> unexpectedInvocation "GetAssetStateFromStorage"
+            GetAssetHashByCodeFromStorage = fun _ -> unexpectedInvocation "GetAssetHashByCodeFromStorage"
+            GetValidatorStateFromStorage = fun _ -> None
+            GetStakeStateFromStorage = fun _ -> unexpectedInvocation "GetStakeStateFromStorage"
+            GetStakersFromStorage = fun _ -> unexpectedInvocation "GetStakersFromStorage"
+            GetTotalChxStakedFromStorage = fun _ -> ChxAmount 0m
+            GetTopStakers = fun _ -> []
+            GetLockedAndBlacklistedValidators = fun _ -> []
+            MaxActionCountPerTx = maxActionCountPerTx
+            ValidatorDeposit = ChxAmount 0m
+            ValidatorDepositLockTime = 0s
+            ValidatorBlacklistTime = 0s
+            Validators = []
+            ValidatorAddress = BlockchainAddress ""
+            SharedRewardPercent = 0m
+            BlockNumber = BlockNumber 1L
+            BlockchainConfiguration = None
+            EquivocationProofs = []
+            TxSet = []
+        }
+
+    let processChanges mockedDeps =
+        Processing.processChanges
+            mockedDeps.GetTx
+            mockedDeps.GetEquivocationProof
+            mockedDeps.VerifySignature
+            mockedDeps.IsValidAddress
+            mockedDeps.DeriveHash
+            mockedDeps.DecodeHash
+            mockedDeps.CreateHash
+            mockedDeps.CreateConsensusMessageHash
+            mockedDeps.GetChxBalanceStateFromStorage
+            mockedDeps.GetHoldingStateFromStorage
+            mockedDeps.GetVoteStateFromStorage
+            mockedDeps.GetEligibilityStateFromStorage
+            mockedDeps.GetKycProvidersFromStorage
+            mockedDeps.GetAccountStateFromStorage
+            mockedDeps.GetAssetStateFromStorage
+            mockedDeps.GetAssetHashByCodeFromStorage
+            mockedDeps.GetValidatorStateFromStorage
+            mockedDeps.GetStakeStateFromStorage
+            mockedDeps.GetStakersFromStorage
+            mockedDeps.GetTotalChxStakedFromStorage
+            mockedDeps.GetTopStakers
+            mockedDeps.GetLockedAndBlacklistedValidators
+            mockedDeps.MaxActionCountPerTx
+            mockedDeps.ValidatorDeposit
+            mockedDeps.ValidatorDepositLockTime
+            mockedDeps.ValidatorBlacklistTime
+            mockedDeps.Validators
+            mockedDeps.ValidatorAddress
+            mockedDeps.SharedRewardPercent
+            mockedDeps.BlockNumber
+            mockedDeps.BlockchainConfiguration
+            mockedDeps.EquivocationProofs
+            mockedDeps.TxSet
+

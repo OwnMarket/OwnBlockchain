@@ -11,119 +11,6 @@ open Own.Blockchain.Public.Crypto
 
 module ProcessingTests =
 
-    type ProcessChangesDependencies =
-        {
-            GetTx : TxHash -> Result<TxEnvelopeDto, AppErrors>
-            GetEquivocationProof : EquivocationProofHash -> Result<EquivocationProofDto, AppErrors>
-            VerifySignature : Signature -> string -> BlockchainAddress option
-            IsValidAddress : BlockchainAddress -> bool
-            DeriveHash : BlockchainAddress -> Nonce -> TxActionNumber -> string
-            DecodeHash : string -> byte[]
-            CreateHash : byte[] -> string
-            CreateConsensusMessageHash :
-                (string -> byte[]) -> (byte[] -> string) -> BlockNumber -> ConsensusRound -> ConsensusMessage -> string
-            GetChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option
-            GetHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option
-            GetVoteStateFromStorage : VoteId -> VoteState option
-            GetEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option
-            GetKycProvidersFromStorage : AssetHash -> BlockchainAddress list
-            GetAccountStateFromStorage : AccountHash -> AccountState option
-            GetAssetStateFromStorage : AssetHash -> AssetState option
-            GetAssetHashByCodeFromStorage : AssetCode -> AssetHash option
-            GetValidatorStateFromStorage : BlockchainAddress -> ValidatorState option
-            GetStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option
-            GetStakersFromStorage : BlockchainAddress -> BlockchainAddress list
-            GetTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
-            GetTopStakers : BlockchainAddress -> StakerInfo list
-            GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
-            MaxActionCountPerTx : int
-            ValidatorDeposit : ChxAmount
-            ValidatorDepositLockTime : int16
-            ValidatorBlacklistTime : int16
-            Validators : BlockchainAddress list
-            ValidatorAddress : BlockchainAddress
-            SharedRewardPercent : decimal
-            BlockNumber : BlockNumber
-            BlockchainConfiguration : BlockchainConfiguration option
-            EquivocationProofs : EquivocationProofHash list
-            TxSet : TxHash list
-        }
-
-    let processChangesMockedDeps =
-        let unexpectedInvocation functionName =
-            failwithf "%s unexpectedly invoked." functionName
-        {
-            GetTx = fun _ -> unexpectedInvocation "GetTx"
-            GetEquivocationProof = fun _ -> unexpectedInvocation "GetEquivocationProof"
-            VerifySignature = Helpers.verifySignature
-            IsValidAddress = Hashing.isValidBlockchainAddress
-            DeriveHash = Hashing.deriveHash
-            DecodeHash = Hashing.decode
-            CreateHash = Hashing.hash
-            CreateConsensusMessageHash = fun _ -> unexpectedInvocation "CreateConsensusMessageHash"
-            GetChxBalanceStateFromStorage = fun _ -> unexpectedInvocation "GetChxBalanceStateFromStorage"
-            GetHoldingStateFromStorage = fun _ -> unexpectedInvocation "GetHoldingStateFromStorage"
-            GetVoteStateFromStorage = fun _ -> unexpectedInvocation "GetVoteStateFromStorage"
-            GetEligibilityStateFromStorage = fun _ -> unexpectedInvocation "GetEligibilityStateFromStorage"
-            GetKycProvidersFromStorage = fun _ -> unexpectedInvocation "GetKycProvidersFromStorage"
-            GetAccountStateFromStorage = fun _ -> unexpectedInvocation "GetAccountStateFromStorage"
-            GetAssetStateFromStorage = fun _ -> unexpectedInvocation "GetAssetStateFromStorage"
-            GetAssetHashByCodeFromStorage = fun _ -> unexpectedInvocation "GetAssetHashByCodeFromStorage"
-            GetValidatorStateFromStorage = fun _ -> unexpectedInvocation "GetValidatorStateFromStorage"
-            GetStakeStateFromStorage = fun _ -> unexpectedInvocation "GetStakeStateFromStorage"
-            GetStakersFromStorage = fun _ -> unexpectedInvocation "GetStakersFromStorage"
-            GetTotalChxStakedFromStorage = fun _ -> unexpectedInvocation "GetTotalChxStakedFromStorage"
-            GetTopStakers = fun _ -> unexpectedInvocation "GetTopStakers"
-            GetLockedAndBlacklistedValidators = fun _ -> unexpectedInvocation "GetLockedAndBlacklistedValidators"
-            MaxActionCountPerTx = Helpers.maxActionCountPerTx
-            ValidatorDeposit = ChxAmount 0m
-            ValidatorDepositLockTime = 0s
-            ValidatorBlacklistTime = 0s
-            Validators = []
-            ValidatorAddress = BlockchainAddress ""
-            SharedRewardPercent = 0m
-            BlockNumber = BlockNumber 1L
-            BlockchainConfiguration = None
-            EquivocationProofs = []
-            TxSet = []
-        }
-
-    let processChanges mockedDeps =
-        Processing.processChanges
-            mockedDeps.GetTx
-            mockedDeps.GetEquivocationProof
-            mockedDeps.VerifySignature
-            mockedDeps.IsValidAddress
-            mockedDeps.DeriveHash
-            mockedDeps.DecodeHash
-            mockedDeps.CreateHash
-            mockedDeps.CreateConsensusMessageHash
-            mockedDeps.GetChxBalanceStateFromStorage
-            mockedDeps.GetHoldingStateFromStorage
-            mockedDeps.GetVoteStateFromStorage
-            mockedDeps.GetEligibilityStateFromStorage
-            mockedDeps.GetKycProvidersFromStorage
-            mockedDeps.GetAccountStateFromStorage
-            mockedDeps.GetAssetStateFromStorage
-            mockedDeps.GetAssetHashByCodeFromStorage
-            mockedDeps.GetValidatorStateFromStorage
-            mockedDeps.GetStakeStateFromStorage
-            mockedDeps.GetStakersFromStorage
-            mockedDeps.GetTotalChxStakedFromStorage
-            mockedDeps.GetTopStakers
-            mockedDeps.GetLockedAndBlacklistedValidators
-            mockedDeps.MaxActionCountPerTx
-            mockedDeps.ValidatorDeposit
-            mockedDeps.ValidatorDepositLockTime
-            mockedDeps.ValidatorBlacklistTime
-            mockedDeps.Validators
-            mockedDeps.ValidatorAddress
-            mockedDeps.SharedRewardPercent
-            mockedDeps.BlockNumber
-            mockedDeps.BlockchainConfiguration
-            mockedDeps.EquivocationProofs
-            mockedDeps.TxSet
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx preparation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -302,7 +189,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -310,15 +196,6 @@ module ProcessingTests =
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
 
         let getTopStakers _ =
             [
@@ -329,19 +206,15 @@ module ProcessingTests =
 
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
                 GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
                 SharedRewardPercent = sharedRewardPercent
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
@@ -418,7 +291,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -426,15 +298,6 @@ module ProcessingTests =
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
 
         let getTopStakers _ =
             [
@@ -445,19 +308,15 @@ module ProcessingTests =
 
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
                 GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
                 SharedRewardPercent = sharedRewardPercent
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
@@ -522,7 +381,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -531,31 +389,15 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
@@ -605,7 +447,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -614,31 +455,15 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -689,7 +514,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -698,31 +522,15 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -773,7 +581,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -782,30 +589,14 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         let processChanges () =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         raisesWith<exn>
@@ -846,7 +637,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -855,34 +645,22 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
         let getTotalChxStaked address =
             if address = senderWallet.Address then
                 ChxAmount 1m
             else
                 ChxAmount 0m
 
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -947,7 +725,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -965,34 +742,18 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -1054,7 +815,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1079,35 +839,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
@@ -1162,7 +906,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1187,35 +930,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
@@ -1270,7 +997,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1295,35 +1021,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -1379,7 +1089,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1404,35 +1113,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -1488,7 +1181,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1506,34 +1198,18 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -1597,7 +1273,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1615,33 +1290,17 @@ module ProcessingTests =
             else
                 None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -1702,7 +1361,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1720,33 +1378,17 @@ module ProcessingTests =
             else
                 None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -1810,7 +1452,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -1831,35 +1472,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
 
@@ -1940,7 +1565,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce2 actionFee
 
         let txSet = [txHash1; txHash2]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -1970,35 +1594,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         test <@ output.TxResults.Count = 2 @>
@@ -2047,7 +1655,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2068,35 +1675,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -2162,7 +1753,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -2197,34 +1787,18 @@ module ProcessingTests =
             else
                 None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -2276,7 +1850,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2294,34 +1867,18 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -2377,7 +1934,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2398,35 +1954,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -2480,7 +2020,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2498,34 +2037,18 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
 
@@ -2582,7 +2105,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2600,34 +2122,18 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.VoteNotFound) |> TxActionError |> Failure
@@ -2674,7 +2180,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2697,34 +2202,18 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController) |> TxActionError |> Failure
@@ -2788,7 +2277,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -2823,34 +2311,18 @@ module ProcessingTests =
             else
                 None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -2902,7 +2374,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -2926,20 +2397,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -2947,15 +2407,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -3007,7 +2462,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -3035,20 +2489,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3056,15 +2499,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -3132,7 +2570,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -3172,20 +2609,9 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3193,15 +2619,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -3250,7 +2671,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -3278,20 +2698,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3299,15 +2708,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -3371,7 +2775,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -3412,20 +2815,9 @@ module ProcessingTests =
             else
                 None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3433,15 +2825,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -3494,7 +2881,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -3518,20 +2904,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3539,15 +2914,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedAssetState =
@@ -3593,7 +2963,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -3617,20 +2986,9 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3638,15 +2996,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -3690,7 +3043,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -3714,20 +3066,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = otherWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3735,15 +3076,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -3802,7 +3138,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -3830,20 +3165,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3851,15 +3175,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -3925,7 +3244,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet (nonce + 1) actionFee
 
         let txSet = [txHash1; txHash2]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -3970,20 +3288,9 @@ module ProcessingTests =
             else
                 None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -3991,15 +3298,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -4051,7 +3353,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -4075,20 +3376,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -4096,15 +3386,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4151,7 +3436,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -4184,20 +3468,9 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -4205,15 +3478,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4261,7 +3529,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -4289,20 +3556,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -4310,15 +3566,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedEligibilityState =
@@ -4371,7 +3622,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -4404,20 +3654,9 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -4425,15 +3664,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4482,7 +3716,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -4506,20 +3739,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -4527,15 +3749,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         test <@ output.TxResults.Count = 1 @>
@@ -4575,7 +3792,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -4599,20 +3815,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -4620,15 +3825,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatus =
@@ -4687,7 +3887,6 @@ module ProcessingTests =
 
         let txSet = [txHash1; txHash2]
 
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -4718,35 +3917,19 @@ module ProcessingTests =
                 }
                 |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -4800,7 +3983,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -4821,35 +4003,19 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         test <@ output.TxResults.Count = 1 @>
@@ -4904,7 +4070,6 @@ module ProcessingTests =
 
         let txSet = [txHash1; txHash2]
 
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -4935,35 +4100,19 @@ module ProcessingTests =
                 }
                 |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedStatusTxHash1 =
@@ -5028,7 +4177,6 @@ module ProcessingTests =
 
         let txSet = [txHash1; txHash2]
 
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx txHash =
@@ -5054,20 +4202,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetVoteStateFromStorage = getVoteState
@@ -5075,15 +4212,10 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         test <@ output.TxResults.Count = 2 @>
         test <@ output.TxResults.[txHash1].Status = Success @>
@@ -5132,7 +4264,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -5150,34 +4281,18 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5234,7 +4349,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -5252,34 +4366,18 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5332,7 +4430,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -5355,34 +4452,18 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5436,7 +4517,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -5454,34 +4534,18 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5534,7 +4598,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -5557,34 +4620,18 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5632,7 +4679,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         let accountHash =
             [
@@ -5657,33 +4703,17 @@ module ProcessingTests =
         let getAccountState _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5729,7 +4759,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         let assetHash =
             [
@@ -5754,33 +4783,17 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5838,7 +4851,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -5850,32 +4862,16 @@ module ProcessingTests =
         let getAccountState _ =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAccountStateFromStorage = getAccountState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -5922,7 +4918,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -5934,32 +4929,16 @@ module ProcessingTests =
         let getAccountState _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAccountStateFromStorage = getAccountState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6011,7 +4990,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6023,32 +5001,16 @@ module ProcessingTests =
         let getAccountState _ =
             Some {AccountState.ControllerAddress = currentControllerWallet.Address}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAccountStateFromStorage = getAccountState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6104,7 +5066,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6116,32 +5077,16 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6188,7 +5133,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6200,32 +5144,16 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6277,7 +5205,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6294,32 +5221,16 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6375,7 +5286,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6390,33 +5300,17 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAssetStateFromStorage = getAssetState
                 GetAssetHashByCodeFromStorage = getAssetHashByCode
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6463,7 +5357,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6475,32 +5368,16 @@ module ProcessingTests =
         let getAssetState _ =
             None
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6551,7 +5428,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6571,33 +5447,17 @@ module ProcessingTests =
         let getAssetHashByCode _ =
             AssetHash "BLA" |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAssetStateFromStorage = getAssetState
                 GetAssetHashByCodeFromStorage = getAssetHashByCode
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let expectedTxStatus =
@@ -6643,7 +5503,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6660,32 +5519,16 @@ module ProcessingTests =
             }
             |> Some
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
                 GetAssetStateFromStorage = getAssetState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6741,7 +5584,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6749,9 +5591,6 @@ module ProcessingTests =
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getLockedAndBlacklistedValidators _ =
-            []
 
         let getValidatorState _ =
             Some {
@@ -6762,25 +5601,16 @@ module ProcessingTests =
                 IsEnabled = true
             }
 
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
                 GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6833,7 +5663,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6842,31 +5671,15 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -6917,7 +5730,6 @@ module ProcessingTests =
             |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -6925,9 +5737,6 @@ module ProcessingTests =
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getLockedAndBlacklistedValidators _ =
-            []
 
         let getValidatorState _ =
             {
@@ -6954,27 +5763,18 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
                 GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -7022,7 +5822,6 @@ module ProcessingTests =
             |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7030,12 +5829,6 @@ module ProcessingTests =
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
 
         let getStakeState (stakerAddress, _) =
             if stakerAddress = stakerAddress1 then
@@ -7052,27 +5845,17 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -7115,7 +5898,6 @@ module ProcessingTests =
             |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7123,9 +5905,6 @@ module ProcessingTests =
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getLockedAndBlacklistedValidators _ =
-            []
 
         let getValidatorState _ =
             {
@@ -7152,27 +5931,18 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
                 GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -7215,7 +5985,6 @@ module ProcessingTests =
             |> Helpers.newTx senderValidatorWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7223,9 +5992,6 @@ module ProcessingTests =
 
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
-
-        let getLockedAndBlacklistedValidators _ =
-            []
 
         let getValidatorState _ =
             {
@@ -7252,27 +6018,18 @@ module ProcessingTests =
                 stakerAddress2
             ]
 
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
                 GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
@@ -7330,7 +6087,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7339,34 +6095,22 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
 
         let getTotalChxStaked _ = currentStakeAmount
 
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7413,7 +6157,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7422,35 +6165,19 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
         let getStakeState _ =
             None
 
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7497,7 +6224,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7506,35 +6232,19 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
         let getStakeState _ =
             None
 
-        let getTotalChxStaked _ =
-            ChxAmount 0m
-
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
-                GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7586,7 +6296,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7595,34 +6304,22 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
 
         let getTotalChxStaked _ = currentStakeAmount
 
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
@@ -7674,7 +6371,6 @@ module ProcessingTests =
             |> Helpers.newTx senderWallet nonce actionFee
 
         let txSet = [txHash]
-        let blockNumber = BlockNumber 1L;
 
         // COMPOSE
         let getTx _ =
@@ -7683,34 +6379,22 @@ module ProcessingTests =
         let getChxBalanceState address =
             initialChxState |> Map.tryFind address
 
-        let getLockedAndBlacklistedValidators _ =
-            []
-
-        let getValidatorState _ =
-            None
-
         let getStakeState _ =
             Some {StakeState.Amount = currentStakeAmount}
 
         let getTotalChxStaked _ = currentStakeAmount
 
-        let getTopStakers _ = []
-
         // ACT
         let output =
-            { processChangesMockedDeps with
+            { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxBalanceStateFromStorage = getChxBalanceState
-                GetLockedAndBlacklistedValidators = getLockedAndBlacklistedValidators
-                GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
-                GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
-                BlockNumber = blockNumber
                 TxSet = txSet
             }
-            |> processChanges
+            |> Helpers.processChanges
 
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
