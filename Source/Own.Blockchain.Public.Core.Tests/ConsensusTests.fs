@@ -1,10 +1,12 @@
 namespace Own.Blockchain.Public.Core.Tests
 
+open System
 open Xunit
 open Xunit.Abstractions
 open Swensen.Unquote
 open Own.Common
 open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Events
 open Own.Blockchain.Public.Crypto
 open Own.Blockchain.Public.Core.Tests.ConsensusTestHelpers
 
@@ -30,7 +32,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall isPropose @>
+        test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
 
     [<Fact>]
     member __.``Consensus - Validators vote for valid block`` () =
@@ -50,7 +52,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 10 @>
-        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
 
     [<Fact>]
     member __.``Consensus - Validators commit valid block`` () =
@@ -71,7 +73,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 10 @>
-        test <@ net.Messages |> Seq.forall isCommitForBlock @>
+        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
 
     [<Fact>]
     member __.``Consensus - Proposer proposes next block`` () =
@@ -93,7 +95,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall isPropose @>
+        test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
 
     [<Fact>]
     member __.``Consensus - 100 blocks committed`` () =
@@ -115,7 +117,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 1 @>
-        let envelope = net.Messages |> Seq.head
+        let _, envelope = net.Messages |> Seq.head
         let block =
             match envelope.ConsensusMessage with
             | Propose (block, _) -> Some block
@@ -149,7 +151,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 6 @>
-        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
 
     [<Fact>]
     member __.``Consensus - Validators don't commit block without 2f + 1 votes`` () =
@@ -223,7 +225,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 10 @>
-        test <@ net.Messages |> Seq.forall isVoteForNone @>
+        test <@ net.Messages |> Seq.forall (snd >> isVoteForNone) @>
 
     [<Fact>]
     member __.``Consensus - Validators don't commit block if votes timeout`` () =
@@ -247,7 +249,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 10 @>
-        test <@ net.Messages |> Seq.forall isCommitForNone @>
+        test <@ net.Messages |> Seq.forall (snd >> isCommitForNone) @>
 
     [<Fact>]
     member __.``Consensus - Validators don't decide for block if commits timeout`` () =
@@ -272,4 +274,57 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall isPropose @>
+        test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Equivocation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    member __.``Consensus - Validators detect equivocation`` () =
+        // ARRANGE
+        let net = new ConsensusSimulationNetwork()
+
+        let validators =
+            [1 .. 10]
+            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let byzantineValidator = validators.[DateTime.Now.Second % 10]
+        let equivocationMessage = ConsensusMessage.Vote Option<BlockHash>.None
+
+        net.StartConsensus validators
+        net.DeliverMessages() // Deliver Propose message
+
+        net.Messages
+        |> Seq.filter (fun (a, _) -> a = byzantineValidator)
+        |> Seq.exactlyOne
+        |> createEquivocationMessage equivocationMessage
+        |> fun m -> net.Messages.Add(byzantineValidator, m)
+
+        // ACT
+        net.DeliverMessages() // Deliver Vote messages
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ net.Events.Count = 10 @>
+
+        let equivocationProof, detectedValidator =
+            net.Events
+            |> Seq.distinct
+            |> Seq.exactlyOne
+            |> function
+                | AppEvent.EquivocationProofDetected (proof, address) -> proof, address
+                | _ -> failwith "Unexpected event type."
+
+        let proofBlockHash1 =
+            equivocationProof.BlockHash1
+            |> Option.ofObj
+            |> Option.map BlockHash
+            |> ConsensusMessage.Vote
+
+        test <@ proofBlockHash1 = equivocationMessage @>
+        test <@ equivocationProof.Signature1 = (byzantineValidator.Value + "_EQ") @>
+        test <@ detectedValidator = byzantineValidator @>

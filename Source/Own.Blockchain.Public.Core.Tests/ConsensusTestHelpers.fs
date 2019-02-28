@@ -6,6 +6,7 @@ open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Consensus
 open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Events
 
 module ConsensusTestHelpers =
 
@@ -61,6 +62,16 @@ module ConsensusTestHelpers =
         | Commit None -> true
         | _ -> false
 
+    let createEquivocationMessage
+        consensusMessage
+        (senderAddress, consensusMessageEnvelope : ConsensusMessageEnvelope)
+        =
+
+        { consensusMessageEnvelope with
+            ConsensusMessage = consensusMessage
+            Signature = Signature (consensusMessageEnvelope.Signature.Value + "_EQ")
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Simulation Infrastructure
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,13 +87,17 @@ module ConsensusTestHelpers =
         ) =
 
         let _state = new Dictionary<BlockchainAddress, ConsensusState>()
-        let _messages = new List<ConsensusMessageEnvelope>()
+        let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
+        let _events = new List<AppEvent>()
 
         member __.States
             with get () = _state
 
         member __.Messages
             with get () = _messages
+
+        member __.Events
+            with get () = _events
 
         member __.StartConsensus(validators : BlockchainAddress list) =
             for validatorAddress in validators do
@@ -115,8 +130,8 @@ module ConsensusTestHelpers =
                 let sendConsensusMessage =
                     __.SendConsensusMessage validatorAddress
 
-                let publishEvent _ =
-                    ()
+                let publishEvent event =
+                    _events.Add event
 
                 let proposeBlock =
                     let dummyFn validatorAddress blockNumber =
@@ -191,13 +206,15 @@ module ConsensusTestHelpers =
                 s.HandleConsensusCommand ConsensusCommand.Synchronize
 
         member private __.SendConsensusMessage validatorAddress blockNumber consensusRound consensusMessage =
-            {
-                ConsensusMessageEnvelope.BlockNumber = blockNumber
-                Round = consensusRound
-                ConsensusMessage = consensusMessage
-                Signature = Signature validatorAddress.Value // Just testing convenience.
-            }
-            |> _messages.Add
+            _messages.Add(
+                validatorAddress,
+                {
+                    ConsensusMessageEnvelope.BlockNumber = blockNumber
+                    Round = consensusRound
+                    ConsensusMessage = consensusMessage
+                    Signature = Signature validatorAddress.Value // Just for testing convenience.
+                }
+            )
 
         member __.DeliverMessages(?recipientAddresses : BlockchainAddress seq) =
             let messages = _messages |> Seq.toList
@@ -213,13 +230,9 @@ module ConsensusTestHelpers =
                 )
 
             seq {
-                for m in messages do
-                    let senderAddress =
-                        m.Signature.Value // Just testing convenience.
-                        |> BlockchainAddress
-
+                for (senderAddress, msg) in messages do
                     for address, state in states do
-                        yield senderAddress, m, state
+                        yield senderAddress, msg, state
             }
             |> Seq.shuffle
             |> Seq.iter (fun (a, m, s) -> (a, m) |> ConsensusCommand.Message |> s.HandleConsensusCommand)
@@ -227,6 +240,8 @@ module ConsensusTestHelpers =
         member __.PrintTheState(log) =
             for m in __.Messages do
                 log (sprintf "MESSAGE: %A" m)
+            for e in __.Events do
+                log (sprintf "EVENT: %A" e)
             for s in __.States do
                 log (sprintf "\nVALIDATOR %A STATE:" s.Key)
                 for v in s.Value.PrintCurrentState() do
