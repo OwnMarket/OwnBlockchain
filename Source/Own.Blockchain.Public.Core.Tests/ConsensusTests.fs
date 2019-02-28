@@ -5,12 +5,132 @@ open Xunit
 open Xunit.Abstractions
 open Swensen.Unquote
 open Own.Common
+open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Events
 open Own.Blockchain.Public.Crypto
 open Own.Blockchain.Public.Core.Tests.ConsensusTestHelpers
 
 type ConsensusTests(output : ITestOutputHelper) =
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Supporting functions
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    member __.``Consensus.createConsensusMessageHash for Propose consensus message`` () =
+        // ARRANGE
+        let blockNumber = BlockNumber 2L
+        let blockHash = BlockHash "HHH"
+        let consensusRound = ConsensusRound 1
+
+        let block : Block =
+            {
+                Header =
+                    {
+                        BlockHeader.Number = blockNumber
+                        Hash = blockHash
+                        PreviousHash = BlockHash ""
+                        ConfigurationBlockNumber = BlockNumber 0L
+                        Timestamp = Timestamp 0L
+                        ProposerAddress = BlockchainAddress ""
+                        TxSetRoot = MerkleTreeRoot ""
+                        TxResultSetRoot = MerkleTreeRoot ""
+                        EquivocationProofsRoot = MerkleTreeRoot ""
+                        EquivocationProofResultsRoot = MerkleTreeRoot ""
+                        StateRoot = MerkleTreeRoot ""
+                        StakingRewardsRoot = MerkleTreeRoot ""
+                        ConfigurationRoot = MerkleTreeRoot ""
+                    }
+                TxSet = []
+                EquivocationProofs = []
+                StakingRewards = []
+                Configuration = None
+            }
+
+        let consensusMessage = ConsensusMessage.Propose (block, consensusRound)
+
+        let expectedHash =
+            [
+                ".......B" // Block number
+                "...A" // Consensus round
+                "." // Message discriminator
+                "HHH" // Block hash
+                "...A" // Valid consensus round
+            ]
+            |> String.Concat
+
+        // ACT
+        let actualHash =
+            Consensus.createConsensusMessageHash
+                DummyHash.decode
+                DummyHash.create
+                blockNumber
+                consensusRound
+                consensusMessage
+
+        // ASSERT
+        test <@ actualHash = expectedHash @>
+
+    [<Fact>]
+    member __.``Consensus.createConsensusMessageHash for Vote consensus message`` () =
+        // ARRANGE
+        let blockNumber = BlockNumber 2L
+        let blockHash = BlockHash "HHH"
+        let consensusRound = ConsensusRound 1
+
+        let consensusMessage = ConsensusMessage.Vote (Some blockHash)
+
+        let expectedHash =
+            [
+                ".......B" // Block number
+                "...A" // Consensus round
+                "A" // Message discriminator
+                "HHH" // Block hash
+            ]
+            |> String.Concat
+
+        // ACT
+        let actualHash =
+            Consensus.createConsensusMessageHash
+                DummyHash.decode
+                DummyHash.create
+                blockNumber
+                consensusRound
+                consensusMessage
+
+        // ASSERT
+        test <@ actualHash = expectedHash @>
+
+    [<Fact>]
+    member __.``Consensus.createConsensusMessageHash for Commit consensus message`` () =
+        // ARRANGE
+        let blockNumber = BlockNumber 2L
+        let blockHash = BlockHash "HHH"
+        let consensusRound = ConsensusRound 1
+
+        let consensusMessage = ConsensusMessage.Commit (Some blockHash)
+
+        let expectedHash =
+            [
+                ".......B" // Block number
+                "...A" // Consensus round
+                "B" // Message discriminator
+                "HHH" // Block hash
+            ]
+            |> String.Concat
+
+        // ACT
+        let actualHash =
+            Consensus.createConsensusMessageHash
+                DummyHash.decode
+                DummyHash.create
+                blockNumber
+                consensusRound
+                consensusMessage
+
+        // ASSERT
+        test <@ actualHash = expectedHash @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Happy Path
