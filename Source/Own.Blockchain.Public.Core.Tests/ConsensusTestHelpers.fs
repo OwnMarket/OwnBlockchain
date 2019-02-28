@@ -83,6 +83,7 @@ module ConsensusTestHelpers =
         ?scheduleMessage : BlockchainAddress -> int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
         ?schedulePropose : BlockchainAddress -> int -> (BlockNumber * ConsensusRound) -> unit,
         ?scheduleTimeout : BlockchainAddress -> int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
+        ?isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
         ?lastAppliedBlockNumber : BlockNumber
         ) =
 
@@ -113,8 +114,10 @@ module ConsensusTestHelpers =
                     )
                     |> Seq.toList
 
-                let isValidatorBlacklisted (_, _, _) =
-                    false
+                let isValidatorBlacklisted =
+                    match isValidatorBlacklisted with
+                    | Some f -> f
+                    | None -> fun _ -> false
 
                 let getProposer blockNumber consensusRound =
                     getValidators ()

@@ -328,3 +328,35 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ proofBlockHash1 = equivocationMessage @>
         test <@ equivocationProof.Signature1 = (byzantineValidator.Value + "_EQ") @>
         test <@ detectedValidator = byzantineValidator @>
+
+    [<Fact>]
+    member __.``Consensus - Blacklisted validator's messages are ignored`` () =
+        // ARRANGE
+        let validators =
+            [1 .. 10]
+            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let blacklistedValidator = validators.[DateTime.Now.Second % 10]
+        let mutable ignoredMessageCount = 0
+        let isValidatorBlacklisted (validatorAddress, _, _) =
+            if validatorAddress = blacklistedValidator then
+                ignoredMessageCount <- ignoredMessageCount + 1
+                true
+            else
+                false
+
+        let net = new ConsensusSimulationNetwork(isValidatorBlacklisted = isValidatorBlacklisted)
+
+        net.StartConsensus validators
+        net.DeliverMessages() // Deliver Propose message
+
+        // ACT
+        net.DeliverMessages() // Deliver Vote messages
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ ignoredMessageCount = 10 @>
+
