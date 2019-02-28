@@ -227,7 +227,7 @@ type BlockHeader = {
     PreviousHash : BlockHash
     ConfigurationBlockNumber : BlockNumber
     Timestamp : Timestamp
-    ProposerAddress : BlockchainAddress // Fee beneficiary
+    ProposerAddress : BlockchainAddress
     TxSetRoot : MerkleTreeRoot
     TxResultSetRoot : MerkleTreeRoot
     EquivocationProofsRoot : MerkleTreeRoot
