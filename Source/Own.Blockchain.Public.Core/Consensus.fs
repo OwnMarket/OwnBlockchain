@@ -441,7 +441,7 @@ module Consensus =
             }
 
         /// Detects equivocation for incomming messages.
-        member __.DetectEquivocation(envelope, senderAddress) =
+        member private __.DetectEquivocation(envelope, senderAddress) =
             match envelope.ConsensusMessage with
             | Propose _ -> failwith "Don't call DetectEquivocation for Propose messages."
             | Vote blockHash2 ->
