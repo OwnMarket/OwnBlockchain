@@ -500,3 +500,12 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         let committers = net.Messages |> Seq.map fst |> Set.ofSeq
         test <@ committers = reachableValidators @>
+
+        let committedBlockNumber, committedRound =
+            net.Messages
+            |> Seq.map (fun (_, e) -> e.BlockNumber, e.Round)
+            |> Seq.distinct
+            |> Seq.exactlyOne
+
+        test <@ committedBlockNumber = BlockNumber 1L @>
+        test <@ committedRound = ConsensusRound 0 @>
