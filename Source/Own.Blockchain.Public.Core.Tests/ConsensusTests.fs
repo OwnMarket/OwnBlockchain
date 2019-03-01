@@ -479,4 +479,3 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = 10 @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
         test <@ ignoredMessageCount = 10 @>
-
