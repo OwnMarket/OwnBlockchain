@@ -34,7 +34,7 @@ module Transport =
 
     poller.Add messageQueue
 
-    let private send (msg : NetMQMessage) targetAddress =
+    let private sendAsync (msg : NetMQMessage) targetAddress =
         let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
             let dealerSocket = new DealerSocket(">tcp://" + targetAddress)
@@ -74,15 +74,15 @@ module Transport =
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
-        send msg targetAddress
+        sendAsync msg targetAddress
 
     let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
         let msg = packMessage gossipMessage
-        send msg targetMember.NetworkAddress
+        sendAsync msg targetMember.NetworkAddress
 
     let sendUnicastMessage unicastMessage targetAddress =
         let msg = packMessage unicastMessage
-        send msg targetAddress
+        sendAsync msg targetAddress
 
     let sendMulticastMessage multicastMessage multicastAddresses =
         match multicastAddresses with
@@ -92,7 +92,7 @@ module Transport =
             |> Seq.shuffle
             |> Seq.iter (fun networkAddress ->
                 let msg = packMessage multicastMessage
-                send msg networkAddress
+                sendAsync msg networkAddress
             )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,8 +109,7 @@ module Transport =
             socket.ReceiveReady
             |> Observable.subscribe (fun eventArgs ->
                 let mutable message = new NetMQMessage()
-                let received = eventArgs.Socket.TryReceiveMultipartMessage(&message)
-                if received then
+                if eventArgs.Socket.TryReceiveMultipartMessage(&message) then
                     message
                     |> unpackMessage
                     |> Option.iter (fun peerMessage -> receiveHandler peerMessage)
