@@ -139,7 +139,8 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - Proposer proposes a block`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -155,7 +156,8 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - Validators vote for valid block`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -167,13 +169,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages.Count = validatorCount @>
         test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
 
     [<Fact>]
     member __.``Consensus - Happy Path - Validators commit valid block`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -186,13 +189,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages.Count = validatorCount @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
 
     [<Fact>]
     member __.``Consensus - Happy Path - Proposer proposes next block`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -212,7 +216,8 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - 100 blocks committed`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -246,7 +251,8 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Qualified Majority - Validators don't vote for block without receiving proposal`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -264,7 +270,8 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Qualified Majority - Validators don't commit block without 2f + 1 votes`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -285,7 +292,8 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Qualified Majority - Validators don't decide for block without 2f + 1 commits`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -311,7 +319,8 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't vote for block if proposal timeouts`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -326,13 +335,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages.Count = validatorCount @>
         test <@ net.Messages |> Seq.forall (snd >> isVoteForNone) @>
 
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't commit block if votes timeout`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -348,13 +358,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages.Count = validatorCount @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForNone) @>
 
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't decide for block if commits timeout`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -381,9 +392,10 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Equivocation - Proof detected`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
-        let byzantineValidator = validators.[DateTime.Now.Second % 10]
+        let byzantineValidator = validators.[DateTime.Now.Second % validatorCount]
         let equivocationMessage = ConsensusMessage.Vote Option<BlockHash>.None
 
         let net = new ConsensusSimulationNetwork()
@@ -403,9 +415,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages.Count = validatorCount @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
-        test <@ net.Events.Count = 10 @>
+        test <@ net.Events.Count = validatorCount @>
 
         let equivocationProof, detectedValidator =
             net.Events
@@ -428,9 +440,10 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Equivocation - Blacklisted validator's messages are ignored`` () =
         // ARRANGE
-        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
 
-        let blacklistedValidator = validators.[DateTime.Now.Second % 10]
+        let blacklistedValidator = validators.[DateTime.Now.Second % validatorCount]
         let mutable ignoredMessageCount = 0
         let isValidatorBlacklisted (validatorAddress, _, _) =
             if validatorAddress = blacklistedValidator then
@@ -450,6 +463,6 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Messages.Count = 10 @>
+        test <@ net.Messages.Count = validatorCount @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
-        test <@ ignoredMessageCount = 10 @>
+        test <@ ignoredMessageCount = validatorCount @>
