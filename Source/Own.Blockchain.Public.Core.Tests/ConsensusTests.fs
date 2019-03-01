@@ -137,13 +137,13 @@ type ConsensusTests(output : ITestOutputHelper) =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    member __.``Consensus - Proposer proposes a block`` () =
+    member __.``Consensus - Happy Path - Proposer proposes a block`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         // ACT
         net.StartConsensus validators
@@ -155,13 +155,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
 
     [<Fact>]
-    member __.``Consensus - Validators vote for valid block`` () =
+    member __.``Consensus - Happy Path - Validators vote for valid block`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
 
@@ -175,13 +175,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
 
     [<Fact>]
-    member __.``Consensus - Validators commit valid block`` () =
+    member __.``Consensus - Happy Path - Validators commit valid block`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.DeliverMessages() // Deliver Propose message
@@ -196,13 +196,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
 
     [<Fact>]
-    member __.``Consensus - Proposer proposes next block`` () =
+    member __.``Consensus - Happy Path - Proposer proposes next block`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.DeliverMessages() // Deliver Propose message
@@ -218,13 +218,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
 
     [<Fact>]
-    member __.``Consensus - 100 blocks committed`` () =
+    member __.``Consensus - Happy Path - 100 blocks committed`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         // ACT
         net.StartConsensus validators
@@ -250,17 +250,17 @@ type ConsensusTests(output : ITestOutputHelper) =
             test <@ s.Decisions.Count = 100 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // <= 2f + 1
+    // Qualified Majority
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    member __.``Consensus - Validators don't vote for block without receiving proposal`` () =
+    member __.``Consensus - Qualified Majority - Validators don't vote for block without receiving proposal`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
 
@@ -274,13 +274,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
 
     [<Fact>]
-    member __.``Consensus - Validators don't commit block without 2f + 1 votes`` () =
+    member __.``Consensus - Qualified Majority - Validators don't commit block without 2f + 1 votes`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.DeliverMessages() // Deliver Propose message
@@ -297,13 +297,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = 0 @>
 
     [<Fact>]
-    member __.``Consensus - Validators don't decide for block without 2f + 1 commits`` () =
+    member __.``Consensus - Qualified Majority - Validators don't decide for block without 2f + 1 commits`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.DeliverMessages() // Deliver Propose message
@@ -325,13 +325,13 @@ type ConsensusTests(output : ITestOutputHelper) =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    member __.``Consensus - Validators don't vote for block if proposal timeouts`` () =
+    member __.``Consensus - Timeouts - Validators don't vote for block if proposal timeouts`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.Messages.Clear()
@@ -348,13 +348,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall (snd >> isVoteForNone) @>
 
     [<Fact>]
-    member __.``Consensus - Validators don't commit block if votes timeout`` () =
+    member __.``Consensus - Timeouts - Validators don't commit block if votes timeout`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.DeliverMessages() // Deliver Propose message
@@ -372,13 +372,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall (snd >> isCommitForNone) @>
 
     [<Fact>]
-    member __.``Consensus - Validators don't decide for block if commits timeout`` () =
+    member __.``Consensus - Timeouts - Validators don't decide for block if commits timeout`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.DeliverMessages() // Deliver Propose message
@@ -401,16 +401,16 @@ type ConsensusTests(output : ITestOutputHelper) =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    member __.``Consensus - Validators detect equivocation`` () =
+    member __.``Consensus - Equivocation - Proof detected`` () =
         // ARRANGE
-        let net = new ConsensusSimulationNetwork()
-
         let validators =
             [1 .. 10]
             |> List.map (fun _ -> (Signing.generateWallet ()).Address)
 
         let byzantineValidator = validators.[DateTime.Now.Second % 10]
         let equivocationMessage = ConsensusMessage.Vote Option<BlockHash>.None
+
+        let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
         net.DeliverMessages() // Deliver Propose message
@@ -450,7 +450,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ detectedValidator = byzantineValidator @>
 
     [<Fact>]
-    member __.``Consensus - Blacklisted validator's messages are ignored`` () =
+    member __.``Consensus - Equivocation - Blacklisted validator's messages are ignored`` () =
         // ARRANGE
         let validators =
             [1 .. 10]
