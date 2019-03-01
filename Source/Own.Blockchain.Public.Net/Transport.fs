@@ -19,6 +19,10 @@ module Transport =
     let messageQueue = new NetMQQueue<string * NetMQMessage>()
     let mutable peerMessageHandler : (PeerMessageDto -> unit) option = None
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let private composeMultipartMessage (msg : byte[]) =
         let netMqMessage = new NetMQMessage();
         netMqMessage.AppendEmptyFrame();
@@ -55,12 +59,12 @@ module Transport =
             message
             |> unpackMessage
             |> Option.iter (fun peerMessage ->
-                peerMessageHandler
-                |> Option.iter(fun handler -> handler peerMessage)
+                peerMessageHandler |> Option.iter(fun handler ->
+                    handler peerMessage)
             )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Send
+    // Dealer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     messageQueue.ReceiveReady |> Observable.subscribe (fun _ ->
@@ -91,6 +95,32 @@ module Transport =
             dealerSockets.AddOrUpdate (targetHost, dealerSocket, fun _ _ -> dealerSocket) |> ignore
         messageQueue.Enqueue (targetHost, msg)
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Router
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let receiveMessage listeningAddress receivePeerMessage =
+        match routerSocket with
+        | Some _ -> ()
+        | None -> routerSocket <- new RouterSocket("@tcp://" + listeningAddress) |> Some
+
+        match peerMessageHandler with
+        | Some _ -> ()
+        | None -> peerMessageHandler <- receivePeerMessage |> Some
+
+        routerSocket |> Option.iter(fun socket ->
+            poller.Add socket
+            socket.ReceiveReady
+            |> Observable.subscribe receiveMessageCallback
+            |> ignore
+        )
+        if not poller.IsRunning then
+            poller.RunAsync()
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Send
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
         sendAsync msg targetAddress
@@ -113,26 +143,6 @@ module Transport =
                 let msg = packMessage multicastMessage
                 sendAsync msg networkAddress
             )
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Receive
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let receiveMessage listeningAddress receivePeerMessage =
-        match routerSocket with
-        | Some _ -> ()
-        | None -> routerSocket <- new RouterSocket("@tcp://" + listeningAddress) |> Some
-        match peerMessageHandler with
-        | Some _ -> ()
-        | None -> peerMessageHandler <- receivePeerMessage |> Some
-        routerSocket |> Option.iter(fun socket ->
-            poller.Add socket
-            socket.ReceiveReady
-            |> Observable.subscribe receiveMessageCallback
-            |> ignore
-        )
-        if not poller.IsRunning then
-            poller.RunAsync()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Cleanup
