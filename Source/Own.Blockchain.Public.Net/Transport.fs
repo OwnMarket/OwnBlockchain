@@ -17,38 +17,15 @@ module Transport =
     let mutable routerSocket : RouterSocket option = None
     let private dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
     let messageQueue = new NetMQQueue<string * NetMQMessage>()
+    let mutable peerMessageHandler : (PeerMessageDto -> unit) option = None
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Send
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    messageQueue.ReceiveReady |> Observable.subscribe (fun _ ->
-        let mutable message = "", new NetMQMessage()
-        while messageQueue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
-            let targetAddress, payload = message
-            match dealerSockets.TryGetValue targetAddress with
-            | true, socket -> socket.TrySendMultipartMessage payload |> ignore
-            | _ -> failwithf "Socket not found for target %s" targetAddress
-    )
-    |> ignore
-
-    poller.Add messageQueue
-
-    let private sendAsync (msg : NetMQMessage) targetAddress =
-        let found, _ = dealerSockets.TryGetValue targetAddress
-        if not found then
-            let dealerSocket = new DealerSocket(">tcp://" + targetAddress)
-            dealerSocket.Options.Identity <- Guid.NewGuid().ToString() |> Encoding.Unicode.GetBytes
-            dealerSockets.AddOrUpdate (targetAddress, dealerSocket, fun _ _ -> dealerSocket) |> ignore
-        messageQueue.Enqueue (targetAddress, msg)
-
-    let composeMultipartMessage (msg : byte[]) =
+    let private composeMultipartMessage (msg : byte[]) =
         let netMqMessage = new NetMQMessage();
         netMqMessage.AppendEmptyFrame();
         netMqMessage.Append(msg);
         netMqMessage
 
-    let extractMessageFromMultipart (multipartMessage : NetMQMessage) =
+    let private extractMessageFromMultipart (multipartMessage : NetMQMessage) =
         if multipartMessage.FrameCount = 3 then
             let originatorIdentity = multipartMessage.[0];
             let msg = multipartMessage.[2].ToByteArray();
@@ -71,6 +48,48 @@ module Transport =
                 Log.error error
                 None
         | None -> None
+
+    let private receiveMessageCallback (eventArgs : NetMQSocketEventArgs) =
+        let mutable message = new NetMQMessage()
+        if eventArgs.Socket.TryReceiveMultipartMessage(&message) then
+            message
+            |> unpackMessage
+            |> Option.iter (fun peerMessage ->
+                peerMessageHandler
+                |> Option.iter(fun handler -> handler peerMessage)
+            )
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Send
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    messageQueue.ReceiveReady |> Observable.subscribe (fun _ ->
+        let mutable message = "", new NetMQMessage()
+        while messageQueue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
+            let targetAddress, payload = message
+            match dealerSockets.TryGetValue targetAddress with
+            | true, socket -> socket.TrySendMultipartMessage payload |> ignore
+            | _ -> failwithf "Socket not found for target %s" targetAddress
+    )
+    |> ignore
+
+    poller.Add messageQueue
+
+    let createDealerSocket targetHost =
+        let dealerSocket = new DealerSocket(">tcp://" + targetHost)
+        dealerSocket.Options.Identity <- Guid.NewGuid().ToString() |> Encoding.Unicode.GetBytes
+        dealerSocket.ReceiveReady
+        |> Observable.subscribe receiveMessageCallback
+        |> ignore
+        dealerSocket
+
+    let private sendAsync (msg : NetMQMessage) targetHost =
+        let found, _ = dealerSockets.TryGetValue targetHost
+        if not found then
+            let dealerSocket = createDealerSocket targetHost
+            poller.Add dealerSocket
+            dealerSockets.AddOrUpdate (targetHost, dealerSocket, fun _ _ -> dealerSocket) |> ignore
+        messageQueue.Enqueue (targetHost, msg)
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
@@ -99,21 +118,17 @@ module Transport =
     // Receive
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let receiveMessage listeningAddress receiveHandler =
+    let receiveMessage listeningAddress receivePeerMessage =
         match routerSocket with
         | Some _ -> ()
         | None -> routerSocket <- new RouterSocket("@tcp://" + listeningAddress) |> Some
-
+        match peerMessageHandler with
+        | Some _ -> ()
+        | None -> peerMessageHandler <- receivePeerMessage |> Some
         routerSocket |> Option.iter(fun socket ->
             poller.Add socket
             socket.ReceiveReady
-            |> Observable.subscribe (fun eventArgs ->
-                let mutable message = new NetMQMessage()
-                if eventArgs.Socket.TryReceiveMultipartMessage(&message) then
-                    message
-                    |> unpackMessage
-                    |> Option.iter (fun peerMessage -> receiveHandler peerMessage)
-            )
+            |> Observable.subscribe receiveMessageCallback
             |> ignore
         )
         if not poller.IsRunning then
