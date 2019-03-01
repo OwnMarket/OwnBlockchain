@@ -1,6 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Net
 
 open System
+open System.Text
 open System.Collections.Concurrent
 open Own.Common
 open Own.Blockchain.Common
@@ -13,38 +14,63 @@ open Newtonsoft.Json
 module Transport =
 
     let private poller = new NetMQPoller()
-    let mutable receiverSocket : PullSocket option = None
-    let private senderSockets = new ConcurrentDictionary<string, DealerSocket>()
-    let messageQueue = new NetMQQueue<string * byte[]>()
+    let mutable routerSocket : RouterSocket option = None
+    let private dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
+    let messageQueue = new NetMQQueue<string * NetMQMessage>()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Send
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     messageQueue.ReceiveReady |> Observable.subscribe (fun _ ->
-        let mutable message = "", Array.zeroCreate<byte> 0
+        let mutable message = "", new NetMQMessage()
         while messageQueue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
             let targetAddress, payload = message
-            match senderSockets.TryGetValue targetAddress with
-            | true, socket -> socket.TrySendFrame payload |> ignore
+            match dealerSockets.TryGetValue targetAddress with
+            | true, socket -> socket.TrySendMultipartMessage payload |> ignore
             | _ -> failwithf "Socket not found for target %s" targetAddress
     )
     |> ignore
 
     poller.Add messageQueue
 
-    let private send (msg : byte[]) targetAddress =
-        let found, _ = senderSockets.TryGetValue targetAddress
+    let private send (msg : NetMQMessage) targetAddress =
+        let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
-            let senderSocket = new DealerSocket(">tcp://" + targetAddress)
-            senderSockets.AddOrUpdate (targetAddress, senderSocket, fun _ _ -> senderSocket) |> ignore
+            let dealerSocket = new DealerSocket(">tcp://" + targetAddress)
+            dealerSocket.Options.Identity <- Guid.NewGuid().ToString() |> Encoding.Unicode.GetBytes
+            dealerSockets.AddOrUpdate (targetAddress, dealerSocket, fun _ _ -> dealerSocket) |> ignore
         messageQueue.Enqueue (targetAddress, msg)
 
+    let composeMultipartMessage (msg : byte[]) =
+        let netMqMessage = new NetMQMessage();
+        netMqMessage.AppendEmptyFrame();
+        netMqMessage.Append(msg);
+        netMqMessage
+
+    let extractMessageFromMultipart (multipartMessage : NetMQMessage) =
+        if multipartMessage.FrameCount = 3 then
+            let originatorIdentity = multipartMessage.[0];
+            let msg = multipartMessage.[2].ToByteArray();
+            msg |> Some
+        else
+            Log.errorf "Invalid message frame count. Expected 3, received %i" multipartMessage.FrameCount
+            None
+
     let private packMessage message =
-        message |> Serialization.serializeBinary
+        message |> Serialization.serializeBinary |> composeMultipartMessage
 
     let private unpackMessage message =
-        message |> Serialization.deserializePeerMessage
+        match extractMessageFromMultipart message with
+        | Some bytes ->
+            let unpackedMessage = bytes |> Serialization.deserializePeerMessage
+            match unpackedMessage with
+            | Ok peerMessage ->
+                Some peerMessage
+            | Error error ->
+                Log.error error
+                None
+        | None -> None
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage
@@ -73,20 +99,21 @@ module Transport =
     // Receive
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let receiveMessage networkAddress receiveHandler =
-        match receiverSocket with
+    let receiveMessage listeningAddress receiveHandler =
+        match routerSocket with
         | Some _ -> ()
-        | None -> receiverSocket <- new PullSocket("@tcp://" + networkAddress) |> Some
+        | None -> routerSocket <- new RouterSocket("@tcp://" + listeningAddress) |> Some
 
-        receiverSocket |> Option.iter(fun socket ->
+        routerSocket |> Option.iter(fun socket ->
             poller.Add socket
             socket.ReceiveReady
             |> Observable.subscribe (fun eventArgs ->
-                let received, message = eventArgs.Socket.TryReceiveFrameBytes()
+                let mutable message = new NetMQMessage()
+                let received = eventArgs.Socket.TryReceiveMultipartMessage(&message)
                 if received then
-                    match unpackMessage message with
-                    | Ok peerMessage -> receiveHandler peerMessage
-                    | Error error -> Log.error error
+                    message
+                    |> unpackMessage
+                    |> Option.iter (fun peerMessage -> receiveHandler peerMessage)
             )
             |> ignore
         )
@@ -98,9 +125,9 @@ module Transport =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let closeConnection networkAddress =
-        match senderSockets.TryGetValue networkAddress with
+        match dealerSockets.TryGetValue networkAddress with
         | true, socket ->
-            senderSockets.TryRemove networkAddress |> ignore
+            dealerSockets.TryRemove networkAddress |> ignore
             socket.Dispose()
         | _ -> ()
 
@@ -109,12 +136,12 @@ module Transport =
             poller.Dispose()
             messageQueue.Dispose()
 
-        senderSockets
+        dealerSockets
         |> List.ofDict
         |> List.iter (fun (_, socket) ->
             socket.Dispose()
         )
-        senderSockets.Clear()
+        dealerSockets.Clear()
 
-        receiverSocket |> Option.iter (fun socket -> socket.Dispose())
-        receiverSocket <- None
+        routerSocket |> Option.iter (fun socket -> socket.Dispose())
+        routerSocket <- None
