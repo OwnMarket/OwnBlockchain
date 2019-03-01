@@ -105,7 +105,7 @@ module Consensus =
             if _blockNumber <> nextBlockNumber then
                 Log.notice "Synchronizing the consensus"
                 _blockNumber <- nextBlockNumber
-                _validators <- getValidatorsAtHeight lastAppliedBlockNumber
+                _validators <- getValidatorsAtHeight lastAppliedBlockNumber |> List.map (fun v -> v.ValidatorAddress)
                 _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
                 _validQuorum <- Validators.calculateValidQuorum _validators.Length
                 __.ResetState()
@@ -180,7 +180,7 @@ module Consensus =
             _round <- r
             _step <- ConsensusStep.Propose
 
-            if Validators.getProposerAddress _blockNumber _round _validators = validatorAddress then
+            if Validators.getProposer _blockNumber _round _validators = validatorAddress then
                 __.TryPropose()
 
             scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
@@ -271,7 +271,7 @@ module Consensus =
             : ((BlockNumber * ConsensusRound * BlockchainAddress) * (Block * ConsensusRound)) option
             =
 
-            let proposerAddress = Validators.getProposerAddress _blockNumber _round _validators
+            let proposerAddress = Validators.getProposer _blockNumber _round _validators
             _proposals
             |> Seq.ofDict
             |> Seq.filter (fun ((blockNumber, _, senderAddress), _) ->
@@ -288,7 +288,7 @@ module Consensus =
             |> Seq.ofDict
             |> Seq.filter (fun ((blockNumber, r, senderAddress), (block, _)) ->
                 blockNumber = _blockNumber
-                && senderAddress = Validators.getProposerAddress _blockNumber r _validators
+                && senderAddress = Validators.getProposer _blockNumber r _validators
                 && __.MajorityCommitted(r, Some block.Header.Hash)
             )
             |> Seq.sortBy (fun ((_, consensusRound, _), _) -> consensusRound)

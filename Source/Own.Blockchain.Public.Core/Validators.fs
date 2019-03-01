@@ -51,18 +51,10 @@ module Validators =
     let getProposer
         (BlockNumber blockNumber)
         (ConsensusRound consensusRound)
-        (validators : ValidatorSnapshot list)
+        (validators : BlockchainAddress list)
         =
 
         let validatorIndex = (blockNumber + int64 consensusRound) % (int64 validators.Length) |> Convert.ToInt32
         validators
-        |> List.sortBy (fun v -> v.ValidatorAddress)
+        |> List.sort
         |> List.item validatorIndex
-
-    let getProposerAddress
-        blockNumber
-        consensusRound
-        validators
-        =
-
-        (getProposer blockNumber consensusRound validators).ValidatorAddress

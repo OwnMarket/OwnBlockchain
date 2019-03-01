@@ -53,13 +53,8 @@ module ValidatorTests =
         let blockNumber = BlockNumber 1L
         let consensusRound = ConsensusRound 0
         let validators =
-            [
-                {ValidatorAddress = "A"; NetworkAddress = "1"; SharedRewardPercent = 0m; TotalStake = 0m}
-                {ValidatorAddress = "B"; NetworkAddress = "2"; SharedRewardPercent = 0m; TotalStake = 0m}
-                {ValidatorAddress = "C"; NetworkAddress = "3"; SharedRewardPercent = 0m; TotalStake = 0m}
-                {ValidatorAddress = "D"; NetworkAddress = "4"; SharedRewardPercent = 0m; TotalStake = 0m}
-            ]
-            |> List.map Mapping.validatorSnapshotFromDto
+            ["A"; "B"; "C"; "D"]
+            |> List.map BlockchainAddress
 
         let expectedValidator = validators.[1]
 

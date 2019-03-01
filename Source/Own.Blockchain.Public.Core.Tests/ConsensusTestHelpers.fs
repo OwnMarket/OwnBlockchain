@@ -121,8 +121,8 @@ module ConsensusTestHelpers =
 
                 let getProposer blockNumber consensusRound =
                     getValidators ()
+                    |> List.map (fun v -> v.ValidatorAddress)
                     |> Validators.getProposer blockNumber consensusRound
-                    |> fun vs -> vs.ValidatorAddress
 
                 let getQualifiedMajority () =
                     Validators.calculateQualifiedMajority validators.Length
