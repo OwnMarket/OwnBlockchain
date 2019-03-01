@@ -50,7 +50,7 @@ module Transport =
 
     let private receiveMessageCallback (eventArgs : NetMQSocketEventArgs) =
         let mutable message = new NetMQMessage()
-        if eventArgs.Socket.TryReceiveMultipartMessage(&message) then
+        if eventArgs.Socket.TryReceiveMultipartMessage &message then
             extractMessageFromMultipart message
             |> Option.iter(fun m ->
                 match unpackMessage m with
@@ -64,13 +64,14 @@ module Transport =
         identity |> Option.iter(fun id -> dealerSocket.Options.Identity <- id)
         dealerSocket.ReceiveReady
         |> Observable.subscribe (fun e ->
-            let hasmore, emptyFrame = e.Socket.TryReceiveFrameString()
-            if hasmore then
-                let message = e.Socket.ReceiveFrameBytes()
-                match unpackMessage message with
-                | Ok peerMessage ->
-                    peerMessageHandler |> Option.iter(fun handler -> handler peerMessage)
-                | Error error -> Log.error error
+            let hasMore, _ = e.Socket.TryReceiveFrameString()
+            if hasMore then
+                let mutable message = Array.empty<byte>
+                if e.Socket.TryReceiveFrameBytes &message then
+                    match unpackMessage message with
+                    | Ok peerMessage ->
+                        peerMessageHandler |> Option.iter(fun handler -> handler peerMessage)
+                    | Error error -> Log.error error
         )
         |> ignore
 
