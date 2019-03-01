@@ -452,6 +452,8 @@ type EquivocationProof = {
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type PeerNetworkIdentity = PeerNetworkIdentity of byte[]
+
 type NetworkMessageId =
     | Tx of TxHash
     | EquivocationProof of EquivocationProofHash
@@ -459,6 +461,7 @@ type NetworkMessageId =
     | Consensus of ConsensusMessageId
 
 type NetworkNodeConfig = {
+    Identity : PeerNetworkIdentity
     ListeningAddress : NetworkAddress
     PublicAddress : NetworkAddress option
     BootstrapNodes : NetworkAddress list
@@ -486,7 +489,7 @@ type MulticastMessage = {
 
 type RequestDataMessage = {
     MessageId : NetworkMessageId
-    SenderAddress : NetworkAddress
+    SenderIdentity : PeerNetworkIdentity
 }
 
 type ResponseDataMessage = {
@@ -512,6 +515,10 @@ type DbEngineType =
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Domain Type Logic
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type PeerNetworkIdentity with
+    member __.Value =
+        __ |> fun (PeerNetworkIdentity v) -> v
 
 type NetworkId with
     member __.Value =

@@ -17,7 +17,7 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "RequestFromPeer agent not started."
 
-    let mutable respondToPeerDispatcher : MailboxProcessor<NetworkAddress * PeerMessage> option = None
+    let mutable respondToPeerDispatcher : MailboxProcessor<PeerNetworkIdentity * PeerMessage> option = None
     let invokeRespondToPeer m =
         match respondToPeerDispatcher with
         | Some h -> h.Post m
@@ -50,9 +50,9 @@ module Peers =
             failwith "RespondToPeer agent is already started."
 
         respondToPeerDispatcher <-
-            Agent.start <| fun (targetAddress, peerMessage) ->
+            Agent.start <| fun (targetIdentity, peerMessage) ->
                 async {
-                    PeerMessageHandler.respondToPeer targetAddress peerMessage
+                    PeerMessageHandler.respondToPeer targetIdentity peerMessage
                 }
             |> Some
 
@@ -74,8 +74,8 @@ module Peers =
     let requestEquivocationProofFromPeer equivocationProofHash =
         requestFromPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
 
-    let respondToPeer targetAddress peerMessage =
-        invokeRespondToPeer (targetAddress, peerMessage)
+    let respondToPeer targetIdentity peerMessage =
+        invokeRespondToPeer (targetIdentity, peerMessage)
 
     let startGossip = PeerMessageHandler.startGossip
 

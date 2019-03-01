@@ -842,7 +842,7 @@ module Workflows =
             | Block blockNr -> processBlockFromPeer isResponse blockNr data
             | Consensus consensusMessageId -> processConsensusMessageFromPeer consensusMessageId data
 
-        let processRequest messageId senderAddress =
+        let processRequest messageId senderIdentity =
             match messageId with
             | Tx txHash ->
                 match getTx txHash with
@@ -851,7 +851,7 @@ module Workflows =
                         MessageId = messageId
                         Data = txEvenvelopeDto |> Serialization.serializeBinary
                     }
-                    |> respondToPeer senderAddress
+                    |> respondToPeer senderIdentity
                     Ok None
                 | _ -> Result.appError (sprintf "Requested tx %s not found" txHash.Value)
 
@@ -862,7 +862,7 @@ module Workflows =
                         MessageId = messageId
                         Data = equivocationProofDto |> Serialization.serializeBinary
                     }
-                    |> respondToPeer senderAddress
+                    |> respondToPeer senderIdentity
                     Ok None
                 | _ -> Result.appError (sprintf "Requested equivocation proof %s not found" equivocationProofHash.Value)
 
@@ -879,7 +879,7 @@ module Workflows =
                         MessageId = messageId
                         Data = blockEnvelopeDto |> Serialization.serializeBinary
                     }
-                    |> respondToPeer senderAddress
+                    |> respondToPeer senderIdentity
                     Ok None
                 | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
 
@@ -889,7 +889,7 @@ module Workflows =
         | GossipDiscoveryMessage _ -> None
         | GossipMessage m -> processData false m.MessageId m.Data |> Some
         | MulticastMessage m -> processData false m.MessageId m.Data |> Some
-        | RequestDataMessage m -> processRequest m.MessageId m.SenderAddress |> Some
+        | RequestDataMessage m -> processRequest m.MessageId m.SenderIdentity |> Some
         | ResponseDataMessage m -> processData true m.MessageId m.Data |> Some
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

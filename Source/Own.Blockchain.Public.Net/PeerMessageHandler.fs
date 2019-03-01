@@ -1,5 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Net
 
+open System
+open System.Text
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
@@ -28,6 +30,7 @@ module internal PeerMessageHandler =
         =
 
         let nodeConfig : NetworkNodeConfig = {
+            Identity = Guid.NewGuid().ToString() |> Encoding.Unicode.GetBytes |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress listeningAddress
             PublicAddress = publicAddress |> Option.map NetworkAddress
             BootstrapNodes = bootstrapNodes
@@ -84,7 +87,7 @@ module internal PeerMessageHandler =
                 n.SendRequestDataMessage requestId
         | None -> failwith "Please start gossip first"
 
-    let respondToPeer targetAddress peerMessage =
+    let respondToPeer targetIdentity peerMessage =
         match node with
-        | Some n -> n.SendResponseDataMessage targetAddress peerMessage
+        | Some n -> n.SendResponseDataMessage targetIdentity peerMessage
         | None -> failwith "Please start gossip first"

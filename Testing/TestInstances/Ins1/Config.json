@@ -2,10 +2,11 @@
     "DbEngineType": "Postgres",
     "DbConnectionString": "server=localhost;database=own_public_blockchain_1;user id=own_blockchain_node;password=testpass1;searchpath=own",
     "ApiListeningAddresses": "http://*:10701",
-    "ListeningAddress": "127.0.0.1:25701",
-    "PublicAddress": "127.0.0.1:25701",
+    "ListeningAddress": "localhost:25701",
+    "PublicAddress": "localhost:25701",
     "NetworkBootstrapNodes": [
     ],
     "NetworkDiscoveryTime": 3,
-    "ValidatorPrivateKey": "93kro5U7imjh9WULNxyFZHt4tfYPAKKs5weUX45xckyh"
+    "ValidatorPrivateKey": "93kro5U7imjh9WULNxyFZHt4tfYPAKKs5weUX45xckyh",
+    "MinLogLevel": "Info"
 }

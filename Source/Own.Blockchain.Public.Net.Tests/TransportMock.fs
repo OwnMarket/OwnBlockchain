@@ -41,9 +41,9 @@ module TransportMock =
         let msg = packMessage requestMessage
         send msg targetAddress
 
-    let sendResponseMessage requestMessage =
+    let sendResponseMessage requestMessage (targetIdentity : byte[]) =
         let msg = packMessage requestMessage
-        send msg "" // TODO fix this
+        send msg ""
 
     let sendMulticastMessage multicastMessage multicastAddresses =
         match multicastAddresses with
@@ -57,7 +57,7 @@ module TransportMock =
                 send msg networkAddress
             )
 
-    let receiveMessage networkAddress receiveCallback =
+    let receiveMessage identity networkAddress receiveCallback =
         let rec loop address callback =
             async {
                 match messageQueue.TryGetValue address with

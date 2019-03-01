@@ -51,7 +51,7 @@ module WorkflowsMock =
         | MulticastMessage m ->
             RawMock.savePeerData address m.MessageId
             None
-        | RequestDataMessage m -> processRequest address m.MessageId m.SenderAddress
+        | RequestDataMessage m -> processRequest address m.MessageId m.SenderIdentity
         | ResponseDataMessage m ->
             RawMock.savePeerData address m.MessageId
             None

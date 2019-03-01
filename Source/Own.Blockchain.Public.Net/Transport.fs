@@ -14,75 +14,79 @@ open Newtonsoft.Json
 module Transport =
 
     let private poller = new NetMQPoller()
-    let mutable routerSocket : RouterSocket option = None
+    let mutable private routerSocket : RouterSocket option = None
     let private dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
-    let dealerMessageQueue = new NetMQQueue<string * NetMQMessage>()
-    let routerMessageQueue = new NetMQQueue<NetMQMessage>()
+    let private dealerMessageQueue = new NetMQQueue<string * NetMQMessage>()
+    let private routerMessageQueue = new NetMQQueue<NetMQMessage>()
     let mutable peerMessageHandler : (PeerMessageDto -> unit) option = None
+    let mutable identity : byte [] option = None
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private composeMultipartMessage (msg : byte[]) =
-        let netMqMessage = new NetMQMessage();
-        netMqMessage.AppendEmptyFrame();
-        netMqMessage.Append(msg);
-        netMqMessage
+    let private composeMultipartMessage (msg : byte[]) (identity : byte[] option) =
+        let multipartMessage = new NetMQMessage();
+        identity |> Option.iter(fun id -> multipartMessage.Append(id))
+        multipartMessage.AppendEmptyFrame();
+        multipartMessage.Append(msg);
+        multipartMessage
 
     let private extractMessageFromMultipart (multipartMessage : NetMQMessage) =
         if multipartMessage.FrameCount = 3 then
-            let originatorIdentity = multipartMessage.[0];
+            let originatorIdentity = multipartMessage.[0]; // TODO: use this instead of SenderIdentity
             let msg = multipartMessage.[2].ToByteArray();
             msg |> Some
         else
             Log.errorf "Invalid message frame count. Expected 3, received %i" multipartMessage.FrameCount
             None
 
-    let private packMessage message =
-        message |> Serialization.serializeBinary |> composeMultipartMessage
+    let private packMessage message (identity : byte[] option) =
+        let bytes = message |> Serialization.serializeBinary
+        composeMultipartMessage bytes identity
 
     let private unpackMessage message =
-        match extractMessageFromMultipart message with
-        | Some bytes ->
-            let unpackedMessage = bytes |> Serialization.deserializePeerMessage
-            match unpackedMessage with
-            | Ok peerMessage ->
-                Some peerMessage
-            | Error error ->
-                Log.error error
-                None
-        | None -> None
+        message |> Serialization.deserializePeerMessage
 
     let private receiveMessageCallback (eventArgs : NetMQSocketEventArgs) =
         let mutable message = new NetMQMessage()
         if eventArgs.Socket.TryReceiveMultipartMessage(&message) then
-            message
-            |> unpackMessage
-            |> Option.iter (fun peerMessage ->
-                peerMessageHandler |> Option.iter(fun handler ->
-                    handler peerMessage)
+            extractMessageFromMultipart message
+            |> Option.iter(fun m ->
+                match unpackMessage m with
+                | Ok peerMessage ->
+                    peerMessageHandler |> Option.iter(fun handler -> handler peerMessage)
+                | Error error -> Log.error error
             )
 
     let private createDealerSocket targetHost =
-        let dealerSocket = new DealerSocket(">tcp://" + targetHost)
-        dealerSocket.Options.Identity <- Guid.NewGuid().ToString() |> Encoding.Unicode.GetBytes
+        let dealerSocket = new DealerSocket("tcp://" + targetHost)
+        identity |> Option.iter(fun id -> dealerSocket.Options.Identity <- id)
         dealerSocket.ReceiveReady
-        |> Observable.subscribe receiveMessageCallback
+        |> Observable.subscribe (fun e ->
+            let hasmore, emptyFrame = e.Socket.TryReceiveFrameString()
+            if hasmore then
+                let message = e.Socket.ReceiveFrameBytes()
+                match unpackMessage message with
+                | Ok peerMessage ->
+                    peerMessageHandler |> Option.iter(fun handler -> handler peerMessage)
+                | Error error -> Log.error error
+        )
         |> ignore
+
         dealerSocket
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Dealer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private dealerSendAsync (msg : NetMQMessage) targetHost =
-        let found, _ = dealerSockets.TryGetValue targetHost
+    let private dealerSendAsync (msg : NetMQMessage) targetAddress =
+        let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
-            let dealerSocket = createDealerSocket targetHost
+            let dealerSocket = createDealerSocket targetAddress
             poller.Add dealerSocket
-            dealerSockets.AddOrUpdate (targetHost, dealerSocket, fun _ _ -> dealerSocket) |> ignore
-        dealerMessageQueue.Enqueue (targetHost, msg)
+            dealerSockets.AddOrUpdate (targetAddress, dealerSocket, fun _ _ -> dealerSocket) |> ignore
+        dealerMessageQueue.Enqueue (targetAddress, msg)
 
     dealerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
         let mutable message = "", new NetMQMessage()
@@ -106,14 +110,17 @@ module Transport =
     routerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
         let mutable message = new NetMQMessage()
         while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
-            routerSocket |> Option.iter(fun socket ->
-                socket.TrySendMultipartMessage message |> ignore)
+            routerSocket |> Option.iter(fun socket -> socket.TrySendMultipartMessage message |> ignore)
     )
     |> ignore
 
     poller.Add routerMessageQueue
 
-    let receiveMessage listeningAddress receivePeerMessage =
+    let receiveMessage peerIdentity listeningAddress receivePeerMessage =
+        match identity with
+        | Some _ -> ()
+        | None -> identity <- peerIdentity |> Some
+
         match routerSocket with
         | Some _ -> ()
         | None -> routerSocket <- new RouterSocket("@tcp://" + listeningAddress) |> Some
@@ -136,19 +143,19 @@ module Transport =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
-        let msg = packMessage gossipDiscoveryMessage
+        let msg = packMessage gossipDiscoveryMessage None
         dealerSendAsync msg targetAddress
 
     let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
-        let msg = packMessage gossipMessage
+        let msg = packMessage gossipMessage None
         dealerSendAsync msg targetMember.NetworkAddress
 
     let sendRequestMessage requestMessage targetAddress =
-        let msg = packMessage requestMessage
+        let msg = packMessage requestMessage None
         dealerSendAsync msg targetAddress
 
-    let sendResponseMessage responseMessage =
-        let msg = packMessage responseMessage
+    let sendResponseMessage responseMessage (targetIdentity : byte[]) =
+        let msg = packMessage responseMessage (targetIdentity |> Some)
         routerSendAsync msg
 
     let sendMulticastMessage multicastMessage multicastAddresses =
@@ -158,7 +165,7 @@ module Transport =
             multicastAddresses
             |> Seq.shuffle
             |> Seq.iter (fun networkAddress ->
-                let msg = packMessage multicastMessage
+                let msg = packMessage multicastMessage None
                 dealerSendAsync msg networkAddress
             )
 
@@ -166,10 +173,10 @@ module Transport =
     // Cleanup
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let closeConnection networkAddress =
-        match dealerSockets.TryGetValue networkAddress with
+    let closeConnection remoteAddress =
+        match dealerSockets.TryGetValue remoteAddress with
         | true, socket ->
-            dealerSockets.TryRemove networkAddress |> ignore
+            dealerSockets.TryRemove remoteAddress |> ignore
             socket.Dispose()
         | _ -> ()
 

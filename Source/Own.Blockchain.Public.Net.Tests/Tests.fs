@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.Net.Tests
 
+open System.Text
 open System.Threading
 open System.Collections.Concurrent
 open Own.Common
@@ -224,16 +225,19 @@ module PeerTests =
 
     let create3NodesConfigSameBootstrapNode () =
         let nodeConfig1 = {
+            Identity = Encoding.Unicode.GetBytes("5555") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
             PublicAddress = None
             BootstrapNodes = []
         }
         let nodeConfig2 = {
+            Identity = Encoding.Unicode.GetBytes("5556") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
         }
         let nodeConfig3 = {
+            Identity = Encoding.Unicode.GetBytes("5557") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
@@ -242,16 +246,19 @@ module PeerTests =
 
     let create3NodesConfigDifferentBoostrapNode () =
         let nodeConfig1 = {
+            Identity = Encoding.Unicode.GetBytes("5555") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
             PublicAddress = None
             BootstrapNodes = []
         }
         let nodeConfig2 = {
+            Identity = Encoding.Unicode.GetBytes("5556") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
         }
         let nodeConfig3 = {
+            Identity = Encoding.Unicode.GetBytes("5557") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"]
@@ -260,16 +267,19 @@ module PeerTests =
 
     let create3NodesMeshedNetwork () =
         let nodeConfig1 = {
+            Identity = Encoding.Unicode.GetBytes("5555") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"; NetworkAddress "127.0.0.1:5557"]
         }
         let nodeConfig2 = {
+            Identity = Encoding.Unicode.GetBytes("5556") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5557"]
         }
         let nodeConfig3 = {
+            Identity = Encoding.Unicode.GetBytes("5557") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5556"]
@@ -527,6 +537,7 @@ module PeerTests =
         setupTest()
 
         let nodeConfig1 = {
+            Identity = Encoding.Unicode.GetBytes("6555") |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:6555"
             PublicAddress = None
             BootstrapNodes = []
@@ -536,6 +547,7 @@ module PeerTests =
             [6556..6654]
             |> List.map(fun port ->
                 {
+                    Identity = Encoding.Unicode.GetBytes(port.ToString()) |> PeerNetworkIdentity
                     ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                     PublicAddress = None
                     BootstrapNodes = [NetworkAddress "127.0.0.1:6555"]

@@ -209,15 +209,13 @@ type NetworkNode
                         |> ignore
                     selectedUnicastPeer
 
-                config.PublicAddress |> Option.iter(fun publicAddress ->
-                    targetAddress |> Option.iter (fun address ->
-                        let requestMessage = RequestDataMessage {
-                            MessageId = messageId
-                            SenderAddress = publicAddress
-                        }
-                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary requestMessage
-                        sendRequestMessage peerMessageDto address.Value
-                    )
+                targetAddress |> Option.iter (fun address ->
+                    let requestMessage = RequestDataMessage {
+                        MessageId = messageId
+                        SenderIdentity = config.Identity
+                    }
+                    let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary requestMessage
+                    sendRequestMessage peerMessageDto address.Value
                 )
 
                 do! Async.Sleep(4 * tCycle)
@@ -233,15 +231,13 @@ type NetworkNode
                 | false, _ -> ()
             }
 
-        match config.PublicAddress with
-        | Some _ -> Async.Start (loop requestId, cts.Token)
-        | None -> Log.warning "Node must have a public network address configured to request data from peers."
+        Async.Start (loop requestId, cts.Token)
 
-    member __.SendResponseDataMessage (targetAddress : NetworkAddress) responseMessage =
+    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) responseMessage =
         let unicastMessageTask =
             async {
                 let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary responseMessage
-                sendResponseMessage peerMessageDto
+                sendResponseMessage peerMessageDto targetIdentity.Value
             }
         Async.Start (unicastMessageTask, cts.Token)
 
@@ -258,6 +254,7 @@ type NetworkNode
         Log.infof "Listen on: %s" config.ListeningAddress.Value
         config.PublicAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage
+            config.Identity.Value
             config.ListeningAddress.Value
             (__.ReceivePeerMessage publishEvent)
 

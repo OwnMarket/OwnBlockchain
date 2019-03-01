@@ -855,7 +855,7 @@ module Mapping =
 
         {
             MessageId = requestDataMessageId
-            SenderAddress = NetworkAddress dto.SenderAddress
+            SenderIdentity = PeerNetworkIdentity dto.SenderIdentity
         }
 
     let requestDataMessageToDto (requestDataMessage : RequestDataMessage) =
@@ -864,7 +864,7 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
-            SenderAddress = requestDataMessage.SenderAddress.Value
+            SenderIdentity = requestDataMessage.SenderIdentity.Value
         }
 
     let responseDataMessageFromDto (dto : ResponseDataMessageDto) : ResponseDataMessage =

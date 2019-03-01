@@ -504,7 +504,7 @@ type MulticastMessageDto = {
 type RequestDataMessageDto = {
     [<Key(0)>] MessageType : string
     [<Key(1)>] MessageId : string
-    [<Key(2)>] SenderAddress : string
+    [<Key(2)>] SenderIdentity : byte[]
 }
 
 [<CLIMutable>]
