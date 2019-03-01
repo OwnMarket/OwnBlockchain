@@ -466,3 +466,37 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = validatorCount @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
         test <@ ignoredMessageCount = validatorCount @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Distributed Test Cases
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: CF1`` () =
+        // ARRANGE
+        let validatorCount = 4
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        let crashFollower = validators |> List.except [proposer] |> List.head
+        let reachableValidators = validators |> List.except [crashFollower] |> Set.ofList
+
+        let net = new ConsensusSimulationNetwork()
+
+        // ACT
+        net.StartConsensus validators
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = proposer @>
+
+        net.DeliverMessages(reachableValidators) // Deliver Propose message
+        test <@ net.Messages.Count = reachableValidators.Count @>
+        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+
+        net.DeliverMessages(reachableValidators) // Deliver Vote messages
+        test <@ net.Messages.Count = reachableValidators.Count @>
+        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        let committers = net.Messages |> Seq.map fst |> Set.ofSeq
+        test <@ committers = reachableValidators @>
