@@ -14,7 +14,7 @@ module Log =
         | Warning = 4
         | Error = 5
 
-    let mutable minLogLevel = LogLevel.Debug
+    let mutable minLogLevel = LogLevel.Info // Default value
 
     let private defaultColor = Console.ForegroundColor
 
@@ -48,12 +48,8 @@ module Log =
 
     /// Detailed info for debugging purpose.
     let debug o =
-        #if DEBUG
         if minLogLevel <= LogLevel.Debug then
             log "DBG" o |> printInColor ConsoleColor.DarkGray
-        #else
-        ()
-        #endif
 
     /// Ordinary events.
     /// (e.g. Tx submitted; block received)

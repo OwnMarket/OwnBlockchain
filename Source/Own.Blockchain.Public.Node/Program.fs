@@ -14,6 +14,8 @@ let main argv =
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture
         Thread.CurrentThread.CurrentUICulture <- CultureInfo.InvariantCulture
 
+        Log.minLogLevel <- Config.MinLogLevel
+
         CompositeResolver.RegisterAndSetAsDefault(
             FSharpResolver.Instance,
             StandardResolver.Instance

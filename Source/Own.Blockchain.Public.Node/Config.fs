@@ -6,6 +6,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Microsoft.Extensions.Configuration
 open Own.Common
+open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 
 type Config () =
@@ -25,6 +26,19 @@ type Config () =
             .SetBasePath(workingDir)
             .AddJsonFile("Genesis.json")
             .Build()
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // General
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member MinLogLevel
+        with get () =
+            let minLogLevel = config.["MinLogLevel"]
+            if minLogLevel.IsNullOrWhiteSpace() then
+                Log.LogLevel.Debug
+            else
+                match Enum.TryParse<Log.LogLevel>(minLogLevel) with
+                | true, value -> value
+                | _ -> failwithf "Invalid MinLogLevel value in config file: %s" minLogLevel
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Storage
