@@ -37,9 +37,13 @@ module TransportMock =
         let msg = packMessage gossipMessage
         send msg targetMember.NetworkAddress
 
-    let sendUnicastMessage unicastMessage targetAddress =
-        let msg = packMessage unicastMessage
+    let sendRequestMessage requestMessage targetAddress =
+        let msg = packMessage requestMessage
         send msg targetAddress
+
+    let sendResponseMessage requestMessage =
+        let msg = packMessage requestMessage
+        send msg "" // TODO fix this
 
     let sendMulticastMessage multicastMessage multicastAddresses =
         match multicastAddresses with

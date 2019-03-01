@@ -143,9 +143,13 @@ module Transport =
         let msg = packMessage gossipMessage
         dealerSendAsync msg targetMember.NetworkAddress
 
-    let sendUnicastMessage unicastMessage targetAddress =
-        let msg = packMessage unicastMessage
+    let sendRequestMessage requestMessage targetAddress =
+        let msg = packMessage requestMessage
         dealerSendAsync msg targetAddress
+
+    let sendResponseMessage responseMessage =
+        let msg = packMessage responseMessage
+        routerSendAsync msg
 
     let sendMulticastMessage multicastMessage multicastAddresses =
         match multicastAddresses with

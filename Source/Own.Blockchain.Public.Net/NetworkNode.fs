@@ -16,7 +16,8 @@ type NetworkNode
     sendGossipDiscoveryMessage,
     sendGossipMessage,
     sendMulticastMessage,
-    sendUnicastMessage,
+    sendRequestMessage,
+    sendResponseMessage,
     receiveMessage,
     closeConnection,
     closeAllConnections,
@@ -215,7 +216,7 @@ type NetworkNode
                             SenderAddress = publicAddress
                         }
                         let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary requestMessage
-                        sendUnicastMessage peerMessageDto address.Value
+                        sendRequestMessage peerMessageDto address.Value
                     )
                 )
 
@@ -240,7 +241,7 @@ type NetworkNode
         let unicastMessageTask =
             async {
                 let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary responseMessage
-                sendUnicastMessage peerMessageDto targetAddress.Value
+                sendResponseMessage peerMessageDto
             }
         Async.Start (unicastMessageTask, cts.Token)
 

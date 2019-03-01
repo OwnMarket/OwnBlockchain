@@ -483,7 +483,8 @@ module Composition =
             Transport.sendGossipDiscoveryMessage
             Transport.sendGossipMessage
             Transport.sendMulticastMessage
-            Transport.sendUnicastMessage
+            Transport.sendRequestMessage
+            Transport.sendResponseMessage
             Transport.receiveMessage
             Transport.closeConnection
             Transport.closeAllConnections

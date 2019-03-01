@@ -18,7 +18,8 @@ module internal PeerMessageHandler =
         sendGossipDiscoveryMessage
         sendGossipMessage
         sendMulticastMessage
-        sendUnicastMessage
+        sendRequestMessage
+        sendResponseMessage
         receiveMessage
         closeConnection
         closeAllConnections
@@ -45,7 +46,8 @@ module internal PeerMessageHandler =
                 sendGossipDiscoveryMessage,
                 sendGossipMessage,
                 sendMulticastMessage,
-                sendUnicastMessage,
+                sendRequestMessage,
+                sendResponseMessage,
                 receiveMessage,
                 closeConnection,
                 closeAllConnections,
