@@ -253,13 +253,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ARRANGE
         let validatorCount = 10
         let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
+        let reachableValidators = validators |> List.take 6
 
         let net = new ConsensusSimulationNetwork()
 
         net.StartConsensus validators
 
         // ACT
-        net.DeliverMessages(validators |> List.take 6) // Deliver Propose message
+        net.DeliverMessages(fun (s, r, m) -> reachableValidators |> List.contains r) // Deliver Propose message
 
         // ASSERT
         net.PrintTheState(output.WriteLine)
@@ -488,11 +489,15 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> fst = proposer @>
 
-        net.DeliverMessages(reachableValidators) // Deliver Propose message
+        net.DeliverMessages(fun (s, r, m) ->
+            s <> crashedFollower && reachableValidators |> List.contains r
+        ) // Deliver Propose message
         test <@ net.Messages.Count = reachableValidators.Length @>
         test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
 
-        net.DeliverMessages(reachableValidators) // Deliver Vote messages
+        net.DeliverMessages(fun (s, r, m) ->
+            s <> crashedFollower && reachableValidators |> List.contains r
+        ) // Deliver Vote messages
         test <@ net.Messages.Count = reachableValidators.Length @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
 

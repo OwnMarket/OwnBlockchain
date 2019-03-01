@@ -219,23 +219,19 @@ module ConsensusTestHelpers =
                 }
             )
 
-        member __.DeliverMessages(?recipientAddresses : BlockchainAddress seq) =
+        member __.DeliverMessages(?filter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool) =
             let messages = _messages |> Seq.toList
             _messages.Clear()
 
-            let states =
-                _state
-                |> Seq.ofDict
-                |> Seq.filter (fun (a, _) ->
-                    match recipientAddresses with
-                    | None -> true
-                    | Some rs -> rs |> Seq.contains a
-                )
+            let shouldSend = filter |? fun _ -> true
+
+            let states = _state |> Seq.ofDict
 
             seq {
                 for (senderAddress, msg) in messages do
                     for address, state in states do
-                        yield senderAddress, msg, state
+                        if shouldSend (senderAddress, address, msg) then
+                            yield senderAddress, msg, state
             }
             |> Seq.shuffle
             |> Seq.iter (fun (a, m, s) -> (a, m) |> ConsensusCommand.Message |> s.HandleConsensusCommand)
