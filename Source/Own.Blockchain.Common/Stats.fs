@@ -24,11 +24,15 @@ module Stats =
     let private nodeStartTime = DateTime.UtcNow
     let private counters = new ConcurrentDictionary<Counter, int64>()
 
-    let increment counter =
-        counters.AddOrUpdate(counter, 1L, fun _ c -> c + 1L) |> ignore
+    let incrementBy value counter =
+        counters.AddOrUpdate(counter, value, fun _ c -> c + value) |> ignore
 
-    let decrement counter =
-        counters.AddOrUpdate(counter, -1L, fun _ c -> c - 1L) |> ignore
+    let increment = incrementBy 1L
+
+    let decrementBy value counter =
+        counters.AddOrUpdate(counter, -value, fun _ c -> c - value) |> ignore
+
+    let decrement = decrementBy 1L
 
     let getCurrent () =
         let currentTime = DateTime.UtcNow
