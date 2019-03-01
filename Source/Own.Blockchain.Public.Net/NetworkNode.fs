@@ -234,7 +234,7 @@ type NetworkNode
 
         match config.PublicAddress with
         | Some _ -> Async.Start (loop requestId, cts.Token)
-        | None -> Log.warning "Node must set the public network address to request data from peers"
+        | None -> Log.warning "Node must have a public network address configured to request data from peers."
 
     member __.SendResponseDataMessage (targetAddress : NetworkAddress) responseMessage =
         let unicastMessageTask =
