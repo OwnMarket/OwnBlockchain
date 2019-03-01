@@ -14,8 +14,7 @@ module SigningTests =
         let numOfReps = 100
 
         let walletInfoPairs =
-            [1 .. numOfReps]
-            |> List.map (fun _ -> Signing.generateWallet ())
+            List.init numOfReps (fun _ -> Signing.generateWallet ())
             |> List.distinct
 
         test <@ walletInfoPairs.Length = numOfReps @>
@@ -111,8 +110,7 @@ module SigningTests =
             Signing.signHash Helpers.getNetworkId wallet.PrivateKey messageHash
 
         let distinctMessages =
-            [1 .. numOfReps]
-            |> List.map (fun _ -> generateSignature ())
+            List.init numOfReps (fun _ -> generateSignature ())
             |> List.distinct
 
         test <@ distinctMessages.Length = numOfReps @>
@@ -145,13 +143,10 @@ module SigningTests =
         let privateKey = PrivateKey "9DeKWSbveJnzgawry3SG6uby3xE1s26UR4X5uXwdG8WT"
         let expectedAddress = Some (BlockchainAddress "CHPvS1Hxs4oLcrbgKWYYmubSBjurjUdvjg8")
 
-        let generateRandomMessageAndTest messageSize =
+        for messageSize in [1 .. 100] do
             let messageHash = Signing.generateRandomBytes messageSize |> Hashing.hash
 
             let signature = Signing.signHash Helpers.getNetworkId privateKey messageHash
             let address = Signing.verifySignature Helpers.getNetworkId signature messageHash
 
             test <@ address = expectedAddress @>
-
-        [1 .. 100]
-        |> List.map generateRandomMessageAndTest

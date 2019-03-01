@@ -35,8 +35,7 @@ module HashingTests =
         let message = Conversion.stringToBytes "Own"
 
         let hashes =
-            [1 .. 1000]
-            |> List.map (fun _ -> Hashing.hash message)
+            List.init 1000 (fun _ -> Hashing.hash message)
             |> List.distinct
 
         test <@ hashes.Length = 1 @>
@@ -47,8 +46,11 @@ module HashingTests =
         let hashCount = 1000
 
         let allHashes =
-            [1 .. hashCount]
-            |> List.map (fun i -> (sprintf "%s %i" message i) |> Conversion.stringToBytes |> Hashing.hash)
+            List.init hashCount (fun i ->
+                (sprintf "%s %i" message i)
+                |> Conversion.stringToBytes
+                |> Hashing.hash
+            )
 
         let distinctHashes =
             allHashes
@@ -62,8 +64,7 @@ module HashingTests =
         let message = Conversion.stringToBytes "Own"
         let hashCount = 1000
         let hashes =
-            [1 .. hashCount]
-            |> List.map (fun _ ->
+            List.init hashCount (fun _ ->
                 Hashing.blockchainAddress message
                 |> fun (BlockchainAddress a) -> Hashing.decode a
             )
@@ -79,8 +80,7 @@ module HashingTests =
     let ``Hashing.createBlockchainAddress calculates different hash not longer than 26 bytes for different input`` () =
         let hashCount = 1000
         let hashes =
-            [1 .. hashCount]
-            |> List.map (fun i ->
+            List.init hashCount (fun i ->
                 sprintf "Own %i" i
                 |> Conversion.stringToBytes
                 |> Hashing.blockchainAddress
