@@ -1,3 +1,6 @@
+#r "System.IO.FileSystem"
+#r "System.Text.RegularExpressions"
+
 open System
 open System.IO
 open System.Text.RegularExpressions
