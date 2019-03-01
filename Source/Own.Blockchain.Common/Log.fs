@@ -7,12 +7,13 @@ open Own.Blockchain.Common
 module Log =
 
     type LogLevel =
-        | Debug = 0
-        | Info = 1
-        | Success = 2
-        | Notice = 3
-        | Warning = 4
-        | Error = 5
+        | Verbose = 0
+        | Debug = 1
+        | Info = 2
+        | Success = 3
+        | Notice = 4
+        | Warning = 5
+        | Error = 6
 
     let mutable minLogLevel = LogLevel.Info // Default value
 
@@ -45,6 +46,11 @@ module Log =
 
     let private log logType o =
         sprintf "%s %s | %s" (DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")) logType (o.ToString())
+
+    /// Verbose info for debugging purpose.
+    let verbose o =
+        if minLogLevel <= LogLevel.Verbose then
+            log "VRB" o |> printInColor ConsoleColor.DarkGray
 
     /// Detailed info for debugging purpose.
     let debug o =
@@ -80,6 +86,7 @@ module Log =
         if minLogLevel <= LogLevel.Error then
             log "ERR" o |> printInColor ConsoleColor.Red
 
+    let verbosef format = Printf.ksprintf verbose format
     let debugf format = Printf.ksprintf debug format
     let infof format = Printf.ksprintf info format
     let successf format = Printf.ksprintf success format
