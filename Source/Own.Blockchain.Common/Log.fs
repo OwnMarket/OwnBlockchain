@@ -9,8 +9,8 @@ module Log =
     type LogLevel =
         | Debug = 0
         | Info = 1
-        | Notice = 2
-        | Success = 3
+        | Success = 2
+        | Notice = 3
         | Warning = 4
         | Error = 5
 
@@ -46,16 +46,20 @@ module Log =
     let private log logType o =
         sprintf "%s %s | %s" (DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff")) logType (o.ToString())
 
-    /// Errors which prevented successful execution.
-    let error o =
-        if minLogLevel <= LogLevel.Error then
-            log "ERR" o |> printInColor ConsoleColor.Red
+    /// Detailed info for debugging purpose.
+    let debug o =
+        #if DEBUG
+        if minLogLevel <= LogLevel.Debug then
+            log "DBG" o |> printInColor ConsoleColor.DarkGray
+        #else
+        ()
+        #endif
 
-    /// Events that are potentially problematic but didn't prevent the successful execution.
-    /// (e.g. not being able to propose block due to not having latest block applied to the state yet)
-    let warning o =
-        if minLogLevel <= LogLevel.Warning then
-            log "WRN" o |> printInColor ConsoleColor.Yellow
+    /// Ordinary events.
+    /// (e.g. Tx submitted; block received)
+    let info o =
+        if minLogLevel <= LogLevel.Info then
+            log "INF" o |> printInColor ConsoleColor.White
 
     /// Important successful events.
     /// (e.g. block applied to the state)
@@ -69,27 +73,23 @@ module Log =
         if minLogLevel <= LogLevel.Notice then
             log "NOT" o |> printInColor ConsoleColor.Cyan
 
-    /// Ordinary events.
-    /// (e.g. Tx submitted; block received)
-    let info o =
-        if minLogLevel <= LogLevel.Info then
-            log "INF" o |> printInColor ConsoleColor.White
+    /// Events that are potentially problematic but didn't prevent the successful execution.
+    /// (e.g. not being able to propose block due to not having latest block applied to the state yet)
+    let warning o =
+        if minLogLevel <= LogLevel.Warning then
+            log "WRN" o |> printInColor ConsoleColor.Yellow
 
-    /// Detailed info for debugging purpose.
-    let debug o =
-        #if DEBUG
-        if minLogLevel <= LogLevel.Debug then
-            log "DBG" o |> printInColor ConsoleColor.DarkGray
-        #else
-        ()
-        #endif
+    /// Errors which prevented successful execution.
+    let error o =
+        if minLogLevel <= LogLevel.Error then
+            log "ERR" o |> printInColor ConsoleColor.Red
 
-    let errorf format = Printf.ksprintf error format
-    let warningf format = Printf.ksprintf warning format
+    let debugf format = Printf.ksprintf debug format
+    let infof format = Printf.ksprintf info format
     let successf format = Printf.ksprintf success format
     let noticef format = Printf.ksprintf notice format
-    let infof format = Printf.ksprintf info format
-    let debugf format = Printf.ksprintf debug format
+    let warningf format = Printf.ksprintf warning format
+    let errorf format = Printf.ksprintf error format
 
     let appError (AppError message) = error message
     let appErrors errors =
