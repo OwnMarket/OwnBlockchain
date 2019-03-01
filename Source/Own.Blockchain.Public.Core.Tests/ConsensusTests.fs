@@ -139,9 +139,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - Proposer proposes a block`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -157,9 +155,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - Validators vote for valid block`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -177,9 +173,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - Validators commit valid block`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -198,9 +192,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - Proposer proposes next block`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -220,9 +212,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Happy Path - 100 blocks committed`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -256,9 +246,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Qualified Majority - Validators don't vote for block without receiving proposal`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -276,9 +264,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Qualified Majority - Validators don't commit block without 2f + 1 votes`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -299,9 +285,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Qualified Majority - Validators don't decide for block without 2f + 1 commits`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -327,9 +311,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't vote for block if proposal timeouts`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -350,9 +332,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't commit block if votes timeout`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -374,9 +354,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't decide for block if commits timeout`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let net = new ConsensusSimulationNetwork()
 
@@ -403,9 +381,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Equivocation - Proof detected`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let byzantineValidator = validators.[DateTime.Now.Second % 10]
         let equivocationMessage = ConsensusMessage.Vote Option<BlockHash>.None
@@ -452,9 +428,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     [<Fact>]
     member __.``Consensus - Equivocation - Blacklisted validator's messages are ignored`` () =
         // ARRANGE
-        let validators =
-            [1 .. 10]
-            |> List.map (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init 10 (fun _ -> (Signing.generateWallet ()).Address)
 
         let blacklistedValidator = validators.[DateTime.Now.Second % 10]
         let mutable ignoredMessageCount = 0
