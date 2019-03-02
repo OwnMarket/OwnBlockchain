@@ -217,6 +217,11 @@ let rules =
                 Some "There should be a space after the cons '::' operator."
             | _ -> None
 
+        createRule <| function
+            | _, Some line when Regex.IsMatch(line, "(byte|int16|int|int64|decimal|string) \[\]") -> // TODO: Improve
+                Some "There should be no space between type and square brackets in array declaration."
+            | _ -> None
+
         (*
         createRule <| function
             | _, Some line when Regex.IsMatch(line, "\w\:") || Regex.IsMatch(line, "\:\w") ->
