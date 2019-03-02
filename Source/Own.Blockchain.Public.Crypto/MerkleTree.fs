@@ -131,7 +131,7 @@ module MerkleTree =
     // Finds the sibling node, i.e node with the same parent.
     let private findSiblingHash node =
         node.Parent
-        |> Option.bind(fun parent ->
+        |> Option.bind (fun parent ->
             let leftHash = nodeHash parent.Left
             let rightHash = nodeHash parent.Right
 

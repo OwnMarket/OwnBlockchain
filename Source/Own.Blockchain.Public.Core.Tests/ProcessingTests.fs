@@ -1412,7 +1412,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVote success insert`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -1506,7 +1506,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVote success insert and update unweighted`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -1621,7 +1621,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVote fails if no holding`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -1700,8 +1700,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVote fails if asset or account not found`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash1, accountHash2 =
             AccountHash "Acc1", AccountHash "Acc2"
@@ -1814,8 +1814,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVote fails if sender is not account controller`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -1891,8 +1891,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVote fails if vote is already weighted`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -1985,7 +1985,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVoteWeight success update`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -2070,7 +2070,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVoteWeight fails if vote not found`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -2144,8 +2144,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVoteWeight fails is sender is not asset controller`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -2224,8 +2224,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SubmitVoteWeight if asset or account not found`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash1, accountHash2 =
             AccountHash "Acc1", AccountHash "Acc2"
@@ -2342,7 +2342,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAccountEligibility insert success`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -2430,7 +2430,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAccountEligibility update success`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -2522,8 +2522,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAccountEligibility insert and update fails if not approved KYC provider`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash1, accountHash2 = AccountHash "Acc1", AccountHash "Acc2"
         let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
@@ -2638,8 +2638,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAccountEligibility update fails if approved KYC provider but not current`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -2727,8 +2727,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAccountEligibility insert and update fails if asset or account not found`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash1, accountHash2 = AccountHash "Acc1", AccountHash "Acc2"
         let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
@@ -2852,7 +2852,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAssetEligibility update success`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "EQ1"
 
@@ -2934,7 +2934,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAssetEligibility fails if asset not found`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "EQ1"
 
@@ -3013,8 +3013,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges SetAssetEligibility fails is sender is not asset controller`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "EQ1"
 
@@ -3106,8 +3106,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges ChangeKycControllerAddress`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -3199,7 +3199,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges ChangeKycControllerAddress fails if asset or account not found`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash1, accountHash2 = AccountHash "Acc1", AccountHash "Acc2"
         let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
@@ -3321,8 +3321,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges ChangeKycControllerAddress fails if no eligibility`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -3404,8 +3404,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges ChangeKycControllerAddress fails SenderIsKycCtrlNotApprovedKycProvider`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -3497,8 +3497,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges ChangeKycControllerAddress ok SenderIsNotApprovedKycProviderButAssetCtrl`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -3590,8 +3590,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges ChangeKycControllerAddress fails SenderIsNotAssetCtrlOrApprovedKycProvider`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let accountHash = AccountHash "Acc1"
         let assetHash = AssetHash "EQ1"
@@ -3687,7 +3687,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges AddKycProvider`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "EQ1"
 
@@ -3763,7 +3763,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges AddKycProvider fails if provider already exists`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "EQ1"
 
@@ -3843,8 +3843,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges AddKycProvider various errors`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
@@ -3953,7 +3953,7 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges RemoveKycProvider`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash = AssetHash "EQ1"
 
@@ -4025,8 +4025,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges RemoveKycProvider various errors`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
@@ -4131,8 +4131,8 @@ module ProcessingTests =
     [<Fact>]
     let ``Processing.processChanges Add and RemoveKycProvider mixed`` () =
         // INIT STATE
-        let senderWallet = Signing.generateWallet()
-        let otherWallet = Signing.generateWallet()
+        let senderWallet = Signing.generateWallet ()
+        let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 

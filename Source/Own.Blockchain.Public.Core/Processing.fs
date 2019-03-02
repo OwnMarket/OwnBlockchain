@@ -833,7 +833,7 @@ module Processing =
 
         let destinedToFailDueToLowNonce, rest =
             txSet
-            |> List.partition(fun tx -> tx.Nonce <= stateNonce)
+            |> List.partition (fun tx -> tx.Nonce <= stateNonce)
 
         rest
         |> List.sortBy (fun tx -> tx.Nonce)

@@ -26,7 +26,7 @@ module Transport =
 
     let private composeMultipartMessage (msg : byte[]) (identity : byte[] option) =
         let multipartMessage = new NetMQMessage();
-        identity |> Option.iter(fun id -> multipartMessage.Append(id))
+        identity |> Option.iter (fun id -> multipartMessage.Append(id))
         multipartMessage.AppendEmptyFrame();
         multipartMessage.Append(msg);
         multipartMessage
@@ -51,16 +51,16 @@ module Transport =
         let mutable message = new NetMQMessage()
         if eventArgs.Socket.TryReceiveMultipartMessage &message then
             extractMessageFromMultipart message
-            |> Option.iter(fun m ->
+            |> Option.iter (fun m ->
                 match unpackMessage m with
                 | Ok peerMessage ->
-                    peerMessageHandler |> Option.iter(fun handler -> handler peerMessage)
+                    peerMessageHandler |> Option.iter (fun handler -> handler peerMessage)
                 | Error error -> Log.error error
             )
 
     let private createDealerSocket targetHost =
         let dealerSocket = new DealerSocket("tcp://" + targetHost)
-        identity |> Option.iter(fun id -> dealerSocket.Options.Identity <- id)
+        identity |> Option.iter (fun id -> dealerSocket.Options.Identity <- id)
         dealerSocket.ReceiveReady
         |> Observable.subscribe (fun e ->
             let hasMore, _ = e.Socket.TryReceiveFrameString()
@@ -69,7 +69,7 @@ module Transport =
                 if e.Socket.TryReceiveFrameBytes &message then
                     match unpackMessage message with
                     | Ok peerMessage ->
-                        peerMessageHandler |> Option.iter(fun handler -> handler peerMessage)
+                        peerMessageHandler |> Option.iter (fun handler -> handler peerMessage)
                     | Error error -> Log.error error
         )
         |> ignore
@@ -110,7 +110,7 @@ module Transport =
     routerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
         let mutable message = new NetMQMessage()
         while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
-            routerSocket |> Option.iter(fun socket -> socket.TrySendMultipartMessage message |> ignore)
+            routerSocket |> Option.iter (fun socket -> socket.TrySendMultipartMessage message |> ignore)
     )
     |> ignore
 
@@ -129,7 +129,7 @@ module Transport =
         | Some _ -> ()
         | None -> peerMessageHandler <- receivePeerMessage |> Some
 
-        routerSocket |> Option.iter(fun socket ->
+        routerSocket |> Option.iter (fun socket ->
             poller.Add socket
             socket.ReceiveReady
             |> Observable.subscribe receiveMessageCallback

@@ -21,7 +21,7 @@ module HashingTests =
 
     [<Fact>]
     let ``Hashing.zeroAddress`` () =
-        let randomAddress = Signing.generateWallet().Address.Value
+        let randomAddress = Signing.generateWallet ().Address.Value
         let randomAddressBytes = randomAddress |> Hashing.decode
 
         let zeroAddress = Hashing.zeroAddress.Value
@@ -73,7 +73,7 @@ module HashingTests =
 
         let longerThan26Bytes =
             hashes
-            |> List.where(fun a -> a.Length <> 26)
+            |> List.where (fun a -> a.Length <> 26)
         test <@ longerThan26Bytes.Length = 0 @>
 
     [<Fact>]
@@ -91,7 +91,7 @@ module HashingTests =
 
         let longerThan26Bytes =
             hashes
-            |> List.where(fun a -> a.Length <> 26)
+            |> List.where (fun a -> a.Length <> 26)
         test <@ longerThan26Bytes.Length = 0 @>
 
     [<Theory>]

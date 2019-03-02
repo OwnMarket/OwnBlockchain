@@ -96,7 +96,7 @@ module SerializationTests =
 
             let numOfActionsByType transType =
                 tx.Actions
-                |> List.filter(fun a -> a.ActionData.GetType() = transType)
+                |> List.filter (fun a -> a.ActionData.GetType() = transType)
                 |> List.length
 
             let chxActions = numOfActionsByType typeof<TransferChxTxActionDto>
@@ -153,7 +153,7 @@ module SerializationTests =
 
             let numOfActionsByType transType =
                 tx.Actions
-                |> List.filter(fun a -> a.ActionData.GetType() = transType)
+                |> List.filter (fun a -> a.ActionData.GetType() = transType)
                 |> List.length
 
             let chxActions = numOfActionsByType typeof<TransferChxTxActionDto>

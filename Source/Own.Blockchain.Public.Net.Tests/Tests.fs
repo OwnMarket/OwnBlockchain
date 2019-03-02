@@ -21,8 +21,8 @@ module PeerTests =
     )
 
     let testCleanup () =
-        DbMock.reset()
-        RawMock.reset()
+        DbMock.reset ()
+        RawMock.reset ()
         Thread.Sleep(2000)
 
     let setupTest() =
@@ -165,24 +165,24 @@ module PeerTests =
             |> List.sort
 
         nodeList
-        |> List.iter(fun n ->
+        |> List.iter (fun n ->
             let nodePeerList =
                 n.GetActiveMembers()
-                |> List.map(fun m -> m.NetworkAddress)
+                |> List.map (fun m -> m.NetworkAddress)
                 |> List.sort
 
             test <@ nodePeerList = expectedPeerList @>
         )
 
-        nodeList |> List.iter(fun n -> stopGossip n)
+        nodeList |> List.iter (fun n -> stopGossip n)
 
     let checkMessageReceived (nodeList : NetworkNode list) networkMessageId =
-        nodeList |> List.iter(fun n ->
+        nodeList |> List.iter (fun n ->
             let nodeHasReceivedTx = RawMock.hasData (n.GetListenAddress()) networkMessageId
             test <@ nodeHasReceivedTx = true @>
         )
 
-        nodeList |> List.iter(fun n -> stopGossip n)
+        nodeList |> List.iter (fun n -> stopGossip n)
 
     let checkResponseReceived (node : NetworkNode) networkMessageId messageExists =
         let nodeHasReceivedTx = RawMock.hasData (node.GetListenAddress()) networkMessageId
@@ -291,7 +291,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -303,7 +303,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -321,7 +321,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -345,7 +345,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -369,7 +369,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -387,7 +387,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -410,7 +410,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -433,7 +433,7 @@ module PeerTests =
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -451,14 +451,14 @@ module PeerTests =
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash) txExists
 
-        nodeList |> List.iter(fun n -> stopGossip n)
+        nodeList |> List.iter (fun n -> stopGossip n)
 
     let testRequestResponseMultipleDifferentMessageTypes nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -481,14 +481,14 @@ module PeerTests =
         checkResponseReceived nodeList.[0] (Tx txHash) true
         checkResponseReceived nodeList.[0] (Block blockNr) true
 
-        nodeList |> List.iter(fun n -> stopGossip n)
+        nodeList |> List.iter (fun n -> stopGossip n)
 
     let testRequestResponseMultipleSameMessageTypes nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
 
         // ACT
-        nodeList |> List.iter(fun n -> startGossip n)
+        nodeList |> List.iter (fun n -> startGossip n)
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
@@ -511,7 +511,7 @@ module PeerTests =
         checkResponseReceived nodeList.[0] (Tx txHash1) true
         checkResponseReceived nodeList.[0] (Tx txHash2) true
 
-        nodeList |> List.iter(fun n -> stopGossip n)
+        nodeList |> List.iter (fun n -> stopGossip n)
 
     [<Fact>]
     let ``Network - GossipDiscovery 3 nodes same bootstrap node`` () =
@@ -545,7 +545,7 @@ module PeerTests =
 
         let nodeConfigList =
             [6556..6654]
-            |> List.map(fun port ->
+            |> List.map (fun port ->
                 {
                     Identity = Encoding.Unicode.GetBytes(port.ToString()) |> PeerNetworkIdentity
                     ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)

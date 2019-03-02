@@ -65,7 +65,7 @@ module SharedTests =
         DbInit.init dbEngineType connectionString
         Composition.initBlockchainState ()
 
-        let testServer = Helper.testServer()
+        let testServer = Helper.testServer ()
         testServer.CreateClient()
 
     let submissionChecks
@@ -311,8 +311,8 @@ module SharedTests =
         // ARRANGE
         let client = testInit dbEngineType connectionString
 
-        let sender = Signing.generateWallet()
-        let newController = Signing.generateWallet()
+        let sender = Signing.generateWallet ()
+        let newController = Signing.generateWallet ()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
         let (BlockchainAddress validatorAddress) =
@@ -371,8 +371,8 @@ module SharedTests =
         // ARRANGE
         let client = testInit dbEngineType connectionString
 
-        let sender = Signing.generateWallet()
-        let newController = Signing.generateWallet()
+        let sender = Signing.generateWallet ()
+        let newController = Signing.generateWallet ()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
         let (BlockchainAddress validatorAddress) =
@@ -432,7 +432,7 @@ module SharedTests =
         let client = testInit dbEngineType connectionString
 
         let assetCode = "Foo"
-        let sender = Signing.generateWallet()
+        let sender = Signing.generateWallet ()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
         let (BlockchainAddress validatorAddress) =
@@ -500,7 +500,7 @@ module SharedTests =
                 TimeToBlacklist = 0s
                 IsEnabled = true
             }
-        let sender = Signing.generateWallet()
+        let sender = Signing.generateWallet ()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
         let (BlockchainAddress validatorAddress) =
@@ -560,7 +560,7 @@ module SharedTests =
 
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
         let stakeAmount = 5m
-        let sender = Signing.generateWallet()
+        let sender = Signing.generateWallet ()
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
 
