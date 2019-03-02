@@ -1,7 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Net
 
 open System
-open System.Text
 open System.Collections.Concurrent
 open Own.Common
 open Own.Blockchain.Common
@@ -19,7 +18,7 @@ module Transport =
     let private dealerMessageQueue = new NetMQQueue<string * NetMQMessage>()
     let private routerMessageQueue = new NetMQQueue<NetMQMessage>()
     let mutable peerMessageHandler : (PeerMessageDto -> unit) option = None
-    let mutable identity : byte [] option = None
+    let mutable identity : byte[] option = None
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private
