@@ -25,8 +25,8 @@ module PeerTests =
         RawMock.reset ()
         Thread.Sleep(2000)
 
-    let setupTest() =
-        testCleanup();
+    let setupTest () =
+        testCleanup ();
 
     let sendMessage peerMessage (node : NetworkNode) =
         node.SendMessage peerMessage
@@ -516,7 +516,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - GossipDiscovery 3 nodes same bootstrap node`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesConfigSameBootstrapNode ()
 
@@ -525,7 +525,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - GossipDiscovery 3 nodes different bootstrap node`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
 
@@ -534,7 +534,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - GossipDiscovery 100 nodes`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfig1 = {
             Identity = Encoding.Unicode.GetBytes("6555") |> PeerNetworkIdentity
@@ -559,7 +559,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - GossipMessagePassing 3 nodes single message`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -568,7 +568,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - GossipMessagePassing multiple different message types`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -577,7 +577,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - GossipMessagePassing multiple same message types`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -586,7 +586,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - MulticastMessagePassing 3 nodes single message`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -595,7 +595,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - MulticastMessagePassing multiple different message types`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -604,7 +604,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - MulticastMessagePassing multiple same message types`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -613,7 +613,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - Request/Response Tx exists`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -622,7 +622,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - Request/Response Tx doesn't exist`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -631,7 +631,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - Request/Response multiple different message types`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 
@@ -640,7 +640,7 @@ module PeerTests =
     [<Fact>]
     let ``Network - Request/Response multiple same message types`` () =
         // ARRANGE
-        setupTest()
+        setupTest ()
 
         let nodeConfigList = create3NodesMeshedNetwork ()
 

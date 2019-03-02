@@ -54,9 +54,9 @@ module ResultComputationExpression =
 
         member __.TryFinally(body, compensation) =
             try
-                __.ReturnFrom(body())
+                __.ReturnFrom(body ())
             finally
-                compensation()
+                compensation ()
 
         member __.Using(disposable : #System.IDisposable, body) =
             let body' = fun () -> body disposable

@@ -55,7 +55,7 @@ module internal Helper =
                             FROM pg_tables
                             WHERE schemaname = '%s'
                         LOOP
-                            EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(v_table_name) || ' CASCADE';
+                            EXECUTE 'DROP TABLE IF EXISTS ' || QUOTE_IDENT(v_table_name) || ' CASCADE';
                         END LOOP;
                     END $$;
                     """

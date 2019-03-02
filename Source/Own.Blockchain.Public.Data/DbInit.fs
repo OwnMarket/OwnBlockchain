@@ -31,7 +31,7 @@ module DbInit =
     let private getDbVersion dbEngineType connectionString =
         let sql =
             """
-            SELECT max(version_number) AS version_number
+            SELECT MAX(version_number) AS version_number
             FROM db_version;
             """
 

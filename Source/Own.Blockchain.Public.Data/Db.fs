@@ -157,7 +157,7 @@ module Db =
 
         let sql =
             """
-            SELECT sum(action_fee * action_count)
+            SELECT SUM(action_fee * action_count)
             FROM tx
             WHERE sender_address = @senderAddress
             """
@@ -179,7 +179,7 @@ module Db =
 
         let sql =
             """
-            SELECT count(*) AS pending_txs
+            SELECT COUNT(*) AS pending_txs
             FROM tx
             """
 
@@ -802,22 +802,22 @@ module Db =
                 SELECT FIRST @topCount validator_address, network_address, shared_reward_percent, total_stake
                 FROM validator
                 JOIN (
-                    SELECT validator_address, sum(amount) AS total_stake, count(staker_address) AS staker_count
+                    SELECT validator_address, SUM(amount) AS total_stake, COUNT(staker_address) AS staker_count
                     FROM stake
                     GROUP BY validator_address
-                    HAVING sum(amount) >= @threshold
+                    HAVING SUM(amount) >= @threshold
                 ) s USING (validator_address)
                 JOIN chx_balance ON
                     chx_balance.blockchain_address = validator.validator_address
                 LEFT JOIN (
-                    SELECT staker_address, sum(amount) AS total_delegation
+                    SELECT staker_address, SUM(amount) AS total_delegation
                     FROM stake
                     GROUP BY staker_address
                 ) d ON
                     d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
                 AND is_enabled
-                AND (chx_balance.amount - coalesce(d.total_delegation, 0)) >= @deposit
+                AND (chx_balance.amount - COALESCE(d.total_delegation, 0)) >= @deposit
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 """
             | Postgres ->
@@ -825,22 +825,22 @@ module Db =
                 SELECT validator_address, network_address, shared_reward_percent, total_stake
                 FROM validator
                 JOIN (
-                    SELECT validator_address, sum(amount) AS total_stake, count(staker_address) AS staker_count
+                    SELECT validator_address, SUM(amount) AS total_stake, COUNT(staker_address) AS staker_count
                     FROM stake
                     GROUP BY validator_address
-                    HAVING sum(amount) >= @threshold
+                    HAVING SUM(amount) >= @threshold
                 ) s USING (validator_address)
                 JOIN chx_balance ON
                     chx_balance.blockchain_address = validator.validator_address
                 LEFT JOIN (
-                    SELECT staker_address, sum(amount) AS total_delegation
+                    SELECT staker_address, SUM(amount) AS total_delegation
                     FROM stake
                     GROUP BY staker_address
                 ) d ON
                     d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
                 AND is_enabled
-                AND (chx_balance.amount - coalesce(d.total_delegation, 0)) >= @deposit
+                AND (chx_balance.amount - COALESCE(d.total_delegation, 0)) >= @deposit
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 LIMIT @topCount
                 """
@@ -958,7 +958,7 @@ module Db =
 
         let sql =
             """
-            SELECT sum(amount)
+            SELECT SUM(amount)
             FROM stake
             WHERE staker_address = @stakerAddress
             """

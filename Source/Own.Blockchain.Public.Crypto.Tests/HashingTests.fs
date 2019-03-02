@@ -21,7 +21,7 @@ module HashingTests =
 
     [<Fact>]
     let ``Hashing.zeroAddress`` () =
-        let randomAddress = Signing.generateWallet ().Address.Value
+        let randomAddress = (Signing.generateWallet ()).Address.Value
         let randomAddressBytes = randomAddress |> Hashing.decode
 
         let zeroAddress = Hashing.zeroAddress.Value

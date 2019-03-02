@@ -28,7 +28,7 @@ module Workflows =
         let chxStaked = getTotalChxStaked senderAddress
 
         let validatorDeposit =
-            getValidatorState(senderAddress)
+            getValidatorState (senderAddress)
             |> Option.map Mapping.validatorStateFromDto
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
@@ -869,7 +869,7 @@ module Workflows =
             | Block blockNr ->
                 let blockNr =
                     if blockNr = BlockNumber -1L then
-                        getLastAppliedBlockNumber()
+                        getLastAppliedBlockNumber ()
                     else
                         blockNr
 
@@ -1159,7 +1159,7 @@ module Workflows =
         =
 
         let currentValidators =
-            getCurrentValidators()
+            getCurrentValidators ()
             |> List.map (fun v ->
                 {
                     ValidatorAddress = v.ValidatorAddress.Value
@@ -1170,7 +1170,7 @@ module Workflows =
             )
 
         let allValidators =
-            getAllValidators()
+            getAllValidators ()
             |> List.map (fun v ->
                 let isActive =
                     currentValidators

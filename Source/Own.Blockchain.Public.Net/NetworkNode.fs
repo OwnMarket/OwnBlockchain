@@ -163,7 +163,7 @@ type NetworkNode
                 | MulticastMessage _ ->
                     let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
                     let multicastAddresses =
-                        getCurrentValidators()
+                        getCurrentValidators ()
                         |> List.map (fun v -> v.NetworkAddress)
                         |> List.filter (fun a -> not (isSelf a))
                         |> List.map (fun a -> a.Value)

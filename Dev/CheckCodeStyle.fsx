@@ -170,8 +170,11 @@ let rules =
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\.[a-z]\w*\(") ->
-                Some "There should be a space between the function and its first argument."
+            | _, Some line when
+                    Regex.IsMatch(line, "[^\w][a-z]\w*\(")
+                    && not (Regex.IsMatch(line, "\"[^\"]*[^\w][a-z]\w*\([^\"]*\"")) // Except in quoted strings
+                    ->
+                    Some "There should be a space between the function and its first argument."
             | _ -> None
 
         createRule <| function
