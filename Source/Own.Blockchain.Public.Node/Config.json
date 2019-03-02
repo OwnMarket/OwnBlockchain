@@ -7,5 +7,5 @@
     ],
     "NetworkDiscoveryTime": 3,
     "ValidatorPrivateKey": "6ZeUHCHEBpfryH9DDH5YhfaGabToseTnvH9Q8TGRhBio",
-    "MinLogLevel": "Debug"
+    "MinLogLevel": "Info"
 }
