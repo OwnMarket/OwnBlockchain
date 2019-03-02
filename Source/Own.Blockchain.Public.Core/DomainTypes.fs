@@ -516,10 +516,6 @@ type DbEngineType =
 // Domain Type Logic
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type PeerNetworkIdentity with
-    member __.Value =
-        __ |> fun (PeerNetworkIdentity v) -> v
-
 type NetworkId with
     member __.Value =
         __ |> fun (NetworkId v) -> v
@@ -527,6 +523,10 @@ type NetworkId with
 type NetworkAddress with
     member __.Value =
         __ |> fun (NetworkAddress v) -> v
+
+type PeerNetworkIdentity with
+    member __.Value =
+        __ |> fun (PeerNetworkIdentity v) -> v
 
 type PrivateKey with
     member __.Value =
