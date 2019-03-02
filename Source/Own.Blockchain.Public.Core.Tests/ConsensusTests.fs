@@ -488,21 +488,20 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.StartConsensus validators
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> fst = proposer @>
+        let proposedBlock =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected."
+        test <@ proposedBlock.Header.Number = BlockNumber 1L @>
 
-        net.DeliverMessages(fun (s, r, m) ->
-            s <> crashedFollower && reachableValidators |> List.contains r
-        ) // Deliver Propose message
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
         test <@ net.Messages.Count = reachableValidators.Length @>
         test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
 
-        net.DeliverMessages(fun (s, r, m) ->
-            s <> crashedFollower && reachableValidators |> List.contains r
-        ) // Deliver Vote messages
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Vote messages
         test <@ net.Messages.Count = reachableValidators.Length @>
         test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
-
-        // ASSERT
-        net.PrintTheState(output.WriteLine)
 
         let committers = net.Messages |> Seq.map fst |> Seq.toList |> List.sort
         test <@ committers = reachableValidators @>
@@ -512,6 +511,69 @@ type ConsensusTests(output : ITestOutputHelper) =
             |> Seq.map (fun (_, e) -> e.BlockNumber, e.Round)
             |> Seq.distinct
             |> Seq.exactlyOne
-
         test <@ committedBlockNumber = BlockNumber 1L @>
         test <@ committedRound = ConsensusRound 0 @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Commit messages
+        test <@ net.Messages.Count = 1 @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.States.[validators.[0]].Decisions.[BlockNumber 1L] = proposedBlock @>
+        test <@ net.States.[validators.[1]].Decisions.[BlockNumber 1L] = proposedBlock @>
+        test <@ net.States.[validators.[2]].Decisions.[BlockNumber 1L] = proposedBlock @>
+        test <@ net.States.[validators.[3]].Decisions.ContainsKey(BlockNumber 1L) = false @>
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: CF3`` () =
+        // ARRANGE
+        let validatorCount = 4
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+        let crashedFollower = validators.[3]
+        let reachableValidators = validators |> List.except [crashedFollower]
+
+        let net = new ConsensusSimulationNetwork()
+
+        // ACT
+        net.StartConsensus validators
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = proposer @>
+        let proposedBlock =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected."
+        test <@ proposedBlock.Header.Number = BlockNumber 1L @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
+        test <@ net.Messages.Count = reachableValidators.Length @>
+        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Vote messages
+        test <@ net.Messages.Count = reachableValidators.Length @>
+        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+
+        let committers = net.Messages |> Seq.map fst |> Seq.toList |> List.sort
+        test <@ committers = reachableValidators @>
+
+        let committedBlockNumber, committedRound =
+            net.Messages
+            |> Seq.map (fun (_, e) -> e.BlockNumber, e.Round)
+            |> Seq.distinct
+            |> Seq.exactlyOne
+        test <@ committedBlockNumber = BlockNumber 1L @>
+        test <@ committedRound = ConsensusRound 0 @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r = validators.[0]) // Deliver Commit messages
+        test <@ net.Messages.Count = 0 @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.States.[validators.[0]].Decisions.[BlockNumber 1L] = proposedBlock @>
+        test <@ net.States.[validators.[1]].Decisions.ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.States.[validators.[2]].Decisions.ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.States.[validators.[3]].Decisions.ContainsKey(BlockNumber 1L) = false @>
