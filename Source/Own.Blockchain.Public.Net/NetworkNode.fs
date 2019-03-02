@@ -72,7 +72,7 @@ type NetworkNode
     *)
     let setFinalDeadMember networkAddress =
         async {
-            do! Async.Sleep (tFail)
+            do! Async.Sleep tFail
 
             match activeMembers.TryGetValue networkAddress with
             | false, _ ->
@@ -102,7 +102,7 @@ type NetworkNode
     *)
     let setPendingDeadMember (networkAddress : NetworkAddress) =
         async {
-            do! Async.Sleep (tFail)
+            do! Async.Sleep tFail
             Log.debugf "*** Member potentially DEAD: %s" networkAddress.Value
             match activeMembers.TryGetValue networkAddress with
             | true, activeMember ->
@@ -389,16 +389,12 @@ type NetworkNode
 
     member private __.ProcessGossipMessage (gossipMessage : GossipMessage) recipientAddresses =
         match recipientAddresses with
-        (*
-            No recipients left to send message to, remove gossip message from the processing queue
-        *)
+        // No recipients left to send message to, remove gossip message from the processing queue
         | [] -> gossipMessages.TryRemove gossipMessage.MessageId |> ignore
-        (*
-            If two or more recipients left, select randomly a subset (fanout) of recipients to send the
-            gossip message to.
-            If gossip message was processed before, append the selected recipients to the processed recipients list
-            If not, add the gossip message (and the corresponding recipient) to the processing queue
-        *)
+        // If two or more recipients left, select randomly a subset (fanout) of recipients to send the
+        // gossip message to.
+        // If gossip message was processed before, append the selected recipients to the processed recipients list
+        // If not, add the gossip message (and the corresponding recipient) to the processing queue
         | _ ->
             let fanoutRecipientAddresses =
                 recipientAddresses

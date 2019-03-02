@@ -164,7 +164,7 @@ module Processing =
         member __.GetAccountEligibility (accountHash : AccountHash, assetHash : AssetHash) =
             eligibilities.GetOrAdd((accountHash, assetHash), getEligibilityStateFromStorage)
 
-        member __.GetKycProviders (assetHash) =
+        member __.GetKycProviders assetHash =
             kycProviders.GetOrAdd(assetHash, fun _ ->
                 getKycProvidersFromStorage assetHash
                 |> Seq.map (fun address -> (address, None))
@@ -201,7 +201,7 @@ module Processing =
             stakers.GetOrAdd(validatorAddress, getStakersFromStorage)
 
         // Not part of the blockchain state
-        member __.GetTotalChxStaked (address) =
+        member __.GetTotalChxStaked address =
             totalChxStaked.GetOrAdd(address, getTotalChxStakedFromStorage)
 
         member __.SetChxBalance (address, state : ChxBalanceState) =

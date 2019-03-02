@@ -171,10 +171,20 @@ let rules =
 
         createRule <| function
             | _, Some line when
-                    Regex.IsMatch(line, "[^\w][a-z]\w*\(")
-                    && not (Regex.IsMatch(line, "\"[^\"]*[^\w][a-z]\w*\([^\"]*\"")) // Except in quoted strings
-                    ->
-                    Some "There should be a space between the function and its first argument."
+                Regex.IsMatch(line, "[^\w][a-z]\w*\(")
+                && not (Regex.IsMatch(line, "\"[^\"]*[^\w][a-z]\w*\([^\"]*\"")) // Except in quoted strings
+                && not (Regex.IsMatch(line, "\/\/.*[^\w][a-z]\w*\(")) // Except in comments
+                ->
+                Some "There should be a space between the function and its first argument."
+            | _ -> None
+
+        createRule <| function
+            | _, Some line when
+                Regex.IsMatch(line, " \([a-zA-Z0-9]+\)")
+                && not (Regex.IsMatch(line, "\"[^\"]*\([a-zA-Z0-9]+\)[^\"]*\"")) // Except in quoted strings
+                && not (Regex.IsMatch(line, "\/\/.* \([a-zA-Z0-9]+\)")) // Except in comments
+                ->
+                Some "Simple expression should not be enclosed in parentheses."
             | _ -> None
 
         createRule <| function

@@ -88,7 +88,7 @@ module SubmissionTests =
     [<Theory>]
     [<InlineData(1)>]
     [<InlineData(4)>]
-    let ``Workflows.submitTx fails if action count is greater than MaxActionCountPerTx`` (maxActionCountPerTx) =
+    let ``Workflows.submitTx fails if action count is greater than MaxActionCountPerTx`` maxActionCountPerTx =
         // ARRANGE
         let senderWallet = Signing.generateWallet ()
         let recipientWallet = Signing.generateWallet ()

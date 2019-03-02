@@ -120,8 +120,8 @@ module PeerTests =
             ()
         | EquivocationProofDetected (proof, validatorAddress) ->
             ()
-        | EquivocationProofReceived (proof)
-        | EquivocationProofFetched (proof) ->
+        | EquivocationProofReceived proof
+        | EquivocationProofFetched proof ->
             ()
         | EquivocationProofStored (equivocationProofHash, isFetched) ->
             ()
@@ -130,7 +130,7 @@ module PeerTests =
         let found, _ = peerMessageHandlers.TryGetValue (node.GetListenAddress())
         if not found then
             let peerMessageHandler =
-                Agent.start <| fun (peerMessage) ->
+                Agent.start <| fun peerMessage ->
                     async {
                         WorkflowsMock.processPeerMessage
                             (node.GetListenAddress())
@@ -377,7 +377,7 @@ module PeerTests =
         multicastTx nodeList.[0] txHash
         RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash)
 
-        System.Threading.Thread.Sleep (tCycle)
+        System.Threading.Thread.Sleep tCycle
 
         // ASSERT
         checkMessageReceived nodeList (Tx txHash)
@@ -399,7 +399,7 @@ module PeerTests =
         RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash)
         RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Block blockNr)
 
-        System.Threading.Thread.Sleep (tCycle)
+        System.Threading.Thread.Sleep tCycle
 
         // ASSERT
         checkMessageReceived nodeList (Tx txHash)
@@ -422,7 +422,7 @@ module PeerTests =
         RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash1)
         RawMock.savePeerData (nodeList.[0].GetListenAddress()) (Tx txHash2)
 
-        System.Threading.Thread.Sleep (tCycle)
+        System.Threading.Thread.Sleep tCycle
 
         // ASSERT
         checkMessageReceived nodeList (Tx txHash1)
@@ -441,7 +441,7 @@ module PeerTests =
         requestTx nodeList.[0] txHash
 
         let nodeCount = nodeList.Length
-        if (txExists) then
+        if txExists then
             // Last node contains the tx.
             RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash)
 

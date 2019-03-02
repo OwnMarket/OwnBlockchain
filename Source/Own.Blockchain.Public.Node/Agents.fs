@@ -90,11 +90,11 @@ module Agents =
             sprintf "Validator %s: %A" validatorAddress.Value proof
             |> formatMessage
             |> Log.warning
-        | EquivocationProofReceived (proof) ->
+        | EquivocationProofReceived proof ->
             sprintf "%A" proof
             |> formatMessage
             |> Log.warning
-        | EquivocationProofFetched (proof) ->
+        | EquivocationProofFetched proof ->
             sprintf "%A" proof
             |> formatMessage
             |> Log.info
@@ -169,9 +169,9 @@ module Agents =
                 txPropagator.Post txHash
         | EquivocationProofDetected (proof, validatorAddress) ->
             invokeEquivocationProofVerifier (proof, false)
-        | EquivocationProofReceived (proof) ->
+        | EquivocationProofReceived proof ->
             invokeEquivocationProofVerifier (proof, false)
-        | EquivocationProofFetched (proof) ->
+        | EquivocationProofFetched proof ->
             invokeEquivocationProofVerifier (proof, true)
         | EquivocationProofStored (equivocationProofHash, isFetched) ->
             invokeApplier ()
@@ -200,7 +200,7 @@ module Agents =
             failwith "PeerMessageHandler agent is already started."
 
         peerMessageHandler <-
-            Agent.start <| fun (peerMessage) ->
+            Agent.start <| fun peerMessage ->
                 async {
                     Composition.processPeerMessage peerMessage
                     |> Option.iter (
@@ -260,7 +260,7 @@ module Agents =
             failwith "Applier agent is already started."
 
         applier <-
-            Agent.start <| fun (message) ->
+            Agent.start <| fun message ->
                 async {
                     Composition.tryApplyNextBlock publishEvent
                 }

@@ -28,7 +28,7 @@ module Workflows =
         let chxStaked = getTotalChxStaked senderAddress
 
         let validatorDeposit =
-            getValidatorState (senderAddress)
+            getValidatorState senderAddress
             |> Option.map Mapping.validatorStateFromDto
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
