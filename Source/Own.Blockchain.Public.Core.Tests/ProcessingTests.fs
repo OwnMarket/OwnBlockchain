@@ -2417,7 +2417,7 @@ module ProcessingTests =
             {
                 EligibilityState.Eligibility =
                     {
-                        IsPrimaryEligible = true;
+                        IsPrimaryEligible = true
                         IsSecondaryEligible = true
                     }
                 KycControllerAddress = senderWallet.Address
@@ -2509,7 +2509,7 @@ module ProcessingTests =
             {
                 EligibilityState.Eligibility =
                     {
-                        IsPrimaryEligible = true;
+                        IsPrimaryEligible = true
                         IsSecondaryEligible = false
                     }
                 KycControllerAddress = senderWallet.Address
@@ -3185,7 +3185,7 @@ module ProcessingTests =
             {
                 EligibilityState.Eligibility =
                     {
-                        IsPrimaryEligible = true;
+                        IsPrimaryEligible = true
                         IsSecondaryEligible = true
                     }
                 KycControllerAddress = otherWallet.Address
@@ -3576,7 +3576,7 @@ module ProcessingTests =
             {
                 EligibilityState.Eligibility =
                     {
-                        IsPrimaryEligible = true;
+                        IsPrimaryEligible = true
                         IsSecondaryEligible = true
                     }
                 KycControllerAddress = otherWallet.Address

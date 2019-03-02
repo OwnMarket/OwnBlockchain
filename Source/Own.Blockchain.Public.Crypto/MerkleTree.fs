@@ -122,7 +122,7 @@ module MerkleTree =
                 match leftNode with
                 | Some _ -> leftNode
                 | None -> findLeafNode n.Right hash
-        );
+        )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Proof

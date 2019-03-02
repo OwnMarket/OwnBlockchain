@@ -101,7 +101,7 @@ module HashingTests =
     [<InlineData("CHPvS1Hxs4oLcrbgKccYmubSBjurjUdvjg8", false)>]
     let ``Hashing.isValidBlockchainAddress validate various BlockchainAddress`` (blockchainAddress, expectedValid) =
         // ARRANGE
-        let address = BlockchainAddress blockchainAddress;
+        let address = BlockchainAddress blockchainAddress
 
         // ACT
         let isValid = Hashing.isValidBlockchainAddress address

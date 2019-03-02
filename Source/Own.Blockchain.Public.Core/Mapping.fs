@@ -440,7 +440,7 @@ module Mapping =
             VoteWeight =
                 match state.VoteWeight with
                 | None -> Nullable ()
-                | Some (VoteWeight voteWeight) -> Nullable voteWeight;
+                | Some (VoteWeight voteWeight) -> Nullable voteWeight
         }
 
     let eligibilityStateFromDto (dto : EligibilityStateDto) =

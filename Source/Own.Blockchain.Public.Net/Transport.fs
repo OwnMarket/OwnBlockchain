@@ -25,16 +25,16 @@ module Transport =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let private composeMultipartMessage (msg : byte[]) (identity : byte[] option) =
-        let multipartMessage = new NetMQMessage();
+        let multipartMessage = new NetMQMessage()
         identity |> Option.iter (fun id -> multipartMessage.Append(id))
-        multipartMessage.AppendEmptyFrame();
-        multipartMessage.Append(msg);
+        multipartMessage.AppendEmptyFrame()
+        multipartMessage.Append(msg)
         multipartMessage
 
     let private extractMessageFromMultipart (multipartMessage : NetMQMessage) =
         if multipartMessage.FrameCount = 3 then
-            let originatorIdentity = multipartMessage.[0]; // TODO: use this instead of SenderIdentity
-            let msg = multipartMessage.[2].ToByteArray();
+            let originatorIdentity = multipartMessage.[0] // TODO: use this instead of SenderIdentity
+            let msg = multipartMessage.[2].ToByteArray()
             msg |> Some
         else
             Log.errorf "Invalid message frame count. Expected 3, received %i" multipartMessage.FrameCount

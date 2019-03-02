@@ -211,11 +211,11 @@ module Processing =
             holdings.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
         member __.SetVote (voteId, state : VoteState) =
-            let state = Some state;
+            let state = Some state
             votes.AddOrUpdate(voteId, state, fun _ _ -> state) |> ignore
 
         member __.SetAccountEligibility (accountHash, assetHash, state : EligibilityState) =
-            let state = Some state;
+            let state = Some state
             eligibilities.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
         member __.SetKycProvider (assetHash, providerAddress, providerChange) =

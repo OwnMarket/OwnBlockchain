@@ -26,7 +26,7 @@ module PeerTests =
         Thread.Sleep(2000)
 
     let setupTest () =
-        testCleanup ();
+        testCleanup ()
 
     let sendMessage peerMessage (node : NetworkNode) =
         node.SendMessage peerMessage
