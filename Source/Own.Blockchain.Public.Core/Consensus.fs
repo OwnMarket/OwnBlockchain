@@ -301,7 +301,7 @@ module Consensus =
                 |> Seq.filter (fun ((bn, r, _), (bh, _)) ->
                     bn = _blockNumber
                     && r = consensusRound
-                    && (blockHash.IsNone || bh = blockHash.Value))
+                    && (blockHash = None || blockHash = Some bh))
                 |> Seq.length
 
             count >= _qualifiedMajority
@@ -313,7 +313,7 @@ module Consensus =
                 |> Seq.filter (fun ((bn, r, _), (bh, _)) ->
                     bn = _blockNumber
                     && r = consensusRound
-                    && (blockHash.IsNone || bh = blockHash.Value))
+                    && (blockHash = None || blockHash = Some bh))
                 |> Seq.length
 
             count >= _qualifiedMajority

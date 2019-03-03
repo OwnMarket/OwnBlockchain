@@ -25,7 +25,10 @@ module Serialization =
         | Some _ ->
             {
                 ActionType = actionType
-                ActionData = token.Value.ToObject<'T>()
+                ActionData =
+                    match token with
+                    | Some value -> value.ToObject<'T>()
+                    | None -> failwith "ActionData is missing."
             }
             |> box
         | None ->

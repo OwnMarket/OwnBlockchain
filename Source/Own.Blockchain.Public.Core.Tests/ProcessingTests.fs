@@ -31,7 +31,9 @@ module ProcessingTests =
             fun (address : BlockchainAddress) -> data |> Map.tryFind address
 
         let getAvailableChxBalance address =
-            (getChxAddressState address).Value.Balance
+            match getChxAddressState address with
+            | Some s -> s.Balance
+            | None -> failwithf "getChxAddressState: Cannot get balance for address %s" address.Value
 
         let txSet =
             [
