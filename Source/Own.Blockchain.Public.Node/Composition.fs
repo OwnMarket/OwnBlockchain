@@ -325,6 +325,14 @@ module Composition =
             removeOrphanEquivocationProofResults
             publishEvent
 
+    let synchronizeBlockchainHead () =
+        Workflows.synchronizeBlockchainHead
+            getLastStoredBlockNumber
+            getLastAppliedBlockNumber
+            getBlock
+            Peers.requestLastBlockFromPeer
+            Config.BlockchainHeadPollInterval
+
     let fetchMissingBlocks publishEvent =
         Synchronization.fetchMissingBlocks
             getLastAppliedBlockNumber
@@ -459,8 +467,6 @@ module Composition =
             Config.PublicAddress
             Peers.sendMessage
             getBlock
-
-    let requestLastBlockFromPeer () = Peers.requestLastBlockFromPeer ()
 
     let processPeerMessage (peerMessage : PeerMessage) =
         Workflows.processPeerMessage

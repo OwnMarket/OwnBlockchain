@@ -193,6 +193,26 @@ module Workflows =
                 Log.appErrors errors
                 failwith "Cannot initialize blockchain state."
 
+    let synchronizeBlockchainHead
+        (getLastStoredBlockNumber : unit -> BlockNumber option)
+        (getLastAppliedBlockNumber : unit -> BlockNumber)
+        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
+        requestLastBlockFromPeer
+        blockchainHeadPollInterval
+        =
+
+        getLastStoredBlockNumber ()
+        |?> getLastAppliedBlockNumber
+        |> getBlock
+        |> Result.map Blocks.extractBlockFromEnvelopeDto
+        |> Result.handle
+            (fun block ->
+                let currentTimestamp = Utils.getNetworkTimestamp ()
+                if currentTimestamp - block.Header.Timestamp.Value >= int64 blockchainHeadPollInterval then
+                    requestLastBlockFromPeer ()
+            )
+            Log.appErrors
+
     let createBlock
         getTx
         getEquivocationProof

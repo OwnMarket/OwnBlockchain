@@ -22,7 +22,7 @@ module Cli =
         Composition.startNetworkAgents ()
         Composition.startGossip Agents.publishEvent
         Composition.discoverNetwork ()
-        Composition.requestLastBlockFromPeer ()
+        Workers.startBlockchainHeadPoller ()
         Workers.startFetcher ()
         Api.start ()
         Composition.stopGossip ()
