@@ -16,7 +16,7 @@ module Workflows =
         getValidatorState
         validatorDeposit
         senderAddress
-        : ChxDetailedBalanceDto
+        : DetailedChxBalanceDto
         =
 
         let chxBalance =

@@ -17,25 +17,25 @@ The physical database model below shows the tables and relationships between the
 ## Tables
 
 Following tables will be described in this chapter:
-* `chx_balance`
+* `chx_address`
 * `account`
 * `holding`
 * `block`
 * `tx`
 
 
-### `chx_balance` table
+### `chx_address` table
 
-`chx_balance` table stores CHX balance for a blockchain address. Each direct user of the system needs to have at least one blockchain address, with CHX tokens on it, in order to submit the transaction. However, the act of creating a blockchain address (e.g. using the wallet software) will not create the entry in this table. An entry will be stored here once the address receives CHX Tokens for the first time.
+`chx_address` table stores CHX balance for a blockchain address. Each direct user of the system needs to have at least one blockchain address, with CHX tokens on it, in order to submit the transaction. However, the act of creating a blockchain address (e.g. using the wallet software) will not create the entry in this table. An entry will be stored here once the address receives CHX Tokens for the first time.
 
 Blockchain address is used to "control" the investor account which holds the equity. This basically means that an investment account can hold an equity only through the existing blockchain address. One blockchain address can control multiple investor accounts.
 
 | Name | Data Type | Nullable | Key | Description |
 |------|-----------|----------|-----|-------------|
-| `chx_balance_id` | INTEGER | NOT NULL | PK | A unique ID and surrogate primary key.
+| `chx_address_id` | INTEGER | NOT NULL | PK | A unique ID and surrogate primary key.
 | `blockchain_address` | TEXT | NOT NULL | AK | Blockchain address which controls the account. It is unique per record and represents an alternate key.
-| `amount` | DECIMAL (30,18) | NOT NULL | | Amount in CHX tokens held by the `blockchain_address`.
 | `nonce` | BIGINT | NOT NULL | | Nonce represents number of processed transactions sent from `blockchain_address`. It makes sure that the record is consistently updated and prevents double-spending.
+| `amount` | DECIMAL (30,18) | NOT NULL | | Amount in CHX tokens held by the `blockchain_address`.
 
 
 ### `account` table

@@ -589,7 +589,7 @@ type GetBlockApiResponseDto = {
     Signatures : string list
 }
 
-type ChxDetailedBalanceDto = {
+type DetailedChxBalanceDto = {
     Total : decimal
     Staked : decimal
     Deposit : decimal
@@ -599,7 +599,7 @@ type ChxDetailedBalanceDto = {
 type GetAddressApiResponseDto = {
     BlockchainAddress : string
     Nonce : int64
-    Balance : ChxDetailedBalanceDto
+    Balance : DetailedChxBalanceDto
 }
 
 type GetAddressAccountsApiResponseDto = {
