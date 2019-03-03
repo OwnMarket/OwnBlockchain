@@ -145,8 +145,8 @@ module SharedTests =
                     let senderWallet = Signing.generateWallet ()
                     let recipientWallet = Signing.generateWallet ()
 
-                    Helper.addBalanceAndAccount dbEngineType connString senderWallet.Address.Value 100m
-                    Helper.addBalanceAndAccount dbEngineType connString recipientWallet.Address.Value 0m
+                    Helper.addChxAddressAndAccount dbEngineType connString senderWallet.Address.Value 100m
+                    Helper.addChxAddressAndAccount dbEngineType connString recipientWallet.Address.Value 0m
 
                     let isValid = i % 2 = 0
                     let amt = if isValid then 10m else -10m
@@ -320,8 +320,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
-        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let accountHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -380,8 +380,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance dbEngineType connectionString (sender.Address.Value) initialSenderChxBalance
-        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString (sender.Address.Value) initialSenderChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let assetHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -440,8 +440,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
-        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
         let assetHash = Hashing.deriveHash sender.Address (Nonce nonce) (TxActionNumber 1s)
@@ -508,8 +508,8 @@ module SharedTests =
             |> PrivateKey
             |> addressFromPrivateKey
 
-        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
-        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
 
@@ -564,9 +564,9 @@ module SharedTests =
         let initialSenderChxBalance = 10m
         let initialValidatorChxBalance = 0m
 
-        Helper.addChxBalance dbEngineType connectionString sender.Address.Value initialSenderChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString sender.Address.Value initialSenderChxBalance
         let (BlockchainAddress validatorAddress) = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        Helper.addChxBalance dbEngineType connectionString validatorAddress initialValidatorChxBalance
+        Helper.addChxAddressAndAccount dbEngineType connectionString validatorAddress initialValidatorChxBalance
 
         let nonce = 1L
 

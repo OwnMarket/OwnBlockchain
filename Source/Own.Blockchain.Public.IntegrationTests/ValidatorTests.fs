@@ -31,7 +31,7 @@ module ValidatorTests =
                         Balance = deposit
                     }
             }
-            |> Helpers.addChxBalance
+            |> Helpers.addChxAddress
 
             {
                 ValidatorAddress = address
@@ -87,7 +87,7 @@ module ValidatorTests =
                         Balance = Config.ValidatorDeposit
                     }
             }
-            |> Helpers.addChxBalance
+            |> Helpers.addChxAddress
 
             {
                 ValidatorAddress = address

@@ -133,8 +133,8 @@ module Processing =
         member __.MergeStateAfterFailedTx (otherState : ProcessingState) =
             let otherOutput = otherState.ToProcessingOutput ()
             for other in otherOutput.ChxAddresses do
-                let current = __.GetChxBalance (other.Key)
-                __.SetChxBalance (other.Key, { current with Nonce = other.Value.Nonce })
+                let current = __.GetChxAddress (other.Key)
+                __.SetChxAddress (other.Key, { current with Nonce = other.Value.Nonce })
             for other in otherOutput.Holdings do
                 __.GetHolding (other.Key) |> ignore
             for other in otherOutput.Votes do
@@ -152,7 +152,7 @@ module Processing =
             for other in otherOutput.Stakes do
                 __.GetStake (other.Key) |> ignore
 
-        member __.GetChxBalance (address : BlockchainAddress) =
+        member __.GetChxAddress (address : BlockchainAddress) =
             chxAddresses.GetOrAdd(address, getChxAddressState)
 
         member __.GetHolding (accountHash : AccountHash, assetHash : AssetHash) =
@@ -204,7 +204,7 @@ module Processing =
         member __.GetTotalChxStaked address =
             totalChxStaked.GetOrAdd(address, getTotalChxStakedFromStorage)
 
-        member __.SetChxBalance (address, state : ChxAddressState) =
+        member __.SetChxAddress (address, state : ChxAddressState) =
             chxAddresses.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
 
         member __.SetHolding (accountHash, assetHash, state : HoldingState) =
@@ -355,8 +355,8 @@ module Processing =
         : Result<ProcessingState, TxErrorCode>
         =
 
-        let fromState = state.GetChxBalance(senderAddress)
-        let toState = state.GetChxBalance(action.RecipientAddress)
+        let fromState = state.GetChxAddress(senderAddress)
+        let toState = state.GetChxAddress(action.RecipientAddress)
 
         let validatorDeposit =
             state.GetValidator(senderAddress)
@@ -372,11 +372,11 @@ module Processing =
             Error TxErrorCode.InsufficientChxBalance
         else
             let newFromState = { fromState with Balance = fromState.Balance - action.Amount }
-            state.SetChxBalance(senderAddress, newFromState)
+            state.SetChxAddress(senderAddress, newFromState)
 
             let toState = if action.RecipientAddress = senderAddress then newFromState else toState
             let newToState = { toState with Balance = toState.Balance + action.Amount }
-            state.SetChxBalance(action.RecipientAddress, newToState)
+            state.SetChxAddress(action.RecipientAddress, newToState)
 
             Ok state
 
@@ -552,7 +552,7 @@ module Processing =
         : Result<ProcessingState, TxErrorCode>
         =
 
-        let senderState = state.GetChxBalance(senderAddress)
+        let senderState = state.GetChxAddress(senderAddress)
         let totalChxStaked = state.GetTotalChxStaked(senderAddress)
 
         let availableBalance = senderState.Balance - totalChxStaked
@@ -615,7 +615,7 @@ module Processing =
         : Result<ProcessingState, TxErrorCode>
         =
 
-        let senderState = state.GetChxBalance(senderAddress)
+        let senderState = state.GetChxAddress(senderAddress)
         let totalChxStaked = state.GetTotalChxStaked(senderAddress)
 
         let validatorDeposit =
@@ -942,13 +942,13 @@ module Processing =
             return tx
         }
 
-    let updateChxBalanceNonce senderAddress txNonce (state : ProcessingState) =
-        let senderState = state.GetChxBalance senderAddress
+    let updateChxAddressNonce senderAddress txNonce (state : ProcessingState) =
+        let senderState = state.GetChxAddress senderAddress
 
         if txNonce <= senderState.Nonce then
             Error (TxError TxErrorCode.NonceTooLow)
         elif txNonce = (senderState.Nonce + 1) then
-            state.SetChxBalance (senderAddress, {senderState with Nonce = txNonce})
+            state.SetChxAddress (senderAddress, {senderState with Nonce = txNonce})
             Ok state
         else
             // Logic in excludeTxsWithNonceGap is supposed to prevent this.
@@ -1051,7 +1051,7 @@ module Processing =
             | None -> failwithf "Cannot get validator state for %s" proof.ValidatorAddress.Value
 
             let amountToTake =
-                state.GetChxBalance(proof.ValidatorAddress).Balance
+                state.GetChxAddress(proof.ValidatorAddress).Balance
                 |> min validatorDeposit
 
             if amountToTake > ChxAmount 0m then
@@ -1113,7 +1113,7 @@ module Processing =
                         }
                     )
 
-                let nonce = state.GetChxBalance(validatorAddress).Nonce + 1
+                let nonce = state.GetChxAddress(validatorAddress).Nonce + 1
                 match processTxActions validatorAddress nonce actions state with
                 | Ok (state : ProcessingState) ->
                     for r in rewards do
@@ -1210,7 +1210,7 @@ module Processing =
                 failwithf "Cannot process validator reward for tx %s (Error: %A)" txHash.Value e
             | Ok state ->
                 state.CollectedReward <- state.CollectedReward + tx.TotalFee
-                match updateChxBalanceNonce tx.Sender tx.Nonce state with
+                match updateChxAddressNonce tx.Sender tx.Nonce state with
                 | Error e ->
                     state.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
                     state

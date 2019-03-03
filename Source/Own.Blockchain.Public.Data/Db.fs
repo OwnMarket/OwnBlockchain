@@ -1202,7 +1202,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove previous block number."
 
-    let private addChxBalance conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
+    let private addChxAddress conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO chx_address (blockchain_address, nonce, balance)
@@ -1225,7 +1225,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert CHX address state."
 
-    let private updateChxBalance conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
+    let private updateChxAddress conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             UPDATE chx_address
@@ -1243,7 +1243,7 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 -> addChxBalance conn transaction chxAddressInfo
+            | 0 -> addChxAddress conn transaction chxAddressInfo
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't update CHX address state."
         with
@@ -1269,7 +1269,7 @@ module Db =
                             Balance = chxAddressState.Balance
                         }
                 }
-                |> updateChxBalance conn transaction
+                |> updateChxAddress conn transaction
 
         chxAddresses
         |> Map.toList

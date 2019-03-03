@@ -49,7 +49,7 @@ module Helpers =
 
         DbInit.init Config.DbEngineType Config.DbConnectionString
 
-    let addChxBalance (chxAddressInfo : ChxAddressInfoDto) =
+    let addChxAddress (chxAddressInfo : ChxAddressInfoDto) =
         let sql =
             """
             INSERT INTO chx_address (blockchain_address, nonce, balance)

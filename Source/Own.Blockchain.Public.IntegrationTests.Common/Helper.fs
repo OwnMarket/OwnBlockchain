@@ -75,7 +75,7 @@ module internal Helper =
         Signing.generateRandomBytes 64
         |> Hashing.hash
 
-    let addChxBalance dbEngineType connectionString (address : string) (amount : decimal) =
+    let addChxAddress dbEngineType connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """
             INSERT INTO chx_address (blockchain_address, nonce, amount)
@@ -88,15 +88,15 @@ module internal Helper =
         |> DbTools.execute dbEngineType connectionString insertStatement
         |> ignore
 
-    let addBalanceAndAccount dbEngineType connectionString (address : string) (amount : decimal) =
+    let addChxAddressAndAccount dbEngineType connectionString (address : string) (balance : decimal) =
         let insertStatement =
             """
-            INSERT INTO chx_address (blockchain_address, nonce, amount) VALUES (@blockchain_address, 0, @amount);
+            INSERT INTO chx_address (blockchain_address, nonce, balance) VALUES (@blockchain_address, 0, @balance);
             INSERT INTO account (account_hash, controller_address) VALUES (@blockchain_address, @blockchain_address);
             """
         [
             "@blockchain_address", address |> box
-            "@amount", amount |> box
+            "@balance", balance |> box
         ]
         |> DbTools.execute dbEngineType connectionString insertStatement
         |> ignore
