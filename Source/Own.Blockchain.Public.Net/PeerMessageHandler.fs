@@ -1,7 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Net
 
 open System
-open System.Text
 open Own.Common
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
@@ -30,7 +29,7 @@ module internal PeerMessageHandler =
         =
 
         let nodeConfig : NetworkNodeConfig = {
-            Identity = Guid.NewGuid().ToString() |> Encoding.Unicode.GetBytes |> PeerNetworkIdentity
+            Identity = Guid.NewGuid().ToString("N") |> Conversion.stringToBytes |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress listeningAddress
             PublicAddress = publicAddress |> Option.map NetworkAddress
             BootstrapNodes = bootstrapNodes
