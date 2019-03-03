@@ -17,7 +17,7 @@ module Workers =
                 with
                 | ex -> Log.error ex.AllMessagesAndStackTraces
 
-                do! Async.Sleep (Config.NetworkTimeUpdateInterval * 1000)
+                do! Async.Sleep (Config.NetworkTimePollInterval * 1000)
                 return! loop ()
             }
 
