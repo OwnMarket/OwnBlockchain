@@ -342,7 +342,7 @@ type ChxAddressState = {
 }
 
 type HoldingState = {
-    Amount : AssetAmount
+    Balance : AssetAmount
     IsEmission : bool
 }
 

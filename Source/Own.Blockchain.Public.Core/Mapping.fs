@@ -414,13 +414,13 @@ module Mapping =
 
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
         {
-            Amount = AssetAmount dto.Amount
+            Balance = AssetAmount dto.Balance
             IsEmission = dto.IsEmission
         }
 
     let holdingStateToDto (state : HoldingState) : HoldingStateDto =
         {
-            Amount = state.Amount.Value
+            Balance = state.Balance.Value
             IsEmission = state.IsEmission
         }
 
@@ -609,7 +609,7 @@ module Mapping =
         let mapFn (holding : AccountHoldingDto) : GetAccountApiHoldingDto =
             {
                 AssetHash = holding.AssetHash
-                Balance = holding.Amount
+                Balance = holding.Balance
             }
 
         {

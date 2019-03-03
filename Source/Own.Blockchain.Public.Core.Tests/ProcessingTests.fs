@@ -699,8 +699,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -758,8 +758,8 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
-        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
-        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Balance - amountToTransfer
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Balance + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -767,8 +767,8 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
-        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
-        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Balance = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Balance = recipientAssetBalance @>
         test <@ output.Holdings.[recipientAccountHash, assetHash].IsEmission = false @>
 
     [<Fact>]
@@ -789,8 +789,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = true}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = true}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -854,13 +854,13 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
-        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Balance - amountToTransfer
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Balance + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
-        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Balance = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Balance = recipientAssetBalance @>
 
     [<Fact>]
     let ``Processing.processChanges TransferAsset success if transfer from non-emission to EligibleInSecondary`` () =
@@ -880,8 +880,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -945,13 +945,13 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
-        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Balance - amountToTransfer
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Balance + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
-        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Balance = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Balance = recipientAssetBalance @>
 
     [<Fact>]
     let ``Processing.processChanges TransferAsset fails if transfer from emission to NotEligibleInPrimary`` () =
@@ -971,8 +971,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = true}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = true}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1042,8 +1042,8 @@ module ProcessingTests =
             |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = AssetAmount 50m @>
-        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = AssetAmount 0m @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Balance = AssetAmount 50m @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Balance = AssetAmount 0m @>
 
     [<Fact>]
     let ``Processing.processChanges TransferAsset fails if transfer from non-emission to NotEligibleInSecondary`` () =
@@ -1063,8 +1063,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1134,8 +1134,8 @@ module ProcessingTests =
             |> Failure
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = AssetAmount 50m @>
-        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = AssetAmount 0m @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Balance = AssetAmount 50m @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Balance = AssetAmount 0m @>
 
     [<Fact>]
     let ``Processing.processChanges TransferAsset with insufficient balance`` () =
@@ -1155,8 +1155,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m; IsEmission = false}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 9m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1214,8 +1214,8 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
-        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount
-        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount
+        let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Balance
+        let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Balance
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientAssetHoldingBalance)
             |> TxActionError
@@ -1226,8 +1226,8 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
         test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
-        test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
-        test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Balance = senderAssetBalance @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Balance = recipientAssetBalance @>
 
     [<Fact>]
     let ``Processing.processChanges TransferAsset fails if source account not found`` () =
@@ -1247,8 +1247,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m; IsEmission = false}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 9m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1335,8 +1335,8 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (senderAccountHash, assetHash), {HoldingState.Amount = AssetAmount 9m; IsEmission = false}
-                (recipientAccountHash, assetHash), {HoldingState.Amount = AssetAmount 0m; IsEmission = false}
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 9m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 0m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1428,7 +1428,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
+                (accountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1522,7 +1522,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
+                (accountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1910,7 +1910,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (accountHash, assetHash), {HoldingState.Amount = AssetAmount 50m; IsEmission = false}
+                (accountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -4301,7 +4301,7 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
-        test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emissionAmount @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].Balance = emissionAmount @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
     [<Fact>]
@@ -4322,7 +4322,7 @@ module ProcessingTests =
 
         let initialHoldingState =
             [
-                (emissionAccountHash, assetHash), {HoldingState.Amount = AssetAmount 30m; IsEmission = false}
+                (emissionAccountHash, assetHash), {HoldingState.Balance = AssetAmount 30m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -4379,7 +4379,7 @@ module ProcessingTests =
         // ASSERT
         let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
         let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
-        let emittedAssetBalance = initialHoldingState.[emissionAccountHash, assetHash].Amount + emissionAmount
+        let emittedAssetBalance = initialHoldingState.[emissionAccountHash, assetHash].Balance + emissionAmount
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
@@ -4387,7 +4387,7 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
-        test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emittedAssetBalance @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].Balance = emittedAssetBalance @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
     [<Fact>]

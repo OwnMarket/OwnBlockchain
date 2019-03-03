@@ -109,7 +109,7 @@ module BlockTests =
     let ``Blocks.createHoldingStateHash`` () =
         let accountHash = AccountHash "HHH"
         let assetHash = AssetHash "II"
-        let state = {HoldingState.Amount = AssetAmount 7m; IsEmission = true}
+        let state = {HoldingState.Balance = AssetAmount 7m; IsEmission = true}
 
         // ACT
         let stateHash = Blocks.createHoldingStateHash DummyHash.decode DummyHash.create (accountHash, assetHash, state)
@@ -364,8 +364,8 @@ module BlockTests =
 
         let holdings =
             [
-                (AccountHash "DDD", AssetHash "EEE"), {HoldingState.Amount = AssetAmount 1m; IsEmission = false}
-                (AccountHash "FFF", AssetHash "GGG"), {HoldingState.Amount = AssetAmount 2m; IsEmission = true}
+                (AccountHash "DDD", AssetHash "EEE"), {HoldingState.Balance = AssetAmount 1m; IsEmission = false}
+                (AccountHash "FFF", AssetHash "GGG"), {HoldingState.Balance = AssetAmount 2m; IsEmission = true}
             ]
             |> Map.ofList
 
@@ -765,8 +765,8 @@ module BlockTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m; IsEmission = false}
-                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m; IsEmission = false}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Balance = AssetAmount 100m; IsEmission = false}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Balance = AssetAmount 200m; IsEmission = false}
             ]
             |> Map.ofList
 
@@ -1132,8 +1132,8 @@ module BlockTests =
 
         let holdings =
             [
-                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Amount = AssetAmount 100m; IsEmission = false}
-                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Amount = AssetAmount 200m; IsEmission = false}
+                (AccountHash "Acc1", AssetHash "Eq1"), {HoldingState.Balance = AssetAmount 100m; IsEmission = false}
+                (AccountHash "Acc2", AssetHash "Eq2"), {HoldingState.Balance = AssetAmount 200m; IsEmission = false}
             ]
             |> Map.ofList
 

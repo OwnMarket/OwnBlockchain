@@ -304,7 +304,7 @@ type ChxAddressStateDto = {
 
 [<CLIMutable>]
 type HoldingStateDto = {
-    Amount : decimal
+    Balance : decimal
     IsEmission : bool
 }
 
@@ -454,7 +454,7 @@ type StakerInfoDto = {
 [<CLIMutable>]
 type AccountHoldingDto = {
     AssetHash : string
-    Amount : decimal
+    Balance : decimal
 }
 
 [<CLIMutable>]

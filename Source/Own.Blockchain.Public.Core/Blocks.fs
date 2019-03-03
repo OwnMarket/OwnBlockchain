@@ -57,7 +57,7 @@ module Blocks =
         [
             decodeHash accountHash
             decodeHash assetHash
-            decimalToBytes state.Amount.Value
+            decimalToBytes state.Balance.Value
             boolToBytes state.IsEmission
         ]
         |> Array.concat

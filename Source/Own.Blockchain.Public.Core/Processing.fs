@@ -47,7 +47,7 @@ module Processing =
             |? {Nonce = Nonce 0L; Balance = ChxAmount 0m}
         let getHoldingState (accountHash, assetHash) =
             getHoldingStateFromStorage (accountHash, assetHash)
-            |? {Amount = AssetAmount 0m; IsEmission = false}
+            |? {Balance = AssetAmount 0m; IsEmission = false}
 
         new
             (
@@ -298,7 +298,7 @@ module Processing =
                 Holdings =
                     holdings
                     |> Map.ofDict
-                    |> Map.filter (fun key h -> h.Amount.Value <> 0m || getHoldingStateFromStorage key <> None)
+                    |> Map.filter (fun key h -> h.Balance.Value <> 0m || getHoldingStateFromStorage key <> None)
                 Votes =
                     votes
                     |> Seq.ofDict
@@ -407,7 +407,7 @@ module Processing =
                 | _ ->
                     true, true
 
-            if fromState.Amount < action.Amount then
+            if fromState.Balance < action.Amount then
                 Error TxErrorCode.InsufficientAssetHoldingBalance
             else
                 if fromState.IsEmission && not isPrimaryEligible then
@@ -415,11 +415,11 @@ module Processing =
                 elif not fromState.IsEmission && not isSecondaryEligible then
                     Error TxErrorCode.NotEligibleInSecondary
                 else
-                    let newFromState = { fromState with Amount = fromState.Amount - action.Amount }
+                    let newFromState = { fromState with Balance = fromState.Balance - action.Amount }
                     state.SetHolding(action.FromAccountHash, action.AssetHash, newFromState)
 
                     let toState = if action.ToAccountHash = action.FromAccountHash then newFromState else toState
-                    let newToState = { toState with Amount = toState.Amount + action.Amount }
+                    let newToState = { toState with Balance = toState.Balance + action.Amount }
                     state.SetHolding(action.ToAccountHash, action.AssetHash, newToState)
 
                     Ok state
@@ -443,7 +443,7 @@ module Processing =
             state.SetHolding(
                 action.EmissionAccountHash,
                 action.AssetHash,
-                { holdingState with Amount = holdingState.Amount + action.Amount; IsEmission = true }
+                { holdingState with Balance = holdingState.Balance + action.Amount; IsEmission = true }
             )
             Ok state
         | _ ->
@@ -654,7 +654,7 @@ module Processing =
             Error TxErrorCode.AccountNotFound
         | Some _, Some accountState when accountState.ControllerAddress = senderAddress ->
             let holding = state.GetHolding(action.VoteId.AccountHash, action.VoteId.AssetHash)
-            if holding.Amount.Value <= 0m then
+            if holding.Balance.Value <= 0m then
                 Error TxErrorCode.HoldingNotFound
             else
                 match state.GetVote(action.VoteId) with

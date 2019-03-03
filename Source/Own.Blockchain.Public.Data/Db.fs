@@ -511,7 +511,7 @@ module Db =
         let sql =
             sprintf
                 """
-                SELECT h.asset_hash, h.amount
+                SELECT h.asset_hash, h.balance
                 FROM account AS a
                 JOIN holding AS h USING (account_id)
                 WHERE a.account_hash = @accountHash
@@ -605,7 +605,7 @@ module Db =
 
         let sql =
             """
-            SELECT h.amount, h.is_emission
+            SELECT h.balance, h.is_emission
             FROM holding AS h
             JOIN account AS a USING (account_id)
             WHERE a.account_hash = @accountHash
@@ -1278,8 +1278,8 @@ module Db =
     let private addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO holding (account_id, asset_hash, amount, is_emission)
-            SELECT account_id, @assetHash, @amount, @isEmission
+            INSERT INTO holding (account_id, asset_hash, balance, is_emission)
+            SELECT account_id, @assetHash, @balance, @isEmission
             FROM account
             WHERE account_hash = @accountHash
             """
@@ -1288,7 +1288,7 @@ module Db =
             [
                 "@accountHash", holdingInfo.AccountHash |> box
                 "@assetHash", holdingInfo.AssetHash |> box
-                "@amount", holdingInfo.HoldingState.Amount |> box
+                "@balance", holdingInfo.HoldingState.Balance |> box
                 "@isEmission", holdingInfo.HoldingState.IsEmission |> box
             ]
 
@@ -1305,7 +1305,7 @@ module Db =
         let sql =
             """
             UPDATE holding
-            SET amount = @amount,
+            SET balance = @balance,
                 is_emission = @isEmission
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
             AND asset_hash = @assetHash
@@ -1315,7 +1315,7 @@ module Db =
             [
                 "@accountHash", holdingInfo.AccountHash |> box
                 "@assetHash", holdingInfo.AssetHash |> box
-                "@amount", holdingInfo.HoldingState.Amount |> box
+                "@balance", holdingInfo.HoldingState.Balance |> box
                 "@isEmission", holdingInfo.HoldingState.IsEmission |> box
             ]
 
@@ -1344,7 +1344,7 @@ module Db =
                     AssetHash = assetHash
                     HoldingState =
                         {
-                            Amount = holdingState.Amount
+                            Balance = holdingState.Balance
                             IsEmission = holdingState.IsEmission
                         }
                 }
