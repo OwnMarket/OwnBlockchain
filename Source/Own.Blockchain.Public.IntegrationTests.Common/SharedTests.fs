@@ -210,25 +210,25 @@ module SharedTests =
         // ARRANGE
         Helper.testCleanup dbEngineType connString
         DbInit.init dbEngineType connString
-        let expectedChxBalanceState =
+        let expectedChxAddressState =
             {
-                ChxBalanceStateDto.Amount = Config.GenesisChxSupply
-                Nonce = 0L
+                ChxAddressStateDto.Nonce = 0L
+                Balance = Config.GenesisChxSupply
             }
 
         // ACT
         Composition.initBlockchainState ()
 
         // ASSERT
-        let genesisAddressChxBalanceState =
+        let genesisAddressChxAddressState =
             Config.GenesisAddress
             |> BlockchainAddress
-            |> Db.getChxBalanceState dbEngineType connString
+            |> Db.getChxAddressState dbEngineType connString
 
         let lastAppliedBlockNumber =
             Db.getLastAppliedBlockNumber dbEngineType connString
 
-        test <@ genesisAddressChxBalanceState = Some expectedChxBalanceState @>
+        test <@ genesisAddressChxAddressState = Some expectedChxAddressState @>
         test <@ lastAppliedBlockNumber = Some (BlockNumber 0L) @>
 
     let loadBlockTest dbEngineType connString =
@@ -360,12 +360,12 @@ module SharedTests =
             |> Option.map Mapping.accountStateFromDto
 
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
-        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
+        let senderBalance = Db.getChxAddressState dbEngineType connectionString sender.Address
+        let validatorBalance = Db.getChxAddressState dbEngineType connectionString validatorAddress
 
         test <@ accountState = Some { ControllerAddress = newController.Address } @>
-        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
-        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
+        test <@ senderBalance = Some { Nonce = nonce; Balance = (initialSenderChxBalance - totalFee) } @>
+        test <@ validatorBalance = Some { Nonce = 0L; Balance = (initialValidatorChxBalance + totalFee) } @>
 
     let setAssetControllerTest dbEngineType connectionString =
         // ARRANGE
@@ -418,14 +418,14 @@ module SharedTests =
         let assetState =
             Db.getAssetState dbEngineType connectionString (AssetHash assetHash)
             |> Option.map Mapping.assetStateFromDto
-        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
+        let senderBalance = Db.getChxAddressState dbEngineType connectionString sender.Address
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
+        let validatorBalance = Db.getChxAddressState dbEngineType connectionString validatorAddress
 
         test <@ assetState =
             Some { AssetCode = None; ControllerAddress = newController.Address; IsEligibilityRequired = false } @>
-        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
-        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
+        test <@ senderBalance = Some { Nonce = nonce; Balance = (initialSenderChxBalance - totalFee) } @>
+        test <@ validatorBalance = Some { Nonce = 0L; Balance = (initialValidatorChxBalance + totalFee) } @>
 
     let setAssetCodeTest dbEngineType connectionString =
         // ARRANGE
@@ -479,14 +479,14 @@ module SharedTests =
         let assetState =
             Db.getAssetState dbEngineType connectionString (AssetHash assetHash)
             |> Option.map Mapping.assetStateFromDto
-        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
+        let senderBalance = Db.getChxAddressState dbEngineType connectionString sender.Address
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
+        let validatorBalance = Db.getChxAddressState dbEngineType connectionString validatorAddress
 
         test <@ assetState =
             Some { AssetCode = Some assetCode; ControllerAddress = sender.Address; IsEligibilityRequired = false } @>
-        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
-        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
+        test <@ senderBalance = Some { Nonce = nonce; Balance = (initialSenderChxBalance - totalFee) } @>
+        test <@ validatorBalance = Some { Nonce = 0L; Balance = (initialValidatorChxBalance + totalFee) } @>
 
     let configureValidatorTest dbEngineType connectionString =
         // ARRANGE
@@ -542,17 +542,17 @@ module SharedTests =
         let validatorState =
             Db.getValidatorState dbEngineType connectionString sender.Address
             |> Option.map Mapping.validatorStateFromDto
-        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
+        let senderBalance = Db.getChxAddressState dbEngineType connectionString sender.Address
         let validatorAddress =
             Config.ValidatorPrivateKey
             |> PrivateKey
             |> addressFromPrivateKey
 
-        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
+        let validatorBalance = Db.getChxAddressState dbEngineType connectionString validatorAddress
 
         test <@ validatorState = Some expectedConfig @>
-        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
-        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
+        test <@ senderBalance = Some { Nonce = nonce; Balance = (initialSenderChxBalance - totalFee) } @>
+        test <@ validatorBalance = Some { Nonce = 0L; Balance = (initialValidatorChxBalance + totalFee) } @>
 
     let delegateStakeTest dbEngineType connectionString =
         // ARRANGE
@@ -598,10 +598,10 @@ module SharedTests =
         let stakeState =
             Db.getStakeState dbEngineType connectionString (sender.Address, stakeValidatorAddress)
             |> Option.map Mapping.stakeStateFromDto
-        let senderBalance = Db.getChxBalanceState dbEngineType connectionString sender.Address
+        let senderBalance = Db.getChxAddressState dbEngineType connectionString sender.Address
         let validatorAddress = Config.ValidatorPrivateKey |> PrivateKey |> addressFromPrivateKey
-        let validatorBalance = Db.getChxBalanceState dbEngineType connectionString validatorAddress
+        let validatorBalance = Db.getChxAddressState dbEngineType connectionString validatorAddress
 
         test <@ stakeState = Some { StakeState.Amount = ChxAmount stakeAmount } @>
-        test <@ senderBalance = Some { Amount = (initialSenderChxBalance - totalFee); Nonce = nonce } @>
-        test <@ validatorBalance = Some { Amount = (initialValidatorChxBalance + totalFee); Nonce = 0L } @>
+        test <@ senderBalance = Some { Nonce = nonce; Balance = (initialSenderChxBalance - totalFee) } @>
+        test <@ validatorBalance = Some { Nonce = 0L; Balance = (initialValidatorChxBalance + totalFee) } @>

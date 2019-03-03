@@ -336,9 +336,9 @@ type PendingTxInfo = {
     AppearanceOrder : int64
 }
 
-type ChxBalanceState = {
-    Amount : ChxAmount
+type ChxAddressState = {
     Nonce : Nonce
+    Balance : ChxAmount
 }
 
 type HoldingState = {
@@ -395,7 +395,7 @@ type StakerInfo = {
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     EquivocationProofResults : Map<EquivocationProofHash, EquivocationProofResult>
-    ChxBalances : Map<BlockchainAddress, ChxBalanceState>
+    ChxAddresses : Map<BlockchainAddress, ChxAddressState>
     Holdings : Map<AccountHash * AssetHash, HoldingState>
     Votes : Map<VoteId, VoteState>
     Eligibilities : Map<AccountHash * AssetHash, EligibilityState>

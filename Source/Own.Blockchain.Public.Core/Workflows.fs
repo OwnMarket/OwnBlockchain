@@ -11,7 +11,7 @@ open Own.Blockchain.Public.Core.Events
 module Workflows =
 
     let getDetailedChxBalance
-        getChxBalanceState
+        getChxAddressState
         (getTotalChxStaked : BlockchainAddress -> ChxAmount)
         getValidatorState
         validatorDeposit
@@ -21,8 +21,8 @@ module Workflows =
 
         let chxBalance =
             senderAddress
-            |> getChxBalanceState
-            |> Option.map (Mapping.chxBalanceStateFromDto >> fun state -> state.Amount)
+            |> getChxAddressState
+            |> Option.map (Mapping.chxAddressStateFromDto >> fun state -> state.Balance)
             |? ChxAmount 0m
 
         let chxStaked = getTotalChxStaked senderAddress
@@ -41,7 +41,7 @@ module Workflows =
         }
 
     let getAvailableChxBalance
-        getChxBalanceState
+        getChxAddressState
         getTotalChxStaked
         getValidatorState
         validatorDeposit
@@ -51,7 +51,7 @@ module Workflows =
 
         let detailedBalance =
             getDetailedChxBalance
-                getChxBalanceState
+                getChxAddressState
                 getTotalChxStaked
                 getValidatorState
                 validatorDeposit
@@ -198,7 +198,7 @@ module Workflows =
         getEquivocationProof
         verifySignature
         isValidAddress
-        getChxBalanceStateFromStorage
+        getChxAddressStateFromStorage
         getHoldingStateFromStorage
         getVoteStateFromStorage
         getEligibilityStateFromStorage
@@ -232,7 +232,7 @@ module Workflows =
         blockchainConfiguration
         =
 
-        let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
+        let getChxAddressState = memoize (getChxAddressStateFromStorage >> Option.map Mapping.chxAddressStateFromDto)
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getVoteState = memoize (getVoteStateFromStorage >> Option.map Mapping.voteStateFromDto)
         let getEligibilityState = memoize (getEligibilityStateFromStorage >> Option.map Mapping.eligibilityStateFromDto)
@@ -275,7 +275,7 @@ module Workflows =
                 decodeHash
                 createHash
                 createConsensusMessageHash
-                getChxBalanceState
+                getChxAddressState
                 getHoldingState
                 getVoteState
                 getEligibilityState
@@ -325,7 +325,7 @@ module Workflows =
         getBlock
         getPendingTxs
         (getPendingEquivocationProofs : BlockNumber -> EquivocationInfoDto list)
-        getChxBalanceStateFromStorage
+        getChxAddressStateFromStorage
         getAvailableChxBalanceFromStorage
         addressFromPrivateKey
         minTxActionFee
@@ -337,7 +337,7 @@ module Workflows =
 
         let timestamp = Utils.getNetworkTimestamp () |> Timestamp
 
-        let getChxBalanceState = memoize (getChxBalanceStateFromStorage >> Option.map Mapping.chxBalanceStateFromDto)
+        let getChxAddressState = memoize (getChxAddressStateFromStorage >> Option.map Mapping.chxAddressStateFromDto)
         let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage
 
         let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -362,7 +362,7 @@ module Workflows =
                 match
                     Processing.getTxSetForNewBlock
                         getPendingTxs
-                        getChxBalanceState
+                        getChxAddressState
                         getAvailableChxBalance
                         minTxActionFee
                         currentConfiguration.MaxTxCountPerBlock
@@ -1022,7 +1022,7 @@ module Workflows =
             >>= (Mapping.blockEnvelopeDtoToGetBlockApiResponseDto >> Ok)
 
     let getAddressApi
-        (getChxBalanceState : BlockchainAddress -> ChxBalanceStateDto option)
+        (getChxAddressState : BlockchainAddress -> ChxAddressStateDto option)
         getDetailedChxBalance
         (blockchainAddress : BlockchainAddress)
         : Result<GetAddressApiResponseDto, AppErrors>
@@ -1030,14 +1030,14 @@ module Workflows =
 
         let detailedChxBalance = getDetailedChxBalance blockchainAddress
         let nonce =
-            match getChxBalanceState blockchainAddress with
+            match getChxAddressState blockchainAddress with
             | Some state -> state.Nonce
             | None -> 0L
 
         {
             BlockchainAddress = blockchainAddress.Value
-            Balance = detailedChxBalance
             Nonce = nonce
+            Balance = detailedChxBalance
         }
         |> Ok
 

@@ -39,11 +39,11 @@ module Blocks =
         |> Array.concat
         |> createHash
 
-    let createChxBalanceStateHash decodeHash createHash (BlockchainAddress address, state : ChxBalanceState) =
+    let createChxAddressStateHash decodeHash createHash (BlockchainAddress address, state : ChxAddressState) =
         [
             decodeHash address
-            decimalToBytes state.Amount.Value
             int64ToBytes state.Nonce.Value
+            decimalToBytes state.Balance.Value
         ]
         |> Array.concat
         |> createHash
@@ -322,11 +322,11 @@ module Blocks =
             )
             |> createMerkleTree
 
-        let chxBalanceHashes =
-            output.ChxBalances
+        let chxAddressHashes =
+            output.ChxAddresses
             |> Map.toList
             |> List.sort // Ensure a predictable order
-            |> List.map (createChxBalanceStateHash decodeHash createHash)
+            |> List.map (createChxAddressStateHash decodeHash createHash)
 
         let holdingHashes =
             output.Holdings
@@ -390,7 +390,7 @@ module Blocks =
             )
 
         let stateRoot =
-            chxBalanceHashes
+            chxAddressHashes
             @ holdingHashes
             @ voteHashes
             @ eligibilityHashes
@@ -473,22 +473,22 @@ module Blocks =
         : ProcessingOutput
         =
 
-        let genesisChxBalanceState =
+        let genesisChxAddressState =
             {
-                ChxBalanceState.Amount = genesisChxSupply
-                Nonce = Nonce 0L
+                ChxAddressState.Nonce = Nonce 0L
+                Balance = genesisChxSupply
             }
 
-        let chxBalances =
+        let chxAddresses =
             [
-                genesisAddress, genesisChxBalanceState
+                genesisAddress, genesisChxAddressState
             ]
             |> Map.ofList
 
         {
             TxResults = Map.empty
             EquivocationProofResults = Map.empty
-            ChxBalances = chxBalances
+            ChxAddresses = chxAddresses
             Holdings = Map.empty
             Votes = Map.empty
             Eligibilities = Map.empty

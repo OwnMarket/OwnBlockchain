@@ -20,18 +20,18 @@ module ProcessingTests =
         let w1 = Signing.generateWallet ()
         let w2 = Signing.generateWallet ()
 
-        let getChxBalanceState =
+        let getChxAddressState =
             let data =
                 [
-                    w1.Address, { ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L }
-                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200m; Nonce = Nonce 20L }
+                    w1.Address, { ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m }
+                    w2.Address, { ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 200m }
                 ]
                 |> Map.ofSeq
 
             fun (address : BlockchainAddress) -> data |> Map.tryFind address
 
         let getAvailableChxBalance address =
-            (getChxBalanceState address).Value.Amount
+            (getChxAddressState address).Value.Balance
 
         let txSet =
             [
@@ -45,7 +45,7 @@ module ProcessingTests =
         // ACT
         let txHashes =
             txSet
-            |> Processing.excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance
+            |> Processing.excludeUnprocessableTxs getChxAddressState getAvailableChxBalance
             |> List.map (fun tx -> tx.TxHash.Value)
 
         test <@ txHashes = ["Tx1"; "Tx2"; "Tx3"; "Tx5"] @>
@@ -66,11 +66,11 @@ module ProcessingTests =
         let w1 = Signing.generateWallet ()
         let w2 = Signing.generateWallet ()
 
-        let getChxBalanceState =
+        let getChxAddressState =
             let data =
                 [
-                    w1.Address, { ChxBalanceState.Amount = balance; Nonce = Nonce 10L }
-                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200m; Nonce = Nonce 20L }
+                    w1.Address, { ChxAddressState.Nonce = Nonce 10L; Balance = balance }
+                    w2.Address, { ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 200m }
                 ]
                 |> Map.ofSeq
 
@@ -98,7 +98,7 @@ module ProcessingTests =
         // ACT
         let txHashes =
             txSet
-            |> Processing.excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance
+            |> Processing.excludeUnprocessableTxs getChxAddressState getAvailableChxBalance
             |> List.map (fun tx -> tx.TxHash.Value)
 
         test <@ txHashes = expectedHashes @>
@@ -108,11 +108,11 @@ module ProcessingTests =
         let w1 = Signing.generateWallet ()
         let w2 = Signing.generateWallet ()
 
-        let getChxBalanceState =
+        let getChxAddressState =
             let data =
                 [
-                    w1.Address, { ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L }
-                    w2.Address, { ChxBalanceState.Amount = ChxAmount 200m; Nonce = Nonce 20L }
+                    w1.Address, { ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m }
+                    w2.Address, { ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 200m }
                 ]
                 |> Map.ofSeq
 
@@ -151,12 +151,12 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
-                staker1Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
-                staker2Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
-                staker3Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+                staker1Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
+                staker2Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
+                staker3Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
             ]
             |> Map.ofList
 
@@ -194,7 +194,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getTopStakers _ =
@@ -208,7 +208,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
                 SharedRewardPercent = sharedRewardPercent
@@ -217,29 +217,29 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
-        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + validatorReward
-        let staker1ChxBalance = initialChxState.[staker1Wallet.Address].Amount + staker1Reward
-        let staker2ChxBalance = initialChxState.[staker2Wallet.Address].Amount + staker2Reward
-        let staker3ChxBalance = initialChxState.[staker3Wallet.Address].Amount + staker3Reward
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - amountToTransfer - actionFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance + amountToTransfer
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + validatorReward
+        let staker1ChxBalance = initialChxState.[staker1Wallet.Address].Balance + staker1Reward
+        let staker2ChxBalance = initialChxState.[staker2Wallet.Address].Balance + staker2Reward
+        let staker3ChxBalance = initialChxState.[staker3Wallet.Address].Balance + staker3Reward
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
 
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[staker1Wallet.Address].Nonce = initialChxState.[staker1Wallet.Address].Nonce @>
-        test <@ output.ChxBalances.[staker2Wallet.Address].Nonce = initialChxState.[staker2Wallet.Address].Nonce @>
-        test <@ output.ChxBalances.[staker3Wallet.Address].Nonce = initialChxState.[staker3Wallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[staker1Wallet.Address].Nonce = initialChxState.[staker1Wallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[staker2Wallet.Address].Nonce = initialChxState.[staker2Wallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[staker3Wallet.Address].Nonce = initialChxState.[staker3Wallet.Address].Nonce @>
 
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.ChxBalances.[staker1Wallet.Address].Amount = staker1ChxBalance @>
-        test <@ output.ChxBalances.[staker2Wallet.Address].Amount = staker2ChxBalance @>
-        test <@ output.ChxBalances.[staker3Wallet.Address].Amount = staker3ChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+        test <@ output.ChxAddresses.[staker1Wallet.Address].Balance = staker1ChxBalance @>
+        test <@ output.ChxAddresses.[staker2Wallet.Address].Balance = staker2ChxBalance @>
+        test <@ output.ChxAddresses.[staker3Wallet.Address].Balance = staker3ChxBalance @>
 
     [<Fact>]
     let ``Processing.processChanges distributes rewards to stakers with proper decimalization`` () =
@@ -253,12 +253,12 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
-                staker1Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
-                staker2Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
-                staker3Wallet.Address, {ChxBalanceState.Amount = ChxAmount 1000m; Nonce = Nonce 0L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+                staker1Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
+                staker2Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
+                staker3Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
             ]
             |> Map.ofList
 
@@ -296,7 +296,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getTopStakers _ =
@@ -310,7 +310,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetTopStakers = getTopStakers
                 ValidatorAddress = validatorWallet.Address
                 SharedRewardPercent = sharedRewardPercent
@@ -319,29 +319,29 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
-        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + validatorReward
-        let staker1ChxBalance = initialChxState.[staker1Wallet.Address].Amount + staker1Reward
-        let staker2ChxBalance = initialChxState.[staker2Wallet.Address].Amount + staker2Reward
-        let staker3ChxBalance = initialChxState.[staker3Wallet.Address].Amount + staker3Reward
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - amountToTransfer - actionFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance + amountToTransfer
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + validatorReward
+        let staker1ChxBalance = initialChxState.[staker1Wallet.Address].Balance + staker1Reward
+        let staker2ChxBalance = initialChxState.[staker2Wallet.Address].Balance + staker2Reward
+        let staker3ChxBalance = initialChxState.[staker3Wallet.Address].Balance + staker3Reward
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
 
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[staker1Wallet.Address].Nonce = initialChxState.[staker1Wallet.Address].Nonce @>
-        test <@ output.ChxBalances.[staker2Wallet.Address].Nonce = initialChxState.[staker2Wallet.Address].Nonce @>
-        test <@ output.ChxBalances.[staker3Wallet.Address].Nonce = initialChxState.[staker3Wallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[staker1Wallet.Address].Nonce = initialChxState.[staker1Wallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[staker2Wallet.Address].Nonce = initialChxState.[staker2Wallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[staker3Wallet.Address].Nonce = initialChxState.[staker3Wallet.Address].Nonce @>
 
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
-        test <@ output.ChxBalances.[staker1Wallet.Address].Amount = staker1ChxBalance @>
-        test <@ output.ChxBalances.[staker2Wallet.Address].Amount = staker2ChxBalance @>
-        test <@ output.ChxBalances.[staker3Wallet.Address].Amount = staker3ChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+        test <@ output.ChxAddresses.[staker1Wallet.Address].Balance = staker1ChxBalance @>
+        test <@ output.ChxAddresses.[staker2Wallet.Address].Balance = staker2ChxBalance @>
+        test <@ output.ChxAddresses.[staker3Wallet.Address].Balance = staker3ChxBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TransferChx
@@ -356,9 +356,9 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -386,32 +386,32 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         // ACT
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - amountToTransfer - actionFee
-        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount + amountToTransfer
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - amountToTransfer - actionFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance + amountToTransfer
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
     let ``Processing.processChanges TransferChx with insufficient balance`` () =
@@ -422,9 +422,9 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 9m; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 9m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -452,33 +452,33 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         // ACT
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
     let ``Processing.processChanges TransferChx with insufficient balance to cover fee`` () =
@@ -489,9 +489,9 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 10.5m; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 10.5m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -519,33 +519,33 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         // ACT
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
     let ``Processing.processChanges TransferChx with insufficient balance to cover fee - simulated invalid state`` () =
@@ -556,9 +556,9 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 0.5m; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 0.5m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -586,13 +586,13 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let processChanges () =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
@@ -612,9 +612,9 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 11m; Nonce = Nonce 10L}
-                recipientWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 20L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 11m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -642,7 +642,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getTotalChxStaked address =
@@ -655,7 +655,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -663,19 +663,19 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let recipientChxBalance = initialChxState.[recipientWallet.Address].Amount
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[recipientWallet.Address].Amount = recipientChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TransferAsset
@@ -692,8 +692,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -730,7 +730,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -746,7 +746,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -756,17 +756,17 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount - amountToTransfer
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount + amountToTransfer
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
         test <@ output.Holdings.[recipientAccountHash, assetHash].IsEmission = false @>
@@ -782,8 +782,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -820,7 +820,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -843,7 +843,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
@@ -873,8 +873,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -911,7 +911,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -934,7 +934,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
@@ -964,8 +964,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1002,7 +1002,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1025,7 +1025,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
@@ -1056,8 +1056,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1094,7 +1094,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1117,7 +1117,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
@@ -1148,8 +1148,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1186,7 +1186,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1202,7 +1202,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -1212,8 +1212,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let senderAssetBalance = initialHoldingState.[senderAccountHash, assetHash].Amount
         let recipientAssetBalance = initialHoldingState.[recipientAccountHash, assetHash].Amount
         let expectedStatus =
@@ -1223,9 +1223,9 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings.[senderAccountHash, assetHash].Amount = senderAssetBalance @>
         test <@ output.Holdings.[recipientAccountHash, assetHash].Amount = recipientAssetBalance @>
 
@@ -1240,8 +1240,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1278,7 +1278,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1294,7 +1294,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 ValidatorAddress = validatorWallet.Address
@@ -1303,8 +1303,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.SourceAccountNotFound)
             |> TxActionError
@@ -1312,9 +1312,9 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings = Map.empty @>
 
     [<Fact>]
@@ -1328,8 +1328,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1366,7 +1366,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1382,7 +1382,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 ValidatorAddress = validatorWallet.Address
@@ -1391,8 +1391,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.DestinationAccountNotFound)
             |> TxActionError
@@ -1400,9 +1400,9 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1421,8 +1421,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1457,7 +1457,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1476,7 +1476,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
@@ -1488,16 +1488,16 @@ module ProcessingTests =
 
         // ASSERT
 
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
 
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
         test <@ output.Votes.Count = 1 @>
         test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash}]
@@ -1515,8 +1515,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1572,7 +1572,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1598,7 +1598,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
@@ -1630,8 +1630,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1660,7 +1660,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
@@ -1679,7 +1679,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
@@ -1713,8 +1713,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1760,7 +1760,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -1791,7 +1791,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -1825,8 +1825,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1855,7 +1855,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -1871,7 +1871,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -1903,8 +1903,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -1939,7 +1939,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -1958,7 +1958,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
@@ -1995,8 +1995,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2025,7 +2025,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2041,7 +2041,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -2052,16 +2052,16 @@ module ProcessingTests =
 
         // ASSERT
 
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
 
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
         test <@ output.Votes.Count = 1 @>
         test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash}]
@@ -2080,8 +2080,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2110,7 +2110,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2126,7 +2126,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -2155,8 +2155,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2185,7 +2185,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2206,7 +2206,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -2237,8 +2237,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2284,7 +2284,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2315,7 +2315,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -2349,8 +2349,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2379,7 +2379,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2401,7 +2401,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -2437,8 +2437,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2467,7 +2467,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2493,7 +2493,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -2530,8 +2530,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2577,7 +2577,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid txHash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2613,7 +2613,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -2646,8 +2646,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2676,7 +2676,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2702,7 +2702,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -2735,8 +2735,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2782,7 +2782,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2819,7 +2819,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -2858,8 +2858,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2886,7 +2886,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2908,7 +2908,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -2940,8 +2940,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -2968,7 +2968,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -2990,7 +2990,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3020,8 +3020,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3048,7 +3048,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3070,7 +3070,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3114,8 +3114,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3143,7 +3143,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3169,7 +3169,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3206,8 +3206,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3251,7 +3251,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid tx hash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3292,7 +3292,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3329,8 +3329,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3358,7 +3358,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3380,7 +3380,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3412,8 +3412,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3441,7 +3441,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3472,7 +3472,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3505,8 +3505,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3534,7 +3534,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3560,7 +3560,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3598,8 +3598,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3627,7 +3627,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3658,7 +3658,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3693,8 +3693,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3721,7 +3721,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3743,7 +3743,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3769,8 +3769,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3797,7 +3797,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3819,7 +3819,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -3850,8 +3850,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3893,7 +3893,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -3920,7 +3920,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
@@ -3959,8 +3959,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -3987,7 +3987,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -4006,7 +4006,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
@@ -4032,8 +4032,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4075,7 +4075,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -4102,7 +4102,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetAccountStateFromStorage = getAccountState
@@ -4138,8 +4138,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4181,7 +4181,7 @@ module ProcessingTests =
             elif txHash = txHash2 then Ok txEnvelope2
             else Result.appError "Invalid TxHash"
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getVoteState _ =
@@ -4203,7 +4203,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetVoteStateFromStorage = getVoteState
                 GetEligibilityStateFromStorage = getEligibilityState
                 GetKycProvidersFromStorage = getKycProvidersState
@@ -4236,8 +4236,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4266,7 +4266,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
@@ -4282,7 +4282,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -4292,15 +4292,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emissionAmount @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
@@ -4315,8 +4315,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4351,7 +4351,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState key =
@@ -4367,7 +4367,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -4377,16 +4377,16 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let emittedAssetBalance = initialHoldingState.[emissionAccountHash, assetHash].Amount + emissionAmount
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].Amount = emittedAssetBalance @>
         test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
@@ -4402,8 +4402,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4432,7 +4432,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
@@ -4453,7 +4453,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -4463,8 +4463,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
             |> TxActionError
@@ -4472,9 +4472,9 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings = Map.empty @>
 
     [<Fact>]
@@ -4489,8 +4489,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4519,7 +4519,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
@@ -4535,7 +4535,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -4545,8 +4545,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.AssetNotFound)
             |> TxActionError
@@ -4554,9 +4554,9 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings = Map.empty @>
 
     [<Fact>]
@@ -4570,8 +4570,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4600,7 +4600,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
@@ -4621,7 +4621,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
@@ -4631,8 +4631,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus =
             (TxActionNumber 1s, TxErrorCode.AccountNotFound)
             |> TxActionError
@@ -4640,9 +4640,9 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Holdings = Map.empty @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4657,8 +4657,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4691,7 +4691,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
@@ -4704,7 +4704,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAccountStateFromStorage = getAccountState
                 ValidatorAddress = validatorWallet.Address
@@ -4713,15 +4713,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Accounts.Count = 1 @>
         test <@ output.Accounts.[accountHash] = {ControllerAddress = senderWallet.Address} @>
 
@@ -4737,8 +4737,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4771,7 +4771,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getHoldingState _ =
@@ -4784,7 +4784,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetHoldingStateFromStorage = getHoldingState
                 GetAssetStateFromStorage = getAssetState
                 ValidatorAddress = validatorWallet.Address
@@ -4793,8 +4793,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedAssetState =
             {
                 AssetState.AssetCode = None
@@ -4804,10 +4804,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Assets.Count = 1 @>
         test <@ output.Assets.[assetHash] = expectedAssetState @>
 
@@ -4825,8 +4825,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4853,7 +4853,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAccountState _ =
@@ -4863,7 +4863,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAccountStateFromStorage = getAccountState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -4871,15 +4871,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Accounts.[accountHash] = {AccountState.ControllerAddress = newControllerWallet.Address} @>
 
     [<Fact>]
@@ -4892,8 +4892,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4920,7 +4920,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAccountState _ =
@@ -4930,7 +4930,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAccountStateFromStorage = getAccountState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -4938,8 +4938,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.AccountNotFound)
             |> TxActionError
@@ -4947,10 +4947,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Accounts = Map.empty @>
 
     [<Fact>]
@@ -4964,8 +4964,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -4992,7 +4992,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAccountState _ =
@@ -5002,7 +5002,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAccountStateFromStorage = getAccountState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -5010,8 +5010,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotSourceAccountController)
             |> TxActionError
@@ -5019,10 +5019,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Accounts.[accountHash] <> {AccountState.ControllerAddress = newControllerWallet.Address} @>
         test <@ output.Accounts.[accountHash] = {AccountState.ControllerAddress = currentControllerWallet.Address} @>
 
@@ -5040,8 +5040,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5068,7 +5068,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAssetState _ =
@@ -5078,7 +5078,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAssetStateFromStorage = getAssetState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -5086,15 +5086,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Assets.[assetHash].ControllerAddress = newControllerWallet.Address @>
 
     [<Fact>]
@@ -5107,8 +5107,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5135,7 +5135,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAssetState _ =
@@ -5145,7 +5145,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAssetStateFromStorage = getAssetState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -5153,8 +5153,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.AssetNotFound)
             |> TxActionError
@@ -5162,10 +5162,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Assets = Map.empty @>
 
     [<Fact>]
@@ -5179,8 +5179,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5207,7 +5207,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAssetState _ =
@@ -5222,7 +5222,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAssetStateFromStorage = getAssetState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -5230,8 +5230,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
             |> TxActionError
@@ -5239,10 +5239,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Assets.[assetHash].ControllerAddress <> newControllerWallet.Address @>
         test <@ output.Assets.[assetHash].ControllerAddress = currentControllerWallet.Address @>
 
@@ -5260,8 +5260,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5288,7 +5288,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAssetState _ =
@@ -5301,7 +5301,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAssetStateFromStorage = getAssetState
                 GetAssetHashByCodeFromStorage = getAssetHashByCode
                 ValidatorAddress = validatorWallet.Address
@@ -5310,15 +5310,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Assets.[assetHash].AssetCode = Some assetCode @>
 
     [<Fact>]
@@ -5331,8 +5331,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5359,7 +5359,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAssetState _ =
@@ -5369,7 +5369,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAssetStateFromStorage = getAssetState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -5377,8 +5377,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.AssetNotFound)
             |> TxActionError
@@ -5386,10 +5386,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Assets = Map.empty @>
 
     [<Fact>]
@@ -5402,8 +5402,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5430,7 +5430,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAssetState _ =
@@ -5448,7 +5448,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAssetStateFromStorage = getAssetState
                 GetAssetHashByCodeFromStorage = getAssetHashByCode
                 ValidatorAddress = validatorWallet.Address
@@ -5477,8 +5477,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5505,7 +5505,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getAssetState _ =
@@ -5520,7 +5520,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetAssetStateFromStorage = getAssetState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -5528,8 +5528,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.SenderIsNotAssetController)
             |> TxActionError
@@ -5537,10 +5537,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Assets.[assetHash].AssetCode = None @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5557,8 +5557,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5586,7 +5586,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getValidatorState _ =
@@ -5602,7 +5602,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetValidatorStateFromStorage = getValidatorState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -5610,15 +5610,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
         let validatorState, validatorChange = output.Validators.[senderWallet.Address]
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
@@ -5636,8 +5636,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5665,29 +5665,29 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         // ACT
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
         let validatorState, validatorChange = output.Validators.[senderWallet.Address]
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
@@ -5709,9 +5709,9 @@ module ProcessingTests =
         let initialChxState =
             [
                 senderValidatorWallet.Address,
-                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                    {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
                 validatorWallet.Address,
-                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                    {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5734,7 +5734,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getValidatorState _ =
@@ -5766,7 +5766,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
@@ -5776,15 +5776,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
         let validatorState, validatorChange = output.Validators.[senderValidatorWallet.Address]
         test <@ validatorState.NetworkAddress = newNetworkAddress @>
@@ -5803,9 +5803,9 @@ module ProcessingTests =
         let initialChxState =
             [
                 senderValidatorWallet.Address,
-                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                    {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
                 validatorWallet.Address,
-                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                    {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5828,7 +5828,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getStakeState (stakerAddress, _) =
@@ -5850,7 +5850,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
                 ValidatorAddress = validatorWallet.Address
@@ -5859,16 +5859,16 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorNotFound) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
     let ``Processing.processChanges RemoveValidator fails if validator is blacklisted`` () =
@@ -5881,9 +5881,9 @@ module ProcessingTests =
         let initialChxState =
             [
                 senderValidatorWallet.Address,
-                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                    {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
                 validatorWallet.Address,
-                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                    {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5906,7 +5906,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getValidatorState _ =
@@ -5938,7 +5938,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
@@ -5948,16 +5948,16 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorIsBlacklisted) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
     let ``Processing.processChanges RemoveValidator fails if validator deposit is locked`` () =
@@ -5970,9 +5970,9 @@ module ProcessingTests =
         let initialChxState =
             [
                 senderValidatorWallet.Address,
-                    {ChxBalanceState.Amount = Helpers.validatorDeposit + 10m; Nonce = Nonce 10L}
+                    {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
                 validatorWallet.Address,
-                    {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                    {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -5995,7 +5995,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getValidatorState _ =
@@ -6027,7 +6027,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetValidatorStateFromStorage = getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
@@ -6037,16 +6037,16 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorDepositLocked) |> TxActionError |> Failure
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedStatus @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderValidatorWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // DelegateStake
@@ -6069,8 +6069,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -6097,7 +6097,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getStakeState _ =
@@ -6109,7 +6109,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetStakeStateFromStorage = getStakeState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
                 ValidatorAddress = validatorWallet.Address
@@ -6118,15 +6118,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = newStakeAmount @>
 
     [<Fact>]
@@ -6139,8 +6139,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -6167,7 +6167,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getStakeState _ =
@@ -6177,7 +6177,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetStakeStateFromStorage = getStakeState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -6185,15 +6185,15 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = stakeAmount @>
 
     [<Fact>]
@@ -6206,8 +6206,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -6234,7 +6234,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getStakeState _ =
@@ -6244,7 +6244,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetStakeStateFromStorage = getStakeState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -6252,8 +6252,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance)
             |> TxActionError
@@ -6261,10 +6261,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Stakes = Map.empty @>
 
     [<Fact>]
@@ -6278,8 +6278,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -6306,7 +6306,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getStakeState _ =
@@ -6318,7 +6318,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetStakeStateFromStorage = getStakeState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
                 ValidatorAddress = validatorWallet.Address
@@ -6327,8 +6327,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance)
             |> TxActionError
@@ -6336,10 +6336,10 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Stakes = Map.empty @>
 
     [<Fact>]
@@ -6353,8 +6353,8 @@ module ProcessingTests =
 
         let initialChxState =
             [
-                senderWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 10L}
-                validatorWallet.Address, {ChxBalanceState.Amount = ChxAmount 100m; Nonce = Nonce 30L}
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
             ]
             |> Map.ofList
 
@@ -6381,7 +6381,7 @@ module ProcessingTests =
         let getTx _ =
             Ok txEnvelope
 
-        let getChxBalanceState address =
+        let getChxAddressState address =
             initialChxState |> Map.tryFind address
 
         let getStakeState _ =
@@ -6393,7 +6393,7 @@ module ProcessingTests =
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
-                GetChxBalanceStateFromStorage = getChxBalanceState
+                GetChxAddressStateFromStorage = getChxAddressState
                 GetStakeStateFromStorage = getStakeState
                 GetTotalChxStakedFromStorage = getTotalChxStaked
                 ValidatorAddress = validatorWallet.Address
@@ -6402,8 +6402,8 @@ module ProcessingTests =
             |> Helpers.processChanges
 
         // ASSERT
-        let senderChxBalance = initialChxState.[senderWallet.Address].Amount - actionFee
-        let validatorChxBalance = initialChxState.[validatorWallet.Address].Amount + actionFee
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
         let expectedTxStatus =
             (TxActionNumber 1s, TxErrorCode.InsufficientStake)
             |> TxActionError
@@ -6411,8 +6411,8 @@ module ProcessingTests =
 
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = expectedTxStatus @>
-        test <@ output.ChxBalances.[senderWallet.Address].Nonce = nonce @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
-        test <@ output.ChxBalances.[senderWallet.Address].Amount = senderChxBalance @>
-        test <@ output.ChxBalances.[validatorWallet.Address].Amount = validatorChxBalance @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = currentStakeAmount @>

@@ -14,7 +14,7 @@ module NodeClient =
         |> Request.createUrl Get
         |> Request.responseAsString
         |> run
-        |> JsonConvert.DeserializeObject<ChxBalanceStateDto>
+        |> JsonConvert.DeserializeObject<ChxAddressStateDto>
         |> fun dto -> dto.Nonce |> Nonce
 
     let submitTx nodeApiUrl tx =

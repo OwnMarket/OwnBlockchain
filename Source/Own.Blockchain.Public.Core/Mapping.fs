@@ -400,16 +400,16 @@ module Mapping =
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let chxBalanceStateFromDto (dto : ChxBalanceStateDto) : ChxBalanceState =
+    let chxAddressStateFromDto (dto : ChxAddressStateDto) : ChxAddressState =
         {
-            Amount = ChxAmount dto.Amount
             Nonce = Nonce dto.Nonce
+            Balance = ChxAmount dto.Balance
         }
 
-    let chxBalanceStateToDto (state : ChxBalanceState) : ChxBalanceStateDto =
+    let chxAddressStateToDto (state : ChxAddressState) : ChxAddressStateDto =
         {
-            Amount = state.Amount.Value
             Nonce = state.Nonce.Value
+            Balance = state.Balance.Value
         }
 
     let holdingStateFromDto (dto : HoldingStateDto) : HoldingState =
@@ -539,9 +539,9 @@ module Mapping =
                 h, equivocationProofResultToDto s
             )
 
-        let chxBalances =
-            output.ChxBalances
-            |> Map.remap (fun (BlockchainAddress a, s : ChxBalanceState) -> a, chxBalanceStateToDto s)
+        let chxAddresses =
+            output.ChxAddresses
+            |> Map.remap (fun (BlockchainAddress a, s : ChxAddressState) -> a, chxAddressStateToDto s)
 
         let holdings =
             output.Holdings
@@ -585,7 +585,7 @@ module Mapping =
         {
             ProcessingOutputDto.TxResults = txResults
             EquivocationProofResults = equivocationProofResults
-            ChxBalances = chxBalances
+            ChxAddresses = chxAddresses
             Holdings = holdings
             Votes = votes
             Eligibilities = eligibilities

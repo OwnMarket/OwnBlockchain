@@ -11,7 +11,7 @@ module Processing =
 
     type ProcessingState
         (
-        getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option,
+        getChxAddressStateFromStorage : BlockchainAddress -> ChxAddressState option,
         getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
         getVoteStateFromStorage : VoteId -> VoteState option,
         getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option,
@@ -25,7 +25,7 @@ module Processing =
         getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
-        chxBalances : ConcurrentDictionary<BlockchainAddress, ChxBalanceState>,
+        chxAddresses : ConcurrentDictionary<BlockchainAddress, ChxAddressState>,
         holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
         votes : ConcurrentDictionary<VoteId, VoteState option>,
         eligibilities : ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>,
@@ -42,16 +42,16 @@ module Processing =
         collectedReward : ChxAmount
         ) =
 
-        let getChxBalanceState address =
-            getChxBalanceStateFromStorage address
-            |? {Amount = ChxAmount 0m; Nonce = Nonce 0L}
+        let getChxAddressState address =
+            getChxAddressStateFromStorage address
+            |? {Nonce = Nonce 0L; Balance = ChxAmount 0m}
         let getHoldingState (accountHash, assetHash) =
             getHoldingStateFromStorage (accountHash, assetHash)
             |? {Amount = AssetAmount 0m; IsEmission = false}
 
         new
             (
-            getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option,
+            getChxAddressStateFromStorage : BlockchainAddress -> ChxAddressState option,
             getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option,
             getVoteStateFromStorage : VoteId -> VoteState option,
             getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option,
@@ -65,7 +65,7 @@ module Processing =
             getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
             ) =
             ProcessingState(
-                getChxBalanceStateFromStorage,
+                getChxAddressStateFromStorage,
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
                 getEligibilityStateFromStorage,
@@ -79,7 +79,7 @@ module Processing =
                 getTotalChxStakedFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
-                ConcurrentDictionary<BlockchainAddress, ChxBalanceState>(),
+                ConcurrentDictionary<BlockchainAddress, ChxAddressState>(),
                 ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
                 ConcurrentDictionary<VoteId, VoteState option>(),
                 ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>(),
@@ -99,7 +99,7 @@ module Processing =
 
         member __.Clone () =
             ProcessingState(
-                getChxBalanceStateFromStorage,
+                getChxAddressStateFromStorage,
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
                 getEligibilityStateFromStorage,
@@ -113,7 +113,7 @@ module Processing =
                 getTotalChxStakedFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(equivocationProofResults),
-                ConcurrentDictionary(chxBalances),
+                ConcurrentDictionary(chxAddresses),
                 ConcurrentDictionary(holdings),
                 ConcurrentDictionary(votes),
                 ConcurrentDictionary(eligibilities),
@@ -132,7 +132,7 @@ module Processing =
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
         member __.MergeStateAfterFailedTx (otherState : ProcessingState) =
             let otherOutput = otherState.ToProcessingOutput ()
-            for other in otherOutput.ChxBalances do
+            for other in otherOutput.ChxAddresses do
                 let current = __.GetChxBalance (other.Key)
                 __.SetChxBalance (other.Key, { current with Nonce = other.Value.Nonce })
             for other in otherOutput.Holdings do
@@ -153,7 +153,7 @@ module Processing =
                 __.GetStake (other.Key) |> ignore
 
         member __.GetChxBalance (address : BlockchainAddress) =
-            chxBalances.GetOrAdd(address, getChxBalanceState)
+            chxAddresses.GetOrAdd(address, getChxAddressState)
 
         member __.GetHolding (accountHash : AccountHash, assetHash : AssetHash) =
             holdings.GetOrAdd((accountHash, assetHash), getHoldingState)
@@ -204,8 +204,8 @@ module Processing =
         member __.GetTotalChxStaked address =
             totalChxStaked.GetOrAdd(address, getTotalChxStakedFromStorage)
 
-        member __.SetChxBalance (address, state : ChxBalanceState) =
-            chxBalances.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
+        member __.SetChxBalance (address, state : ChxAddressState) =
+            chxAddresses.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
 
         member __.SetHolding (accountHash, assetHash, state : HoldingState) =
             holdings.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
@@ -291,10 +291,10 @@ module Processing =
             {
                 TxResults = txResults |> Map.ofDict
                 EquivocationProofResults = equivocationProofResults |> Map.ofDict
-                ChxBalances =
-                    chxBalances
+                ChxAddresses =
+                    chxAddresses
                     |> Map.ofDict
-                    |> Map.filter (fun _ a -> a.Nonce.Value <> 0L || a.Amount.Value <> 0m)
+                    |> Map.filter (fun _ a -> a.Nonce.Value <> 0L || a.Balance.Value <> 0m)
                 Holdings =
                     holdings
                     |> Map.ofDict
@@ -364,18 +364,18 @@ module Processing =
             |? ChxAmount 0m
 
         let availableBalance =
-            fromState.Amount
+            fromState.Balance
             - state.GetTotalChxStaked(senderAddress)
             - if isDepositSlashing then ChxAmount 0m else validatorDeposit // Deposit must be available to slash it.
 
         if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
         else
-            let newFromState = { fromState with Amount = fromState.Amount - action.Amount }
+            let newFromState = { fromState with Balance = fromState.Balance - action.Amount }
             state.SetChxBalance(senderAddress, newFromState)
 
             let toState = if action.RecipientAddress = senderAddress then newFromState else toState
-            let newToState = { toState with Amount = toState.Amount + action.Amount }
+            let newToState = { toState with Balance = toState.Balance + action.Amount }
             state.SetChxBalance(action.RecipientAddress, newToState)
 
             Ok state
@@ -555,7 +555,7 @@ module Processing =
         let senderState = state.GetChxBalance(senderAddress)
         let totalChxStaked = state.GetTotalChxStaked(senderAddress)
 
-        let availableBalance = senderState.Amount - totalChxStaked
+        let availableBalance = senderState.Balance - totalChxStaked
 
         if availableBalance < validatorDeposit then
             Error TxErrorCode.InsufficientChxBalance
@@ -623,7 +623,7 @@ module Processing =
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
 
-        let availableBalance = senderState.Amount - totalChxStaked - validatorDeposit
+        let availableBalance = senderState.Balance - totalChxStaked - validatorDeposit
 
         if availableBalance < action.Amount then
             Error TxErrorCode.InsufficientChxBalance
@@ -821,13 +821,13 @@ module Processing =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let excludeTxsWithNonceGap
-        (getChxBalanceState : BlockchainAddress -> ChxBalanceState option)
+        (getChxAddressState : BlockchainAddress -> ChxAddressState option)
         senderAddress
         (txSet : PendingTxInfo list)
         =
 
         let stateNonce =
-            getChxBalanceState senderAddress
+            getChxAddressState senderAddress
             |> Option.map (fun s -> s.Nonce)
             |? Nonce 0L
 
@@ -863,19 +863,19 @@ module Processing =
         )
         |> List.last
 
-    let excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance (txSet : PendingTxInfo list) =
+    let excludeUnprocessableTxs getChxAddressState getAvailableChxBalance (txSet : PendingTxInfo list) =
         txSet
         |> List.groupBy (fun tx -> tx.Sender)
         |> List.collect (fun (senderAddress, txs) ->
             txs
-            |> excludeTxsWithNonceGap getChxBalanceState senderAddress
+            |> excludeTxsWithNonceGap getChxAddressState senderAddress
             |> excludeTxsIfBalanceCannotCoverFees getAvailableChxBalance senderAddress
         )
         |> List.sortBy (fun tx -> tx.AppearanceOrder)
 
     let getTxSetForNewBlock
         getPendingTxs
-        getChxBalanceState
+        getChxAddressState
         getAvailableChxBalance
         minTxActionFee
         maxTxCountPerBlock
@@ -887,7 +887,7 @@ module Processing =
             let fetchedTxs =
                 getPendingTxs minTxActionFee txHashesToSkip txCountToFetch
                 |> List.map Mapping.pendingTxInfoFromDto
-            let txSet = excludeUnprocessableTxs getChxBalanceState getAvailableChxBalance (txSet @ fetchedTxs)
+            let txSet = excludeUnprocessableTxs getChxAddressState getAvailableChxBalance (txSet @ fetchedTxs)
             if txSet.Length = maxTxCountPerBlock || fetchedTxs.Length = 0 then
                 txSet
             else
@@ -1051,7 +1051,7 @@ module Processing =
             | None -> failwithf "Cannot get validator state for %s" proof.ValidatorAddress.Value
 
             let amountToTake =
-                state.GetChxBalance(proof.ValidatorAddress).Amount
+                state.GetChxBalance(proof.ValidatorAddress).Balance
                 |> min validatorDeposit
 
             if amountToTake > ChxAmount 0m then
@@ -1167,7 +1167,7 @@ module Processing =
         decodeHash
         createHash
         createConsensusMessageHash
-        (getChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option)
+        (getChxAddressStateFromStorage : BlockchainAddress -> ChxAddressState option)
         (getHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option)
         (getVoteStateFromStorage : VoteId -> VoteState option)
         (getEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option)
@@ -1227,7 +1227,7 @@ module Processing =
 
         let initialState =
             ProcessingState (
-                getChxBalanceStateFromStorage,
+                getChxAddressStateFromStorage,
                 getHoldingStateFromStorage,
                 getVoteStateFromStorage,
                 getEligibilityStateFromStorage,

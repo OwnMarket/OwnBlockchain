@@ -78,12 +78,12 @@ module internal Helper =
     let addChxBalance dbEngineType connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """
-            INSERT INTO chx_balance (blockchain_address, amount, nonce)
-            VALUES (@blockchain_address, @amount, 0);
+            INSERT INTO chx_address (blockchain_address, nonce, amount)
+            VALUES (@blockchain_address, 0, @amount);
             """
         [
-            "@amount", amount |> box
             "@blockchain_address", address |> box
+            "@amount", amount |> box
         ]
         |> DbTools.execute dbEngineType connectionString insertStatement
         |> ignore
@@ -91,12 +91,12 @@ module internal Helper =
     let addBalanceAndAccount dbEngineType connectionString (address : string) (amount : decimal) =
         let insertStatement =
             """
-            INSERT INTO chx_balance (blockchain_address, amount, nonce) VALUES (@blockchain_address, @amount, 0);
+            INSERT INTO chx_address (blockchain_address, nonce, amount) VALUES (@blockchain_address, 0, @amount);
             INSERT INTO account (account_hash, controller_address) VALUES (@blockchain_address, @blockchain_address);
             """
         [
-            "@amount", amount |> box
             "@blockchain_address", address |> box
+            "@amount", amount |> box
         ]
         |> DbTools.execute dbEngineType connectionString insertStatement
         |> ignore

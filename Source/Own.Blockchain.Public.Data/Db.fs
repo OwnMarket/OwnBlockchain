@@ -377,17 +377,17 @@ module Db =
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let getChxBalanceState
+    let getChxAddressState
         dbEngineType
         (dbConnectionString : string)
         (BlockchainAddress address)
-        : ChxBalanceStateDto option
+        : ChxAddressStateDto option
         =
 
         let sql =
             """
-            SELECT amount, nonce
-            FROM chx_balance
+            SELECT nonce, balance
+            FROM chx_address
             WHERE blockchain_address = @address
             """
 
@@ -396,10 +396,10 @@ module Db =
                 "@address", address |> box
             ]
 
-        match DbTools.query<ChxBalanceStateDto> dbEngineType dbConnectionString sql sqlParams with
+        match DbTools.query<ChxAddressStateDto> dbEngineType dbConnectionString sql sqlParams with
         | [] -> None
         | [state] -> Some state
-        | _ -> failwithf "Multiple CHX balance entries found for address %A" address
+        | _ -> failwithf "Multiple CHX address entries found for address %A" address
 
     let getAddressAccounts
         dbEngineType
@@ -807,8 +807,8 @@ module Db =
                     GROUP BY validator_address
                     HAVING SUM(amount) >= @threshold
                 ) s USING (validator_address)
-                JOIN chx_balance ON
-                    chx_balance.blockchain_address = validator.validator_address
+                JOIN chx_address ON
+                    chx_address.blockchain_address = validator.validator_address
                 LEFT JOIN (
                     SELECT staker_address, SUM(amount) AS total_delegation
                     FROM stake
@@ -817,7 +817,7 @@ module Db =
                     d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
                 AND is_enabled
-                AND (chx_balance.amount - COALESCE(d.total_delegation, 0)) >= @deposit
+                AND (chx_address.balance - COALESCE(d.total_delegation, 0)) >= @deposit
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 """
             | Postgres ->
@@ -830,8 +830,8 @@ module Db =
                     GROUP BY validator_address
                     HAVING SUM(amount) >= @threshold
                 ) s USING (validator_address)
-                JOIN chx_balance ON
-                    chx_balance.blockchain_address = validator.validator_address
+                JOIN chx_address ON
+                    chx_address.blockchain_address = validator.validator_address
                 LEFT JOIN (
                     SELECT staker_address, SUM(amount) AS total_delegation
                     FROM stake
@@ -840,7 +840,7 @@ module Db =
                     d.staker_address = validator.validator_address
                 WHERE time_to_blacklist = 0
                 AND is_enabled
-                AND (chx_balance.amount - COALESCE(d.total_delegation, 0)) >= @deposit
+                AND (chx_address.balance - COALESCE(d.total_delegation, 0)) >= @deposit
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 LIMIT @topCount
                 """
@@ -1202,76 +1202,76 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove previous block number."
 
-    let private addChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
+    let private addChxBalance conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO chx_balance (blockchain_address, amount, nonce)
-            VALUES (@blockchainAddress, @amount, @nonce)
+            INSERT INTO chx_address (blockchain_address, nonce, balance)
+            VALUES (@blockchainAddress, @nonce, @balance)
             """
 
         let sqlParams =
             [
-                "@blockchainAddress", chxBalanceInfo.BlockchainAddress |> box
-                "@amount", chxBalanceInfo.ChxBalanceState.Amount |> box
-                "@nonce", chxBalanceInfo.ChxBalanceState.Nonce |> box
+                "@blockchainAddress", chxAddressInfo.BlockchainAddress |> box
+                "@nonce", chxAddressInfo.ChxAddressState.Nonce |> box
+                "@balance", chxAddressInfo.ChxAddressState.Balance |> box
             ]
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert CHX balance state."
+            | _ -> Result.appError "Didn't insert CHX address state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert CHX balance state."
+            Result.appError "Failed to insert CHX address state."
 
-    let private updateChxBalance conn transaction (chxBalanceInfo : ChxBalanceInfoDto) : Result<unit, AppErrors> =
+    let private updateChxBalance conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            UPDATE chx_balance
-            SET amount = @amount,
-                nonce = @nonce
+            UPDATE chx_address
+            SET nonce = @nonce,
+                balance = @balance
             WHERE blockchain_address = @blockchainAddress
             """
 
         let sqlParams =
             [
-                "@blockchainAddress", chxBalanceInfo.BlockchainAddress |> box
-                "@amount", chxBalanceInfo.ChxBalanceState.Amount |> box
-                "@nonce", chxBalanceInfo.ChxBalanceState.Nonce |> box
+                "@blockchainAddress", chxAddressInfo.BlockchainAddress |> box
+                "@nonce", chxAddressInfo.ChxAddressState.Nonce |> box
+                "@balance", chxAddressInfo.ChxAddressState.Balance |> box
             ]
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 -> addChxBalance conn transaction chxBalanceInfo
+            | 0 -> addChxBalance conn transaction chxAddressInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update CHX balance state."
+            | _ -> Result.appError "Didn't update CHX address state."
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update CHX balance state."
+            Result.appError "Failed to update CHX address state."
 
-    let private updateChxBalances
+    let private updateChxAddresses
         conn
         transaction
-        (chxBalances : Map<string, ChxBalanceStateDto>)
+        (chxAddresses : Map<string, ChxAddressStateDto>)
         : Result<unit, AppErrors>
         =
 
-        let foldFn result (blockchainAddress, chxBalanceState : ChxBalanceStateDto) =
+        let foldFn result (blockchainAddress, chxAddressState : ChxAddressStateDto) =
             result
             >>= fun _ ->
                 {
                     BlockchainAddress = blockchainAddress
-                    ChxBalanceState =
+                    ChxAddressState =
                         {
-                            Amount = chxBalanceState.Amount
-                            Nonce = chxBalanceState.Nonce
+                            Nonce = chxAddressState.Nonce
+                            Balance = chxAddressState.Balance
                         }
                 }
                 |> updateChxBalance conn transaction
 
-        chxBalances
+        chxAddresses
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
@@ -2062,7 +2062,7 @@ module Db =
             result {
                 do! removeProcessedTxs conn transaction stateChanges.TxResults
                 do! removeProcessedEquivocationProofs conn transaction stateChanges.EquivocationProofResults
-                do! updateChxBalances conn transaction stateChanges.ChxBalances
+                do! updateChxAddresses conn transaction stateChanges.ChxAddresses
                 do! updateValidators conn transaction stateChanges.Validators
                 do! updateStakes conn transaction stateChanges.Stakes
                 do! updateAssets conn transaction stateChanges.Assets

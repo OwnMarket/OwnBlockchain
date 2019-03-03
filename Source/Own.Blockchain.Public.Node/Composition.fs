@@ -63,7 +63,7 @@ module Composition =
     let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbEngineType Config.DbConnectionString
     let getStoredBlockNumbers () = Db.getStoredBlockNumbers Config.DbEngineType Config.DbConnectionString
 
-    let getChxBalanceState = Db.getChxBalanceState Config.DbEngineType Config.DbConnectionString
+    let getChxAddressState = Db.getChxAddressState Config.DbEngineType Config.DbConnectionString
     let getAddressAccounts = Db.getAddressAccounts Config.DbEngineType Config.DbConnectionString
     let getAddressAssets = Db.getAddressAssets Config.DbEngineType Config.DbConnectionString
     let getAddressStakes = Db.getAddressStakes Config.DbEngineType Config.DbConnectionString
@@ -200,7 +200,7 @@ module Composition =
             getEquivocationProof
             verifySignature
             Hashing.isValidBlockchainAddress
-            getChxBalanceState
+            getChxAddressState
             getHoldingState
             getVoteState
             getEligibilityState
@@ -225,14 +225,14 @@ module Composition =
 
     let getAvailableChxBalance =
         Workflows.getAvailableChxBalance
-            getChxBalanceState
+            getChxAddressState
             getTotalChxStaked
             getValidatorState
             (ChxAmount Config.ValidatorDeposit)
 
     let getDetailedChxBalance =
         Workflows.getDetailedChxBalance
-            getChxBalanceState
+            getChxAddressState
             getTotalChxStaked
             getValidatorState
             (ChxAmount Config.ValidatorDeposit)
@@ -245,7 +245,7 @@ module Composition =
             getBlock
             getPendingTxs
             getPendingEquivocationProofs
-            getChxBalanceState
+            getChxAddressState
             getAvailableChxBalance
             addressFromPrivateKey
             (ChxAmount Config.MinTxActionFee)
@@ -416,7 +416,7 @@ module Composition =
 
     let getBlockApi = Workflows.getBlockApi getLastAppliedBlockNumber getBlock
 
-    let getAddressApi = Workflows.getAddressApi getChxBalanceState getDetailedChxBalance
+    let getAddressApi = Workflows.getAddressApi getChxAddressState getDetailedChxBalance
 
     let getAddressAccountsApi = Workflows.getAddressAccountsApi getAddressAccounts
 

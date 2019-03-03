@@ -25,10 +25,10 @@ module ValidatorTests =
         |> List.iter (fun (address, deposit) ->
             {
                 BlockchainAddress = address
-                ChxBalanceState =
+                ChxAddressState =
                     {
-                        ChxBalanceStateDto.Nonce = 0L
-                        Amount = deposit
+                        ChxAddressStateDto.Nonce = 0L
+                        Balance = deposit
                     }
             }
             |> Helpers.addChxBalance
@@ -81,10 +81,10 @@ module ValidatorTests =
         |> List.iter (fun (address, timeToBlacklist) ->
             {
                 BlockchainAddress = address
-                ChxBalanceState =
+                ChxAddressState =
                     {
-                        ChxBalanceStateDto.Nonce = 0L
-                        Amount = Config.ValidatorDeposit
+                        ChxAddressStateDto.Nonce = 0L
+                        Balance = Config.ValidatorDeposit
                     }
             }
             |> Helpers.addChxBalance

@@ -49,17 +49,17 @@ module Helpers =
 
         DbInit.init Config.DbEngineType Config.DbConnectionString
 
-    let addChxBalance (chxBalanceInfo : ChxBalanceInfoDto) =
+    let addChxBalance (chxAddressInfo : ChxAddressInfoDto) =
         let sql =
             """
-            INSERT INTO chx_balance (blockchain_address, amount, nonce)
-            VALUES (@blockchainAddress, @amount, @nonce)
+            INSERT INTO chx_address (blockchain_address, nonce, balance)
+            VALUES (@blockchainAddress, @nonce, @balance)
             """
 
         [
-            "@blockchainAddress", chxBalanceInfo.BlockchainAddress |> box
-            "@amount", chxBalanceInfo.ChxBalanceState.Amount |> box
-            "@nonce", chxBalanceInfo.ChxBalanceState.Nonce |> box
+            "@blockchainAddress", chxAddressInfo.BlockchainAddress |> box
+            "@nonce", chxAddressInfo.ChxAddressState.Nonce |> box
+            "@balance", chxAddressInfo.ChxAddressState.Balance |> box
         ]
         |> dbExecute sql
         |> ignore

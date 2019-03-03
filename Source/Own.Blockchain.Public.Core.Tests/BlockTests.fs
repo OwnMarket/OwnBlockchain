@@ -95,15 +95,15 @@ module BlockTests =
         test <@ equivocationProofResultHash = "ABC.......................D" @>
 
     [<Fact>]
-    let ``Blocks.createChxBalanceStateHash`` () =
+    let ``Blocks.createChxAddressStateHash`` () =
         let address = BlockchainAddress "ABC"
-        let state = {ChxBalanceState.Amount = ChxAmount 1m; Nonce = Nonce 2L}
+        let state = {ChxAddressState.Nonce = Nonce 2L; Balance = ChxAmount 1m}
 
         // ACT
-        let stateHash = Blocks.createChxBalanceStateHash DummyHash.decode DummyHash.create (address, state)
+        let stateHash = Blocks.createChxAddressStateHash DummyHash.decode DummyHash.create (address, state)
 
         // ASSERT
-        test <@ stateHash = "ABC...A...................B" @>
+        test <@ stateHash = "ABC.......B...A............" @>
 
     [<Fact>]
     let ``Blocks.createHoldingStateHash`` () =
@@ -355,10 +355,10 @@ module BlockTests =
             |> Map.ofList
 
         // State Changes
-        let chxBalances =
+        let chxAddresses =
             [
-                BlockchainAddress "HH", {ChxBalanceState.Amount = ChxAmount 5m; Nonce = Nonce 7L}
-                BlockchainAddress "II", {ChxBalanceState.Amount = ChxAmount 6m; Nonce = Nonce 8L}
+                BlockchainAddress "HH", {ChxAddressState.Nonce = Nonce 7L; Balance = ChxAmount 5m}
+                BlockchainAddress "II", {ChxAddressState.Nonce = Nonce 8L; Balance = ChxAmount 6m}
             ]
             |> Map.ofList
 
@@ -538,7 +538,7 @@ module BlockTests =
             {
                 ProcessingOutput.TxResults = txResults
                 EquivocationProofResults = equivocationProofResults
-                ChxBalances = chxBalances
+                ChxAddresses = chxAddresses
                 Holdings = holdings
                 Votes = votes
                 Eligibilities = eligibilities
@@ -602,10 +602,10 @@ module BlockTests =
 
         let stateRoot =
             [
-                "HH...E...................G" // CHX balance 1
-                "II...F...................H" // CHX balance 2
-                "DDDEEE...A............." // Holding balance 1
-                "FFFGGG...B............A" // Holding balance 2
+                "HH.......G...E............" // CHX address 1
+                "II.......H...F............" // CHX address 2
+                "DDDEEE...A............." // Holding 1
+                "FFFGGG...B............A" // Holding 2
                 "DDDEEEAAAADA...A............" // Vote 1 Holding 1
                 "DDDEEEBBBBDA...A............" // Vote 2 Holding 1
                 "DDDEEECCCCAD...A............" // Vote 3 Holding 1
@@ -756,10 +756,10 @@ module BlockTests =
             |> Map.ofList
 
         // State Changes
-        let chxBalances =
+        let chxAddresses =
             [
-                wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10m; Nonce = Nonce 1L}
-                wallet2.Address, {ChxBalanceState.Amount = ChxAmount 20m; Nonce = Nonce 2L}
+                wallet1.Address, {ChxAddressState.Nonce = Nonce 1L; Balance = ChxAmount 10m}
+                wallet2.Address, {ChxAddressState.Nonce = Nonce 2L; Balance = ChxAmount 20m}
             ]
             |> Map.ofList
 
@@ -939,7 +939,7 @@ module BlockTests =
             {
                 ProcessingOutput.TxResults = txResults
                 EquivocationProofResults = equivocationProofResults
-                ChxBalances = chxBalances
+                ChxAddresses = chxAddresses
                 Holdings = holdings
                 Votes = votes
                 Eligibilities = eligibilities
@@ -1005,9 +1005,9 @@ module BlockTests =
 
         let stateMerkleProofs =
             [
-                chxBalances
+                chxAddresses
                 |> Map.toList
-                |> List.map (Blocks.createChxBalanceStateHash Hashing.decode Hashing.hash)
+                |> List.map (Blocks.createChxAddressStateHash Hashing.decode Hashing.hash)
 
                 holdings
                 |> Map.toList
@@ -1123,10 +1123,10 @@ module BlockTests =
             |> Map.ofList
 
         // State Changes
-        let chxBalances =
+        let chxAddresses =
             [
-                wallet1.Address, {ChxBalanceState.Amount = ChxAmount 10m; Nonce = Nonce 1L}
-                wallet2.Address, {ChxBalanceState.Amount = ChxAmount 20m; Nonce = Nonce 2L}
+                wallet1.Address, {ChxAddressState.Nonce = Nonce 1L; Balance = ChxAmount 10m}
+                wallet2.Address, {ChxAddressState.Nonce = Nonce 2L; Balance = ChxAmount 20m}
             ]
             |> Map.ofList
 
@@ -1317,7 +1317,7 @@ module BlockTests =
             {
                 ProcessingOutput.TxResults = txResults
                 EquivocationProofResults = equivocationProofResults
-                ChxBalances = chxBalances
+                ChxAddresses = chxAddresses
                 Holdings = holdings
                 Votes = votes
                 Eligibilities = eligibilities

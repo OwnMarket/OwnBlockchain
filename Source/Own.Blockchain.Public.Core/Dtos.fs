@@ -297,9 +297,9 @@ type EquivocationProofResultDto = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 [<CLIMutable>]
-type ChxBalanceStateDto = {
-    Amount : decimal
+type ChxAddressStateDto = {
     Nonce : int64
+    Balance : decimal
 }
 
 [<CLIMutable>]
@@ -363,7 +363,7 @@ type StakeStateDto = {
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     EquivocationProofResults : Map<string, EquivocationProofResultDto>
-    ChxBalances : Map<string, ChxBalanceStateDto>
+    ChxAddresses : Map<string, ChxAddressStateDto>
     Holdings : Map<string * string, HoldingStateDto>
     Votes : Map<string * string * string, VoteStateDto>
     Eligibilities : Map<string * string, EligibilityStateDto>
@@ -375,9 +375,9 @@ type ProcessingOutputDto = {
 }
 
 [<CLIMutable>]
-type ChxBalanceInfoDto = {
+type ChxAddressInfoDto = {
     BlockchainAddress : string
-    ChxBalanceState : ChxBalanceStateDto
+    ChxAddressState : ChxAddressStateDto
 }
 
 [<CLIMutable>]
@@ -598,8 +598,8 @@ type ChxDetailedBalanceDto = {
 
 type GetAddressApiResponseDto = {
     BlockchainAddress : string
-    Balance : ChxDetailedBalanceDto
     Nonce : int64
+    Balance : ChxDetailedBalanceDto
 }
 
 type GetAddressAccountsApiResponseDto = {

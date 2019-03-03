@@ -139,7 +139,7 @@ module Helpers =
             CreateHash : byte[] -> string
             CreateConsensusMessageHash :
                 (string -> byte[]) -> (byte[] -> string) -> BlockNumber -> ConsensusRound -> ConsensusMessage -> string
-            GetChxBalanceStateFromStorage : BlockchainAddress -> ChxBalanceState option
+            GetChxAddressStateFromStorage : BlockchainAddress -> ChxAddressState option
             GetHoldingStateFromStorage : AccountHash * AssetHash -> HoldingState option
             GetVoteStateFromStorage : VoteId -> VoteState option
             GetEligibilityStateFromStorage : AccountHash * AssetHash -> EligibilityState option
@@ -178,7 +178,7 @@ module Helpers =
             DecodeHash = Hashing.decode
             CreateHash = Hashing.hash
             CreateConsensusMessageHash = Consensus.createConsensusMessageHash
-            GetChxBalanceStateFromStorage = fun _ -> unexpectedInvocation "GetChxBalanceStateFromStorage"
+            GetChxAddressStateFromStorage = fun _ -> unexpectedInvocation "GetChxAddressStateFromStorage"
             GetHoldingStateFromStorage = fun _ -> unexpectedInvocation "GetHoldingStateFromStorage"
             GetVoteStateFromStorage = fun _ -> unexpectedInvocation "GetVoteStateFromStorage"
             GetEligibilityStateFromStorage = fun _ -> unexpectedInvocation "GetEligibilityStateFromStorage"
@@ -215,7 +215,7 @@ module Helpers =
             mockedDeps.DecodeHash
             mockedDeps.CreateHash
             mockedDeps.CreateConsensusMessageHash
-            mockedDeps.GetChxBalanceStateFromStorage
+            mockedDeps.GetChxAddressStateFromStorage
             mockedDeps.GetHoldingStateFromStorage
             mockedDeps.GetVoteStateFromStorage
             mockedDeps.GetEligibilityStateFromStorage
