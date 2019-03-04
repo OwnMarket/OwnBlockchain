@@ -106,7 +106,7 @@ type NetworkNode
                 activeMembers.TryRemove networkAddress |> ignore
                 deadMembers.AddOrUpdate (networkAddress, activeMember, fun _ _ -> activeMember) |> ignore
                 monitorPendingDeadMember networkAddress
-            | false, _ -> ()
+            | _ -> ()
         }
 
     let monitorActiveMember address =
@@ -184,7 +184,7 @@ type NetworkNode
                 let expiredAddresses =
                     match pendingDataRequests.TryGetValue messageId with
                     | true, expiredAddresses -> expiredAddresses
-                    | false, _ -> []
+                    | _ -> []
 
                 let targetAddress =
                     let networkAddressPool =
@@ -225,7 +225,7 @@ type NetworkNode
                 | true, addresses ->
                     if not (addresses.IsEmpty) then
                         return! loop messageId
-                | false, _ -> ()
+                | _ -> ()
             }
 
         Async.Start (loop requestId, cts.Token)
@@ -330,7 +330,7 @@ type NetworkNode
     member private __.GetActiveMember networkAddress =
         match activeMembers.TryGetValue networkAddress with
         | true, localMember -> Some localMember
-        | false, _ -> None
+        | _ -> None
 
     member private __.IncreaseHeartbeat () =
         config.PublicAddress
@@ -385,7 +385,7 @@ type NetworkNode
             let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary peerMessage
             let recipientMemberDto = Mapping.gossipMemberToDto recipientMember
             sendGossipMessage peerMessageDto recipientMemberDto
-        | false, _ -> ()
+        | _ -> ()
 
     member private __.ProcessGossipMessage (gossipMessage : GossipMessage) recipientAddresses =
         match recipientAddresses with
@@ -423,7 +423,7 @@ type NetworkNode
                     match gossipMessages.TryGetValue msg.MessageId with
                     | true, processedAddresses ->
                         List.except (processedAddresses @ senderAddress) recipientAddresses
-                    | false, _ ->
+                    | _ ->
                         List.except senderAddress recipientAddresses
 
                 __.ProcessGossipMessage msg remainingrecipientAddresses

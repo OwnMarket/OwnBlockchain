@@ -226,12 +226,6 @@ module Processing =
                 kycProviders.AddOrUpdate (assetHash, newProvider, fun _ _ -> newProvider) |> ignore
             | true, existingProvider ->
                 match existingProvider.TryGetValue providerAddress with
-                | false, _ ->
-                    existingProvider.AddOrUpdate (
-                        providerAddress,
-                        providerChange,
-                        fun _ _ -> providerChange)
-                    |> ignore
                 | true, existingChange ->
                     if existingChange = Some KycProviderChange.Add && providerChange = Some KycProviderChange.Remove
                         || existingChange = Some KycProviderChange.Remove && providerChange = Some KycProviderChange.Add
@@ -243,6 +237,12 @@ module Processing =
                             providerChange,
                             fun _ _ -> providerChange)
                         |> ignore
+                | _ ->
+                    existingProvider.AddOrUpdate (
+                        providerAddress,
+                        providerChange,
+                        fun _ _ -> providerChange)
+                    |> ignore
 
         member __.SetAccount (accountHash, state : AccountState) =
             let state = Some state
@@ -256,7 +256,6 @@ module Processing =
             let state, change = Some state, Some change
             let processingChange =
                 match validators.TryGetValue address with
-                | false, _ -> change
                 | true, (_, existingChange) ->
                     if existingChange = Some ValidatorChange.Add && change = Some ValidatorChange.Remove
                         || existingChange = Some ValidatorChange.Remove && change = Some ValidatorChange.Add
@@ -264,6 +263,7 @@ module Processing =
                         None
                     else
                         change
+                | _ -> change
             validators.AddOrUpdate(address, (state, processingChange), fun _ _ -> (state, processingChange)) |> ignore
 
         member __.SetStake (stakerAddress, validatorAddress, state : StakeState) =
