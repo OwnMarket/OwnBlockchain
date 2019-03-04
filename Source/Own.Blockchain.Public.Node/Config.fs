@@ -49,14 +49,22 @@ type Config () =
 
     static member DbConnectionString
         with get () =
-            config.["DbConnectionString"]
+            let connString = config.["DbConnectionString"]
+            if connString.IsNullOrWhiteSpace() && Config.DbEngineType = Firebird then
+                "Database=State.fdb"
+            else
+                connString
 
     static member DbEngineType
         with get () =
             match config.["DbEngineType"] with
             | "Firebird" -> Firebird
             | "Postgres" -> Postgres
-            | t -> failwithf "Unknown DB engine type: %s" t
+            | dbEngineType ->
+                if dbEngineType.IsNullOrWhiteSpace() then
+                    Firebird
+                else
+                    failwithf "Unknown DB engine type: %s" dbEngineType
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API
