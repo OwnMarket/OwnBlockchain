@@ -52,11 +52,13 @@ module Transport =
         if eventArgs.Socket.TryReceiveMultipartMessage &message then
             extractMessageFromMultipart message
             |> Option.iter (fun m ->
-                match unpackMessage m with
+                match unpackMessage msg with
                 | Ok peerMessage ->
                     peerMessageHandler |> Option.iter (fun handler -> handler peerMessage)
                 | Error error -> Log.error error
             )
+        else
+            Log.warning "An error has occurred while trying to read the message"
 
     let private createDealerSocket targetHost =
         let dealerSocket = new DealerSocket("tcp://" + targetHost)
@@ -65,12 +67,14 @@ module Transport =
         |> Observable.subscribe (fun e ->
             let hasMore, _ = e.Socket.TryReceiveFrameString()
             if hasMore then
-                let mutable message = Array.empty<byte>
-                if e.Socket.TryReceiveFrameBytes &message then
-                    match unpackMessage message with
+                let mutable msg = Array.empty<byte>
+                if e.Socket.TryReceiveFrameBytes &msg then
+                    match unpackMessage msg with
                     | Ok peerMessage ->
                         peerMessageHandler |> Option.iter (fun handler -> handler peerMessage)
                     | Error error -> Log.error error
+            else
+                Log.warning "Possible invalid multipart message format"
         )
         |> ignore
 
@@ -93,8 +97,11 @@ module Transport =
         while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
             let targetAddress, payload = message
             match dealerSockets.TryGetValue targetAddress with
-            | true, socket -> socket.TrySendMultipartMessage payload |> ignore
-            | _ -> failwithf "Socket not found for target %s" targetAddress
+            | true, socket ->
+                if not (socket.TrySendMultipartMessage payload) then
+                    Log.errorf "Could not send message to %s" targetAddress
+            | _ ->
+                failwithf "Socket not found for target %s" targetAddress
     )
     |> ignore
 
