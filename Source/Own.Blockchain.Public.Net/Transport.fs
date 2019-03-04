@@ -51,7 +51,7 @@ module Transport =
         let mutable message = new NetMQMessage()
         if eventArgs.Socket.TryReceiveMultipartMessage &message then
             extractMessageFromMultipart message
-            |> Option.iter (fun m ->
+            |> Option.iter (fun msg ->
                 match unpackMessage msg with
                 | Ok peerMessage ->
                     peerMessageHandler |> Option.iter (fun handler -> handler peerMessage)
