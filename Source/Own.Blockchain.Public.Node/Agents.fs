@@ -157,11 +157,11 @@ module Agents =
             |> Log.info
         | PeerListReceived peerList ->
             Log.verbose "PeerListReceived"
-            Log.verbose "===================================="
+            Log.verbose "============================================================"
             peerList
             |> List.map Mapping.gossipMemberToDto
             |> List.iter (fun m -> Log.verbosef "%s Heartbeat:%i" m.NetworkAddress m.Heartbeat)
-            Log.verbose "===================================="
+            Log.verbose "============================================================"
 
     let publishEvent event =
         logEvent event

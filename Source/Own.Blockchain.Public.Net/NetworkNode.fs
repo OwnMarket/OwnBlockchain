@@ -37,10 +37,10 @@ type NetworkNode
 
     let printActiveMembers () =
         #if DEBUG
-            Log.verbose "====================== ACTIVE CONNECTIONS ======================"
+            Log.verbose "==================== ACTIVE CONNECTIONS ===================="
             for m in activeMembers do
                 Log.verbosef "%s Heartbeat:%i" m.Key.Value m.Value.Heartbeat
-            Log.verbose "================================================================"
+            Log.verbose "============================================================"
         #else
             ()
         #endif
@@ -73,19 +73,16 @@ type NetworkNode
     let setFinalDeadMember networkAddress =
         async {
             do! Async.Sleep tFail
-
-            match activeMembers.TryGetValue networkAddress with
-            | false, _ ->
+            let found, _ =  activeMembers.TryGetValue networkAddress
+            if not found then
                 Log.verbosef "*** Member marked as DEAD %s" networkAddress.Value
 
                 deadMembers.TryRemove networkAddress |> ignore
                 memberStateMonitor.TryRemove networkAddress |> ignore
                 networkAddress.Value |> closeConnection
 
-                match removePeerNode networkAddress with
-                | Ok () -> ()
-                | _ -> Log.errorf "Error removing member %A" networkAddress
-            | _ -> ()
+                removePeerNode networkAddress
+                |> Result.iterError (fun _ -> Log.errorf "Error removing member %A" networkAddress)
         }
 
     let monitorPendingDeadMember networkAddress =
@@ -291,9 +288,8 @@ type NetworkNode
     member private __.AddMember inputMember =
         Log.verbosef "Adding new member: %s" inputMember.NetworkAddress.Value
         activeMembers.AddOrUpdate (inputMember.NetworkAddress, inputMember, fun _ _ -> inputMember) |> ignore
-        match savePeerNode inputMember.NetworkAddress with
-        | Ok () -> ()
-        | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
+        savePeerNode inputMember.NetworkAddress
+        |> Result.iterError (fun _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress)
 
         if not (isSelf inputMember.NetworkAddress) then
             monitorActiveMember inputMember.NetworkAddress
@@ -306,9 +302,9 @@ type NetworkNode
                 Heartbeat = inputMember.Heartbeat
             }
             activeMembers.AddOrUpdate (inputMember.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
-            match savePeerNode inputMember.NetworkAddress with
-            | Ok () -> ()
-            | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
+
+            savePeerNode inputMember.NetworkAddress
+            |> Result.iterError (fun _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress)
 
             monitorActiveMember inputMember.NetworkAddress
         | None -> ()
@@ -317,7 +313,7 @@ type NetworkNode
         __.MergeMemberList msg.ActiveMembers
 
     member __.MergeMemberList members =
-        members |> List.iter (fun m -> __.MergeMember m)
+        members |> List.iter __.MergeMember
 
     member private __.MergeMember inputMember =
         if not (isSelf inputMember.NetworkAddress) then
