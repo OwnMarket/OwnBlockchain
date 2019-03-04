@@ -37,10 +37,10 @@ type NetworkNode
 
     let printActiveMembers () =
         #if DEBUG
-            Log.debug "====================== ACTIVE CONNECTIONS ======================"
+            Log.verbose "====================== ACTIVE CONNECTIONS ======================"
             for m in activeMembers do
-                Log.debugf "%s Heartbeat:%i" m.Key.Value m.Value.Heartbeat
-            Log.debug "================================================================"
+                Log.verbosef "%s Heartbeat:%i" m.Key.Value m.Value.Heartbeat
+            Log.verbose "================================================================"
         #else
             ()
         #endif
@@ -57,7 +57,7 @@ type NetworkNode
     let isDead inputMember =
         match deadMembers.TryGetValue inputMember.NetworkAddress with
         | true, deadMember ->
-            Log.debugf "Received a node with heartbeat %i, in dead-members it has heartbeat %i"
+            Log.verbosef "Received a node with heartbeat %i, in dead-members it has heartbeat %i"
                 inputMember.Heartbeat
                 deadMember.Heartbeat
             deadMember.Heartbeat >= inputMember.Heartbeat
@@ -76,7 +76,7 @@ type NetworkNode
 
             match activeMembers.TryGetValue networkAddress with
             | false, _ ->
-                Log.debugf "*** Member marked as DEAD %s" networkAddress.Value
+                Log.verbosef "*** Member marked as DEAD %s" networkAddress.Value
 
                 deadMembers.TryRemove networkAddress |> ignore
                 memberStateMonitor.TryRemove networkAddress |> ignore
@@ -103,7 +103,7 @@ type NetworkNode
     let setPendingDeadMember (networkAddress : NetworkAddress) =
         async {
             do! Async.Sleep tFail
-            Log.debugf "*** Member potentially DEAD: %s" networkAddress.Value
+            Log.verbosef "*** Member potentially DEAD: %s" networkAddress.Value
             match activeMembers.TryGetValue networkAddress with
             | true, activeMember ->
                 activeMembers.TryRemove networkAddress |> ignore
@@ -153,7 +153,7 @@ type NetworkNode
                     __.SelectRandomMembers()
                     |> Option.iter (fun members ->
                         for m in members do
-                            Log.debugf "Sending memberlist to: %s" m.NetworkAddress.Value
+                            Log.verbosef "Sending memberlist to: %s" m.NetworkAddress.Value
                             let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
                             sendGossipDiscoveryMessage
                                 peerMessageDto
@@ -284,7 +284,7 @@ type NetworkNode
 
     member private __.AddMember inputMember =
         let rec loop (mem : GossipMember) =
-            Log.debugf "Adding new member: %s" mem.NetworkAddress.Value
+            Log.verbosef "Adding new member: %s" mem.NetworkAddress.Value
             activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
             match savePeerNode mem.NetworkAddress with
             | Ok () -> ()
@@ -314,7 +314,7 @@ type NetworkNode
 
     member private __.MergeMember inputMember =
         if not (isSelf inputMember.NetworkAddress) then
-            Log.debugf "Receive member: %s" inputMember.NetworkAddress.Value
+            Log.verbosef "Receive member: %s" inputMember.NetworkAddress.Value
             match __.GetActiveMember inputMember.NetworkAddress with
             | Some localMember ->
                 if localMember.Heartbeat < inputMember.Heartbeat then
@@ -377,7 +377,7 @@ type NetworkNode
     member private __.SendGossipMessageToRecipient recipientAddress (gossipMessage : GossipMessage) =
         match activeMembers.TryGetValue recipientAddress with
         | true, recipientMember ->
-            Log.debugf "Sending gossip message %A to %s"
+            Log.verbosef "Sending gossip message %A to %s"
                 gossipMessage.MessageId
                 recipientAddress.Value
 
@@ -453,7 +453,7 @@ type NetworkNode
                 | Some a -> sprintf "from %s" a.Value
                 | None -> ""
 
-            Log.debugf "Received gossip message %A %s"
+            Log.verbosef "Received gossip message %A %s"
                 gossipMessage.MessageId
                 fromMsg
 
