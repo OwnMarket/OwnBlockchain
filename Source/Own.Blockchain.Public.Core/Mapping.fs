@@ -242,6 +242,12 @@ module Mapping =
         | 2uy -> ConsensusStep.Commit
         | c -> failwithf "Unknown consensus step code %i" c
 
+    let consensusStepFromConsensusMessage consensusMessage =
+        match consensusMessage with
+        | Propose _ -> ConsensusStep.Propose
+        | Vote _ -> ConsensusStep.Vote
+        | Commit _ -> ConsensusStep.Commit
+
     let equivocationProofToEquivocationInfoDto (equivocationProof : EquivocationProof) =
         {
             EquivocationProofHash = equivocationProof.EquivocationProofHash.Value

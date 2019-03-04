@@ -561,6 +561,7 @@ module Consensus =
         decodeHash
         createHash
         signHash
+        persistOutgoingConsensusMessage
         sendPeerMessage
         publishEvent
         addressFromPrivateKey
@@ -643,6 +644,12 @@ module Consensus =
                         ConsensusMessage = consensusMessage
                         Signature = signature
                     }
+
+                persistOutgoingConsensusMessage consensusMessageEnvelope
+                |> Result.iterError (fun e ->
+                    Log.appErrors e
+                    failwith "persistOutgoingConsensusMessage FAILED"
+                )
 
                 ConsensusCommand.Message (validatorAddress, consensusMessageEnvelope)
                 |> ConsensusCommandInvoked

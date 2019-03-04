@@ -2085,3 +2085,41 @@ module Db =
         match getPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress) with
         | Some _ -> Ok ()
         | None -> insertPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Consensus
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let saveConsensusMessage
+        dbEngineType
+        (dbConnectionString : string)
+        (consensusMessageInfoDto : ConsensusMessageInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        try
+            let sql =
+                """
+                INSERT INTO consensus_message (block_number, consensus_round, consensus_step, message_envelope)
+                VALUES (@blockNumber, @consensusRound, @consensusStep, @messageEnvelope)
+                """
+
+            let result =
+                [
+                    "@blockNumber", consensusMessageInfoDto.BlockNumber |> box
+                    "@consensusRound", consensusMessageInfoDto.ConsensusRound |> box
+                    "@consensusStep", consensusMessageInfoDto.ConsensusStep |> box
+                    "@messageEnvelope", consensusMessageInfoDto.MessageEnvelope |> box
+                ]
+                |> DbTools.execute dbEngineType dbConnectionString sql
+
+            if result = 1 then
+                Ok ()
+            else
+                sprintf "Didn't insert consensus message (%i): %A" result consensusMessageInfoDto
+                |> Result.appError
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            sprintf "Failed to insert consensus message: %A" consensusMessageInfoDto
+            |> Result.appError

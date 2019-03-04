@@ -101,6 +101,8 @@ module Composition =
 
     let persistStateChanges = Db.persistStateChanges Config.DbEngineType Config.DbConnectionString
 
+    let saveConsensusMessage = Db.saveConsensusMessage Config.DbEngineType Config.DbConnectionString
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Crypto
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -352,6 +354,10 @@ module Composition =
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let persistOutgoingConsensusMessage =
+        Workflows.persistOutgoingConsensusMessage
+            saveConsensusMessage
+
     let createConsensusStateInstance publishEvent =
         Consensus.createConsensusStateInstance
             getLastAppliedBlockNumber
@@ -367,6 +373,7 @@ module Composition =
             Hashing.decode
             Hashing.hash
             signHash
+            persistOutgoingConsensusMessage
             Peers.sendMessage
             publishEvent
             addressFromPrivateKey

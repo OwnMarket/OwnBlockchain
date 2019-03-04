@@ -686,6 +686,27 @@ module Workflows =
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let persistOutgoingConsensusMessage
+        (saveConsensusMessage : ConsensusMessageInfoDto -> Result<unit, AppErrors>)
+        (consensusMessageEnvelope : ConsensusMessageEnvelope)
+        =
+
+        {
+            ConsensusMessageInfoDto.BlockNumber = consensusMessageEnvelope.BlockNumber.Value
+            ConsensusRound = consensusMessageEnvelope.Round.Value
+            ConsensusStep =
+                consensusMessageEnvelope.ConsensusMessage
+                |> Mapping.consensusStepFromConsensusMessage
+                |> Mapping.consensusStepToCode
+                |> Convert.ToInt16
+            MessageEnvelope =
+                consensusMessageEnvelope
+                |> Mapping.consensusMessageEnvelopeToDto
+                |> Serialization.serializeBinary
+                |> Convert.ToBase64String
+        }
+        |> saveConsensusMessage
+
     let handleReceivedConsensusMessage
         decodeHash
         createHash

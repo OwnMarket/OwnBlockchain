@@ -265,6 +265,14 @@ type ConsensusMessageEnvelopeDto = {
 }
 
 [<CLIMutable>]
+type ConsensusMessageInfoDto = {
+    BlockNumber : int64
+    ConsensusRound : int
+    ConsensusStep : int16
+    MessageEnvelope : string
+}
+
+[<CLIMutable>]
 [<MessagePackObject>]
 type EquivocationProofDto = {
     [<Key(0)>] BlockNumber : int64
