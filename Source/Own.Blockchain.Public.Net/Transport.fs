@@ -205,4 +205,3 @@ module Transport =
 
         if poller.IsRunning then
             poller.Dispose()
-
