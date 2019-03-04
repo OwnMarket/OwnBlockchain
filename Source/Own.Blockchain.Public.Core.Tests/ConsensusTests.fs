@@ -4,7 +4,7 @@ open System
 open Xunit
 open Xunit.Abstractions
 open Swensen.Unquote
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Events

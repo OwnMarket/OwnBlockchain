@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{B21B8E5B-35AE-4845-9CF8-9432222B025A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Common", "Own.Common\Own.Common.fsproj", "{7863EFF6-7271-467E-AC0B-39F1FEFB4252}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Common.FSharp", "Own.Common.FSharp\Own.Common.FSharp.fsproj", "{7863EFF6-7271-467E-AC0B-39F1FEFB4252}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Own.Blockchain.Common", "Own.Blockchain.Common\Own.Blockchain.Common.fsproj", "{09FEAE5D-825C-4066-8068-6F8A4BA1ED09}"
 EndProject

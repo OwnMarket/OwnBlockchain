@@ -3,7 +3,7 @@
 open System
 open System.Security.Cryptography
 open SimpleBase
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 

@@ -1,7 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Core
 
 open System
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Common.Conversion
 open Own.Blockchain.Public.Core.Dtos

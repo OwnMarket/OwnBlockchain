@@ -3,7 +3,7 @@ namespace Own.Blockchain.Public.Net
 open System
 open System.Net
 open GuerrillaNtp
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 
 module Ntp =

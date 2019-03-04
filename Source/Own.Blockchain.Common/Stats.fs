@@ -2,7 +2,7 @@ namespace Own.Blockchain.Common
 
 open System
 open System.Collections.Concurrent
-open Own.Common
+open Own.Common.FSharp
 
 module Stats =
 

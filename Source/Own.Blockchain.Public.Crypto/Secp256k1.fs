@@ -3,7 +3,7 @@
 open System
 open System.Security.Cryptography
 open Secp256k1Net
-open Own.Common
+open Own.Common.FSharp
 
 module internal Secp256k1 =
 

@@ -1,6 +1,6 @@
 namespace Own.Blockchain.Common
 
-open Own.Common
+open Own.Common.FSharp
 
 module Agent =
 

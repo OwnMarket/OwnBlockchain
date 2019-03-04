@@ -5,7 +5,7 @@ open System.Globalization
 open System.IO
 open System.Text.RegularExpressions
 open Microsoft.Extensions.Configuration
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 

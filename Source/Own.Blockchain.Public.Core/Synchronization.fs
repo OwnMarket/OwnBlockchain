@@ -1,7 +1,7 @@
 namespace Own.Blockchain.Public.Core
 
 open System.Collections.Concurrent
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos

@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Threading
 open System.Net.Http
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Node
 open Own.Blockchain.Public.Core.Dtos

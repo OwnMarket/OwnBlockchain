@@ -1,4 +1,4 @@
-﻿namespace Own.Common
+﻿namespace Own.Common.FSharp
 
 open System
 open System.Security.Cryptography

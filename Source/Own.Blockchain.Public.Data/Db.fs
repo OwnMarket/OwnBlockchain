@@ -2,7 +2,7 @@ namespace Own.Blockchain.Public.Data
 
 open System
 open System.Data.Common
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos

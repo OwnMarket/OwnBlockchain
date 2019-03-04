@@ -1,6 +1,6 @@
 ﻿open System.Globalization
 open System.Threading
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Faucet
 open MessagePack.Resolvers

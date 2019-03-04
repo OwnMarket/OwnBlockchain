@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Own.Common\Own.Common.fsproj" />
+        <ProjectReference Include="..\Own.Common.FSharp\Own.Common.FSharp.fsproj" />
         <ProjectReference Include="..\Own.Blockchain.Common\Own.Blockchain.Common.fsproj" />
         <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
         <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />

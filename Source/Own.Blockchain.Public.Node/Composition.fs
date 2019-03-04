@@ -1,6 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Node
 
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Crypto

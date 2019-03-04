@@ -2,7 +2,7 @@
 open System.Threading
 open MessagePack.Resolvers
 open MessagePack.FSharp
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Node
 

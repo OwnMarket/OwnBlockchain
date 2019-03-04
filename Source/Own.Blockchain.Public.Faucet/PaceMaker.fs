@@ -1,6 +1,6 @@
 namespace Own.Blockchain.Public.Faucet
 
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 
 module PaceMaker =

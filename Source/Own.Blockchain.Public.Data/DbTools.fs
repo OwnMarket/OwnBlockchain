@@ -7,7 +7,7 @@ open FirebirdSql.Data.FirebirdClient
 open FirebirdSql.Data.Isql
 open Npgsql
 open Dapper
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 

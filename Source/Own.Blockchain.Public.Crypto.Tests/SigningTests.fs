@@ -2,7 +2,7 @@
 
 open Xunit
 open Swensen.Unquote
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Crypto
 open Own.Blockchain.Public.Core.DomainTypes

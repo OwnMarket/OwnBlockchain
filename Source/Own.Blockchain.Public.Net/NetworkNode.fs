@@ -2,7 +2,7 @@
 
 open System.Collections.Concurrent
 open System.Threading
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes

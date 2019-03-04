@@ -2,7 +2,7 @@
 
 open System
 open System.Security.Cryptography
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Public.Core.DomainTypes
 
 module Signing =

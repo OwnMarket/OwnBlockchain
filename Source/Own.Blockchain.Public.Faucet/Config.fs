@@ -5,7 +5,7 @@ open System.IO
 open System.Reflection
 open System.Text.RegularExpressions
 open Microsoft.Extensions.Configuration
-open Own.Common
+open Own.Common.FSharp
 
 type Config () =
 

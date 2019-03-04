@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Runtime.InteropServices
 open FirebirdSql.Data.FirebirdClient
-open Own.Common
+open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 
