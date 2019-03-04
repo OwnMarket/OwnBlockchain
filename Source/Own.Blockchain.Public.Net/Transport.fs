@@ -185,7 +185,7 @@ module Transport =
         | true, socket ->
             dealerSockets.TryRemove remoteAddress |> ignore
             if not socket.IsDisposed then
-                poller.Remove socket
+                poller.RemoveAndDispose socket
         | _ -> ()
 
     let closeAllConnections () =
@@ -193,11 +193,11 @@ module Transport =
         |> List.ofDict
         |> List.iter (fun (_, socket) ->
             if not socket.IsDisposed then
-                poller.Remove socket
+                poller.RemoveAndDispose socket
         )
         dealerSockets.Clear()
 
-        routerSocket |> Option.iter (fun socket -> poller.Remove socket)
+        routerSocket |> Option.iter (fun socket -> poller.RemoveAndDispose socket)
         routerSocket <- None
 
         if not dealerMessageQueue.IsDisposed then
