@@ -160,12 +160,12 @@ let rules =
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\w\=") || Regex.IsMatch(line, "\)\=") ->
+            | _, Some line when Regex.IsMatch(line, "[\w\)]\=") && not (Regex.IsMatch(line, "\"[^\"]+=[^\"]+\"")) ->
                 Some "There should be a space before equal sign."
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\=\w") || Regex.IsMatch(line, "\=\(") ->
+            | _, Some line when Regex.IsMatch(line, "\=[\w\(]") && not (Regex.IsMatch(line, "\"[^\"]+=[^\"]+\"")) ->
                 Some "There should be a space after equal sign."
             | _ -> None
 
