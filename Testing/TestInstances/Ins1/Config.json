@@ -7,6 +7,5 @@
     "NetworkBootstrapNodes": [
     ],
     "NetworkDiscoveryTime": 3,
-    "ValidatorPrivateKey": "93kro5U7imjh9WULNxyFZHt4tfYPAKKs5weUX45xckyh",
-    "MinLogLevel": "Info"
+    "ValidatorPrivateKey": "93kro5U7imjh9WULNxyFZHt4tfYPAKKs5weUX45xckyh"
 }

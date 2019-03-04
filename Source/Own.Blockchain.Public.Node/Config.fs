@@ -34,7 +34,7 @@ type Config () =
         with get () =
             let minLogLevel = config.["MinLogLevel"]
             if minLogLevel.IsNullOrWhiteSpace() then
-                Log.LogLevel.Debug
+                Log.LogLevel.Info
             else
                 match Enum.TryParse<Log.LogLevel>(minLogLevel) with
                 | true, value -> value

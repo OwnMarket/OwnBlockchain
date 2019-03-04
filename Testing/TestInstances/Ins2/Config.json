@@ -8,6 +8,5 @@
         "localhost:25701"
     ],
     "NetworkDiscoveryTime": 3,
-    "ValidatorPrivateKey": "FovQrfiEy38mjZCdnoJMousYZgWpvmRFGcjh6ekNufnT",
-    "MinLogLevel": "Info"
+    "ValidatorPrivateKey": "FovQrfiEy38mjZCdnoJMousYZgWpvmRFGcjh6ekNufnT"
 }
