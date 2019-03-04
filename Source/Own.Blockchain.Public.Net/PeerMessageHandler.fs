@@ -90,3 +90,13 @@ module internal PeerMessageHandler =
         match node with
         | Some n -> n.SendResponseDataMessage targetIdentity peerMessage
         | None -> failwith "Please start gossip first"
+
+    let getPeerList () =
+        match node with
+        | Some n -> n.GetActiveMembers ()
+        | None -> failwith "Please start gossip first"
+
+    let updatePeerList activeMembers =
+        match node with
+        | Some n -> n.MergeMemberList activeMembers
+        | None -> failwith "Please start gossip first"

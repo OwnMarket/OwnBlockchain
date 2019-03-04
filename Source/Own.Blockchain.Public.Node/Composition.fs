@@ -476,6 +476,7 @@ module Composition =
             getLastAppliedBlockNumber
             handleReceivedConsensusMessage
             Peers.respondToPeer
+            Peers.getPeerList
             peerMessage
 
     let startGossip publishEvent =
@@ -502,3 +503,5 @@ module Composition =
     let startNetworkAgents () = Peers.startNetworkAgents ()
 
     let discoverNetwork () = Peers.discoverNetwork Config.NetworkDiscoveryTime
+
+    let updatePeerList = Peers.updatePeerList

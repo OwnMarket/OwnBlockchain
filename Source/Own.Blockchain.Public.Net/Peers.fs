@@ -9,19 +9,19 @@ module Peers =
     let invokeSendPeerMessage m =
         match peerMessageDispatcher with
         | Some h -> h.Post m
-        | None -> Log.error "SendPeerMessage agent not started."
+        | None -> Log.error "SendPeerMessage agent is not started."
 
     let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId> option = None
     let invokeRequestFromPeer m =
         match requestFromPeerDispatcher with
         | Some h -> h.Post m
-        | None -> Log.error "RequestFromPeer agent not started."
+        | None -> Log.error "RequestFromPeer agent is not started."
 
     let mutable respondToPeerDispatcher : MailboxProcessor<PeerNetworkIdentity * PeerMessage> option = None
     let invokeRespondToPeer m =
         match respondToPeerDispatcher with
         | Some h -> h.Post m
-        | None -> Log.error "RespondToPeer agent not started."
+        | None -> Log.error "RespondToPeer agent is not started."
 
     let private startSendPeerMessageDispatcher () =
         if peerMessageDispatcher <> None then
@@ -56,6 +56,12 @@ module Peers =
                 }
             |> Some
 
+    let startGossip = PeerMessageHandler.startGossip
+
+    let stopGossip = PeerMessageHandler.stopGossip
+
+    let discoverNetwork = PeerMessageHandler.discoverNetwork
+
     let sendMessage peerMessage =
         invokeSendPeerMessage peerMessage
 
@@ -77,11 +83,9 @@ module Peers =
     let respondToPeer targetIdentity peerMessage =
         invokeRespondToPeer (targetIdentity, peerMessage)
 
-    let startGossip = PeerMessageHandler.startGossip
+    let getPeerList () = PeerMessageHandler.getPeerList ()
 
-    let stopGossip = PeerMessageHandler.stopGossip
-
-    let discoverNetwork = PeerMessageHandler.discoverNetwork
+    let updatePeerList = PeerMessageHandler.updatePeerList
 
     let startNetworkAgents () =
         startSendPeerMessageDispatcher ()

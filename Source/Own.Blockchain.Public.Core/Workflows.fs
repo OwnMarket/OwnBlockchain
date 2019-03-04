@@ -807,6 +807,7 @@ module Workflows =
         getLastAppliedBlockNumber
         handleReceivedConsensusMessage
         respondToPeer
+        getPeerList
         peerMessage
         =
 
@@ -855,12 +856,25 @@ module Workflows =
             |> handleReceivedConsensusMessage
             |> Result.map (ConsensusMessageReceived >> Some)
 
+        let processPeerListMessageFromPeer data =
+            data
+            |> Serialization.deserializeBinary<GossipDiscoveryMessageDto>
+            |> fun m ->
+                m.ActiveMembers
+                |> List.map Mapping.gossipMemberFromDto
+                |> fun peerList ->
+                    peerList
+                    |> PeerListReceived
+                    |> Some
+                    |> Ok
+
         let processData isResponse messageId (data : byte[]) =
             match messageId with
             | Tx txHash -> processTxFromPeer isResponse txHash data
             | EquivocationProof proofHash -> processEquivocationProofFromPeer isResponse proofHash data
             | Block blockNr -> processBlockFromPeer isResponse blockNr data
             | Consensus consensusMessageId -> processConsensusMessageFromPeer consensusMessageId data
+            | PeerList -> processPeerListMessageFromPeer data
 
         let processRequest messageId senderIdentity =
             match messageId with
@@ -904,6 +918,19 @@ module Workflows =
                 | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
 
             | Consensus _ -> Result.appError ("Cannot request consensus message from Peer")
+            | PeerList ->
+                ResponseDataMessage {
+                    MessageId = messageId
+                    Data =
+                        {
+                            GossipDiscoveryMessageDto.ActiveMembers =
+                                getPeerList ()
+                                |> List.map Mapping.gossipMemberToDto
+                        }
+                        |> Serialization.serializeBinary
+                }
+                |> respondToPeer senderIdentity
+                Ok None
 
         match peerMessage with
         | GossipDiscoveryMessage _ -> None

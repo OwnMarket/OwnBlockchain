@@ -261,36 +261,42 @@ type NetworkNode
     member private __.StartGossipDiscovery () =
         let rec loop () =
             async {
-                __.SendMembership ()
+                __.Discover ()
                 do! Async.Sleep(tCycle)
                 return! loop ()
             }
-        if config.PublicAddress.IsSome then
-            Async.Start (loop (), cts.Token)
+        Async.Start (loop (), cts.Token)
 
-    member private __.SendMembership () =
+    member private __.Discover () =
         __.IncreaseHeartbeat()
-        GossipDiscoveryMessage {
-            ActiveMembers = __.GetActiveMembers()
-        }
-        |> __.SendMessage
+        match config.PublicAddress with
+        | Some _ ->
+            // Propagate discovery message.
+            GossipDiscoveryMessage {
+                ActiveMembers = __.GetActiveMembers()
+            }
+            |> __.SendMessage
+        | None ->
+            // Request peer list.
+            __.SendRequestDataMessage NetworkMessageId.PeerList
+
         printActiveMembers ()
 
     member private __.InitializeMemberList () =
         let publicAddress = config.PublicAddress |> optionToList
         getAllPeerNodes () @ config.BootstrapNodes @ publicAddress
         |> Set.ofList
-        |> Set.iter (fun n -> __.AddMember { NetworkAddress = n; Heartbeat = 0L })
+        |> Set.iter (fun a -> __.AddMember { NetworkAddress = a; Heartbeat = 0L })
 
     member private __.AddMember inputMember =
-            Log.verbosef "Adding new member: %s" inputMember.NetworkAddress.Value
-            activeMembers.AddOrUpdate (inputMember.NetworkAddress, inputMember, fun _ _ -> inputMember) |> ignore
-            match savePeerNode inputMember.NetworkAddress with
-            | Ok () -> ()
-            | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
+        Log.verbosef "Adding new member: %s" inputMember.NetworkAddress.Value
+        activeMembers.AddOrUpdate (inputMember.NetworkAddress, inputMember, fun _ _ -> inputMember) |> ignore
+        match savePeerNode inputMember.NetworkAddress with
+        | Ok () -> ()
+        | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
 
-            if not (isSelf inputMember.NetworkAddress) then
-                monitorActiveMember inputMember.NetworkAddress
+        if not (isSelf inputMember.NetworkAddress) then
+            monitorActiveMember inputMember.NetworkAddress
 
     member private __.ReceiveActiveMember inputMember =
         match __.GetActiveMember inputMember.NetworkAddress with
@@ -307,8 +313,11 @@ type NetworkNode
             monitorActiveMember inputMember.NetworkAddress
         | None -> ()
 
-    member private __.ReceiveMembers msg =
+    member __.ReceiveMembers msg =
         __.MergeMemberList msg.ActiveMembers
+
+    member __.MergeMemberList members =
+        members |> List.iter (fun m -> __.MergeMember m)
 
     member private __.MergeMember inputMember =
         if not (isSelf inputMember.NetworkAddress) then
@@ -321,9 +330,6 @@ type NetworkNode
                 if not (isDead inputMember) then
                     __.AddMember inputMember
                     deadMembers.TryRemove inputMember.NetworkAddress |> ignore
-
-    member private __.MergeMemberList members =
-        members |> List.iter (fun m -> __.MergeMember m)
 
     member private __.GetActiveMember networkAddress =
         match activeMembers.TryGetValue networkAddress with

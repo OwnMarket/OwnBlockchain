@@ -34,6 +34,12 @@ module Agents =
         | Some h -> h.Post m
         | None -> Log.error "PeerMessageHandler agent not started."
 
+    let mutable private updatePeerListHandler : MailboxProcessor<GossipMember list> option = None
+    let private invokeUpdatePeerListHandler peerList =
+        match updatePeerListHandler with
+        | Some h -> h.Post peerList
+        | None -> Log.error "UpdatePeerListHandler agent not started."
+
     let mutable private txVerifier : MailboxProcessor<TxEnvelopeDto * bool> option = None
     let private invokeTxVerifier e =
         match txVerifier with
@@ -149,6 +155,13 @@ module Agents =
                     (unionCaseName consensusStep)
             |> formatMessage
             |> Log.info
+        | PeerListReceived peerList ->
+            Log.verbose "PeerListReceived"
+            Log.verbose "===================================="
+            peerList
+            |> List.map Mapping.gossipMemberToDto
+            |> List.iter (fun m -> Log.verbosef "%s Heartbeat:%i" m.NetworkAddress m.Heartbeat)
+            Log.verbose "===================================="
 
     let publishEvent event =
         logEvent event
@@ -156,6 +169,8 @@ module Agents =
         match event with
         | PeerMessageReceived message ->
             invokePeerMessageHandler message
+        | PeerListReceived peerList ->
+            invokeUpdatePeerListHandler peerList
         | TxSubmitted txHash ->
             invokeApplier ()
             txPropagator.Post txHash
@@ -208,6 +223,17 @@ module Agents =
                             (Option.iter publishEvent)
                             Log.appErrors
                     )
+                }
+            |> Some
+
+    let private startUpdatePeerListHandler () =
+        if updatePeerListHandler <> None then
+            failwith "UpdatePeerListHandler agent is already started."
+
+        updatePeerListHandler <-
+            Agent.start <| fun peerList ->
+                async {
+                    Composition.updatePeerList peerList
                 }
             |> Some
 
@@ -301,6 +327,7 @@ module Agents =
 
     let startAgents () =
         startPeerMessageHandler ()
+        startUpdatePeerListHandler ()
         startTxVerifier ()
         startEquivocationProofVerifier ()
         startBlockVerifier ()

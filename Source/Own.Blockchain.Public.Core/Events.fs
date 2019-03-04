@@ -21,3 +21,4 @@ type AppEvent =
     | EquivocationProofReceived of EquivocationProofDto
     | EquivocationProofFetched of EquivocationProofDto
     | EquivocationProofStored of EquivocationProofHash * isFetched : bool
+    | PeerListReceived of GossipMember list

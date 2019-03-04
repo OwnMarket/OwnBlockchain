@@ -776,6 +776,7 @@ module Mapping =
         | EquivocationProof (EquivocationProofHash proofHash) -> "EquivocationProof", proofHash
         | Block (BlockNumber blockNr) -> "Block", blockNr |> Convert.ToString
         | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId
+        | PeerList -> "PeerList", ""
 
     let private messageTypeToNetworkMessageId (messageType : string) (messageId : string) =
         match messageType with
@@ -783,6 +784,7 @@ module Mapping =
         | "EquivocationProof" -> messageId |> EquivocationProofHash |> EquivocationProof
         | "Block" -> messageId |> Convert.ToInt64 |> BlockNumber |> Block
         | "Consensus" -> messageId |> ConsensusMessageId |> Consensus
+        | "PeerList" -> PeerList
         | _ -> failwithf "Invalid network message type %s" messageType
 
     let gossipMemberFromDto (dto: GossipMemberDto) : GossipMember =

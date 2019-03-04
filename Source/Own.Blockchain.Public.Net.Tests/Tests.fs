@@ -124,6 +124,8 @@ module PeerTests =
             ()
         | EquivocationProofStored (equivocationProofHash, isFetched) ->
             ()
+        | PeerListReceived peerList ->
+            () // TODO: fix this
 
     let private startPeerMessageHandler (node : NetworkNode) =
         let found, _ = peerMessageHandlers.TryGetValue (node.GetListenAddress())

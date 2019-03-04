@@ -459,6 +459,7 @@ type NetworkMessageId =
     | EquivocationProof of EquivocationProofHash
     | Block of BlockNumber
     | Consensus of ConsensusMessageId
+    | PeerList
 
 type NetworkNodeConfig = {
     Identity : PeerNetworkIdentity
