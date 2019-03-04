@@ -283,16 +283,14 @@ type NetworkNode
         |> Set.iter (fun n -> __.AddMember { NetworkAddress = n; Heartbeat = 0L })
 
     member private __.AddMember inputMember =
-        let rec loop (mem : GossipMember) =
-            Log.verbosef "Adding new member: %s" mem.NetworkAddress.Value
-            activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
-            match savePeerNode mem.NetworkAddress with
+            Log.verbosef "Adding new member: %s" inputMember.NetworkAddress.Value
+            activeMembers.AddOrUpdate (inputMember.NetworkAddress, inputMember, fun _ _ -> inputMember) |> ignore
+            match savePeerNode inputMember.NetworkAddress with
             | Ok () -> ()
-            | _ -> Log.errorf "Error saving member %A" mem.NetworkAddress
+            | _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress
 
-            if not (isSelf mem.NetworkAddress) then
-                monitorActiveMember mem.NetworkAddress
-        loop inputMember
+            if not (isSelf inputMember.NetworkAddress) then
+                monitorActiveMember inputMember.NetworkAddress
 
     member private __.ReceiveActiveMember inputMember =
         match __.GetActiveMember inputMember.NetworkAddress with
