@@ -184,20 +184,25 @@ module Transport =
         match dealerSockets.TryGetValue remoteAddress with
         | true, socket ->
             dealerSockets.TryRemove remoteAddress |> ignore
-            socket.Dispose()
+            if not socket.IsDisposed then
+                poller.Remove socket
         | _ -> ()
 
     let closeAllConnections () =
-        if poller.IsRunning then
-            poller.Dispose()
-            dealerMessageQueue.Dispose()
-
         dealerSockets
         |> List.ofDict
         |> List.iter (fun (_, socket) ->
-            socket.Dispose()
+            if not socket.IsDisposed then
+                poller.Remove socket
         )
         dealerSockets.Clear()
 
-        routerSocket |> Option.iter (fun socket -> socket.Dispose())
+        routerSocket |> Option.iter (fun socket -> poller.Remove socket)
         routerSocket <- None
+
+        if not dealerMessageQueue.IsDisposed then
+            poller.Remove dealerMessageQueue
+
+        if poller.IsRunning then
+            poller.Dispose()
+
