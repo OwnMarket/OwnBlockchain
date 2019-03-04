@@ -60,6 +60,9 @@ module List =
         |> Seq.ofDict
         |> List.ofSeq
 
+    let inline shuffle xs =
+        xs |> List.sortBy (fun _ -> Guid.NewGuid())
+
 module Map =
 
     let inline ofDict dictionary =

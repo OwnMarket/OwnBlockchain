@@ -38,8 +38,9 @@ type NetworkNode
     let printActiveMembers () =
         #if DEBUG
             Log.verbose "==================== ACTIVE CONNECTIONS ===================="
-            for m in activeMembers do
-                Log.verbosef "%s Heartbeat:%i" m.Key.Value m.Value.Heartbeat
+            activeMembers
+            |> Seq.ofDict
+            |> Seq.iter (fun (a, m) -> Log.verbosef "%s Heartbeat:%i"  a.Value m.Heartbeat)
             Log.verbose "============================================================"
         #else
             ()
@@ -132,9 +133,14 @@ type NetworkNode
         cts.Cancel()
 
     member __.GetActiveMembers () =
-        activeMembers
-        |> List.ofDict
-        |> List.map (fun (_, m) -> m)
+        let result =
+            activeMembers
+            |> List.ofDict
+            |> List.map (fun (_, m) -> m)
+
+        match result with
+        | [] -> config.BootstrapNodes |> List.map (fun n -> { GossipMember.NetworkAddress = n; Heartbeat = 0L })
+        | _ -> result
 
     member __.GetListenAddress () =
         config.ListeningAddress
@@ -149,12 +155,13 @@ type NetworkNode
                 | GossipDiscoveryMessage _ ->
                     __.SelectRandomMembers()
                     |> Option.iter (fun members ->
-                        for m in members do
+                        members |> Seq.iter (fun m ->
                             Log.verbosef "Sending memberlist to: %s" m.NetworkAddress.Value
                             let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
                             sendGossipDiscoveryMessage
                                 peerMessageDto
                                 m.NetworkAddress.Value
+                        )
                     )
 
                 | MulticastMessage _ ->
@@ -347,18 +354,16 @@ type NetworkNode
 
     member private __.SelectRandomMembers () =
         let connectedMembers =
-            activeMembers
-            |> List.ofDict
-            |> List.filter (fun (a, _) -> not (isSelf a))
+            __.GetActiveMembers()
+            |> List.filter (fun m -> not (isSelf m.NetworkAddress))
 
         match connectedMembers with
         | [] -> None
         | _ ->
             connectedMembers
-            |> Seq.shuffle
-            |> Seq.chunkBySize fanout
-            |> Seq.head
-            |> Seq.map (fun (_, m) -> m)
+            |> List.shuffle
+            |> List.chunkBySize fanout
+            |> List.head
             |> Some
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
