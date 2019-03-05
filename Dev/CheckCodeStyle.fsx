@@ -208,12 +208,18 @@ let rules =
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\w\:\:") || Regex.IsMatch(line, "\)\:\:") ->
+            | _, Some line when
+                (Regex.IsMatch(line, "\w\:\:") || Regex.IsMatch(line, "\)\:\:"))
+                && not (Regex.IsMatch(line, "\"[^\"]*\:\:[^\"]*\"")) // Except in quoted strings
+                ->
                 Some "There should be a space before the cons '::' operator."
             | _ -> None
 
         createRule <| function
-            | _, Some line when Regex.IsMatch(line, "\:\:\w") || Regex.IsMatch(line, "\:\:\(") ->
+            | _, Some line when
+                (Regex.IsMatch(line, "\:\:\w") || Regex.IsMatch(line, "\:\:\("))
+                && not (Regex.IsMatch(line, "\"[^\"]*\:\:[^\"]*\"")) // Except in quoted strings
+                ->
                 Some "There should be a space after the cons '::' operator."
             | _ -> None
 
