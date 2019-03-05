@@ -1158,6 +1158,7 @@ module Db =
             DELETE FROM consensus_message
             WHERE block_number <= @currentBlockNumber
             """
+
         let sqlParams =
             [
                 "@currentBlockNumber", currentBlockNumber |> box
@@ -1171,7 +1172,7 @@ module Db =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to remove previous block number."
+            Result.appError "Failed to remove old consensus messages."
 
     let private addChxAddress conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
