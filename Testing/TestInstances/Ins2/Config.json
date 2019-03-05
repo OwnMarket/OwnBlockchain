@@ -7,7 +7,7 @@
     "NetworkBootstrapNodes": [
         "localhost:25701"
     ],
-    "AllowPrivateNetworkPeers": true,
     "NetworkDiscoveryTime": 3,
+    "AllowPrivateNetworkPeers": true,
     "ValidatorPrivateKey": "FovQrfiEy38mjZCdnoJMousYZgWpvmRFGcjh6ekNufnT"
 }
