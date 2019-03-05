@@ -227,30 +227,30 @@ type NetworkNode
         Stats.increment Stats.Counter.PeerRequests
         let rec loop messageId =
             async {
-                let expiredAddresses =
+                let dirtyAddresses =
                     match pendingDataRequests.TryGetValue messageId with
-                    | true, expiredAddresses -> expiredAddresses
+                    | true, addresses -> addresses
                     | _ -> []
 
                 let targetAddress =
-                    let networkAddressPool =
+                    let pristineAddresses =
                         __.GetActiveMembers()
                         |> List.map (fun m -> m.NetworkAddress)
                         |> List.filter (fun a -> not (isSelf a))
-                        |> List.except expiredAddresses
+                        |> List.except dirtyAddresses
 
-                    let selectedUnicastPeer = __.SelectNewUnicastPeer networkAddressPool
-                    match selectedUnicastPeer with
+                    let selectedPeer = __.PickRandomPeer pristineAddresses
+                    match selectedPeer with
                     | None ->
                         Log.errorf "Cannot retrieve data from peers for %A" messageId
                         pendingDataRequests.TryRemove messageId |> ignore
                     | Some networkAddress ->
                         pendingDataRequests.AddOrUpdate(
                             messageId,
-                            networkAddress :: expiredAddresses,
-                            fun _ _ -> networkAddress :: expiredAddresses)
+                            networkAddress :: dirtyAddresses,
+                            fun _ _ -> networkAddress :: dirtyAddresses)
                         |> ignore
-                    selectedUnicastPeer
+                    selectedPeer
 
                 targetAddress |> Option.iter (fun address ->
                     let requestMessage = RequestDataMessage {
@@ -546,8 +546,7 @@ type NetworkNode
 
         pendingDataRequests.TryRemove requestDataMessage.MessageId |> ignore
 
-    member private __.SelectNewUnicastPeer networkAddressPool =
-        networkAddressPool
-        |> List.toSeq
-        |> Seq.shuffle
-        |> Seq.tryHead
+    member private __.PickRandomPeer networkAddresses =
+        networkAddresses
+        |> List.shuffle
+        |> List.tryHead
