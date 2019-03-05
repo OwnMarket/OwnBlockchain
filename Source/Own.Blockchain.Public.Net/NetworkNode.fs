@@ -1,5 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Net
 
+open System
+open System.Net
 open System.Collections.Concurrent
 open System.Threading
 open Own.Common.FSharp
@@ -40,7 +42,7 @@ type NetworkNode
             Log.verbose "==================== ACTIVE CONNECTIONS ===================="
             activeMembers
             |> Seq.ofDict
-            |> Seq.iter (fun (a, m) -> Log.verbosef "%s Heartbeat:%i"  a.Value m.Heartbeat)
+            |> Seq.iter (fun (a, m) -> Log.verbosef "%s Heartbeat:%i" a.Value m.Heartbeat)
             Log.verbose "============================================================"
         #else
             ()
@@ -118,6 +120,43 @@ type NetworkNode
         let cts = new CancellationTokenSource()
         Async.Start ((setPendingDeadMember address), cts.Token)
         memberStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
+
+    let isValidAddress (networkAddress : string) =
+        match networkAddress.LastIndexOf ":" with
+        | index when index > 0 ->
+            let port = networkAddress.Substring(index + 1)
+            match UInt16.TryParse port with
+            | true, 0us ->
+                Log.verbose "Received peer with port 0, discard"
+                false
+            | true, _ ->
+                try
+                    let host = networkAddress.Substring(0, index)
+                    let ipAddress = Dns.GetHostAddresses(host).[0]
+                    let isPrivateIp = ipAddress.IsPrivate()
+                    if not config.AllowPrivateNetworkPeers && isPrivateIp then
+                        Log.verbose "Private IPs are not allowed as peers"
+                    config.AllowPrivateNetworkPeers || not isPrivateIp
+                with
+                | ex ->
+                    Log.error ex.AllMessages
+                    false
+            | _ ->
+                Log.verbosef "Invalid port value: %s" port
+                false
+        | _ ->
+            Log.verbosef "Invalid peer format: %s" networkAddress
+            false
+
+    let updateActiveMember mem =
+        activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
+
+    let saveActiveMember mem =
+        if isValidAddress mem.NetworkAddress.Value then
+            activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
+            savePeerNode mem.NetworkAddress
+        else
+            Result.appError (sprintf "Invalid network address: %s" mem.NetworkAddress.Value)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public
@@ -294,10 +333,7 @@ type NetworkNode
 
     member private __.AddMember inputMember =
         Log.verbosef "Adding new member: %s" inputMember.NetworkAddress.Value
-        activeMembers.AddOrUpdate (inputMember.NetworkAddress, inputMember, fun _ _ -> inputMember) |> ignore
-        savePeerNode inputMember.NetworkAddress
-        |> Result.iterError (fun _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress)
-
+        saveActiveMember inputMember |> Result.iterError Log.appErrors
         if not (isSelf inputMember.NetworkAddress) then
             monitorActiveMember inputMember.NetworkAddress
 
@@ -308,12 +344,8 @@ type NetworkNode
                 NetworkAddress = m.NetworkAddress
                 Heartbeat = inputMember.Heartbeat
             }
-            activeMembers.AddOrUpdate (inputMember.NetworkAddress, localMember, fun _ _ -> localMember) |> ignore
-
-            savePeerNode inputMember.NetworkAddress
-            |> Result.iterError (fun _ -> Log.errorf "Error saving member %A" inputMember.NetworkAddress)
-
-            monitorActiveMember inputMember.NetworkAddress
+            saveActiveMember localMember |> Result.iterError Log.appErrors
+            monitorActiveMember localMember.NetworkAddress
         | None -> ()
 
     member __.ReceiveMembers msg =
@@ -348,7 +380,7 @@ type NetworkNode
                     NetworkAddress = m.NetworkAddress
                     Heartbeat = m.Heartbeat + 1L
                 }
-                activeMembers.AddOrUpdate (publicAddress, localMember, fun _ _ -> localMember) |> ignore
+                updateActiveMember localMember
             )
         )
 

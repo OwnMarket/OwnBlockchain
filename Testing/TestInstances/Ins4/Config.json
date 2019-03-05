@@ -8,5 +8,6 @@
         "localhost:25701"
     ],
     "NetworkDiscoveryTime": 3,
+    "AllowPrivateNetworkPeers": true,
     "ValidatorPrivateKey": "8AAZc6HJQpaoLuSQUeh8GvGn7fwSYVErNCXke4bNXnUf"
 }

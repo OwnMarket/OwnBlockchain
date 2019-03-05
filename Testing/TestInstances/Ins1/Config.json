@@ -7,5 +7,6 @@
     "NetworkBootstrapNodes": [
     ],
     "NetworkDiscoveryTime": 3,
+    "AllowPrivateNetworkPeers": true,
     "ValidatorPrivateKey": "93kro5U7imjh9WULNxyFZHt4tfYPAKKs5weUX45xckyh"
 }

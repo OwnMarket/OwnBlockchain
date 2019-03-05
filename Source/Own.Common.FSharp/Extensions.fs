@@ -1,6 +1,7 @@
 ﻿namespace Own.Common.FSharp
 
 open System
+open System.Net
 open System.Security.Cryptography
 
 [<AutoOpen>]
@@ -31,6 +32,19 @@ module Extensions =
                 |> Seq.map (fun ex -> ex.StackTrace)
                 |> (fun stackTraces -> String.Join("\n--- Inner Exception ---\n", stackTraces))
                 |> sprintf "%s\n%s" this.AllMessages
+
+    type IPAddress with
+        member this.IsPrivate() =
+            // IPv6 Loopback.
+            if this.ToString() = "::1" then
+                true
+            else
+                let ip = this.GetAddressBytes()
+                match ip.[0] with
+                | 10uy | 127uy -> true
+                | 172uy -> ip.[1] >= 16uy && ip.[1] < 32uy
+                | 192uy -> ip.[1] = 168uy
+                | _ -> false
 
 module Seq =
 

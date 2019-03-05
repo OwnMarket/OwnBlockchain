@@ -466,6 +466,7 @@ type NetworkNodeConfig = {
     ListeningAddress : NetworkAddress
     PublicAddress : NetworkAddress option
     BootstrapNodes : NetworkAddress list
+    AllowPrivateNetworkPeers : bool
 }
 
 type GossipMember = {

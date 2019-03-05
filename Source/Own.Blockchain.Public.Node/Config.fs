@@ -108,6 +108,16 @@ type Config () =
             | true, t -> if t > 0 then t else failwith "NetworkDiscoveryTime must be greater than zero."
             | _ -> 10
 
+    static member AllowPrivateNetworkPeers
+        with get () =
+            let allowPrivateNetworkPeers = config.["AllowPrivateNetworkPeers"]
+            if allowPrivateNetworkPeers.IsNullOrWhiteSpace() then
+                false
+            else
+                match bool.TryParse(allowPrivateNetworkPeers) with
+                | true, allow -> allow
+                | _ -> false
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////

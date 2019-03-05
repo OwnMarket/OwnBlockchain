@@ -13,6 +13,7 @@ module internal PeerMessageHandler =
         listeningAddress
         publicAddress
         bootstrapNodes
+        allowPrivateNetworkPeers
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
         (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
@@ -28,13 +29,14 @@ module internal PeerMessageHandler =
         publishEvent
         =
 
-        let nodeConfig : NetworkNodeConfig = {
-            Identity = Guid.NewGuid().ToString("N") |> Conversion.stringToBytes |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress listeningAddress
-            PublicAddress = publicAddress |> Option.map NetworkAddress
-            BootstrapNodes = bootstrapNodes
-            |> List.map (fun a -> NetworkAddress a)
-        }
+        let nodeConfig =
+            {
+                Identity = Guid.NewGuid().ToString("N") |> Conversion.stringToBytes |> PeerNetworkIdentity
+                ListeningAddress = NetworkAddress listeningAddress
+                PublicAddress = publicAddress |> Option.map NetworkAddress
+                BootstrapNodes = bootstrapNodes |> List.map NetworkAddress
+                AllowPrivateNetworkPeers = allowPrivateNetworkPeers
+            }
 
         let fanout = 2
         let tCycle = 10000 // Cycle duration in milliseconds.

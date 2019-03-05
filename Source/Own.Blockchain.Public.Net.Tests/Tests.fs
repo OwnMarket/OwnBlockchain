@@ -230,18 +230,21 @@ module PeerTests =
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
             PublicAddress = None
             BootstrapNodes = []
+            AllowPrivateNetworkPeers = true
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
+            AllowPrivateNetworkPeers = true
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
+            AllowPrivateNetworkPeers = true
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -251,18 +254,21 @@ module PeerTests =
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
             PublicAddress = None
             BootstrapNodes = []
+            AllowPrivateNetworkPeers = true
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
+            AllowPrivateNetworkPeers = true
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"]
+            AllowPrivateNetworkPeers = true
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -272,18 +278,21 @@ module PeerTests =
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"; NetworkAddress "127.0.0.1:5557"]
+            AllowPrivateNetworkPeers = true
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5557"]
+            AllowPrivateNetworkPeers = true
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5556"]
+            AllowPrivateNetworkPeers = true
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -542,6 +551,7 @@ module PeerTests =
             ListeningAddress = NetworkAddress "127.0.0.1:6555"
             PublicAddress = None
             BootstrapNodes = []
+            AllowPrivateNetworkPeers = true
         }
 
         let nodeConfigList =
@@ -552,6 +562,7 @@ module PeerTests =
                     ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                     PublicAddress = None
                     BootstrapNodes = [NetworkAddress "127.0.0.1:6555"]
+                    AllowPrivateNetworkPeers = true
                 }
             )
 

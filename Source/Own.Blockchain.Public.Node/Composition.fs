@@ -497,6 +497,7 @@ module Composition =
             Config.ListeningAddress
             Config.PublicAddress
             Config.NetworkBootstrapNodes
+            Config.AllowPrivateNetworkPeers
             getAllPeerNodes
             savePeerNode
             removePeerNode
