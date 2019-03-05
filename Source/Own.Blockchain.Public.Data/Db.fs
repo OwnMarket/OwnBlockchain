@@ -2123,3 +2123,16 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             sprintf "Failed to insert consensus message: %A" consensusMessageInfoDto
             |> Result.appError
+
+    let getConsensusMessages
+        dbEngineType
+        (dbConnectionString : string)
+        : ConsensusMessageInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT block_number, consensus_round, consensus_step, message_envelope
+            FROM consensus_message
+            """
+        DbTools.query<ConsensusMessageInfoDto> dbEngineType dbConnectionString sql []

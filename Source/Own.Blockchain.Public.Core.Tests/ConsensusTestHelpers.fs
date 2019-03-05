@@ -179,8 +179,12 @@ module ConsensusTestHelpers =
                         |> Seq.tryHead
                         |? BlockNumber 0L
 
+                let restoreConsensusMessages () =
+                    []
+
                 let state =
                     new ConsensusState(
+                        restoreConsensusMessages,
                         getLastAppliedBlockNumber,
                         getValidators,
                         isValidatorBlacklisted,

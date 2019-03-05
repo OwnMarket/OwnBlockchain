@@ -322,8 +322,11 @@ module Agents =
                 }
             |> Some
 
-        if state <> None then
+        state
+        |> Option.iter (fun s ->
+            s.RestoreConsensusState()
             ConsensusCommand.Synchronize |> ConsensusCommandInvoked |> publishEvent
+        )
 
     let startAgents () =
         startPeerMessageHandler ()

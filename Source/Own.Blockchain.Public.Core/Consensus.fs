@@ -11,6 +11,7 @@ module Consensus =
 
     type ConsensusState
         (
+        restoreConsensusMessages : unit -> ConsensusMessageEnvelope list,
         getLastAppliedBlockNumber : unit -> BlockNumber,
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
         isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
@@ -48,6 +49,16 @@ module Consensus =
         let _proposals = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, Block * ConsensusRound>()
         let _votes = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
         let _commits = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
+
+        member __.RestoreConsensusState() =
+            restoreConsensusMessages ()
+            |> List.iter (fun envelope ->
+                let key = envelope.BlockNumber, envelope.Round, validatorAddress
+                match envelope.ConsensusMessage with
+                | Propose (b, r) -> _proposals.Add(key, (b, r))
+                | Vote h -> _votes.Add(key, (h, envelope.Signature))
+                | Commit h -> _commits.Add(key, (h, envelope.Signature))
+            )
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             match command with
@@ -562,6 +573,7 @@ module Consensus =
         createHash
         signHash
         persistOutgoingConsensusMessage
+        restoreConsensusMessages
         sendPeerMessage
         publishEvent
         addressFromPrivateKey
@@ -740,6 +752,7 @@ module Consensus =
 
         new ConsensusState
             (
+            restoreConsensusMessages,
             getLastAppliedBlockNumber,
             getValidatorsAtHeight,
             isValidatorBlacklisted,

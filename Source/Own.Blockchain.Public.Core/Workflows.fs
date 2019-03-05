@@ -707,6 +707,39 @@ module Workflows =
         }
         |> saveConsensusMessage
 
+    let restoreConsensusMessages (getConsensusMessages : unit -> ConsensusMessageInfoDto list) =
+        [
+            for messageInfo in getConsensusMessages () do
+                let envelope =
+                    messageInfo.MessageEnvelope
+                    |> Convert.FromBase64String
+                    |> Serialization.deserializeBinary
+                    |> Mapping.consensusMessageEnvelopeFromDto
+
+                if messageInfo.BlockNumber <> envelope.BlockNumber.Value then
+                    failwithf "BlockNumber mismatch in persisted consensus message: %i vs %i"
+                        messageInfo.BlockNumber
+                        envelope.BlockNumber.Value
+
+                if messageInfo.ConsensusRound <> envelope.Round.Value then
+                    failwithf "ConsensusRound mismatch in persisted consensus message: %i vs %i"
+                        messageInfo.ConsensusRound
+                        envelope.Round.Value
+
+                let consensusStep =
+                    envelope.ConsensusMessage
+                    |> Mapping.consensusStepFromConsensusMessage
+                    |> Mapping.consensusStepToCode
+                    |> Convert.ToInt16
+
+                if messageInfo.ConsensusStep <> consensusStep then
+                    failwithf "ConsensusStep mismatch in persisted consensus message: %i vs %i"
+                        messageInfo.ConsensusStep
+                        consensusStep
+
+                yield envelope
+        ]
+
     let handleReceivedConsensusMessage
         decodeHash
         createHash
