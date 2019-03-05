@@ -1174,6 +1174,22 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove old consensus messages."
 
+    let private removeConsensusState conn transaction =
+        let sql =
+            """
+            DELETE FROM consensus_state
+            """
+
+        try
+            if DbTools.executeWithinTransaction conn transaction sql [] < 0 then
+                Result.appError "Error removing persisted consensus state."
+            else
+                Ok ()
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to remove persisted consensus state."
+
     let private addChxAddress conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
@@ -2046,6 +2062,7 @@ module Db =
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber
                 do! removeOldConsensusMessages conn transaction blockNumber
+                do! removeConsensusState conn transaction
             }
 
         match result with
