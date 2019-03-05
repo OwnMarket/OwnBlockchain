@@ -225,6 +225,20 @@ module DbChanges =
                         CONSTRAINT consensus_message__pk PRIMARY KEY (consensus_message_id),
                         CONSTRAINT consensus_message__uk__b__r__s UNIQUE (block_number, consensus_round, consensus_step)
                     );
+
+                    CREATE TABLE consensus_state (
+                        consensus_state_id SMALLINT NOT NULL,
+                        block_number BIGINT NOT NULL,
+                        consensus_round INT NOT NULL,
+                        consensus_step SMALLINT NOT NULL,
+                        locked_block BLOB SUB_TYPE TEXT NOT NULL,
+                        locked_round INT NOT NULL,
+                        valid_block BLOB SUB_TYPE TEXT NOT NULL,
+                        valid_round INT NOT NULL,
+
+                        CONSTRAINT consensus_state__pk PRIMARY KEY (consensus_state_id),
+                        CONSTRAINT consensus_state__ck__id__is_0 CHECK (consensus_state_id = 0) -- Single row table
+                    );
                     """
             }
         ]
@@ -447,6 +461,20 @@ module DbChanges =
                         CONSTRAINT consensus_message__pk PRIMARY KEY (consensus_message_id),
                         CONSTRAINT consensus_message__uk__block_number__round__step
                             UNIQUE (block_number, consensus_round, consensus_step)
+                    );
+
+                    CREATE TABLE consensus_state (
+                        consensus_state_id SMALLINT NOT NULL,
+                        block_number BIGINT NOT NULL,
+                        consensus_round INT NOT NULL,
+                        consensus_step SMALLINT NOT NULL,
+                        locked_block TEXT NOT NULL,
+                        locked_round INT NOT NULL,
+                        valid_block TEXT NOT NULL,
+                        valid_round INT NOT NULL,
+
+                        CONSTRAINT consensus_state__pk PRIMARY KEY (consensus_state_id),
+                        CONSTRAINT consensus_state__ck__id__is_0 CHECK (consensus_state_id = 0) -- Single row table
                     );
                     """
             }
