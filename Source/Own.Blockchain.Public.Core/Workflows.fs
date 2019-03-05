@@ -754,12 +754,12 @@ module Workflows =
                 |> Convert.ToInt16
             LockedBlock =
                 consensusStateInfo.LockedBlock
-                |> Option.map (Serialization.serializeBinary >> Convert.ToBase64String)
+                |> Option.map (Mapping.blockToDto >> Serialization.serializeBinary >> Convert.ToBase64String)
                 |> Option.toObj
             LockedRound = consensusStateInfo.LockedRound.Value
             ValidBlock =
                 consensusStateInfo.ValidBlock
-                |> Option.map (Serialization.serializeBinary >> Convert.ToBase64String)
+                |> Option.map (Mapping.blockToDto >> Serialization.serializeBinary >> Convert.ToBase64String)
                 |> Option.toObj
             ValidRound = consensusStateInfo.ValidRound.Value
         }
