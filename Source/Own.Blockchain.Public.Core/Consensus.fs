@@ -50,30 +50,8 @@ module Consensus =
         let _votes = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
         let _commits = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
 
-        member __.RestoreConsensusState() =
-            restoreConsensusMessages ()
-            |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
-            |> List.iter (fun envelope ->
-                let key = envelope.BlockNumber, envelope.Round, validatorAddress
-
-                match envelope.ConsensusMessage with
-                | Propose (b, r) -> _proposals.Add(key, (b, r))
-                | Vote h -> _votes.Add(key, (h, envelope.Signature))
-                | Commit h -> _commits.Add(key, (h, envelope.Signature))
-
-                _blockNumber <- envelope.BlockNumber
-                _round <- envelope.Round
-                _step <- envelope.ConsensusMessage |> Mapping.consensusStepFromMessage
-            )
-
-            _validators <-
-                (_blockNumber - 1)
-                |> max (BlockNumber 0L)
-                |> getValidatorsAtHeight
-                |> List.map (fun v -> v.ValidatorAddress)
-            _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
-            _validQuorum <- Validators.calculateValidQuorum _validators.Length
-
+        member __.StartConsensus() =
+            __.RestoreConsensusState()
             __.Synchronize()
             __.UpdateState()
 
@@ -126,6 +104,24 @@ module Consensus =
                     else
                         __.DetectEquivocation(envelope, senderAddress)
 
+        member private __.RestoreConsensusState() =
+            restoreConsensusMessages ()
+            |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
+            |> List.iter (fun envelope ->
+                let key = envelope.BlockNumber, envelope.Round, validatorAddress
+
+                match envelope.ConsensusMessage with
+                | Propose (b, r) -> _proposals.Add(key, (b, r))
+                | Vote h -> _votes.Add(key, (h, envelope.Signature))
+                | Commit h -> _commits.Add(key, (h, envelope.Signature))
+
+                _blockNumber <- envelope.BlockNumber
+                _round <- envelope.Round
+                _step <- envelope.ConsensusMessage |> Mapping.consensusStepFromMessage
+            )
+
+            __.SetValidators(_blockNumber - 1)
+
         member private __.Synchronize() =
             let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
             let nextBlockNumber = lastAppliedBlockNumber + 1
@@ -133,11 +129,18 @@ module Consensus =
             if _blockNumber <> nextBlockNumber then
                 Log.notice "Synchronizing the consensus"
                 _blockNumber <- nextBlockNumber
-                _validators <- getValidatorsAtHeight lastAppliedBlockNumber |> List.map (fun v -> v.ValidatorAddress)
-                _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
-                _validQuorum <- Validators.calculateValidQuorum _validators.Length
+                __.SetValidators(lastAppliedBlockNumber)
                 __.ResetState()
                 __.StartRound(ConsensusRound 0)
+
+        member private __.SetValidators(blockNumber : BlockNumber) =
+            _validators <-
+                blockNumber
+                |> max (BlockNumber 0L)
+                |> getValidatorsAtHeight
+                |> List.map (fun v -> v.ValidatorAddress)
+            _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
+            _validQuorum <- Validators.calculateValidQuorum _validators.Length
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Core Logic

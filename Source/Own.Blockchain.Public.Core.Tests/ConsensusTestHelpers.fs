@@ -210,7 +210,7 @@ module ConsensusTestHelpers =
                 _state.Add(validatorAddress, state)
 
             for s in _state.Values do
-                s.HandleConsensusCommand ConsensusCommand.Synchronize
+                s.StartConsensus()
 
         member private __.SendConsensusMessage validatorAddress blockNumber consensusRound consensusMessage =
             _messages.Add(
