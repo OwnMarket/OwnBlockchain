@@ -52,13 +52,30 @@ module Consensus =
 
         member __.RestoreConsensusState() =
             restoreConsensusMessages ()
+            |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
             |> List.iter (fun envelope ->
                 let key = envelope.BlockNumber, envelope.Round, validatorAddress
+
                 match envelope.ConsensusMessage with
                 | Propose (b, r) -> _proposals.Add(key, (b, r))
                 | Vote h -> _votes.Add(key, (h, envelope.Signature))
                 | Commit h -> _commits.Add(key, (h, envelope.Signature))
+
+                _blockNumber <- envelope.BlockNumber
+                _round <- envelope.Round
+                _step <- envelope.ConsensusMessage |> Mapping.consensusStepFromMessage
             )
+
+            _validators <-
+                (_blockNumber - 1)
+                |> max (BlockNumber 0L)
+                |> getValidatorsAtHeight
+                |> List.map (fun v -> v.ValidatorAddress)
+            _qualifiedMajority <- Validators.calculateQualifiedMajority _validators.Length
+            _validQuorum <- Validators.calculateValidQuorum _validators.Length
+
+            __.Synchronize()
+            __.UpdateState()
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             match command with
@@ -122,15 +139,16 @@ module Consensus =
                 __.ResetState()
                 __.StartRound(ConsensusRound 0)
 
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Core Logic
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member private __.ResetState() =
-            _lockedRound <- ConsensusRound -1
             _lockedBlock <- None
-            _validRound <- ConsensusRound -1
+            _lockedRound <- ConsensusRound -1
             _validBlock <- None
+            _validRound <- ConsensusRound -1
 
             _proposals
             |> List.ofDict

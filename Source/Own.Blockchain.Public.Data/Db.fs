@@ -1101,6 +1101,27 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove previous block number."
 
+    let private removeOldConsensusMessages conn transaction (BlockNumber currentBlockNumber) =
+        let sql =
+            """
+            DELETE FROM consensus_message
+            WHERE block_number <= @currentBlockNumber
+            """
+        let sqlParams =
+            [
+                "@currentBlockNumber", currentBlockNumber |> box
+            ]
+
+        try
+            if DbTools.executeWithinTransaction conn transaction sql sqlParams < 0 then
+                Result.appError "Error removing old consensus messages."
+            else
+                Ok ()
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to remove previous block number."
+
     let private addChxAddress conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
@@ -1972,6 +1993,7 @@ module Db =
                 do! updateEligibilities conn transaction stateChanges.Eligibilities
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber
+                do! removeOldConsensusMessages conn transaction blockNumber
             }
 
         match result with

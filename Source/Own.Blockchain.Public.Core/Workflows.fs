@@ -696,7 +696,7 @@ module Workflows =
             ConsensusRound = consensusMessageEnvelope.Round.Value
             ConsensusStep =
                 consensusMessageEnvelope.ConsensusMessage
-                |> Mapping.consensusStepFromConsensusMessage
+                |> Mapping.consensusStepFromMessage
                 |> Mapping.consensusStepToCode
                 |> Convert.ToInt16
             MessageEnvelope =
@@ -728,7 +728,7 @@ module Workflows =
 
                 let consensusStep =
                     envelope.ConsensusMessage
-                    |> Mapping.consensusStepFromConsensusMessage
+                    |> Mapping.consensusStepFromMessage
                     |> Mapping.consensusStepToCode
                     |> Convert.ToInt16
 

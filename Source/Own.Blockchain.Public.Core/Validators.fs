@@ -54,6 +54,8 @@ module Validators =
         (validators : BlockchainAddress list)
         =
 
+        if validators.IsEmpty then
+            failwith "No validators to choose the proposer from."
         let validatorIndex = (blockNumber + int64 consensusRound) % (int64 validators.Length) |> Convert.ToInt32
         validators
         |> List.sort
