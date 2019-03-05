@@ -740,6 +740,31 @@ module Workflows =
                 yield envelope
         ]
 
+    let persistConsensusState
+        (saveConsensusState : ConsensusStateInfoDto -> Result<unit, AppErrors>)
+        (consensusStateInfo : ConsensusStateInfo)
+        =
+
+        {
+            ConsensusStateInfoDto.BlockNumber = consensusStateInfo.BlockNumber.Value
+            ConsensusRound = consensusStateInfo.ConsensusRound.Value
+            ConsensusStep =
+                consensusStateInfo.ConsensusStep
+                |> Mapping.consensusStepToCode
+                |> Convert.ToInt16
+            LockedBlock =
+                consensusStateInfo.LockedBlock
+                |> Option.map (Serialization.serializeBinary >> Convert.ToBase64String)
+                |> Option.toObj
+            LockedRound = consensusStateInfo.LockedRound.Value
+            ValidBlock =
+                consensusStateInfo.ValidBlock
+                |> Option.map (Serialization.serializeBinary >> Convert.ToBase64String)
+                |> Option.toObj
+            ValidRound = consensusStateInfo.ValidRound.Value
+        }
+        |> saveConsensusState
+
     let handleReceivedConsensusMessage
         decodeHash
         createHash

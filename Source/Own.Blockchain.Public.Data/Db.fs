@@ -424,6 +424,106 @@ module Db =
             """
         DbTools.query<ConsensusMessageInfoDto> dbEngineType dbConnectionString sql []
 
+    let saveConsensusState
+        dbEngineType
+        (dbConnectionString : string)
+        (consensusStateInfoDto : ConsensusStateInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        try
+            let sql =
+                match dbEngineType with
+                | Firebird ->
+                    """
+                    UPDATE OR INSERT INTO consensus_state (
+                        consensus_state_id,
+                        block_number,
+                        consensus_round,
+                        consensus_step,
+                        locked_block,
+                        locked_round,
+                        valid_block,
+                        valid_round
+                    )
+                    VALUES (
+                        0,
+                        @blockNumber,
+                        @consensusRound,
+                        @consensusStep,
+                        @lockedBlock,
+                        @lockedRound,
+                        @validBlock,
+                        @validRound
+                    )
+                    """
+                | Postgres ->
+                    """
+                    INSERT INTO consensus_state (
+                        consensus_state_id,
+                        block_number,
+                        consensus_round,
+                        consensus_step,
+                        locked_block,
+                        locked_round,
+                        valid_block,
+                        valid_round
+                    )
+                    VALUES (
+                        0,
+                        @blockNumber,
+                        @consensusRound,
+                        @consensusStep,
+                        @lockedBlock,
+                        @lockedRound,
+                        @validBlock,
+                        @validRound
+                    )
+                    ON CONFLICT (consensus_state_id) DO UPDATE
+                    SET block_number = @blockNumber,
+                        consensus_round = @consensusRound,
+                        consensus_step = @consensusStep,
+                        locked_block = @lockedBlock,
+                        locked_round = @lockedRound,
+                        valid_block = @validBlock,
+                        valid_round = @validRound
+                    """
+
+            let lockedBlockParamValue =
+                if consensusStateInfoDto.LockedBlock.IsNullOrWhiteSpace() then
+                    DBNull.Value |> box
+                else
+                    consensusStateInfoDto.LockedBlock |> box
+
+            let validBlockParamValue =
+                if consensusStateInfoDto.ValidBlock.IsNullOrWhiteSpace() then
+                    DBNull.Value |> box
+                else
+                    consensusStateInfoDto.ValidBlock |> box
+
+            let result =
+                [
+                    "@blockNumber", consensusStateInfoDto.BlockNumber |> box
+                    "@consensusRound", consensusStateInfoDto.ConsensusRound |> box
+                    "@consensusStep", consensusStateInfoDto.ConsensusStep |> box
+                    "@lockedBlock", lockedBlockParamValue
+                    "@lockedRound", consensusStateInfoDto.LockedRound |> box
+                    "@validBlock", validBlockParamValue
+                    "@validRound", consensusStateInfoDto.ValidRound |> box
+                ]
+                |> DbTools.execute dbEngineType dbConnectionString sql
+
+            if result = 1 then
+                Ok ()
+            else
+                sprintf "Didn't insert consensus state (%i): %A" result consensusStateInfoDto
+                |> Result.appError
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            sprintf "Failed to insert consensus state: %A" consensusStateInfoDto
+            |> Result.appError
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////

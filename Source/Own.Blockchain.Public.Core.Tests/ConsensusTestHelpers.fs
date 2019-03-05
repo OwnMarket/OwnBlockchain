@@ -182,8 +182,12 @@ module ConsensusTestHelpers =
                 let restoreConsensusMessages () =
                     []
 
+                let persistConsensusState _ =
+                    ()
+
                 let state =
                     new ConsensusState(
+                        persistConsensusState,
                         restoreConsensusMessages,
                         getLastAppliedBlockNumber,
                         getValidators,

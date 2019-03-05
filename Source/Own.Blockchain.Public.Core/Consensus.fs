@@ -11,6 +11,7 @@ module Consensus =
 
     type ConsensusState
         (
+        persistConsensusState : ConsensusStateInfo -> unit,
         restoreConsensusMessages : unit -> ConsensusMessageEnvelope list,
         getLastAppliedBlockNumber : unit -> BlockNumber,
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
@@ -51,7 +52,7 @@ module Consensus =
         let _commits = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
 
         member __.StartConsensus() =
-            __.RestoreConsensusState()
+            __.RestoreState()
             __.Synchronize()
             __.UpdateState()
 
@@ -104,7 +105,19 @@ module Consensus =
                     else
                         __.DetectEquivocation(envelope, senderAddress)
 
-        member private __.RestoreConsensusState() =
+        member private __.PersistState() =
+            {
+                ConsensusStateInfo.BlockNumber = _blockNumber
+                ConsensusRound = _round
+                ConsensusStep = _step
+                LockedBlock = _lockedBlock
+                LockedRound = _lockedRound
+                ValidBlock = _validBlock
+                ValidRound = _validRound
+            }
+            |> persistConsensusState
+
+        member private __.RestoreState() =
             restoreConsensusMessages ()
             |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
             |> List.iter (fun envelope ->
@@ -368,6 +381,7 @@ module Consensus =
             )
 
         member private __.SendPropose(consensusRound, block) =
+            __.PersistState()
             (block, _validRound)
             |> ConsensusMessage.Propose
             |> sendConsensusMessage _blockNumber consensusRound
@@ -375,11 +389,13 @@ module Consensus =
         member private __.SendVote(consensusRound, blockHash) =
             let message = ConsensusMessage.Vote blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
+                __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
 
         member private __.SendCommit(consensusRound, blockHash) =
             let message = ConsensusMessage.Commit blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
+                __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
 
         member private __.SaveBlock(block, consensusRound) =
@@ -592,6 +608,7 @@ module Consensus =
         decodeHash
         createHash
         signHash
+        persistConsensusState
         persistOutgoingConsensusMessage
         restoreConsensusMessages
         sendPeerMessage
@@ -656,6 +673,13 @@ module Consensus =
                     Log.appErrors e
                     false
                 )
+
+        let persistConsensusState =
+            persistConsensusState
+            >> Result.iterError (fun e ->
+                Log.appErrors e
+                failwith "persistConsensusState FAILED"
+            )
 
         let sendConsensusMessage blockNumber consensusRound consensusMessage =
             if canParticipateInConsensus blockNumber = Some true then
@@ -772,6 +796,7 @@ module Consensus =
 
         new ConsensusState
             (
+            persistConsensusState,
             restoreConsensusMessages,
             getLastAppliedBlockNumber,
             getValidatorsAtHeight,
