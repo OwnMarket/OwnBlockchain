@@ -394,9 +394,16 @@ type ConsensusTests(output : ITestOutputHelper) =
     member __.``Consensus - Equivocation - Proof detected`` () =
         // ARRANGE
         let validatorCount = 10
-        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
 
-        let byzantineValidator = validators.[DateTime.Now.Second % validatorCount]
+        let byzantineValidator =
+            validators
+            |> List.except [proposer]
+            |> List.shuffle
+            |> List.head
+
         let equivocationMessage = ConsensusMessage.Vote Option<BlockHash>.None
 
         let net = new ConsensusSimulationNetwork()
@@ -442,9 +449,16 @@ type ConsensusTests(output : ITestOutputHelper) =
     member __.``Consensus - Equivocation - Blacklisted validator's messages are ignored`` () =
         // ARRANGE
         let validatorCount = 10
-        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
 
-        let blacklistedValidator = validators.[DateTime.Now.Second % validatorCount]
+        let blacklistedValidator =
+            validators
+            |> List.except [proposer]
+            |> List.shuffle
+            |> List.head
+
         let mutable ignoredMessageCount = 0
         let isValidatorBlacklisted (validatorAddress, _, _) =
             if validatorAddress = blacklistedValidator then
