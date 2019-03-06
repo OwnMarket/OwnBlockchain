@@ -187,8 +187,7 @@ type NetworkNode
         let receivedMembers =
             msg.ActiveMembers
             |> List.shuffle
-            |> List.chunkBySize config.MaxConnectedPeers
-            |> List.head
+            |> List.truncate config.MaxConnectedPeers
 
         // Filter the existing peers, if any, (used to refresh connection, i.e increase heartbeat).
         let existingMembers =
@@ -198,17 +197,9 @@ type NetworkNode
         let activeMembersCount = __.GetActiveMembers() |> List.length
         let take = config.MaxConnectedPeers - activeMembersCount
 
-        // Select up to max allowed peers.
-        let maxAllowedNewMembers =
-            if take > 0 then
-                receivedMembers
-                |> List.shuffle
-                |> List.chunkBySize take
-                |> List.head
-            else
-                []
-
-        maxAllowedNewMembers
+        receivedMembers
+        |> List.shuffle
+        |> List.truncate take
         |> List.append existingMembers
         |> __.MergeMemberList
 
@@ -453,8 +444,7 @@ type NetworkNode
             let fanoutRecipientAddresses =
                 recipientAddresses
                 |> List.shuffle
-                |> List.chunkBySize fanout
-                |> List.head
+                |> List.truncate fanout
 
             fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
