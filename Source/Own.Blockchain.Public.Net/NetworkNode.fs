@@ -239,7 +239,7 @@ type NetworkNode
                     let multicastAddresses =
                         getCurrentValidators ()
                         |> List.map (fun v -> v.NetworkAddress)
-                        |> List.filter (fun a -> not (isSelf a))
+                        |> List.filter (isSelf >> not)
                         |> List.map (fun a -> a.Value)
 
                     sendMulticastMessage
@@ -265,11 +265,10 @@ type NetworkNode
 
                 __.GetActiveMembers()
                 |> List.map (fun m -> m.NetworkAddress)
-                |> List.filter (fun a -> not (isSelf a))
+                |> List.filter (isSelf >> not)
                 |> List.except usedAddresses
                 |> __.PickRandomPeer
-                |> tee (fun selectedPeer ->
-                    match selectedPeer with
+                |> tee (function
                     | Some networkAddress ->
                         pendingDataRequests.AddOrUpdate(
                             messageId,
