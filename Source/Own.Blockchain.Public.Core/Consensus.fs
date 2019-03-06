@@ -234,21 +234,21 @@ module Consensus =
             __.GetProposal()
             |> Option.iter (fun ((_, _, _), (block, vr)) ->
                 if _step = ConsensusStep.Propose then
+                    _step <- ConsensusStep.Vote
                     if isValidBlock block && (_lockedRound = ConsensusRound -1 || _lockedBlock = Some block) then
                         __.SendVote(_round, Some block.Header.Hash)
                     else
                         __.SendVote(_round, None)
-                    _step <- ConsensusStep.Vote
 
                 if _step = ConsensusStep.Propose
                     && (vr >= ConsensusRound 0 && vr < _round)
                     && __.MajorityVoted(vr, Some block.Header.Hash)
                 then
+                    _step <- ConsensusStep.Vote
                     if isValidBlock block && (_lockedRound <= vr || _lockedBlock = Some block) then
                         __.SendVote(_round, Some block.Header.Hash)
                     else
                         __.SendVote(_round, None)
-                    _step <- ConsensusStep.Vote
             )
 
             // VOTE RULES
@@ -259,19 +259,20 @@ module Consensus =
                 __.GetProposal()
                 |> Option.iter (fun ((_, _, _), (block, _)) ->
                     if __.MajorityVoted(_round, Some block.Header.Hash) && isValidBlock block then
+                        _validBlock <- Some block
+                        _validRound <- _round
                         if _step = ConsensusStep.Vote then
                             _lockedBlock <- Some block
                             _lockedRound <- _round
-                            __.SendCommit(_round, Some block.Header.Hash)
                             _step <- ConsensusStep.Commit
-
-                        _validBlock <- Some block
-                        _validRound <- _round
+                            __.SendCommit(_round, Some block.Header.Hash)
+                        else
+                            __.PersistState()
                 )
 
             if _step = ConsensusStep.Vote && __.MajorityVoted(_round, None) then
-                __.SendCommit(_round, None)
                 _step <- ConsensusStep.Commit
+                __.SendCommit(_round, None)
 
             // COMMIT RULES
             if __.MajorityCommitted(_round) then
@@ -295,13 +296,13 @@ module Consensus =
 
         member private __.OnTimeoutPropose(blockNumber, consensusRound) =
             if _blockNumber = blockNumber && _round = consensusRound && _step = ConsensusStep.Propose then
-                __.SendVote(_round, None)
                 _step <- ConsensusStep.Vote
+                __.SendVote(_round, None)
 
         member private __.OnTimeoutVote(blockNumber, consensusRound) =
             if _blockNumber = blockNumber && _round = consensusRound && _step = ConsensusStep.Vote then
-                __.SendCommit(_round, None)
                 _step <- ConsensusStep.Commit
+                __.SendCommit(_round, None)
 
         member private __.OnTimeoutCommit(blockNumber, consensusRound) =
             if _blockNumber = blockNumber && _round = consensusRound then
