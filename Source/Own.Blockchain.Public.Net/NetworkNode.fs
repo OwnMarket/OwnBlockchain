@@ -24,10 +24,8 @@ type NetworkNode
     closeConnection,
     closeAllConnections,
     getCurrentValidators : unit -> ValidatorSnapshot list,
-    config : NetworkNodeConfig,
-    fanout,
-    tCycle,
-    tFail
+    nodeConfig,
+    gossipConfig : GossipNetworkConfig
     ) =
 
     let activeMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
@@ -49,7 +47,7 @@ type NetworkNode
         #endif
 
     let isSelf networkAddress =
-        config.PublicAddress = Some networkAddress
+        nodeConfig.PublicAddress = Some networkAddress
 
     let optionToList = function | Some x -> [x] | None -> []
 
@@ -75,7 +73,7 @@ type NetworkNode
     *)
     let setFinalDeadMember networkAddress =
         async {
-            do! Async.Sleep tFail
+            do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
             let found, _ = activeMembers.TryGetValue networkAddress
             if not found then
                 Log.verbosef "*** Member marked as DEAD %s" networkAddress.Value
@@ -102,7 +100,7 @@ type NetworkNode
     *)
     let setPendingDeadMember (networkAddress : NetworkAddress) =
         async {
-            do! Async.Sleep tFail
+            do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
             Log.verbosef "*** Member potentially DEAD: %s" networkAddress.Value
             match activeMembers.TryGetValue networkAddress with
             | true, activeMember ->
@@ -134,9 +132,9 @@ type NetworkNode
                     let host = networkAddress.Substring(0, index)
                     let ipAddress = Dns.GetHostAddresses(host).[0]
                     let isPrivateIp = ipAddress.IsPrivate()
-                    if not config.AllowPrivateNetworkPeers && isPrivateIp then
+                    if not nodeConfig.AllowPrivateNetworkPeers && isPrivateIp then
                         Log.verbose "Private IPs are not allowed as peers"
-                    config.AllowPrivateNetworkPeers || not isPrivateIp
+                    nodeConfig.AllowPrivateNetworkPeers || not isPrivateIp
                 with
                 | ex ->
                     Log.error ex.AllMessages
@@ -179,7 +177,7 @@ type NetworkNode
 
         // Fallback to boostrapnodes when no peers available.
         match result with
-        | [] -> config.BootstrapNodes |> List.map (fun n -> { GossipMember.NetworkAddress = n; Heartbeat = 0L })
+        | [] -> nodeConfig.BootstrapNodes |> List.map (fun n -> { GossipMember.NetworkAddress = n; Heartbeat = 0L })
         | _ -> result
 
     member __.ReceiveMembers msg =
@@ -187,7 +185,7 @@ type NetworkNode
         let receivedMembers =
             msg.ActiveMembers
             |> List.shuffle
-            |> List.truncate config.MaxConnectedPeers
+            |> List.truncate nodeConfig.MaxConnectedPeers
 
         // Filter the existing peers, if any, (used to refresh connection, i.e increase heartbeat).
         let existingMembers =
@@ -195,7 +193,7 @@ type NetworkNode
             |> List.filter (fun m -> m.NetworkAddress |> __.GetActiveMember |> Option.isSome)
 
         let activeMembersCount = __.GetActiveMembers() |> List.length
-        let take = config.MaxConnectedPeers - activeMembersCount
+        let take = nodeConfig.MaxConnectedPeers - activeMembersCount
 
         receivedMembers
         |> List.shuffle
@@ -204,10 +202,10 @@ type NetworkNode
         |> __.MergeMemberList
 
     member __.GetListenAddress () =
-        config.ListeningAddress
+        nodeConfig.ListeningAddress
 
     member __.GetPublicAddress () =
-        config.PublicAddress
+        nodeConfig.PublicAddress
 
     member __.SendMessage message =
         let sendMessageTask =
@@ -271,13 +269,13 @@ type NetworkNode
                 |> Option.iter (fun address ->
                     let requestMessage = RequestDataMessage {
                         MessageId = messageId
-                        SenderIdentity = config.Identity
+                        SenderIdentity = nodeConfig.Identity
                     }
                     let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary requestMessage
                     sendRequestMessage peerMessageDto address.Value
                 )
 
-                do! Async.Sleep(4 * tCycle)
+                do! Async.Sleep(4 * gossipConfig.IntervalMillis)
 
                 (*
                     If no answer is received within 2 cycles (request - response i.e 4xtCycle),
@@ -310,25 +308,25 @@ type NetworkNode
         __.StartServer publishEvent
 
     member private __.StartServer publishEvent =
-        Log.infof "Listen on: %s" config.ListeningAddress.Value
-        config.PublicAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
+        Log.infof "Listen on: %s" nodeConfig.ListeningAddress.Value
+        nodeConfig.PublicAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage
-            config.Identity.Value
-            config.ListeningAddress.Value
+            nodeConfig.Identity.Value
+            nodeConfig.ListeningAddress.Value
             (__.ReceivePeerMessage publishEvent)
 
     member private __.StartGossipDiscovery () =
         let rec loop () =
             async {
                 __.Discover ()
-                do! Async.Sleep(tCycle)
+                do! Async.Sleep(gossipConfig.IntervalMillis)
                 return! loop ()
             }
         Async.Start (loop (), cts.Token)
 
     member private __.Discover () =
         __.IncreaseHeartbeat()
-        match config.PublicAddress with
+        match nodeConfig.PublicAddress with
         | Some _ ->
             // Propagate discovery message.
             GossipDiscoveryMessage {
@@ -342,8 +340,8 @@ type NetworkNode
         printActiveMembers ()
 
     member private __.InitializeMemberList () =
-        let publicAddress = config.PublicAddress |> optionToList
-        getAllPeerNodes () @ config.BootstrapNodes @ publicAddress
+        let publicAddress = nodeConfig.PublicAddress |> optionToList
+        getAllPeerNodes () @ nodeConfig.BootstrapNodes @ publicAddress
         |> Set.ofList
         |> Set.iter (fun a -> __.AddMember { NetworkAddress = a; Heartbeat = 0L })
 
@@ -385,7 +383,7 @@ type NetworkNode
         | _ -> None
 
     member private __.IncreaseHeartbeat () =
-        config.PublicAddress
+        nodeConfig.PublicAddress
         |> Option.iter (fun publicAddress ->
             __.GetActiveMember publicAddress
             |> Option.iter (fun m ->
@@ -401,7 +399,7 @@ type NetworkNode
         __.GetActiveMembers()
         |> List.filter (fun m -> not (isSelf m.NetworkAddress))
         |> List.shuffle
-        |> List.truncate fanout
+        |> List.truncate gossipConfig.Fanout.Value
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Message Passing
@@ -441,7 +439,7 @@ type NetworkNode
             let fanoutRecipientAddresses =
                 recipientAddresses
                 |> List.shuffle
-                |> List.truncate fanout
+                |> List.truncate gossipConfig.Fanout.Value
 
             fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
@@ -468,8 +466,8 @@ type NetworkNode
 
                 __.ProcessGossipMessage msg remainingrecipientAddresses
 
-                if remainingrecipientAddresses.Length >= fanout then
-                    do! Async.Sleep(tCycle)
+                if remainingrecipientAddresses.Length >= gossipConfig.Fanout.Value then
+                    do! Async.Sleep(gossipConfig.IntervalMillis)
                     return! loop msg
             }
 
@@ -511,7 +509,7 @@ type NetworkNode
             // Once a node is infected, propagate the message further.
             GossipMessage {
                 MessageId = gossipMessage.MessageId
-                SenderAddress = config.PublicAddress
+                SenderAddress = nodeConfig.PublicAddress
                 Data = gossipMessage.Data
             }
             |> __.SendMessage

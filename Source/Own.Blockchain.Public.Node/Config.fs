@@ -124,6 +124,24 @@ type Config () =
             | true, value when value > 0 -> value
             | _ -> 200 // Default value if not explicitly configured.
 
+    static member GossipFanout
+        with get () =
+            match Int32.TryParse config.["GossipFanout"] with
+            | true, fanout when fanout > 0 -> fanout
+            | _ -> 4
+
+    static member GossipIntervalMillis
+        with get () =
+            match Int32.TryParse config.["GossipIntervalMillis"] with
+            | true, interval when interval > 0 -> interval
+            | _ -> 10000
+
+    static member GossipMaxMissedHeartbeats
+        with get () =
+            match Int32.TryParse config.["GossipMaxMissedHeartbeats"] with
+            | true, cycles when cycles > 0 -> cycles
+            | _ -> 10
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,9 @@ module internal PeerMessageHandler =
         bootstrapNodes
         allowPrivateNetworkPeers
         maxConnectedPeers
+        gossipFanout
+        gossipIntervalMillis
+        gossipMaxMissedHeartbeats
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
         (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
@@ -40,9 +43,11 @@ module internal PeerMessageHandler =
                 MaxConnectedPeers = maxConnectedPeers
             }
 
-        let fanout = 2
-        let tCycle = 10000 // Cycle duration in milliseconds.
-        let tFail = 5 * tCycle
+        let gossipConfig = {
+            Fanout = Fanout gossipFanout
+            IntervalMillis = gossipIntervalMillis
+            MissedHeartbeatIntervalMillis = gossipMaxMissedHeartbeats * gossipIntervalMillis
+        }
 
         let n =
             NetworkNode (
@@ -59,9 +64,7 @@ module internal PeerMessageHandler =
                 closeAllConnections,
                 getCurrentValidators,
                 nodeConfig,
-                fanout,
-                tCycle,
-                tFail
+                gossipConfig
             )
         n.StartGossip publishEvent
         node <- Some n

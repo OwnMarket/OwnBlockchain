@@ -191,7 +191,11 @@ module PeerTests =
 
     let createNodes nodeConfigList =
         // ARRANGE
-        let fanout, tCycle, tFail = 4, 1000, 60000
+        let gossipConfig = {
+            Fanout = Fanout 4
+            IntervalMillis = 1000
+            MissedHeartbeatIntervalMillis = 60000
+        }
 
         let createNode (nodeConfig : NetworkNodeConfig) =
             let getAllPeerNodes = DbMock.getAllPeerNodes nodeConfig.ListeningAddress
@@ -213,16 +217,14 @@ module PeerTests =
                 TransportMock.closeAllConnections,
                 getValidators,
                 nodeConfig,
-                fanout,
-                tCycle,
-                tFail
+                gossipConfig
             )
 
         let nodeList =
             nodeConfigList
             |> List.map (fun config -> createNode config)
 
-        (nodeList, tCycle)
+        (nodeList, gossipConfig.IntervalMillis)
 
     let create3NodesConfigSameBootstrapNode () =
         let nodeConfig1 = {

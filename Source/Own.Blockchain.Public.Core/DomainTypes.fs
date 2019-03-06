@@ -480,6 +480,14 @@ type NetworkNodeConfig = {
     MaxConnectedPeers : int
 }
 
+type Fanout = Fanout of int
+
+type GossipNetworkConfig = {
+    Fanout : Fanout
+    IntervalMillis : int
+    MissedHeartbeatIntervalMillis : int
+}
+
 type GossipMember = {
     NetworkAddress : NetworkAddress
     Heartbeat : int64
@@ -540,6 +548,10 @@ type NetworkAddress with
 type PeerNetworkIdentity with
     member __.Value =
         __ |> fun (PeerNetworkIdentity v) -> v
+
+type Fanout with
+    member __.Value =
+        __ |> fun (Fanout v) -> v
 
 type PrivateKey with
     member __.Value =

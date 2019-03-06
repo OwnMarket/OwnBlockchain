@@ -505,6 +505,9 @@ module Composition =
             Config.NetworkBootstrapNodes
             Config.AllowPrivateNetworkPeers
             Config.MaxConnectedPeers
+            Config.GossipFanout
+            Config.GossipIntervalMillis
+            Config.GossipMaxMissedHeartbeats
             getAllPeerNodes
             savePeerNode
             removePeerNode
