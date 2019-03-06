@@ -215,14 +215,12 @@ type NetworkNode
                 match message with
                 | GossipDiscoveryMessage _ ->
                     __.SelectRandomMembers()
-                    |> Option.iter (fun members ->
-                        members |> Seq.iter (fun m ->
-                            Log.verbosef "Sending memberlist to: %s" m.NetworkAddress.Value
-                            let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
-                            sendGossipDiscoveryMessage
-                                peerMessageDto
-                                m.NetworkAddress.Value
-                        )
+                    |> List.iter (fun m ->
+                        Log.verbosef "Sending memberlist to: %s" m.NetworkAddress.Value
+                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
+                        sendGossipDiscoveryMessage
+                            peerMessageDto
+                            m.NetworkAddress.Value
                     )
 
                 | MulticastMessage _ ->
@@ -403,8 +401,7 @@ type NetworkNode
         __.GetActiveMembers()
         |> List.filter (fun m -> not (isSelf m.NetworkAddress))
         |> List.shuffle
-        |> List.chunkBySize fanout
-        |> List.tryHead
+        |> List.truncate fanout
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Message Passing
