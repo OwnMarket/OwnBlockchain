@@ -14,6 +14,7 @@ module internal PeerMessageHandler =
         publicAddress
         bootstrapNodes
         allowPrivateNetworkPeers
+        maxConnectedPeers
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
         (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
@@ -36,6 +37,7 @@ module internal PeerMessageHandler =
                 PublicAddress = publicAddress |> Option.map NetworkAddress
                 BootstrapNodes = bootstrapNodes |> List.map NetworkAddress
                 AllowPrivateNetworkPeers = allowPrivateNetworkPeers
+                MaxConnectedPeers = maxConnectedPeers
             }
 
         let fanout = 2
@@ -100,5 +102,5 @@ module internal PeerMessageHandler =
 
     let updatePeerList activeMembers =
         match node with
-        | Some n -> n.MergeMemberList activeMembers
+        | Some n -> n.ReceiveMembers {ActiveMembers = activeMembers}
         | None -> failwith "Please start gossip first"

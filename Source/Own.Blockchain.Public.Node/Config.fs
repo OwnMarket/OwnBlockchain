@@ -118,6 +118,12 @@ type Config () =
                 | true, allow -> allow
                 | _ -> false
 
+    static member MaxConnectedPeers
+        with get () =
+            match Int32.TryParse config.["MaxConnectedPeers"] with
+            | true, value when value > 0 -> value
+            | _ -> 200 // Default value if not explicitly configured.
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////

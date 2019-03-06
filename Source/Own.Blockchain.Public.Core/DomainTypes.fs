@@ -477,6 +477,7 @@ type NetworkNodeConfig = {
     PublicAddress : NetworkAddress option
     BootstrapNodes : NetworkAddress list
     AllowPrivateNetworkPeers : bool
+    MaxConnectedPeers : int
 }
 
 type GossipMember = {

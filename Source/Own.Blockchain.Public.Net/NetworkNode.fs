@@ -177,9 +177,40 @@ type NetworkNode
             |> List.ofDict
             |> List.map (fun (_, m) -> m)
 
+        // Fallback to boostrapnodes when no peers available.
         match result with
         | [] -> config.BootstrapNodes |> List.map (fun n -> { GossipMember.NetworkAddress = n; Heartbeat = 0L })
         | _ -> result
+
+    member __.ReceiveMembers msg =
+        // Keep max allowed peers.
+        let receivedMembers =
+            msg.ActiveMembers
+            |> List.shuffle
+            |> List.chunkBySize config.MaxConnectedPeers
+            |> List.head
+
+        // Filter the existing peers, if any, (used to refresh connection, i.e increase heartbeat).
+        let existingMembers =
+            receivedMembers
+            |> List.filter (fun m -> m.NetworkAddress |> __.GetActiveMember |> Option.isSome)
+
+        let activeMembersCount = __.GetActiveMembers() |> List.length
+        let take = config.MaxConnectedPeers - activeMembersCount
+
+        // Select up to max allowed peers.
+        let maxAllowedNewMembers =
+            if take > 0 then
+                receivedMembers
+                |> List.shuffle
+                |> List.chunkBySize take
+                |> List.head
+            else
+                []
+
+        maxAllowedNewMembers
+        |> List.append existingMembers
+        |> __.MergeMemberList
 
     member __.GetListenAddress () =
         config.ListeningAddress
@@ -345,10 +376,7 @@ type NetworkNode
             monitorActiveMember localMember.NetworkAddress
         )
 
-    member __.ReceiveMembers msg =
-        __.MergeMemberList msg.ActiveMembers
-
-    member __.MergeMemberList members =
+    member private __.MergeMemberList members =
         members |> List.iter __.MergeMember
 
     member private __.MergeMember inputMember =
@@ -382,18 +410,11 @@ type NetworkNode
         )
 
     member private __.SelectRandomMembers () =
-        let connectedMembers =
-            __.GetActiveMembers()
-            |> List.filter (fun m -> not (isSelf m.NetworkAddress))
-
-        match connectedMembers with
-        | [] -> None
-        | _ ->
-            connectedMembers
-            |> List.shuffle
-            |> List.chunkBySize fanout
-            |> List.head
-            |> Some
+        __.GetActiveMembers()
+        |> List.filter (fun m -> not (isSelf m.NetworkAddress))
+        |> List.shuffle
+        |> List.chunkBySize fanout
+        |> List.tryHead
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Message Passing

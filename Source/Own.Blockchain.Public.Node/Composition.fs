@@ -504,6 +504,7 @@ module Composition =
             Config.PublicAddress
             Config.NetworkBootstrapNodes
             Config.AllowPrivateNetworkPeers
+            Config.MaxConnectedPeers
             getAllPeerNodes
             savePeerNode
             removePeerNode

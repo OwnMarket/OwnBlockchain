@@ -231,6 +231,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
@@ -238,6 +239,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
@@ -245,6 +247,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -255,6 +258,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
@@ -262,6 +266,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
@@ -269,6 +274,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"]
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -279,6 +285,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"; NetworkAddress "127.0.0.1:5557"]
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
@@ -286,6 +293,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5557"]
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
@@ -293,6 +301,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5556"]
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -552,6 +561,7 @@ module PeerTests =
             PublicAddress = None
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
+            MaxConnectedPeers = 200
         }
 
         let nodeConfigList =
@@ -563,6 +573,7 @@ module PeerTests =
                     PublicAddress = None
                     BootstrapNodes = [NetworkAddress "127.0.0.1:6555"]
                     AllowPrivateNetworkPeers = true
+                    MaxConnectedPeers = 200
                 }
             )
 
