@@ -3,7 +3,6 @@ namespace Own.Blockchain.Public.Core.Tests
 open System.Collections.Generic
 open Own.Common.FSharp
 open Own.Blockchain.Common
-open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Consensus
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Events
@@ -102,7 +101,18 @@ module ConsensusTestHelpers =
 
         member __.StartConsensus(validators : BlockchainAddress list) =
             for validatorAddress in validators do
+                let persistConsensusState _ = ()
+
                 let restoreConsensusState () = None
+
+                let restoreConsensusMessages () = []
+
+                let getLastAppliedBlockNumber () =
+                    lastAppliedBlockNumber |?> fun _ ->
+                        __.States.[validatorAddress].Decisions.Keys
+                        |> Seq.sortDescending
+                        |> Seq.tryHead
+                        |? BlockNumber 0L
 
                 let getValidators _ =
                     validators
@@ -121,23 +131,6 @@ module ConsensusTestHelpers =
                     | Some f -> f
                     | None -> fun _ -> false
 
-                let getProposer blockNumber consensusRound =
-                    getValidators ()
-                    |> List.map (fun v -> v.ValidatorAddress)
-                    |> Validators.getProposer blockNumber consensusRound
-
-                let getQualifiedMajority () =
-                    Validators.calculateQualifiedMajority validators.Length
-
-                let getValidQuorum () =
-                    Validators.calculateValidQuorum validators.Length
-
-                let sendConsensusMessage =
-                    __.SendConsensusMessage validatorAddress
-
-                let publishEvent event =
-                    _events.Add event
-
                 let proposeBlock =
                     let dummyFn validatorAddress blockNumber =
                         proposeDummyBlock validatorAddress blockNumber
@@ -148,9 +141,9 @@ module ConsensusTestHelpers =
 
                 let txExists _ = true
 
-                let requestTx _ = ()
-
                 let equivocationProofExists _ = true
+
+                let requestTx _ = ()
 
                 let requestEquivocationProof _ = ()
 
@@ -158,6 +151,12 @@ module ConsensusTestHelpers =
                     match isValidBlock with
                     | Some f -> f validatorAddress
                     | None -> fun _ -> true
+
+                let sendConsensusMessage =
+                    __.SendConsensusMessage validatorAddress
+
+                let publishEvent event =
+                    _events.Add event
 
                 let scheduleMessage =
                     match scheduleMessage with
@@ -173,19 +172,6 @@ module ConsensusTestHelpers =
                     match scheduleTimeout with
                     | Some f -> f validatorAddress
                     | None -> fun _ _ -> ()
-
-                let getLastAppliedBlockNumber () =
-                    lastAppliedBlockNumber |?> fun _ ->
-                        __.States.[validatorAddress].Decisions.Keys
-                        |> Seq.sortDescending
-                        |> Seq.tryHead
-                        |? BlockNumber 0L
-
-                let restoreConsensusMessages () =
-                    []
-
-                let persistConsensusState _ =
-                    ()
 
                 let state =
                     new ConsensusState(
