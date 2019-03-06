@@ -192,7 +192,7 @@ module PeerTests =
     let createNodes nodeConfigList =
         // ARRANGE
         let gossipConfig = {
-            Fanout = Fanout 4
+            Fanout = 4
             IntervalMillis = 1000
             MissedHeartbeatIntervalMillis = 60000
         }

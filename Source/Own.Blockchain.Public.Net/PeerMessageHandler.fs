@@ -44,7 +44,7 @@ module internal PeerMessageHandler =
             }
 
         let gossipConfig = {
-            Fanout = Fanout gossipFanout
+            Fanout = gossipFanout
             IntervalMillis = gossipIntervalMillis
             MissedHeartbeatIntervalMillis = gossipMaxMissedHeartbeats * gossipIntervalMillis
         }

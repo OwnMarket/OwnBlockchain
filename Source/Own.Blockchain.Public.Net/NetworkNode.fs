@@ -399,7 +399,7 @@ type NetworkNode
         __.GetActiveMembers()
         |> List.filter (fun m -> not (isSelf m.NetworkAddress))
         |> List.shuffle
-        |> List.truncate gossipConfig.Fanout.Value
+        |> List.truncate gossipConfig.Fanout
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Message Passing
@@ -439,7 +439,7 @@ type NetworkNode
             let fanoutRecipientAddresses =
                 recipientAddresses
                 |> List.shuffle
-                |> List.truncate gossipConfig.Fanout.Value
+                |> List.truncate gossipConfig.Fanout
 
             fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
@@ -466,7 +466,7 @@ type NetworkNode
 
                 __.ProcessGossipMessage msg remainingrecipientAddresses
 
-                if remainingrecipientAddresses.Length >= gossipConfig.Fanout.Value then
+                if remainingrecipientAddresses.Length >= gossipConfig.Fanout then
                     do! Async.Sleep(gossipConfig.IntervalMillis)
                     return! loop msg
             }
