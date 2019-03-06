@@ -367,7 +367,7 @@ type NetworkNode
 
     member private __.ReceiveActiveMember inputMember =
         __.GetActiveMember inputMember.NetworkAddress
-        |> Option.iter(fun m ->
+        |> Option.iter (fun m ->
             let localMember = {
                 NetworkAddress = m.NetworkAddress
                 Heartbeat = inputMember.Heartbeat

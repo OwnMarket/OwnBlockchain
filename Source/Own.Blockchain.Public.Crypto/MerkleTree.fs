@@ -46,7 +46,7 @@ module MerkleTree =
             }
 
         let setParent child parent =
-            child |> Option.iter(fun n -> n.Parent <- Some parent)
+            child |> Option.iter (fun n -> n.Parent <- Some parent)
 
         setParent node.Left node
         setParent node.Right node
