@@ -46,9 +46,7 @@ module MerkleTree =
             }
 
         let setParent child parent =
-            match child with
-            | Some n -> n.Parent <- Some parent
-            | None -> ()
+            child |> Option.iter(fun n -> n.Parent <- Some parent)
 
         setParent node.Left node
         setParent node.Right node

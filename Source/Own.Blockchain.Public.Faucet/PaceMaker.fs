@@ -17,10 +17,7 @@ module PaceMaker =
                         | None, None -> lastDistributionTime
                         | chxResult, assetResult ->
                             for result in [chxResult; assetResult] do
-                                match result with
-                                | Some data ->
-                                    Log.infof "Distribution output: %s" data
-                                | None -> ()
+                                result |> Option.iter(fun data -> Log.infof "Distribution output: %s" data)
                             Utils.getMachineTimestamp ()
                     else
                         lastDistributionTime

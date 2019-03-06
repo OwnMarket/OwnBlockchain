@@ -241,15 +241,15 @@ type NetworkNode
 
                     let selectedPeer = __.PickRandomPeer pristineAddresses
                     match selectedPeer with
-                    | None ->
-                        Log.errorf "Cannot retrieve data from peers for %A" messageId
-                        pendingDataRequests.TryRemove messageId |> ignore
                     | Some networkAddress ->
                         pendingDataRequests.AddOrUpdate(
                             messageId,
                             networkAddress :: dirtyAddresses,
                             fun _ _ -> networkAddress :: dirtyAddresses)
                         |> ignore
+                    | None ->
+                        Log.errorf "Cannot retrieve data from peers for %A" messageId
+                        pendingDataRequests.TryRemove messageId |> ignore
                     selectedPeer
 
                 targetAddress |> Option.iter (fun address ->
@@ -338,15 +338,15 @@ type NetworkNode
             monitorActiveMember inputMember.NetworkAddress
 
     member private __.ReceiveActiveMember inputMember =
-        match __.GetActiveMember inputMember.NetworkAddress with
-        | Some m ->
+        __.GetActiveMember inputMember.NetworkAddress
+        |> Option.iter(fun m ->
             let localMember = {
                 NetworkAddress = m.NetworkAddress
                 Heartbeat = inputMember.Heartbeat
             }
             saveActiveMember localMember |> Result.iterError Log.appErrors
             monitorActiveMember localMember.NetworkAddress
-        | None -> ()
+        )
 
     member __.ReceiveMembers msg =
         __.MergeMemberList msg.ActiveMembers
@@ -418,9 +418,9 @@ type NetworkNode
                 gossipMessage.MessageId
                 recipientAddress.Value
 
-            let peerMessage = GossipMessage gossipMessage
+            let peerMessage = gossipMessage |> GossipMessage
             let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary peerMessage
-            let recipientMemberDto = Mapping.gossipMemberToDto recipientMember
+            let recipientMemberDto = recipientMember |> Mapping.gossipMemberToDto
             sendGossipMessage peerMessageDto recipientMemberDto
         | _ -> ()
 
@@ -435,10 +435,9 @@ type NetworkNode
         | _ ->
             let fanoutRecipientAddresses =
                 recipientAddresses
-                |> Seq.shuffle
-                |> Seq.chunkBySize fanout
-                |> Seq.head
-                |> Seq.toList
+                |> List.shuffle
+                |> List.chunkBySize fanout
+                |> List.head
 
             fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
@@ -500,7 +499,8 @@ type NetworkNode
                 [],
                 fun _ _ -> []) |> ignore
 
-            GossipMessage gossipMessage
+            gossipMessage
+            |> GossipMessage
             |> PeerMessageReceived
             |> publishEvent
 
@@ -526,7 +526,8 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     member private __.ReceiveMulticastMessage publishEvent multicastMessage =
-        MulticastMessage multicastMessage
+        multicastMessage
+        |> MulticastMessage
         |> PeerMessageReceived
         |> publishEvent
 
@@ -535,16 +536,18 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
-        RequestDataMessage requestDataMessage
+        requestDataMessage
+        |> RequestDataMessage
         |> PeerMessageReceived
         |> publishEvent
 
-    member private __.ReceiveResponseMessage publishEvent (requestDataMessage : ResponseDataMessage) =
-        ResponseDataMessage requestDataMessage
+    member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) =
+        responseDataMessage
+        |> ResponseDataMessage
         |> PeerMessageReceived
         |> publishEvent
 
-        pendingDataRequests.TryRemove requestDataMessage.MessageId |> ignore
+        pendingDataRequests.TryRemove responseDataMessage.MessageId |> ignore
 
     member private __.PickRandomPeer networkAddresses =
         networkAddresses
