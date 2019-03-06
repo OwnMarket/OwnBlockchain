@@ -10,21 +10,19 @@ module Signing =
     let generateRandomBytes byteCount =
         let bytes = Array.zeroCreate byteCount
         use rngCsp = new RNGCryptoServiceProvider()
-        rngCsp.GetBytes(bytes) // Fill the array with a random value.
+        rngCsp.GetBytes bytes // Fill the array with a random value.
         bytes
 
     let generateWallet () : WalletInfo =
-        let keyPair = Secp256k1.generateKeyPair ()
+        let privateKey, publicKey = Secp256k1.generateKeyPair ()
 
         {
             PrivateKey =
-                keyPair
-                |> fst
+                privateKey
                 |> Hashing.encode
                 |> PrivateKey
             Address =
-                keyPair
-                |> snd
+                publicKey
                 |> Hashing.blockchainAddress
         }
 
