@@ -227,32 +227,29 @@ type NetworkNode
         Stats.increment Stats.Counter.PeerRequests
         let rec loop messageId =
             async {
-                let dirtyAddresses =
+                let usedAddresses =
                     match pendingDataRequests.TryGetValue messageId with
                     | true, addresses -> addresses
                     | _ -> []
 
-                let targetAddress =
-                    let pristineAddresses =
-                        __.GetActiveMembers()
-                        |> List.map (fun m -> m.NetworkAddress)
-                        |> List.filter (fun a -> not (isSelf a))
-                        |> List.except dirtyAddresses
-
-                    let selectedPeer = __.PickRandomPeer pristineAddresses
+                __.GetActiveMembers()
+                |> List.map (fun m -> m.NetworkAddress)
+                |> List.filter (fun a -> not (isSelf a))
+                |> List.except usedAddresses
+                |> __.PickRandomPeer
+                |> tee (fun selectedPeer ->
                     match selectedPeer with
                     | Some networkAddress ->
                         pendingDataRequests.AddOrUpdate(
                             messageId,
-                            networkAddress :: dirtyAddresses,
-                            fun _ _ -> networkAddress :: dirtyAddresses)
+                            networkAddress :: usedAddresses,
+                            fun _ _ -> networkAddress :: usedAddresses)
                         |> ignore
                     | None ->
                         Log.errorf "Cannot retrieve data from peers for %A" messageId
                         pendingDataRequests.TryRemove messageId |> ignore
-                    selectedPeer
-
-                targetAddress |> Option.iter (fun address ->
+                )
+                |> Option.iter (fun address ->
                     let requestMessage = RequestDataMessage {
                         MessageId = messageId
                         SenderIdentity = config.Identity
