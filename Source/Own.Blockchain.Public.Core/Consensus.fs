@@ -610,7 +610,7 @@ module Consensus =
         createHash
         signHash
         persistConsensusState
-        persistOutgoingConsensusMessage
+        persistConsensusMessage
         restoreConsensusMessages
         sendPeerMessage
         publishEvent
@@ -702,10 +702,10 @@ module Consensus =
                         Signature = signature
                     }
 
-                persistOutgoingConsensusMessage consensusMessageEnvelope
+                persistConsensusMessage consensusMessageEnvelope
                 |> Result.iterError (fun e ->
                     Log.appErrors e
-                    failwith "persistOutgoingConsensusMessage FAILED"
+                    failwith "persistConsensusMessage FAILED"
                 )
 
                 ConsensusCommand.Message (validatorAddress, consensusMessageEnvelope)

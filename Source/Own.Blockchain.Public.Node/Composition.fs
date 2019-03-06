@@ -356,8 +356,8 @@ module Composition =
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let persistOutgoingConsensusMessage =
-        Workflows.persistOutgoingConsensusMessage
+    let persistConsensusMessage =
+        Workflows.persistConsensusMessage
             saveConsensusMessage
 
     let restoreConsensusMessages () =
@@ -384,7 +384,7 @@ module Composition =
             Hashing.hash
             signHash
             persistConsensusState
-            persistOutgoingConsensusMessage
+            persistConsensusMessage
             restoreConsensusMessages
             Peers.sendMessage
             publishEvent

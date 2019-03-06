@@ -686,7 +686,7 @@ module Workflows =
     // Consensus
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let persistOutgoingConsensusMessage
+    let persistConsensusMessage
         (saveConsensusMessage : ConsensusMessageInfoDto -> Result<unit, AppErrors>)
         (consensusMessageEnvelope : ConsensusMessageEnvelope)
         =
