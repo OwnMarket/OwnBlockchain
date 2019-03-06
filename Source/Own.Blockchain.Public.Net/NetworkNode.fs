@@ -25,7 +25,7 @@ type NetworkNode
     closeAllConnections,
     getCurrentValidators : unit -> ValidatorSnapshot list,
     nodeConfig,
-    gossipConfig : GossipNetworkConfig
+    gossipConfig
     ) =
 
     let activeMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
