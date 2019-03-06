@@ -765,6 +765,29 @@ module Workflows =
         }
         |> saveConsensusState
 
+    let restoreConsensusState (getConsensusState : unit -> ConsensusStateInfoDto option) =
+        getConsensusState ()
+        |> Option.map (fun s ->
+            {
+                ConsensusStateInfo.BlockNumber = BlockNumber s.BlockNumber
+                ConsensusRound = ConsensusRound s.ConsensusRound
+                ConsensusStep =
+                    s.ConsensusStep
+                    |> Convert.ToByte
+                    |> Mapping.consensusStepFromCode
+                LockedBlock =
+                    s.LockedBlock
+                    |> Option.ofObj
+                    |> Option.map (Convert.FromBase64String >> Serialization.deserializeBinary >> Mapping.blockFromDto)
+                LockedRound = ConsensusRound s.LockedRound
+                ValidBlock =
+                    s.ValidBlock
+                    |> Option.ofObj
+                    |> Option.map (Convert.FromBase64String >> Serialization.deserializeBinary >> Mapping.blockFromDto)
+                ValidRound = ConsensusRound s.ValidRound
+            }
+        )
+
     let handleReceivedConsensusMessage
         decodeHash
         createHash

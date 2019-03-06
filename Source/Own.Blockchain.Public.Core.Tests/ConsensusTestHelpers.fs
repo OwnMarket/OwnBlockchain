@@ -102,6 +102,8 @@ module ConsensusTestHelpers =
 
         member __.StartConsensus(validators : BlockchainAddress list) =
             for validatorAddress in validators do
+                let restoreConsensusState () = None
+
                 let getValidators _ =
                     validators
                     |> Seq.map (fun a ->
@@ -188,6 +190,7 @@ module ConsensusTestHelpers =
                 let state =
                     new ConsensusState(
                         persistConsensusState,
+                        restoreConsensusState,
                         restoreConsensusMessages,
                         getLastAppliedBlockNumber,
                         getValidators,

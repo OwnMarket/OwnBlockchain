@@ -12,6 +12,7 @@ module Consensus =
     type ConsensusState
         (
         persistConsensusState : ConsensusStateInfo -> unit,
+        restoreConsensusState : unit -> ConsensusStateInfo option,
         restoreConsensusMessages : unit -> ConsensusMessageEnvelope list,
         getLastAppliedBlockNumber : unit -> BlockNumber,
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
@@ -53,6 +54,12 @@ module Consensus =
 
         member __.StartConsensus() =
             __.RestoreState()
+            if _blockNumber > BlockNumber 0L && _step = ConsensusStep.Propose then
+                if Validators.getProposer _blockNumber _round _validators <> validatorAddress
+                    || not (_proposals.ContainsKey(_blockNumber, _round, validatorAddress))
+                then
+                    __.StartRound(_round)
+                scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
             __.Synchronize()
             __.UpdateState()
 
@@ -118,6 +125,17 @@ module Consensus =
             |> persistConsensusState
 
         member private __.RestoreState() =
+            restoreConsensusState ()
+            |> Option.iter (fun s ->
+                _blockNumber <- s.BlockNumber
+                _round <- s.ConsensusRound
+                _step <- s.ConsensusStep
+                _lockedBlock <- s.LockedBlock
+                _lockedRound <- s.LockedRound
+                _validBlock <- s.ValidBlock
+                _validRound <- s.ValidRound
+            )
+
             restoreConsensusMessages ()
             |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
             |> List.iter (fun envelope ->
@@ -127,10 +145,6 @@ module Consensus =
                 | Propose (b, r) -> _proposals.Add(key, (b, r))
                 | Vote h -> _votes.Add(key, (h, envelope.Signature))
                 | Commit h -> _commits.Add(key, (h, envelope.Signature))
-
-                _blockNumber <- envelope.BlockNumber
-                _round <- envelope.Round
-                _step <- envelope.ConsensusMessage |> Mapping.consensusStepFromMessage
             )
 
             __.SetValidators(_blockNumber - 1)
@@ -383,8 +397,7 @@ module Consensus =
 
         member private __.SendPropose(consensusRound, block) =
             __.PersistState()
-            (block, _validRound)
-            |> ConsensusMessage.Propose
+            ConsensusMessage.Propose (block, _validRound)
             |> sendConsensusMessage _blockNumber consensusRound
 
         member private __.SendVote(consensusRound, blockHash) =
@@ -610,6 +623,7 @@ module Consensus =
         createHash
         signHash
         persistConsensusState
+        restoreConsensusState
         persistConsensusMessage
         restoreConsensusMessages
         sendPeerMessage
@@ -798,6 +812,7 @@ module Consensus =
         new ConsensusState
             (
             persistConsensusState,
+            restoreConsensusState,
             restoreConsensusMessages,
             getLastAppliedBlockNumber,
             getValidatorsAtHeight,

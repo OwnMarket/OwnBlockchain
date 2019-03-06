@@ -524,6 +524,29 @@ module Db =
             sprintf "Failed to insert consensus state: %A" consensusStateInfoDto
             |> Result.appError
 
+    let getConsensusState
+        dbEngineType
+        (dbConnectionString : string)
+        : ConsensusStateInfoDto option
+        =
+
+        let sql =
+            """
+            SELECT
+                block_number,
+                consensus_round,
+                consensus_step,
+                locked_block,
+                locked_round,
+                valid_block,
+                valid_round
+            FROM consensus_state
+            """
+        match DbTools.query<ConsensusStateInfoDto> dbEngineType dbConnectionString sql [] with
+        | [] -> None
+        | [state] -> Some state
+        | _ -> failwith "Multiple consensus state entries found."
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
