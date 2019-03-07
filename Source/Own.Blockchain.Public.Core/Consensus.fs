@@ -360,7 +360,8 @@ module Consensus =
                 |> Seq.filter (fun ((bn, r, _), (bh, _)) ->
                     bn = _blockNumber
                     && r = consensusRound
-                    && (blockHash = None || blockHash = Some bh))
+                    && (blockHash = None || blockHash = Some bh)
+                )
                 |> Seq.length
 
             count >= _qualifiedMajority
@@ -372,7 +373,8 @@ module Consensus =
                 |> Seq.filter (fun ((bn, r, _), (bh, _)) ->
                     bn = _blockNumber
                     && r = consensusRound
-                    && (blockHash = None || blockHash = Some bh))
+                    && (blockHash = None || blockHash = Some bh)
+                )
                 |> Seq.length
 
             count >= _qualifiedMajority
