@@ -140,12 +140,9 @@ module Serialization =
         try
             let peerMessageEnvelopeDto = LZ4MessagePackSerializer.Deserialize<PeerMessageEnvelopeDto> message
             let deserialize = peerMessageTypeToObjectMapping.[peerMessageEnvelopeDto.PeerMessage.MessageType]
-            {
-                NetworkId = peerMessageEnvelopeDto.NetworkId
-                ProtocolVersion = 0s
+            { peerMessageEnvelopeDto with
                 PeerMessage =
-                    {
-                        MessageType = peerMessageEnvelopeDto.PeerMessage.MessageType
+                    { peerMessageEnvelopeDto.PeerMessage with
                         MessageData = peerMessageEnvelopeDto.PeerMessage.MessageData :?> byte[] |> deserialize
                     }
             }

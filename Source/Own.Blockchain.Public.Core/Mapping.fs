@@ -920,7 +920,7 @@ module Mapping =
             MessageData = data
         }
 
-    let peerMessageEnvelopeFromDto (dto: PeerMessageEnvelopeDto) =
+    let peerMessageEnvelopeFromDto (dto : PeerMessageEnvelopeDto) =
         {
             PeerMessageEnvelope.NetworkId = NetworkId dto.NetworkId
             PeerMessage = peerMessageFromDto dto.PeerMessage
@@ -929,6 +929,6 @@ module Mapping =
     let peerMessageEnvelopeToDto (serialize : obj -> byte[]) (peerMessageEnvelope : PeerMessageEnvelope) =
         {
             NetworkId = peerMessageEnvelope.NetworkId.Value
-            ProtocolVersion = 0s
+            ProtocolVersion = 0s // TODO: Take from domain type upon implementing protocol versioning.
             PeerMessage = peerMessageToDto serialize peerMessageEnvelope.PeerMessage
         }
