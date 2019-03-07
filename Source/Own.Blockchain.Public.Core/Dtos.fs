@@ -277,6 +277,7 @@ type ConsensusStateInfoDto = {
     BlockNumber : int64
     ConsensusRound : int
     ConsensusStep : int16
+    LockedBlockSignatures : string
     LockedBlock : string
     LockedRound : int
     ValidBlock : string

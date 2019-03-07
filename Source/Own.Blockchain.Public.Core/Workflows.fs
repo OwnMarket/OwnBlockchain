@@ -752,6 +752,10 @@ module Workflows =
                 consensusStateInfo.ConsensusStep
                 |> Mapping.consensusStepToCode
                 |> Convert.ToInt16
+            LockedBlockSignatures =
+                consensusStateInfo.LockedBlockSignatures
+                |> List.map (fun s -> s.Value)
+                |> fun signatures -> String.Join(',', signatures)
             LockedBlock =
                 consensusStateInfo.LockedBlock
                 |> Option.map (Mapping.blockToDto >> Serialization.serializeBinary >> Convert.ToBase64String)
@@ -775,6 +779,13 @@ module Workflows =
                     s.ConsensusStep
                     |> Convert.ToByte
                     |> Mapping.consensusStepFromCode
+                LockedBlockSignatures =
+                    if s.LockedBlockSignatures.IsNullOrWhiteSpace() then
+                        []
+                    else
+                        s.LockedBlockSignatures.Split(',')
+                        |> Seq.map Signature
+                        |> Seq.toList
                 LockedBlock =
                     s.LockedBlock
                     |> Option.ofObj

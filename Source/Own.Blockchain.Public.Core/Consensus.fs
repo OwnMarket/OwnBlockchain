@@ -44,6 +44,7 @@ module Consensus =
         let mutable _round = ConsensusRound 0
         let mutable _step = ConsensusStep.Propose
         let mutable _decisions = new Dictionary<BlockNumber, Block>()
+        let mutable _lockedBlockSignatures = []
         let mutable _lockedBlock = None
         let mutable _lockedRound = ConsensusRound -1
         let mutable _validBlock = None
@@ -117,6 +118,7 @@ module Consensus =
                 ConsensusStateInfo.BlockNumber = _blockNumber
                 ConsensusRound = _round
                 ConsensusStep = _step
+                LockedBlockSignatures = _lockedBlockSignatures
                 LockedBlock = _lockedBlock
                 LockedRound = _lockedRound
                 ValidBlock = _validBlock
@@ -130,6 +132,7 @@ module Consensus =
                 _blockNumber <- s.BlockNumber
                 _round <- s.ConsensusRound
                 _step <- s.ConsensusStep
+                _lockedBlockSignatures <- s.LockedBlockSignatures
                 _lockedBlock <- s.LockedBlock
                 _lockedRound <- s.LockedRound
                 _validBlock <- s.ValidBlock
@@ -174,6 +177,7 @@ module Consensus =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member private __.ResetState() =
+            _lockedBlockSignatures <- []
             _lockedBlock <- None
             _lockedRound <- ConsensusRound -1
             _validBlock <- None
@@ -276,6 +280,7 @@ module Consensus =
                         _validBlock <- Some block
                         _validRound <- _round
                         if _step = ConsensusStep.Vote then
+                            _lockedBlockSignatures <- __.GetLockedBlockSignatures()
                             _lockedBlock <- Some block
                             _lockedRound <- _round
                             _step <- ConsensusStep.Commit
@@ -352,6 +357,18 @@ module Consensus =
             )
             |> Seq.sortBy (fun ((_, consensusRound, _), _) -> consensusRound)
             |> Seq.tryHead
+
+        member private __.GetLockedBlockSignatures() =
+            let lockedBlockHash = _lockedBlock |> Option.map (fun b -> b.Header.Hash)
+
+            _votes
+            |> List.ofDict
+            |> List.choose (fun ((bn, r, _), (bh, s)) ->
+                if bn = _blockNumber && r = _lockedRound && bh = lockedBlockHash then
+                    Some s
+                else
+                    None
+            )
 
         member private __.MajorityVoted(consensusRound, ?blockHash : BlockHash option) : bool =
             let count =

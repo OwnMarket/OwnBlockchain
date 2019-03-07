@@ -441,6 +441,7 @@ module Db =
                         block_number,
                         consensus_round,
                         consensus_step,
+                        locked_block_signatures,
                         locked_block,
                         locked_round,
                         valid_block,
@@ -451,6 +452,7 @@ module Db =
                         @blockNumber,
                         @consensusRound,
                         @consensusStep,
+                        @lockedBlockSignatures,
                         @lockedBlock,
                         @lockedRound,
                         @validBlock,
@@ -464,6 +466,7 @@ module Db =
                         block_number,
                         consensus_round,
                         consensus_step,
+                        locked_block_signatures,
                         locked_block,
                         locked_round,
                         valid_block,
@@ -474,6 +477,7 @@ module Db =
                         @blockNumber,
                         @consensusRound,
                         @consensusStep,
+                        @lockedBlockSignatures,
                         @lockedBlock,
                         @lockedRound,
                         @validBlock,
@@ -483,11 +487,18 @@ module Db =
                     SET block_number = @blockNumber,
                         consensus_round = @consensusRound,
                         consensus_step = @consensusStep,
+                        locked_block_signatures = @lockedBlockSignatures,
                         locked_block = @lockedBlock,
                         locked_round = @lockedRound,
                         valid_block = @validBlock,
                         valid_round = @validRound
                     """
+
+            let lockedBlockSignaturesParamValue =
+                if consensusStateInfoDto.LockedBlockSignatures.IsNullOrWhiteSpace() then
+                    DBNull.Value |> box
+                else
+                    consensusStateInfoDto.LockedBlockSignatures |> box
 
             let lockedBlockParamValue =
                 if consensusStateInfoDto.LockedBlock.IsNullOrWhiteSpace() then
@@ -506,6 +517,7 @@ module Db =
                     "@blockNumber", consensusStateInfoDto.BlockNumber |> box
                     "@consensusRound", consensusStateInfoDto.ConsensusRound |> box
                     "@consensusStep", consensusStateInfoDto.ConsensusStep |> box
+                    "@lockedBlockSignatures", lockedBlockSignaturesParamValue
                     "@lockedBlock", lockedBlockParamValue
                     "@lockedRound", consensusStateInfoDto.LockedRound |> box
                     "@validBlock", validBlockParamValue
@@ -536,6 +548,7 @@ module Db =
                 block_number,
                 consensus_round,
                 consensus_step,
+                locked_block_signatures,
                 locked_block,
                 locked_round,
                 valid_block,
