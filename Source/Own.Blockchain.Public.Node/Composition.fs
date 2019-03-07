@@ -523,6 +523,7 @@ module Composition =
             getAllPeerNodes
             savePeerNode
             removePeerNode
+            Transport.init
             Transport.sendGossipDiscoveryMessage
             Transport.sendGossipMessage
             Transport.sendMulticastMessage

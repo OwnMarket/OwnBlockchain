@@ -1,80 +1,54 @@
 ﻿namespace Own.Blockchain.Public.Net.Tests
 
-open System.Collections.Concurrent
-open Own.Common.FSharp
-open Own.Blockchain.Common
-open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Dtos
 
 module TransportMock =
 
-    let messageQueue = new ConcurrentDictionary<string, ConcurrentQueue<byte[]>>()
+    let mutable private transportStubMock : TransportStubMock option = None
+    let init networkId identity receivePeerMessage =
+        let stub = TransportStubMock (networkId, identity, receivePeerMessage)
+        transportStubMock <- stub |> Some
 
-    let private packMessage message =
-        message |> Serialization.serializeBinary
-
-    let private unpackMessage message =
-        message |> Serialization.deserializePeerMessage
-
-    let private send (msg : byte[]) targetAddress =
-        let set =
-            match messageQueue.TryGetValue targetAddress with
-            | true, messages ->
-                messages.Enqueue(msg)
-                messages
-            | _ ->
-                let queue = new ConcurrentQueue<byte[]>()
-                queue.Enqueue(msg)
-                queue
-
-        messageQueue.AddOrUpdate (targetAddress, set, fun _ _ -> set) |> ignore
+    let receiveMessage listeningAddress =
+        match transportStubMock with
+        | Some transport -> transport.ReceiveMessage listeningAddress
+        | None -> failwith "Please initialize transport first"
 
     let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
-        let msg = packMessage gossipDiscoveryMessage
-        send msg targetAddress
+        match transportStubMock with
+        | Some transport -> transport.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress
+        | None -> failwith "Please initialize transport first"
 
     let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
-        let msg = packMessage gossipMessage
-        send msg targetMember.NetworkAddress
+        match transportStubMock with
+        | Some transport -> transport.SendGossipMessage gossipMessage targetMember
+        | None -> failwith "Please initialize transport first"
 
     let sendRequestMessage requestMessage targetAddress =
-        let msg = packMessage requestMessage
-        send msg targetAddress
+        match transportStubMock with
+        | Some transport -> transport.SendRequestMessage requestMessage targetAddress
+        | None -> failwith "Please initialize transport first"
 
-    let sendResponseMessage requestMessage (targetIdentity : byte[]) =
-        let msg = packMessage requestMessage
-        send msg ""
+    let sendResponseMessage responseMessage (targetIdentity : byte[]) =
+        match transportStubMock with
+        | Some transport -> transport.SendResponseMessage responseMessage targetIdentity
+        | None -> failwith "Please initialize transport first"
 
     let sendMulticastMessage multicastMessage multicastAddresses =
-        match multicastAddresses with
-        | [] -> ()
-        | _ ->
-            multicastAddresses
-            |> Seq.shuffle
-            |> Seq.toList
-            |> List.iter (fun networkAddress ->
-                let msg = packMessage multicastMessage
-                send msg networkAddress
-            )
+        match transportStubMock with
+        | Some transport -> transport.SendMulticastMessage multicastMessage multicastAddresses
+        | None -> failwith "Please initialize transport first"
 
-    let receiveMessage identity networkAddress receiveCallback =
-        let rec loop address callback =
-            async {
-                match messageQueue.TryGetValue address with
-                | true, queue ->
-                    let mutable message = Array.empty
-                    while queue.TryDequeue &message do
-                        match unpackMessage message with
-                        | Ok peerMessage -> callback peerMessage
-                        | Error error -> Log.error error
-                | _ -> ()
-                do! Async.Sleep(100)
-                return! loop address callback
-            }
-        Async.Start (loop networkAddress receiveCallback)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Cleanup
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let closeConnection networkAddress =
-        messageQueue.TryRemove networkAddress |> ignore
+    let closeConnection remoteAddress =
+        match transportStubMock with
+        | Some transport -> transport.CloseConnection remoteAddress
+        | None -> failwith "Please initialize transport first"
 
     let closeAllConnections () =
-        messageQueue.Clear()
+        match transportStubMock with
+        | Some transport -> transport.CloseAllConnections ()
+        | None -> failwith "Please initialize transport first"

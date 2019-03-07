@@ -12,10 +12,11 @@ open Own.Blockchain.Public.Core.Events
 
 type NetworkNode
     (
-    getNetworkId,
+    getNetworkId : unit -> NetworkId,
     getAllPeerNodes,
     savePeerNode : NetworkAddress -> Result<unit, AppErrors>,
     removePeerNode : NetworkAddress -> Result<unit, AppErrors>,
+    initTransport,
     sendGossipDiscoveryMessage,
     sendGossipMessage,
     sendMulticastMessage,
@@ -162,6 +163,11 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     member __.StartGossip publishEvent =
+        let networkId = getNetworkId ()
+        initTransport
+            networkId.Value
+            nodeConfig.Identity.Value
+            (__.ReceivePeerMessage publishEvent)
         __.StartNode publishEvent
         __.StartGossipDiscovery ()
         Log.info "Network layer initialized"
@@ -321,10 +327,7 @@ type NetworkNode
     member private __.StartServer publishEvent =
         Log.infof "Listen on: %s" nodeConfig.ListeningAddress.Value
         nodeConfig.PublicAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
-        receiveMessage
-            nodeConfig.Identity.Value
-            nodeConfig.ListeningAddress.Value
-            (__.ReceivePeerMessage publishEvent)
+        receiveMessage nodeConfig.ListeningAddress.Value
 
     member private __.StartGossipDiscovery () =
         let rec loop () =

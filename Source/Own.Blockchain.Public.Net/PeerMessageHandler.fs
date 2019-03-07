@@ -22,6 +22,7 @@ module internal PeerMessageHandler =
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
         (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
+        initTransport
         sendGossipDiscoveryMessage
         sendGossipMessage
         sendMulticastMessage
@@ -56,6 +57,7 @@ module internal PeerMessageHandler =
                 getAllPeerNodes,
                 savePeerNode,
                 removePeerNode,
+                initTransport,
                 sendGossipDiscoveryMessage,
                 sendGossipMessage,
                 sendMulticastMessage,

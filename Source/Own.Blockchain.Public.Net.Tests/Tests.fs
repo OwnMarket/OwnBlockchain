@@ -228,6 +228,7 @@ module PeerTests =
                 getAllPeerNodes,
                 savePeerNode,
                 removePeerNode,
+                TransportMock.init,
                 TransportMock.sendGossipDiscoveryMessage,
                 TransportMock.sendGossipMessage,
                 TransportMock.sendMulticastMessage,
