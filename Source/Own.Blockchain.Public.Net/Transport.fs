@@ -181,9 +181,8 @@ module Transport =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let closeConnection remoteAddress =
-        match dealerSockets.TryGetValue remoteAddress with
+        match dealerSockets.TryRemove remoteAddress with
         | true, socket ->
-            dealerSockets.TryRemove remoteAddress |> ignore
             if not socket.IsDisposed then
                 poller.RemoveAndDispose socket
         | _ -> ()
