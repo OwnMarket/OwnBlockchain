@@ -284,6 +284,14 @@ type ConsensusStateInfoDto = {
     ValidRound : int
 }
 
+[<MessagePackObject>]
+type ConsensusStateResponseDto = {
+    [<Key(0)>] ProposeMessage : ConsensusMessageEnvelopeDto
+    [<Key(1)>] VoteMessage : ConsensusMessageEnvelopeDto
+    [<Key(2)>] CommitMessage : ConsensusMessageEnvelopeDto
+    [<Key(3)>] LockedBlockSignatures : string list
+}
+
 [<CLIMutable>]
 [<MessagePackObject>]
 type EquivocationProofDto = {

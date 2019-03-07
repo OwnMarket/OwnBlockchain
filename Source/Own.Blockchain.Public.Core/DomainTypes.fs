@@ -439,6 +439,13 @@ type ConsensusStateInfo = {
     ValidRound : ConsensusRound
 }
 
+type ConsensusStateResponse = {
+    ProposeMessage : ConsensusMessageEnvelope option
+    VoteMessage : ConsensusMessageEnvelope option
+    CommitMessage : ConsensusMessageEnvelope option
+    LockedBlockSignatures : string list
+}
+
 type ConsensusCommand =
     | Synchronize
     | Message of BlockchainAddress * ConsensusMessageEnvelope
