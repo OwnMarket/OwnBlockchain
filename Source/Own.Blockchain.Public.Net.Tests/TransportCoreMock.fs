@@ -6,7 +6,7 @@ open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Dtos
 
-type TransportStubMock
+type internal TransportCoreMock
     (
     networkId,
     peerIdentity,

@@ -7,7 +7,7 @@
     <ItemGroup>
         <Compile Include="..\AssemblyInfo.fs" />
         <Compile Include="Ntp.fs" />
-        <Compile Include="TransportStub.fs" />
+        <Compile Include="TransportCore.fs" />
         <Compile Include="Transport.fs" />
         <Compile Include="NetworkNode.fs" />
         <Compile Include="PeerMessageHandler.fs" />

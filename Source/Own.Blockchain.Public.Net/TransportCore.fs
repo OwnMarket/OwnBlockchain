@@ -10,7 +10,7 @@ open NetMQ
 open NetMQ.Sockets
 open Newtonsoft.Json
 
-type internal TransportStub
+type internal TransportCore
     (
     networkId,
     peerIdentity,
