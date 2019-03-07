@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Own.Blockchain.Public.Crypto\Own.Blockchain.Public.Crypto.fsproj" />
         <ProjectReference Include="..\Own.Common.FSharp\Own.Common.FSharp.fsproj" />
         <ProjectReference Include="..\Own.Blockchain.Public.Core\Own.Blockchain.Public.Core.fsproj" />
         <ProjectReference Include="..\Own.Blockchain.Public.Net\Own.Blockchain.Public.Net.fsproj" />

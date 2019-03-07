@@ -18,6 +18,7 @@ module internal PeerMessageHandler =
         gossipFanout
         gossipIntervalMillis
         gossipMaxMissedHeartbeats
+        getNetworkId
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
         (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
@@ -51,6 +52,7 @@ module internal PeerMessageHandler =
 
         let n =
             NetworkNode (
+                getNetworkId,
                 getAllPeerNodes,
                 savePeerNode,
                 removePeerNode,
@@ -93,9 +95,9 @@ module internal PeerMessageHandler =
                 n.SendRequestDataMessage requestId
         | None -> failwith "Please start gossip first"
 
-    let respondToPeer targetIdentity peerMessage =
+    let respondToPeer targetIdentity peerMessageEnvelope =
         match node with
-        | Some n -> n.SendResponseDataMessage targetIdentity peerMessage
+        | Some n -> n.SendResponseDataMessage targetIdentity peerMessageEnvelope
         | None -> failwith "Please start gossip first"
 
     let getPeerList () =

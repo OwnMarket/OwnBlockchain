@@ -857,14 +857,19 @@ module Workflows =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let propagateTx publicAddress sendMessageToPeers getTx (txHash : TxHash) =
+    let propagateTx publicAddress sendMessageToPeers getTx getNetworkId (txHash : TxHash) =
         match getTx txHash with
         | Ok (txEnvelopeDto : TxEnvelopeDto) ->
-            GossipMessage {
-                MessageId = Tx txHash
-                SenderAddress = publicAddress |> Option.map NetworkAddress
-                Data = Serialization.serializeBinary txEnvelopeDto
-            }
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage =
+                    {
+                        MessageId = Tx txHash
+                        SenderAddress = publicAddress |> Option.map NetworkAddress
+                        Data = Serialization.serializeBinary txEnvelopeDto
+                    }
+                    |> GossipMessage
+                }
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" txHash.Value
 
@@ -872,15 +877,21 @@ module Workflows =
         publicAddress
         sendMessageToPeers
         getEquivocationProof
+        getNetworkId
         (equivocationProofHash : EquivocationProofHash)
         =
 
         match getEquivocationProof equivocationProofHash with
         | Ok (equivocationProofDto : EquivocationProofDto) ->
-            GossipMessage {
-                MessageId = EquivocationProof equivocationProofHash
-                SenderAddress = publicAddress |> Option.map NetworkAddress
-                Data = Serialization.serializeBinary equivocationProofDto
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage =
+                    {
+                        MessageId = EquivocationProof equivocationProofHash
+                        SenderAddress = publicAddress |> Option.map NetworkAddress
+                        Data = Serialization.serializeBinary equivocationProofDto
+                    }
+                    |> GossipMessage
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "EquivocationProof %s does not exist" equivocationProofHash.Value
@@ -889,15 +900,21 @@ module Workflows =
         publicAddress
         sendMessageToPeers
         getBlock
+        getNetworkId
         (blockNumber : BlockNumber)
         =
 
         match getBlock blockNumber with
         | Ok (blockEnvelopeDto : BlockEnvelopeDto) ->
-            GossipMessage {
-                MessageId = Block blockNumber
-                SenderAddress = publicAddress |> Option.map NetworkAddress
-                Data = Serialization.serializeBinary blockEnvelopeDto
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage =
+                    {
+                        MessageId = Block blockNumber
+                        SenderAddress = publicAddress |> Option.map NetworkAddress
+                        Data = Serialization.serializeBinary blockEnvelopeDto
+                    }
+                    |> GossipMessage
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "Block %i does not exist." blockNumber.Value
@@ -910,7 +927,8 @@ module Workflows =
         handleReceivedConsensusMessage
         respondToPeer
         getPeerList
-        peerMessage
+        getNetworkId
+        (peerMessageEnvelope : PeerMessageEnvelope)
         =
 
         let processTxFromPeer isResponse txHash data =
@@ -983,9 +1001,14 @@ module Workflows =
             | Tx txHash ->
                 match getTx txHash with
                 | Ok txEvenvelopeDto ->
-                    ResponseDataMessage {
-                        MessageId = messageId
-                        Data = txEvenvelopeDto |> Serialization.serializeBinary
+                    {
+                        PeerMessageEnvelope.NetworkId = getNetworkId ()
+                        PeerMessage =
+                            {
+                                MessageId = messageId
+                                Data = txEvenvelopeDto |> Serialization.serializeBinary
+                            }
+                            |> ResponseDataMessage
                     }
                     |> respondToPeer senderIdentity
                     Ok None
@@ -994,9 +1017,14 @@ module Workflows =
             | EquivocationProof equivocationProofHash ->
                 match getEquivocationProof equivocationProofHash with
                 | Ok equivocationProofDto ->
-                    ResponseDataMessage {
-                        MessageId = messageId
-                        Data = equivocationProofDto |> Serialization.serializeBinary
+                    {
+                        PeerMessageEnvelope.NetworkId = getNetworkId ()
+                        PeerMessage =
+                            {
+                                MessageId = messageId
+                                Data = equivocationProofDto |> Serialization.serializeBinary
+                            }
+                            |> ResponseDataMessage
                     }
                     |> respondToPeer senderIdentity
                     Ok None
@@ -1011,9 +1039,14 @@ module Workflows =
 
                 match getBlock blockNr with
                 | Ok blockEnvelopeDto ->
-                    ResponseDataMessage {
-                        MessageId = messageId
-                        Data = blockEnvelopeDto |> Serialization.serializeBinary
+                    {
+                        PeerMessageEnvelope.NetworkId = getNetworkId ()
+                        PeerMessage =
+                            {
+                                MessageId = messageId
+                                Data = blockEnvelopeDto |> Serialization.serializeBinary
+                            }
+                            |> ResponseDataMessage
                     }
                     |> respondToPeer senderIdentity
                     Ok None
@@ -1021,20 +1054,25 @@ module Workflows =
 
             | Consensus _ -> Result.appError ("Cannot request consensus message from Peer")
             | PeerList ->
-                ResponseDataMessage {
-                    MessageId = messageId
-                    Data =
+                {
+                    PeerMessageEnvelope.NetworkId = getNetworkId ()
+                    PeerMessage =
                         {
-                            GossipDiscoveryMessageDto.ActiveMembers =
-                                getPeerList ()
-                                |> List.map Mapping.gossipMemberToDto
+                            MessageId = messageId
+                            Data =
+                                {
+                                    GossipDiscoveryMessageDto.ActiveMembers =
+                                        getPeerList ()
+                                        |> List.map Mapping.gossipMemberToDto
+                                }
+                                |> Serialization.serializeBinary
                         }
-                        |> Serialization.serializeBinary
+                        |> ResponseDataMessage
                 }
                 |> respondToPeer senderIdentity
                 Ok None
 
-        match peerMessage with
+        match peerMessageEnvelope.PeerMessage with
         | GossipDiscoveryMessage _ -> None
         | GossipMessage m -> processData false m.MessageId m.Data |> Some
         | MulticastMessage m -> processData false m.MessageId m.Data |> Some

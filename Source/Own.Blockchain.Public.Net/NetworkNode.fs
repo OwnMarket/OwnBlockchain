@@ -12,6 +12,7 @@ open Own.Blockchain.Public.Core.Events
 
 type NetworkNode
     (
+    getNetworkId,
     getAllPeerNodes,
     savePeerNode : NetworkAddress -> Result<unit, AppErrors>,
     removePeerNode : NetworkAddress -> Result<unit, AppErrors>,
@@ -210,19 +211,21 @@ type NetworkNode
     member __.SendMessage message =
         let sendMessageTask =
             async {
-                match message with
+                match message.PeerMessage with
                 | GossipDiscoveryMessage _ ->
                     __.SelectRandomMembers()
                     |> List.iter (fun m ->
                         Log.verbosef "Sending memberlist to: %s" m.NetworkAddress.Value
-                        let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
+                        let peerMessageEnvelopeDto =
+                            Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary message
                         sendGossipDiscoveryMessage
-                            peerMessageDto
+                            peerMessageEnvelopeDto
                             m.NetworkAddress.Value
                     )
 
                 | MulticastMessage _ ->
-                    let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary message
+                    let peerMessageEnvelopeDto =
+                        Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary message
                     let multicastAddresses =
                         getCurrentValidators ()
                         |> List.map (fun v -> v.NetworkAddress)
@@ -230,7 +233,7 @@ type NetworkNode
                         |> List.map (fun a -> a.Value)
 
                     sendMulticastMessage
-                        peerMessageDto
+                        peerMessageEnvelopeDto
                         multicastAddresses
 
                 | GossipMessage m -> __.SendGossipMessage m
@@ -267,12 +270,19 @@ type NetworkNode
                         pendingDataRequests.TryRemove messageId |> ignore
                 )
                 |> Option.iter (fun address ->
-                    let requestMessage = RequestDataMessage {
-                        MessageId = messageId
-                        SenderIdentity = nodeConfig.Identity
-                    }
-                    let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary requestMessage
-                    sendRequestMessage peerMessageDto address.Value
+                    let peerMessageEnvelope =
+                        {
+                            PeerMessageEnvelope.NetworkId = getNetworkId ()
+                            PeerMessage =
+                                {
+                                    MessageId = messageId
+                                    SenderIdentity = nodeConfig.Identity
+                                }
+                                |> RequestDataMessage
+                        }
+                    let peerMessageEnvelopeDto =
+                        Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
+                    sendRequestMessage peerMessageEnvelopeDto address.Value
                 )
 
                 do! Async.Sleep(4 * gossipConfig.IntervalMillis)
@@ -290,11 +300,12 @@ type NetworkNode
 
         Async.Start (loop requestId, cts.Token)
 
-    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) responseMessage =
+    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
         let unicastMessageTask =
             async {
-                let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary responseMessage
-                sendResponseMessage peerMessageDto targetIdentity.Value
+                let peerMessageEnvelopeDto =
+                    Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
+                sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
             }
         Async.Start (unicastMessageTask, cts.Token)
 
@@ -329,8 +340,9 @@ type NetworkNode
         match nodeConfig.PublicAddress with
         | Some _ ->
             // Propagate discovery message.
-            GossipDiscoveryMessage {
-                ActiveMembers = __.GetActiveMembers()
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage = { ActiveMembers = __.GetActiveMembers() } |> GossipDiscoveryMessage
             }
             |> __.SendMessage
         | None ->
@@ -421,10 +433,14 @@ type NetworkNode
                 gossipMessage.MessageId
                 recipientAddress.Value
 
-            let peerMessage = gossipMessage |> GossipMessage
-            let peerMessageDto = Mapping.peerMessageToDto Serialization.serializeBinary peerMessage
+            let peerMessageEnvelope = {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage = gossipMessage |> GossipMessage
+            }
+            let peerMessageEnvelopeDto =
+                Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
             let recipientMemberDto = recipientMember |> Mapping.gossipMemberToDto
-            sendGossipMessage peerMessageDto recipientMemberDto
+            sendGossipMessage peerMessageEnvelopeDto recipientMemberDto
         | _ -> ()
 
     member private __.ProcessGossipMessage (gossipMessage : GossipMessage) recipientAddresses =
@@ -501,22 +517,29 @@ type NetworkNode
                 [],
                 fun _ _ -> []) |> ignore
 
-            gossipMessage
-            |> GossipMessage
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage = gossipMessage |> GossipMessage
+            }
             |> PeerMessageReceived
             |> publishEvent
 
             // Once a node is infected, propagate the message further.
-            GossipMessage {
-                MessageId = gossipMessage.MessageId
-                SenderAddress = nodeConfig.PublicAddress
-                Data = gossipMessage.Data
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage =
+                    {
+                        MessageId = gossipMessage.MessageId
+                        SenderAddress = nodeConfig.PublicAddress
+                        Data = gossipMessage.Data
+                    }
+                    |> GossipMessage
             }
             |> __.SendMessage
 
     member private __.ReceivePeerMessage publishEvent dto =
-        let peerMessage = Mapping.peerMessageFromDto dto
-        match peerMessage with
+        let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto dto
+        match peerMessageEnvelope.PeerMessage with
         | GossipDiscoveryMessage m -> __.ReceiveMembers m
         | GossipMessage m -> __.ReceiveGossipMessage publishEvent m
         | MulticastMessage m -> __.ReceiveMulticastMessage publishEvent m
@@ -528,8 +551,10 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     member private __.ReceiveMulticastMessage publishEvent multicastMessage =
-        multicastMessage
-        |> MulticastMessage
+        {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage = multicastMessage |> MulticastMessage
+        }
         |> PeerMessageReceived
         |> publishEvent
 
@@ -538,14 +563,18 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
-        requestDataMessage
-        |> RequestDataMessage
+        {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage = requestDataMessage |> RequestDataMessage
+        }
         |> PeerMessageReceived
         |> publishEvent
 
     member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) =
-        responseDataMessage
-        |> ResponseDataMessage
+        {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage = responseDataMessage |> ResponseDataMessage
+        }
         |> PeerMessageReceived
         |> publishEvent
 

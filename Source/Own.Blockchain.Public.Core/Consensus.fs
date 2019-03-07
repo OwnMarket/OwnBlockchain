@@ -627,6 +627,7 @@ module Consensus =
         persistConsensusMessage
         restoreConsensusMessages
         sendPeerMessage
+        getNetworkId
         publishEvent
         addressFromPrivateKey
         (validatorPrivateKey : PrivateKey)
@@ -727,16 +728,20 @@ module Consensus =
                 |> publishEvent // Send message to self
 
                 {
-                    MulticastMessage.MessageId =
-                        sprintf "Consensus_%s" consensusMessageHash
-                        |> ConsensusMessageId
-                        |> NetworkMessageId.Consensus
-                    Data =
-                        consensusMessageEnvelope
-                        |> Mapping.consensusMessageEnvelopeToDto
-                        |> Serialization.serializeBinary
+                    PeerMessageEnvelope.NetworkId = getNetworkId ()
+                    PeerMessage =
+                        {
+                            MulticastMessage.MessageId =
+                                sprintf "Consensus_%s" consensusMessageHash
+                                |> ConsensusMessageId
+                                |> NetworkMessageId.Consensus
+                            Data =
+                                consensusMessageEnvelope
+                                |> Mapping.consensusMessageEnvelopeToDto
+                                |> Serialization.serializeBinary
+                        }
+                        |> MulticastMessage
                 }
-                |> MulticastMessage
                 |> sendPeerMessage
 
                 Log.debugf "Consensus message sent: %i / %i / %s"

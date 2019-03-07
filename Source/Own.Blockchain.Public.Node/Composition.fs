@@ -393,6 +393,7 @@ module Composition =
             persistConsensusMessage
             restoreConsensusMessages
             Peers.sendMessage
+            getNetworkId
             publishEvent
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
@@ -480,20 +481,23 @@ module Composition =
             Config.PublicAddress
             Peers.sendMessage
             getTx
+            getNetworkId
 
     let propagateEquivocationProof =
         Workflows.propagateEquivocationProof
             Config.PublicAddress
             Peers.sendMessage
             getEquivocationProof
+            getNetworkId
 
     let propagateBlock =
         Workflows.propagateBlock
             Config.PublicAddress
             Peers.sendMessage
             getBlock
+            getNetworkId
 
-    let processPeerMessage (peerMessage : PeerMessage) =
+    let processPeerMessage peerMessage =
         Workflows.processPeerMessage
             getTx
             getEquivocationProof
@@ -502,6 +506,7 @@ module Composition =
             handleReceivedConsensusMessage
             Peers.respondToPeer
             Peers.getPeerList
+            getNetworkId
             peerMessage
 
     let startGossip publishEvent =
@@ -514,6 +519,7 @@ module Composition =
             Config.GossipFanout
             Config.GossipIntervalMillis
             Config.GossipMaxMissedHeartbeats
+            getNetworkId
             getAllPeerNodes
             savePeerNode
             removePeerNode

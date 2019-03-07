@@ -28,7 +28,7 @@ module Agents =
             Composition.propagateBlock blockNumber
         }
 
-    let mutable private peerMessageHandler : MailboxProcessor<PeerMessage> option = None
+    let mutable private peerMessageHandler : MailboxProcessor<PeerMessageEnvelope> option = None
     let private invokePeerMessageHandler m =
         match peerMessageHandler with
         | Some h -> h.Post m
@@ -76,7 +76,7 @@ module Agents =
 
         match event with
         | PeerMessageReceived m ->
-            unionCaseName m
+            unionCaseName m.PeerMessage
             |> formatMessage
             |> Log.debug
         | TxSubmitted h ->
@@ -215,9 +215,9 @@ module Agents =
             failwith "PeerMessageHandler agent is already started."
 
         peerMessageHandler <-
-            Agent.start <| fun peerMessage ->
+            Agent.start <| fun peerMessageEnvelope ->
                 async {
-                    Composition.processPeerMessage peerMessage
+                    Composition.processPeerMessage peerMessageEnvelope
                     |> Option.iter (
                         Result.handle
                             (Option.iter publishEvent)

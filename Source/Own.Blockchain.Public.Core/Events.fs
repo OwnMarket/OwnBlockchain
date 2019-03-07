@@ -4,7 +4,7 @@ open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 
 type AppEvent =
-    | PeerMessageReceived of PeerMessage
+    | PeerMessageReceived of PeerMessageEnvelope
     | TxSubmitted of TxHash
     | TxReceived of TxHash * TxEnvelopeDto
     | TxFetched of TxHash * TxEnvelopeDto

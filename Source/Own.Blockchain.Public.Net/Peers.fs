@@ -5,7 +5,7 @@ open Own.Blockchain.Public.Core.DomainTypes
 
 module Peers =
 
-    let mutable peerMessageDispatcher : MailboxProcessor<PeerMessage> option = None
+    let mutable peerMessageDispatcher : MailboxProcessor<PeerMessageEnvelope> option = None
     let invokeSendPeerMessage m =
         match peerMessageDispatcher with
         | Some h -> h.Post m
@@ -17,7 +17,7 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "RequestFromPeer agent is not started."
 
-    let mutable respondToPeerDispatcher : MailboxProcessor<PeerNetworkIdentity * PeerMessage> option = None
+    let mutable respondToPeerDispatcher : MailboxProcessor<PeerNetworkIdentity * PeerMessageEnvelope> option = None
     let invokeRespondToPeer m =
         match respondToPeerDispatcher with
         | Some h -> h.Post m
@@ -28,9 +28,9 @@ module Peers =
             failwith "SendPeerMessage agent is already started."
 
         peerMessageDispatcher <-
-            Agent.start <| fun peerMessage ->
+            Agent.start <| fun peerMessageEnvelope ->
                 async {
-                    PeerMessageHandler.sendMessage peerMessage
+                    PeerMessageHandler.sendMessage peerMessageEnvelope
                 }
             |> Some
 
@@ -50,9 +50,9 @@ module Peers =
             failwith "RespondToPeer agent is already started."
 
         respondToPeerDispatcher <-
-            Agent.start <| fun (targetIdentity, peerMessage) ->
+            Agent.start <| fun (targetIdentity, peerMessageEnvelope) ->
                 async {
-                    PeerMessageHandler.respondToPeer targetIdentity peerMessage
+                    PeerMessageHandler.respondToPeer targetIdentity peerMessageEnvelope
                 }
             |> Some
 
@@ -62,8 +62,8 @@ module Peers =
 
     let discoverNetwork = PeerMessageHandler.discoverNetwork
 
-    let sendMessage peerMessage =
-        invokeSendPeerMessage peerMessage
+    let sendMessage peerMessageEnvelope =
+        invokeSendPeerMessage peerMessageEnvelope
 
     let requestFromPeer messageId =
         invokeRequestFromPeer messageId

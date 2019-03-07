@@ -17,7 +17,7 @@ module Transport =
     let private dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
     let private dealerMessageQueue = new NetMQQueue<string * NetMQMessage>()
     let private routerMessageQueue = new NetMQQueue<NetMQMessage>()
-    let mutable peerMessageHandler : (PeerMessageDto -> unit) option = None
+    let mutable peerMessageHandler : (PeerMessageEnvelopeDto -> unit) option = None
     let mutable identity : byte[] option = None
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -53,8 +53,8 @@ module Transport =
             extractMessageFromMultipart message
             |> Option.iter (fun msg ->
                 match unpackMessage msg with
-                | Ok peerMessage ->
-                    peerMessageHandler |> Option.iter (fun handler -> handler peerMessage)
+                | Ok peerMessageEnvelope ->
+                    peerMessageHandler |> Option.iter (fun handler -> handler peerMessageEnvelope)
                 | Error error -> Log.error error
             )
         else

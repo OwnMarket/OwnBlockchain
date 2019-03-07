@@ -3,6 +3,7 @@ namespace Own.Blockchain.Public.Net.Tests
 open System.Threading
 open System.Collections.Concurrent
 open Own.Common.FSharp
+open Own.Blockchain.Public.Crypto
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Net
 open Own.Blockchain.Public.Core.DomainTypes
@@ -27,14 +28,19 @@ module PeerTests =
     let setupTest () =
         testCleanup ()
 
+    let getNetworkId =
+        let networkCode = "OWN_PUBLIC_BLOCKCHAIN_TEST"
+        let networkId = lazy (Hashing.networkId networkCode)
+        fun () -> networkId.Value
+
     let sendMessage peerMessage (node : NetworkNode) =
         node.SendMessage peerMessage
 
     let requestFromPeer requestId (node : NetworkNode) =
         node.SendRequestDataMessage requestId
 
-    let respondToPeer (node : NetworkNode) targetAddress peerMessage =
-        node.SendResponseDataMessage targetAddress peerMessage
+    let respondToPeer (node : NetworkNode) targetAddress peerMessageEnvelope =
+        node.SendResponseDataMessage targetAddress peerMessageEnvelope
 
     let gossipTx (node : NetworkNode) txHash =
         let gossipMessage = GossipMessage {
@@ -42,37 +48,49 @@ module PeerTests =
             SenderAddress = None
             Data = "txEnvelope" |> Conversion.stringToBytes
         }
-
-        node |> sendMessage gossipMessage
+        let peerMessageEnvelope = {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage = gossipMessage
+        }
+        node |> sendMessage peerMessageEnvelope
 
     let multicastTx (node : NetworkNode) txHash =
         let multicastMessage = MulticastMessage {
             MessageId = Tx txHash
             Data = "txEnvelope" |> Conversion.stringToBytes
         }
-
-        node |> sendMessage multicastMessage
+        let peerMessageEnvelope = {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage = multicastMessage
+        }
+        node |> sendMessage peerMessageEnvelope
 
     let requestTx (node : NetworkNode) txHash =
         node |> requestFromPeer (Tx txHash)
 
     let gossipBlock (node : NetworkNode) blockNr =
-        let peerMessage = GossipMessage {
+        let gossipMessage = GossipMessage {
             MessageId = Block blockNr
             SenderAddress = None
             Data = "blockEnvelope" |> Conversion.stringToBytes
         }
-
-        node |> sendMessage peerMessage
+        let peerMessageEnvelope = {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage = gossipMessage
+        }
+        node |> sendMessage peerMessageEnvelope
 
     let multicastBlock (node : NetworkNode) blockNr =
-        let peerMessage = GossipMessage {
+        let gossipMessage = GossipMessage {
             MessageId = Block blockNr
             SenderAddress = None
             Data = "blockEnvelope" |> Conversion.stringToBytes
         }
-
-        node |> sendMessage peerMessage
+        let peerMessageEnvelope = {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage = gossipMessage
+        }
+        node |> sendMessage peerMessageEnvelope
 
     let requestBlock (node : NetworkNode) blockNr =
         node |> requestFromPeer (Block blockNr)
@@ -83,7 +101,8 @@ module PeerTests =
     let private blockPropagator node blockNumber =
         gossipBlock node blockNumber
 
-    let private peerMessageHandlers = new ConcurrentDictionary<NetworkAddress, MailboxProcessor<PeerMessage> option>()
+    let private peerMessageHandlers =
+        new ConcurrentDictionary<NetworkAddress, MailboxProcessor<PeerMessageEnvelope> option>()
     let private invokePeerMessageHandler (node : NetworkNode) m =
         let found, peerMessageHandler = peerMessageHandlers.TryGetValue (node.GetListenAddress())
         if found then
@@ -136,6 +155,7 @@ module PeerTests =
                         WorkflowsMock.processPeerMessage
                             (node.GetListenAddress())
                             (respondToPeer node)
+                            getNetworkId
                             peerMessage
                         |> Option.iter (
                             Result.handle
@@ -204,6 +224,7 @@ module PeerTests =
             let getValidators = DbMock.getValidators nodeConfig.ListeningAddress
 
             NetworkNode (
+                getNetworkId,
                 getAllPeerNodes,
                 savePeerNode,
                 removePeerNode,

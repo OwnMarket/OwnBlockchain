@@ -892,7 +892,7 @@ module Mapping =
             Data = responseDataMessage.Data
         }
 
-    let peerMessageFromDto (dto : PeerMessageDto) =
+    let private peerMessageFromDto (dto : PeerMessageDto) =
         match dto.MessageData with
         | :? GossipDiscoveryMessageDto as m ->
             gossipDiscoveryMessageFromDto m |> GossipDiscoveryMessage
@@ -906,7 +906,7 @@ module Mapping =
             responseDataMessageFromDto m |> ResponseDataMessage
         | _ -> failwith "Invalid message type to map."
 
-    let peerMessageToDto (serialize : (obj -> byte[])) (peerMessage : PeerMessage) : PeerMessageDto =
+    let private peerMessageToDto (serialize : obj -> byte[]) peerMessage : PeerMessageDto =
         let messageType, data =
             match peerMessage with
             | GossipDiscoveryMessage m -> "GossipDiscoveryMessage", m |> gossipDiscoveryMessageToDto |> serialize
@@ -918,4 +918,17 @@ module Mapping =
         {
             MessageType = messageType
             MessageData = data
+        }
+
+    let peerMessageEnvelopeFromDto (dto: PeerMessageEnvelopeDto) =
+        {
+            PeerMessageEnvelope.NetworkId = NetworkId dto.NetworkId
+            PeerMessage = peerMessageFromDto dto.PeerMessage
+        }
+
+    let peerMessageEnvelopeToDto (serialize : obj -> byte[]) (peerMessageEnvelope : PeerMessageEnvelope) =
+        {
+            NetworkId = peerMessageEnvelope.NetworkId.Value
+            ProtocolVersion = 0s
+            PeerMessage = peerMessageToDto serialize peerMessageEnvelope.PeerMessage
         }
