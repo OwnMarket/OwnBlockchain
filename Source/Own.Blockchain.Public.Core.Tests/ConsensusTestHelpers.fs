@@ -155,6 +155,9 @@ module ConsensusTestHelpers =
                 let sendConsensusMessage =
                     __.SendConsensusMessage validatorAddress
 
+                let sendConsensusState =
+                    __.SendConsensusState validatorAddress
+
                 let publishEvent event =
                     _events.Add event
 
@@ -188,6 +191,7 @@ module ConsensusTestHelpers =
                         requestEquivocationProof,
                         isValidBlock,
                         sendConsensusMessage,
+                        sendConsensusState,
                         publishEvent,
                         scheduleMessage,
                         schedulePropose,
@@ -215,6 +219,9 @@ module ConsensusTestHelpers =
                     Signature = Signature validatorAddress.Value // Just for testing convenience.
                 }
             )
+
+        member private __.SendConsensusState validatorAddress recipientValidatorAddress state =
+            () // TODO: Implement
 
         member __.DeliverMessages(?filter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool) =
             let messages = _messages |> Seq.toList

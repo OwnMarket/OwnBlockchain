@@ -153,6 +153,8 @@ module Agents =
                     blockNumber.Value
                     consensusRound.Value
                     (unionCaseName consensusStep)
+            | StateRequested request ->
+                sprintf "StateRequested %s" request.ValidatorAddress.Value
             |> formatMessage
             |> Log.info
         | PeerListReceived peerList ->

@@ -24,6 +24,7 @@ module Consensus =
         requestEquivocationProof : EquivocationProofHash -> unit,
         isValidBlock : Block -> bool,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
+        sendConsensusState : BlockchainAddress -> ConsensusStateResponse -> unit,
         publishEvent : AppEvent -> unit,
         scheduleMessage : int -> BlockchainAddress * ConsensusMessageEnvelope -> unit,
         schedulePropose : int -> BlockNumber * ConsensusRound -> unit,
@@ -77,6 +78,8 @@ module Consensus =
                 | ConsensusStep.Propose -> __.OnTimeoutPropose(blockNumber, consensusRound)
                 | ConsensusStep.Vote -> __.OnTimeoutVote(blockNumber, consensusRound)
                 | ConsensusStep.Commit -> __.OnTimeoutCommit(blockNumber, consensusRound)
+            | StateRequested stateRequest ->
+                __.SendState(stateRequest.ValidatorAddress)
 
         member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope) =
             if isValidatorBlacklisted (senderAddress, _blockNumber, envelope.BlockNumber) then
@@ -434,7 +437,7 @@ module Consensus =
                 __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
 
-        member private __.SendState() =
+        member private __.SendState(requestValidatorAddress) =
             let key = _blockNumber, _round, validatorAddress
             {
                 ConsensusStateResponse.ProposeMessage =
@@ -469,7 +472,7 @@ module Consensus =
                     | _ -> None
                 LockedBlockSignatures = _lockedBlockSignatures
             }
-            |> ignore // TODO: Call the actual sendout function once implemented
+            |> sendConsensusState requestValidatorAddress
 
         member private __.SaveBlock(block, consensusRound) =
             let signatures =
@@ -756,6 +759,9 @@ module Consensus =
                 failwith "persistConsensusState FAILED"
             )
 
+        let sendConsensusState requestValidatorAddress state =
+            () // TODO: Implement
+
         let sendConsensusMessage blockNumber consensusRound consensusMessage =
             if canParticipateInConsensus blockNumber = Some true then
                 let consensusMessageHash =
@@ -888,6 +894,7 @@ module Consensus =
             requestEquivocationProof,
             isValidBlock,
             sendConsensusMessage,
+            sendConsensusState,
             publishEvent,
             scheduleMessage,
             schedulePropose,

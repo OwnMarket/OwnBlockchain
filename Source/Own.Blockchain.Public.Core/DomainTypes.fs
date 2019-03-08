@@ -455,6 +455,7 @@ type ConsensusCommand =
     | Message of BlockchainAddress * ConsensusMessageEnvelope
     | RetryPropose of BlockNumber * ConsensusRound
     | Timeout of BlockNumber * ConsensusRound * ConsensusStep
+    | StateRequested of ConsensusStateRequest
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
 
