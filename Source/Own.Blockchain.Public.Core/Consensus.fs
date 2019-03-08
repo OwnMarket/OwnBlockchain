@@ -83,6 +83,8 @@ module Consensus =
                 | ConsensusStep.Commit -> __.OnTimeoutCommit(blockNumber, consensusRound)
             | StateRequested stateRequest ->
                 __.SendState(stateRequest.ValidatorAddress)
+            | StateReceived stateResponse ->
+                __.ApplyReceivedState(stateResponse)
 
         member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope) =
             if isValidatorBlacklisted (senderAddress, _blockNumber, envelope.BlockNumber) then
@@ -439,6 +441,9 @@ module Consensus =
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
                 __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
+
+        member private __.ApplyReceivedState(stateResponse) =
+            ()
 
         member private __.SendState(requestValidatorAddress) =
             let key = _blockNumber, _round, validatorAddress

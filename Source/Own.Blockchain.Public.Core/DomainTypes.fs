@@ -456,6 +456,7 @@ type ConsensusCommand =
     | RetryPropose of BlockNumber * ConsensusRound
     | Timeout of BlockNumber * ConsensusRound * ConsensusStep
     | StateRequested of ConsensusStateRequest
+    | StateReceived of ConsensusStateResponse
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
 

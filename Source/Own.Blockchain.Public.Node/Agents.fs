@@ -155,6 +155,8 @@ module Agents =
                     (unionCaseName consensusStep)
             | StateRequested request ->
                 sprintf "StateRequested %s" request.ValidatorAddress.Value
+            | StateReceived response ->
+                sprintf "StateReceived %A" response
             |> formatMessage
             |> Log.info
         | PeerListReceived peerList ->
