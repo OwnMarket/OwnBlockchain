@@ -16,11 +16,11 @@ type AppEvent =
     | BlockCompleted of BlockNumber // Block is completed (all Txs fetched) and ready to be applied.
     | BlockApplied of BlockNumber
     | ConsensusMessageReceived of ConsensusCommand
+    | ConsensusStateRequestReceived of ConsensusStateRequestDto * PeerNetworkIdentity
+    | ConsensusStateResponseReceived of ConsensusStateResponseDto
     | ConsensusCommandInvoked of ConsensusCommand
     | EquivocationProofDetected of EquivocationProofDto * BlockchainAddress
     | EquivocationProofReceived of EquivocationProofDto
     | EquivocationProofFetched of EquivocationProofDto
     | EquivocationProofStored of EquivocationProofHash * isFetched : bool
     | PeerListReceived of GossipMember list
-    | ConsensusStateRequestReceived of ConsensusStateRequestDto * PeerNetworkIdentity
-    | ConsensusStateResponseReceived of ConsensusStateResponseDto

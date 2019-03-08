@@ -159,13 +159,6 @@ module Agents =
                 sprintf "StateReceived %A" response
             |> formatMessage
             |> Log.info
-        | PeerListReceived peerList ->
-            Log.verbose "PeerListReceived"
-            Log.verbose "============================================================"
-            peerList
-            |> List.map Mapping.gossipMemberToDto
-            |> List.iter (fun m -> Log.verbosef "%s Heartbeat:%i" m.NetworkAddress m.Heartbeat)
-            Log.verbose "============================================================"
         | ConsensusStateRequestReceived (request, _) ->
             sprintf "ConsensusStateRequest from Validator %s" request.ValidatorAddress
             |> formatMessage
@@ -174,6 +167,13 @@ module Agents =
             sprintf "ConsensusStateResponseReceived"
             |> formatMessage
             |> Log.debug
+        | PeerListReceived peerList ->
+            Log.verbose "PeerListReceived"
+            Log.verbose "============================================================"
+            peerList
+            |> List.map Mapping.gossipMemberToDto
+            |> List.iter (fun m -> Log.verbosef "%s Heartbeat:%i" m.NetworkAddress m.Heartbeat)
+            Log.verbose "============================================================"
 
     let publishEvent event =
         logEvent event
@@ -181,8 +181,6 @@ module Agents =
         match event with
         | PeerMessageReceived message ->
             invokePeerMessageHandler message
-        | PeerListReceived peerList ->
-            invokeUpdatePeerListHandler peerList
         | TxSubmitted txHash ->
             invokeApplier ()
             txPropagator.Post txHash
@@ -225,6 +223,8 @@ module Agents =
             () // TODO:
         | ConsensusStateResponseReceived response ->
             () // TODO:
+        | PeerListReceived peerList ->
+            invokeUpdatePeerListHandler peerList
 
     let private startPeerMessageHandler () =
         if peerMessageHandler <> None then

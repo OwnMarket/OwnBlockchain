@@ -137,6 +137,10 @@ module PeerTests =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             ()
+        | ConsensusStateRequestReceived _ ->
+            ()
+        | ConsensusStateResponseReceived _ ->
+            ()
         | EquivocationProofDetected (proof, validatorAddress) ->
             ()
         | EquivocationProofReceived proof
@@ -146,10 +150,6 @@ module PeerTests =
             ()
         | PeerListReceived peerList ->
             () // TODO: fix this
-        | ConsensusStateRequestReceived _ ->
-            ()
-        | ConsensusStateResponseReceived _ ->
-            ()
 
     let private startPeerMessageHandler (node : NetworkNode) =
         let found, _ = peerMessageHandlers.TryGetValue (node.GetListenAddress())
