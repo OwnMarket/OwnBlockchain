@@ -443,7 +443,7 @@ type ConsensusStateResponse = {
     ProposeMessage : ConsensusMessageEnvelope option
     VoteMessage : ConsensusMessageEnvelope option
     CommitMessage : ConsensusMessageEnvelope option
-    LockedBlockSignatures : string list
+    LockedBlockSignatures : Signature list
 }
 
 type ConsensusCommand =
