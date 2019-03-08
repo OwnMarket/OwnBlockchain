@@ -16,9 +16,9 @@ type AppEvent =
     | BlockCompleted of BlockNumber // Block is completed (all Txs fetched) and ready to be applied.
     | BlockApplied of BlockNumber
     | ConsensusMessageReceived of ConsensusCommand
+    | ConsensusCommandInvoked of ConsensusCommand
     | ConsensusStateRequestReceived of ConsensusStateRequestDto * PeerNetworkIdentity
     | ConsensusStateResponseReceived of ConsensusStateResponseDto
-    | ConsensusCommandInvoked of ConsensusCommand
     | EquivocationProofDetected of EquivocationProofDto * BlockchainAddress
     | EquivocationProofReceived of EquivocationProofDto
     | EquivocationProofFetched of EquivocationProofDto
