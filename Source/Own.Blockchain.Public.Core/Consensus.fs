@@ -59,12 +59,14 @@ module Consensus =
 
         member __.StartConsensus() =
             __.RestoreState()
+
             if _blockNumber > BlockNumber 0L && _step = ConsensusStep.Propose then
                 if Validators.getProposer _blockNumber _round _validators <> validatorAddress
                     || not (_proposals.ContainsKey(_blockNumber, _round, validatorAddress))
                 then
                     __.StartRound(_round)
                 scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
+
             __.Synchronize()
             __.UpdateState()
 
@@ -124,6 +126,10 @@ module Consensus =
                     else
                         __.DetectEquivocation(envelope, senderAddress)
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // State Management
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
         member private __.PersistState() =
             {
                 ConsensusStateInfo.BlockNumber = _blockNumber
@@ -162,6 +168,46 @@ module Consensus =
             )
 
             __.SetValidators(_blockNumber - 1)
+
+        member private __.ApplyReceivedState(stateResponse) =
+            ()
+
+        member private __.SendState(requestValidatorAddress) =
+            let key = _blockNumber, _round, validatorAddress
+            {
+                ConsensusStateResponse.ProposeMessage =
+                    match _proposals.TryGetValue(key) with
+                    | true, (b, vr, s) ->
+                        Some {
+                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                            Round = _round
+                            ConsensusMessage = Propose (b, vr)
+                            Signature = s
+                        }
+                    | _ -> None
+                VoteMessage =
+                    match _votes.TryGetValue(key) with
+                    | true, (bh, s) ->
+                        Some {
+                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                            Round = _round
+                            ConsensusMessage = Vote bh
+                            Signature = s
+                        }
+                    | _ -> None
+                CommitMessage =
+                    match _votes.TryGetValue(key) with
+                    | true, (bh, s) ->
+                        Some {
+                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                            Round = _round
+                            ConsensusMessage = Commit bh
+                            Signature = s
+                        }
+                    | _ -> None
+                LockedBlockSignatures = _lockedBlockSignatures
+            }
+            |> sendConsensusState requestValidatorAddress
 
         member private __.Synchronize() =
             let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -441,46 +487,6 @@ module Consensus =
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
                 __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
-
-        member private __.ApplyReceivedState(stateResponse) =
-            ()
-
-        member private __.SendState(requestValidatorAddress) =
-            let key = _blockNumber, _round, validatorAddress
-            {
-                ConsensusStateResponse.ProposeMessage =
-                    match _proposals.TryGetValue(key) with
-                    | true, (b, vr, s) ->
-                        Some {
-                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                            Round = _round
-                            ConsensusMessage = Propose (b, vr)
-                            Signature = s
-                        }
-                    | _ -> None
-                VoteMessage =
-                    match _votes.TryGetValue(key) with
-                    | true, (bh, s) ->
-                        Some {
-                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                            Round = _round
-                            ConsensusMessage = Vote bh
-                            Signature = s
-                        }
-                    | _ -> None
-                CommitMessage =
-                    match _votes.TryGetValue(key) with
-                    | true, (bh, s) ->
-                        Some {
-                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                            Round = _round
-                            ConsensusMessage = Commit bh
-                            Signature = s
-                        }
-                    | _ -> None
-                LockedBlockSignatures = _lockedBlockSignatures
-            }
-            |> sendConsensusState requestValidatorAddress
 
         member private __.SaveBlock(block, consensusRound) =
             let signatures =
