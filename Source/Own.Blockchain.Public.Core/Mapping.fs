@@ -772,6 +772,32 @@ module Mapping =
             Signature = envelope.Signature.Value
         }
 
+    let consensusStateResponseFromDto (dto : ConsensusStateResponseDto) : ConsensusStateResponse =
+        let mapMessage m =
+            if isNull (box m) then
+                None
+            else
+                m |> consensusMessageEnvelopeFromDto |> Some
+
+        {
+            ConsensusStateResponse.ProposeMessage = dto.ProposeMessage |> mapMessage
+            VoteMessage = dto.VoteMessage |> mapMessage
+            CommitMessage = dto.CommitMessage |> mapMessage
+            LockedBlockSignatures = dto.LockedBlockSignatures |> List.map Signature
+        }
+
+    let consensusStateResponseToDto (response : ConsensusStateResponse) : ConsensusStateResponseDto =
+        let mapMessage = function
+            | None -> Unchecked.defaultof<_>
+            | Some e -> consensusMessageEnvelopeToDto e
+
+        {
+            ConsensusStateResponseDto.ProposeMessage = response.ProposeMessage |> mapMessage
+            VoteMessage = response.VoteMessage |> mapMessage
+            CommitMessage = response.CommitMessage |> mapMessage
+            LockedBlockSignatures = response.LockedBlockSignatures |> List.map (fun s -> s.Value)
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
