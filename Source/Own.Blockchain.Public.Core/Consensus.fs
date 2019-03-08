@@ -70,9 +70,12 @@ module Consensus =
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             match command with
-            | Synchronize -> __.Synchronize()
-            | Message (senderAddress, envelope) -> __.ProcessConsensusMessage (senderAddress, envelope)
-            | RetryPropose (blockNumber, consensusRound) -> __.RetryPropose(blockNumber, consensusRound)
+            | Synchronize ->
+                __.Synchronize()
+            | Message (senderAddress, envelope) ->
+                __.ProcessConsensusMessage(senderAddress, envelope)
+            | RetryPropose (blockNumber, consensusRound) ->
+                __.RetryPropose(blockNumber, consensusRound)
             | Timeout (blockNumber, consensusRound, consensusStep) ->
                 match consensusStep with
                 | ConsensusStep.Propose -> __.OnTimeoutPropose(blockNumber, consensusRound)
