@@ -772,6 +772,16 @@ module Mapping =
             Signature = envelope.Signature.Value
         }
 
+    let consensusStateRequestFromDto (dto : ConsensusStateRequestDto) : ConsensusStateRequest =
+        {
+            ConsensusStateRequest.ValidatorAddress = dto.ValidatorAddress |> BlockchainAddress
+        }
+
+    let consensusStateRequestToDto (request : ConsensusStateRequest) : ConsensusStateRequestDto =
+        {
+            ConsensusStateRequestDto.ValidatorAddress = request.ValidatorAddress.Value
+        }
+
     let consensusStateResponseFromDto (dto : ConsensusStateResponseDto) : ConsensusStateResponse =
         let mapMessage m =
             if isNull (box m) then

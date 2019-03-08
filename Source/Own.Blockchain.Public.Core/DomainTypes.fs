@@ -439,6 +439,10 @@ type ConsensusStateInfo = {
     ValidRound : ConsensusRound
 }
 
+type ConsensusStateRequest = {
+    ValidatorAddress : BlockchainAddress
+}
+
 type ConsensusStateResponse = {
     ProposeMessage : ConsensusMessageEnvelope option
     VoteMessage : ConsensusMessageEnvelope option

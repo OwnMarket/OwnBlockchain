@@ -285,6 +285,11 @@ type ConsensusStateInfoDto = {
 }
 
 [<MessagePackObject>]
+type ConsensusStateRequestDto = {
+    [<Key(0)>] ValidatorAddress : string
+}
+
+[<MessagePackObject>]
 type ConsensusStateResponseDto = {
     [<Key(0)>] ProposeMessage : ConsensusMessageEnvelopeDto
     [<Key(1)>] VoteMessage : ConsensusMessageEnvelopeDto
