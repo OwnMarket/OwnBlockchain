@@ -162,6 +162,15 @@ type NetworkNode
     // Public
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    member __.GetListenAddress () =
+        nodeConfig.ListeningAddress
+
+    member __.GetPublicAddress () =
+        nodeConfig.PublicAddress
+
+    member __.Identity =
+        nodeConfig.Identity
+
     member __.StartGossip publishEvent =
         let networkId = getNetworkId ()
         initTransport
@@ -207,12 +216,6 @@ type NetworkNode
         |> List.truncate take
         |> List.append existingMembers
         |> __.MergeMemberList
-
-    member __.GetListenAddress () =
-        nodeConfig.ListeningAddress
-
-    member __.GetPublicAddress () =
-        nodeConfig.PublicAddress
 
     member __.SendMessage message =
         let sendMessageTask =

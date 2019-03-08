@@ -483,6 +483,7 @@ type NetworkMessageId =
     | EquivocationProof of EquivocationProofHash
     | Block of BlockNumber
     | Consensus of ConsensusMessageId
+    | ConsensusState
     | PeerList
 
 type NetworkNodeConfig = {
@@ -517,6 +518,7 @@ type GossipMessage = {
 
 type MulticastMessage = {
     MessageId : NetworkMessageId
+    SenderIdentity : PeerNetworkIdentity option
     Data : byte[]
 }
 

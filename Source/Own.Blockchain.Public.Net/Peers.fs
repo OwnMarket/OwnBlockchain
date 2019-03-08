@@ -83,6 +83,8 @@ module Peers =
     let respondToPeer targetIdentity peerMessage =
         invokeRespondToPeer (targetIdentity, peerMessage)
 
+    let getIdentity () = PeerMessageHandler.getIdentity ()
+
     let getPeerList () = PeerMessageHandler.getPeerList ()
 
     let updatePeerList = PeerMessageHandler.updatePeerList

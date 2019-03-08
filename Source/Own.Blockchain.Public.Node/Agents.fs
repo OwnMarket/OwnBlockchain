@@ -166,6 +166,14 @@ module Agents =
             |> List.map Mapping.gossipMemberToDto
             |> List.iter (fun m -> Log.verbosef "%s Heartbeat:%i" m.NetworkAddress m.Heartbeat)
             Log.verbose "============================================================"
+        | ConsensusStateRequestReceived (request, _) ->
+            sprintf "ConsensusStateRequest from Validator %s" request.ValidatorAddress
+            |> formatMessage
+            |> Log.debug
+        | ConsensusStateResponseReceived response ->
+            sprintf "ConsensusStateResponseReceived"
+            |> formatMessage
+            |> Log.debug
 
     let publishEvent event =
         logEvent event
@@ -213,6 +221,10 @@ module Agents =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             invokeValidator c
+        | ConsensusStateRequestReceived (request, senderIdentity) ->
+            () // TODO:
+        | ConsensusStateResponseReceived response ->
+            () // TODO:
 
     let private startPeerMessageHandler () =
         if peerMessageHandler <> None then

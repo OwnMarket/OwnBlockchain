@@ -421,6 +421,20 @@ module Composition =
             saveEquivocationProof
             saveEquivocationProofToDb
 
+    let requestConsensusState () =
+        Workflows.requestConsensusState
+            (PrivateKey Config.ValidatorPrivateKey)
+            getNetworkId
+            Peers.getIdentity
+            Peers.sendMessage
+            isValidator
+            addressFromPrivateKey
+
+    let sendConsensusState =
+        Workflows.sendConsensusState
+            getNetworkId
+            Peers.respondToPeer
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////

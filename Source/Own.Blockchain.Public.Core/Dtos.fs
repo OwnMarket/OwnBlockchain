@@ -529,7 +529,8 @@ type GossipMessageDto = {
 type MulticastMessageDto = {
     [<Key(0)>] MessageType : string
     [<Key(1)>] MessageId : string
-    [<Key(2)>] Data : byte[]
+    [<Key(2)>] SenderIdentity : byte[]
+    [<Key(3)>] Data : byte[]
 }
 
 [<CLIMutable>]

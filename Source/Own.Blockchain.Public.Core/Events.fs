@@ -22,3 +22,5 @@ type AppEvent =
     | EquivocationProofFetched of EquivocationProofDto
     | EquivocationProofStored of EquivocationProofHash * isFetched : bool
     | PeerListReceived of GossipMember list
+    | ConsensusStateRequestReceived of ConsensusStateRequestDto * PeerNetworkIdentity
+    | ConsensusStateResponseReceived of ConsensusStateResponseDto

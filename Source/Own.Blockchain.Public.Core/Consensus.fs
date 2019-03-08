@@ -814,6 +814,7 @@ module Consensus =
                                 sprintf "Consensus_%s" consensusMessageHash
                                 |> ConsensusMessageId
                                 |> NetworkMessageId.Consensus
+                            SenderIdentity = None
                             Data =
                                 consensusMessageEnvelope
                                 |> Mapping.consensusMessageEnvelopeToDto

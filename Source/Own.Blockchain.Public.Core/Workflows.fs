@@ -930,6 +930,60 @@ module Workflows =
             |> sendMessageToPeers
         | _ -> Log.errorf "Block %i does not exist." blockNumber.Value
 
+    let requestConsensusState
+        validatorPrivateKey
+        getNetworkId
+        getIdentity
+        sendMessageToPeers
+        isValidator
+        addressFromPrivateKey
+        =
+
+        let validatorAddress = addressFromPrivateKey validatorPrivateKey
+        if not (isValidator validatorAddress) then
+            Result.appError "Only validators are allowed to request consensus state"
+        else
+            let consensusStateRequest = {
+                ConsensusStateRequest.ValidatorAddress = validatorAddress
+            }
+
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage =
+                    {
+                        MulticastMessage.MessageId = NetworkMessageId.ConsensusState
+                        SenderIdentity = getIdentity () |> Some
+                        Data =
+                            consensusStateRequest
+                            |> Mapping.consensusStateRequestToDto
+                            |> Serialization.serializeBinary
+                    }
+                    |> MulticastMessage
+            }
+            |> sendMessageToPeers
+            |> Ok
+
+    let sendConsensusState
+        getNetworkId
+        respondToPeer
+        consensusStateResponse
+        targetIdentity
+        =
+
+        {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage =
+                {
+                    ResponseDataMessage.MessageId = NetworkMessageId.ConsensusState
+                    Data =
+                        consensusStateResponse
+                        |> Mapping.consensusStateResponseToDto
+                        |> Serialization.serializeBinary
+                }
+                |> ResponseDataMessage
+        }
+        |> respondToPeer targetIdentity
+
     let processPeerMessage
         getTx
         getEquivocationProof
@@ -981,11 +1035,25 @@ module Workflows =
                         |> Some
             }
 
-        let processConsensusMessageFromPeer consensusMessageId data =
+        let processConsensusMessageFromPeer data =
             data
             |> Serialization.deserializeBinary<ConsensusMessageEnvelopeDto>
             |> handleReceivedConsensusMessage
             |> Result.map (ConsensusMessageReceived >> Some)
+
+        let processConsensusStateFromPeer isResponse senderIdentity data =
+            if isResponse then
+                data
+                |> Serialization.deserializeBinary<ConsensusStateResponseDto>
+                |> (ConsensusStateResponseReceived >> Some >> Ok)
+            else
+                match senderIdentity with
+                | None -> failwith "SenderIdentity is missing from ConsensusStateRequest"
+                | Some identity ->
+                    data
+                    |> Serialization.deserializeBinary<ConsensusStateRequestDto>
+                    |> fun request -> request, identity
+                    |> (ConsensusStateRequestReceived >> Some >> Ok)
 
         let processPeerListMessageFromPeer data =
             data
@@ -993,21 +1061,18 @@ module Workflows =
             |> fun m ->
                 m.ActiveMembers
                 |> List.map Mapping.gossipMemberFromDto
-                |> fun peerList ->
-                    peerList
-                    |> PeerListReceived
-                    |> Some
-                    |> Ok
+                |> (PeerListReceived >> Some >> Ok)
 
-        let processData isResponse messageId (data : byte[]) =
+        let processDataMessage isResponse messageId (senderIdentity : PeerNetworkIdentity option) (data : byte[]) =
             match messageId with
             | Tx txHash -> processTxFromPeer isResponse txHash data
             | EquivocationProof proofHash -> processEquivocationProofFromPeer isResponse proofHash data
             | Block blockNr -> processBlockFromPeer isResponse blockNr data
-            | Consensus consensusMessageId -> processConsensusMessageFromPeer consensusMessageId data
+            | Consensus _ -> processConsensusMessageFromPeer data
+            | ConsensusState -> processConsensusStateFromPeer isResponse senderIdentity data
             | PeerList -> processPeerListMessageFromPeer data
 
-        let processRequest messageId senderIdentity =
+        let processRequestMessage messageId senderIdentity =
             match messageId with
             | Tx txHash ->
                 match getTx txHash with
@@ -1064,6 +1129,7 @@ module Workflows =
                 | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
 
             | Consensus _ -> Result.appError ("Cannot request consensus message from Peer")
+            | ConsensusState -> Result.appError ("Cannot request consensus state from Peer")
             | PeerList ->
                 {
                     PeerMessageEnvelope.NetworkId = getNetworkId ()
@@ -1085,10 +1151,10 @@ module Workflows =
 
         match peerMessageEnvelope.PeerMessage with
         | GossipDiscoveryMessage _ -> None
-        | GossipMessage m -> processData false m.MessageId m.Data |> Some
-        | MulticastMessage m -> processData false m.MessageId m.Data |> Some
-        | RequestDataMessage m -> processRequest m.MessageId m.SenderIdentity |> Some
-        | ResponseDataMessage m -> processData true m.MessageId m.Data |> Some
+        | GossipMessage m -> processDataMessage false m.MessageId None m.Data |> Some
+        | MulticastMessage m -> processDataMessage false m.MessageId m.SenderIdentity m.Data |> Some
+        | RequestDataMessage m -> processRequestMessage m.MessageId m.SenderIdentity |> Some
+        | ResponseDataMessage m -> processDataMessage true m.MessageId None m.Data |> Some
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API

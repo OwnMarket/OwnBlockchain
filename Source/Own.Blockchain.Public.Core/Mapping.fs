@@ -818,6 +818,7 @@ module Mapping =
         | EquivocationProof (EquivocationProofHash proofHash) -> "EquivocationProof", proofHash
         | Block (BlockNumber blockNr) -> "Block", blockNr |> Convert.ToString
         | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId
+        | ConsensusState -> "ConsensusState", ""
         | PeerList -> "PeerList", ""
 
     let private messageTypeToNetworkMessageId (messageType : string) (messageId : string) =
@@ -826,6 +827,7 @@ module Mapping =
         | "EquivocationProof" -> messageId |> EquivocationProofHash |> EquivocationProof
         | "Block" -> messageId |> Convert.ToInt64 |> BlockNumber |> Block
         | "Consensus" -> messageId |> ConsensusMessageId |> Consensus
+        | "ConsensusState" -> ConsensusState
         | "PeerList" -> PeerList
         | _ -> failwithf "Invalid network message type %s" messageType
 
@@ -882,6 +884,11 @@ module Mapping =
 
         {
             MessageId = multicastMessageId
+            SenderIdentity =
+                if isNull (box dto.SenderIdentity) then
+                    None
+                else
+                    dto.SenderIdentity |> PeerNetworkIdentity |> Some
             Data = dto.Data
         }
 
@@ -891,6 +898,10 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
+            SenderIdentity =
+                match multicastMessage.SenderIdentity with
+                | None -> Unchecked.defaultof<_>
+                | Some id -> id.Value
             Data = multicastMessage.Data
         }
 

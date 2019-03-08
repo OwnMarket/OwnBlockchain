@@ -57,6 +57,7 @@ module PeerTests =
     let multicastTx (node : NetworkNode) txHash =
         let multicastMessage = MulticastMessage {
             MessageId = Tx txHash
+            SenderIdentity = None
             Data = "txEnvelope" |> Conversion.stringToBytes
         }
         let peerMessageEnvelope = {
@@ -145,6 +146,10 @@ module PeerTests =
             ()
         | PeerListReceived peerList ->
             () // TODO: fix this
+        | ConsensusStateRequestReceived _ ->
+            ()
+        | ConsensusStateResponseReceived _ ->
+            ()
 
     let private startPeerMessageHandler (node : NetworkNode) =
         let found, _ = peerMessageHandlers.TryGetValue (node.GetListenAddress())
