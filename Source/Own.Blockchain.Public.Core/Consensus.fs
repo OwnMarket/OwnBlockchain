@@ -49,9 +49,12 @@ module Consensus =
         let mutable _lockedRound = ConsensusRound -1
         let mutable _validBlock = None
         let mutable _validRound = ConsensusRound -1
-        let _proposals = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, Block * ConsensusRound>()
-        let _votes = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
-        let _commits = new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
+        let _proposals =
+            new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, Block * ConsensusRound * Signature>()
+        let _votes =
+            new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
+        let _commits =
+            new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
 
         member __.StartConsensus() =
             __.RestoreState()
@@ -95,7 +98,7 @@ module Consensus =
 
                     match missingTxs, missingEquivocationProofs with
                     | [], [] ->
-                        if _proposals.TryAdd(key, (block, vr)) then
+                        if _proposals.TryAdd(key, (block, vr, envelope.Signature)) then
                             __.UpdateState()
                     | _ ->
                         if _blockNumber = block.Header.Number then
@@ -145,7 +148,7 @@ module Consensus =
                 let key = envelope.BlockNumber, envelope.Round, validatorAddress
 
                 match envelope.ConsensusMessage with
-                | Propose (b, r) -> _proposals.Add(key, (b, r))
+                | Propose (b, r) -> _proposals.Add(key, (b, r, envelope.Signature))
                 | Vote h -> _votes.Add(key, (h, envelope.Signature))
                 | Commit h -> _commits.Add(key, (h, envelope.Signature))
             )
@@ -250,7 +253,7 @@ module Consensus =
         member private __.UpdateState() =
             // PROPOSE RULES
             __.GetProposal()
-            |> Option.iter (fun ((_, _, _), (block, vr)) ->
+            |> Option.iter (fun ((_, _, _), (block, vr, _)) ->
                 if _step = ConsensusStep.Propose then
                     _step <- ConsensusStep.Vote
                     if isValidBlock block && (_lockedRound = ConsensusRound -1 || _lockedBlock = Some block) then
@@ -275,7 +278,7 @@ module Consensus =
 
             if _step >= ConsensusStep.Vote then
                 __.GetProposal()
-                |> Option.iter (fun ((_, _, _), (block, _)) ->
+                |> Option.iter (fun ((_, _, _), (block, _, _)) ->
                     if __.MajorityVoted(_round, Some block.Header.Hash) && isValidBlock block then
                         _validBlock <- Some block
                         _validRound <- _round
@@ -299,7 +302,7 @@ module Consensus =
 
             if not (_decisions.ContainsKey _blockNumber) then
                 __.GetProposalCommittedByMajority()
-                |> Option.iter (fun ((blockNumber, r, _), (block, _)) ->
+                |> Option.iter (fun ((blockNumber, r, _), (block, _, _)) ->
                     if (*__.MajorityCommitted(r, Some block.Header.Hash) &&*) isValidBlock block then
                         _decisions.[blockNumber] <- block
                         __.SaveBlock(block, r)
@@ -332,7 +335,7 @@ module Consensus =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member private __.GetProposal()
-            : ((BlockNumber * ConsensusRound * BlockchainAddress) * (Block * ConsensusRound)) option
+            : ((BlockNumber * ConsensusRound * BlockchainAddress) * (Block * ConsensusRound * Signature)) option
             =
 
             let proposerAddress = Validators.getProposer _blockNumber _round _validators
@@ -345,12 +348,12 @@ module Consensus =
             |> Seq.tryHead
 
         member private __.GetProposalCommittedByMajority()
-            : ((BlockNumber * ConsensusRound * BlockchainAddress) * (Block * ConsensusRound)) option
+            : ((BlockNumber * ConsensusRound * BlockchainAddress) * (Block * ConsensusRound * Signature)) option
             =
 
             _proposals
             |> Seq.ofDict
-            |> Seq.filter (fun ((blockNumber, r, senderAddress), (block, _)) ->
+            |> Seq.filter (fun ((blockNumber, r, senderAddress), (block, _, _)) ->
                 blockNumber = _blockNumber
                 && senderAddress = Validators.getProposer _blockNumber r _validators
                 && __.MajorityCommitted(r, Some block.Header.Hash)
@@ -430,6 +433,43 @@ module Consensus =
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
                 __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
+
+        member private __.SendState() =
+            let key = _blockNumber, _round, validatorAddress
+            {
+                ConsensusStateResponse.ProposeMessage =
+                    match _proposals.TryGetValue(key) with
+                    | true, (b, vr, s) ->
+                        Some {
+                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                            Round = _round
+                            ConsensusMessage = Propose (b, vr)
+                            Signature = s
+                        }
+                    | _ -> None
+                VoteMessage =
+                    match _votes.TryGetValue(key) with
+                    | true, (bh, s) ->
+                        Some {
+                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                            Round = _round
+                            ConsensusMessage = Vote bh
+                            Signature = s
+                        }
+                    | _ -> None
+                CommitMessage =
+                    match _votes.TryGetValue(key) with
+                    | true, (bh, s) ->
+                        Some {
+                            ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                            Round = _round
+                            ConsensusMessage = Commit bh
+                            Signature = s
+                        }
+                    | _ -> None
+                LockedBlockSignatures = _lockedBlockSignatures
+            }
+            |> ignore // TODO: Call the actual sendout function once implemented
 
         member private __.SaveBlock(block, consensusRound) =
             let signatures =
