@@ -61,8 +61,8 @@ module WorkflowsMock =
                     None
                 else
                     Result.appError (sprintf "Error Block %A not found" blockNr) |> Some
-            | Consensus _ -> Result.appError ("Cannot request consensus message from Peer") |> Some
-            | ConsensusState _ -> Result.appError ("Cannot request consensus state from Peer")|> Some
+            | Consensus _ -> Result.appError "Cannot request consensus message from Peer" |> Some
+            | ConsensusState _ -> Result.appError "Cannot request consensus state from Peer" |> Some
             | PeerList -> None
 
         match peerMessageEnvelope.PeerMessage with

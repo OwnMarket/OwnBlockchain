@@ -1045,7 +1045,9 @@ module Workflows =
             if isResponse then
                 data
                 |> Serialization.deserializeBinary<ConsensusStateResponseDto>
-                |> (ConsensusStateResponseReceived >> Some >> Ok)
+                |> ConsensusStateResponseReceived
+                |> Some
+                |> Ok
             else
                 match senderIdentity with
                 | None -> failwith "SenderIdentity is missing from ConsensusStateRequest"
@@ -1053,7 +1055,9 @@ module Workflows =
                     data
                     |> Serialization.deserializeBinary<ConsensusStateRequestDto>
                     |> fun request -> request, identity
-                    |> (ConsensusStateRequestReceived >> Some >> Ok)
+                    |> ConsensusStateRequestReceived
+                    |> Some
+                    |> Ok
 
         let processPeerListMessageFromPeer data =
             data
@@ -1061,7 +1065,9 @@ module Workflows =
             |> fun m ->
                 m.ActiveMembers
                 |> List.map Mapping.gossipMemberFromDto
-                |> (PeerListReceived >> Some >> Ok)
+                |> PeerListReceived
+                |> Some
+                |> Ok
 
         let processDataMessage isResponse messageId (senderIdentity : PeerNetworkIdentity option) (data : byte[]) =
             match messageId with
@@ -1128,8 +1134,8 @@ module Workflows =
                     Ok None
                 | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
 
-            | Consensus _ -> Result.appError ("Cannot request consensus message from Peer")
-            | ConsensusState -> Result.appError ("Cannot request consensus state from Peer")
+            | Consensus _ -> Result.appError "Cannot request consensus message from Peer"
+            | ConsensusState -> Result.appError "Cannot request consensus state from Peer"
             | PeerList ->
                 {
                     PeerMessageEnvelope.NetworkId = getNetworkId ()
