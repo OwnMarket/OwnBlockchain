@@ -4,6 +4,7 @@ open Own.Blockchain.Common
 
 type NetworkId = NetworkId of byte[] // Unencoded hash of the network code.
 type NetworkAddress = NetworkAddress of string
+type PeerNetworkIdentity = PeerNetworkIdentity of byte[]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Wallet
@@ -455,7 +456,7 @@ type ConsensusCommand =
     | Message of BlockchainAddress * ConsensusMessageEnvelope
     | RetryPropose of BlockNumber * ConsensusRound
     | Timeout of BlockNumber * ConsensusRound * ConsensusStep
-    | StateRequested of ConsensusStateRequest
+    | StateRequested of ConsensusStateRequest * PeerNetworkIdentity
     | StateReceived of ConsensusStateResponse
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
@@ -475,8 +476,6 @@ type EquivocationProof = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type PeerNetworkIdentity = PeerNetworkIdentity of byte[]
 
 type NetworkMessageId =
     | Tx of TxHash

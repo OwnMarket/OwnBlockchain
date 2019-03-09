@@ -966,8 +966,8 @@ module Workflows =
     let sendConsensusState
         getNetworkId
         respondToPeer
-        consensusStateResponse
         targetIdentity
+        consensusStateResponse
         =
 
         {
@@ -1045,6 +1045,7 @@ module Workflows =
             if isResponse then
                 data
                 |> Serialization.deserializeBinary<ConsensusStateResponseDto>
+                |> Mapping.consensusStateResponseFromDto
                 |> ConsensusStateResponseReceived
                 |> Some
                 |> Ok
@@ -1054,7 +1055,7 @@ module Workflows =
                 | Some identity ->
                     data
                     |> Serialization.deserializeBinary<ConsensusStateRequestDto>
-                    |> fun request -> request, identity
+                    |> fun request -> Mapping.consensusStateRequestFromDto request, identity
                     |> ConsensusStateRequestReceived
                     |> Some
                     |> Ok

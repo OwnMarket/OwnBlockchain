@@ -153,14 +153,14 @@ module Agents =
                     blockNumber.Value
                     consensusRound.Value
                     (unionCaseName consensusStep)
-            | StateRequested request ->
+            | StateRequested (request, _) ->
                 sprintf "StateRequested %s" request.ValidatorAddress.Value
             | StateReceived response ->
                 sprintf "StateReceived %A" response
             |> formatMessage
             |> Log.info
         | ConsensusStateRequestReceived (request, _) ->
-            sprintf "ConsensusStateRequest from Validator %s" request.ValidatorAddress
+            sprintf "ConsensusStateRequest from Validator %s" request.ValidatorAddress.Value
             |> formatMessage
             |> Log.debug
         | ConsensusStateResponseReceived response ->
@@ -219,10 +219,12 @@ module Agents =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             invokeValidator c
-        | ConsensusStateRequestReceived (request, senderIdentity) ->
-            () // TODO:
-        | ConsensusStateResponseReceived response ->
-            () // TODO:
+        | ConsensusStateRequestReceived (request, peerIdentity) ->
+            ConsensusCommand.StateRequested (request, peerIdentity)
+            |> invokeValidator
+        | ConsensusStateResponseReceived state ->
+            ConsensusCommand.StateReceived state
+            |> invokeValidator
         | PeerListReceived peerList ->
             invokeUpdatePeerListHandler peerList
 

@@ -17,8 +17,8 @@ type AppEvent =
     | BlockApplied of BlockNumber
     | ConsensusMessageReceived of ConsensusCommand
     | ConsensusCommandInvoked of ConsensusCommand
-    | ConsensusStateRequestReceived of ConsensusStateRequestDto * PeerNetworkIdentity
-    | ConsensusStateResponseReceived of ConsensusStateResponseDto
+    | ConsensusStateRequestReceived of ConsensusStateRequest * PeerNetworkIdentity
+    | ConsensusStateResponseReceived of ConsensusStateResponse
     | EquivocationProofDetected of EquivocationProofDto * BlockchainAddress
     | EquivocationProofReceived of EquivocationProofDto
     | EquivocationProofFetched of EquivocationProofDto

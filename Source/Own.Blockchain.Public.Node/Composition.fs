@@ -373,6 +373,20 @@ module Composition =
         Workflows.restoreConsensusState
             getConsensusState
 
+    let requestConsensusState () =
+        Workflows.requestConsensusState
+            (PrivateKey Config.ValidatorPrivateKey)
+            getNetworkId
+            Peers.getIdentity
+            Peers.sendMessage
+            isValidator
+            addressFromPrivateKey
+
+    let sendConsensusState =
+        Workflows.sendConsensusState
+            getNetworkId
+            Peers.respondToPeer
+
     let createConsensusStateInstance publishEvent =
         Consensus.createConsensusStateInstance
             getLastAppliedBlockNumber
@@ -392,6 +406,7 @@ module Composition =
             restoreConsensusState
             persistConsensusMessage
             restoreConsensusMessages
+            sendConsensusState
             Peers.sendMessage
             getNetworkId
             publishEvent
@@ -420,20 +435,6 @@ module Composition =
             Hashing.hash
             saveEquivocationProof
             saveEquivocationProofToDb
-
-    let requestConsensusState () =
-        Workflows.requestConsensusState
-            (PrivateKey Config.ValidatorPrivateKey)
-            getNetworkId
-            Peers.getIdentity
-            Peers.sendMessage
-            isValidator
-            addressFromPrivateKey
-
-    let sendConsensusState =
-        Workflows.sendConsensusState
-            getNetworkId
-            Peers.respondToPeer
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API
