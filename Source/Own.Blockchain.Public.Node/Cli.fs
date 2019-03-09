@@ -24,7 +24,9 @@ module Cli =
         Composition.discoverNetwork ()
         Workers.startBlockchainHeadPoller ()
         Workers.startFetcher ()
-        Api.start ()
+        Api.start () // Blocks and waits for the exit signal.
+
+        // Cleanup
         Composition.stopGossip ()
 
     let handleSignGenesisBlockCommand privateKey =
