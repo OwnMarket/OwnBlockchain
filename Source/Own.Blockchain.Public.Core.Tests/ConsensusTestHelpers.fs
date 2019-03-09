@@ -223,6 +223,9 @@ module ConsensusTestHelpers =
         member private __.SendConsensusState validatorAddress recipientValidatorAddress state =
             () // TODO: Implement
 
+        member private __.RequestConsensusState validatorAddress =
+            () // TODO: Implement
+
         member __.DeliverMessages(?filter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool) =
             let messages = _messages |> Seq.toList
             _messages.Clear()

@@ -940,12 +940,12 @@ module Workflows =
         =
 
         let validatorAddress = addressFromPrivateKey validatorPrivateKey
-        if not (isValidator validatorAddress) then
-            Result.appError "Only validators are allowed to request consensus state"
-        else
-            let consensusStateRequest = {
-                ConsensusStateRequest.ValidatorAddress = validatorAddress
-            }
+
+        if isValidator validatorAddress then
+            let consensusStateRequest =
+                {
+                    ConsensusStateRequest.ValidatorAddress = validatorAddress
+                }
 
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
@@ -961,7 +961,6 @@ module Workflows =
                     |> MulticastMessage
             }
             |> sendMessageToPeers
-            |> Ok
 
     let sendConsensusState
         getNetworkId
