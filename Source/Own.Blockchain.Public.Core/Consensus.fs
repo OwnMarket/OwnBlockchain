@@ -263,6 +263,11 @@ module Consensus =
             |> List.filter (fun ((b, _, _), _) -> b < _blockNumber)
             |> List.iter (fun (key, _) -> _commits.Remove(key) |> ignore)
 
+            _decisions
+            |> List.ofDict
+            |> List.filter (fun (b, _) -> b < _blockNumber)
+            |> List.iter (fun (key, _) -> _decisions.Remove(key) |> ignore)
+
         member private __.TryPropose() =
             let block =
                 _validBlock
