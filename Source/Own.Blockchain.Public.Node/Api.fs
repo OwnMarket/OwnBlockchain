@@ -61,7 +61,7 @@ module Api =
                     |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
                     |> Result.map (fun txHash -> { SubmitTxResponseDto.TxHash = txHash.Value })
                 with
-                | _ -> Result.appError "Invalid request format"
+                | _ -> Result.appError "Invalid JSON format"
                 |> toApiResponse
 
             return! response next ctx
