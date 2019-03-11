@@ -1420,7 +1420,7 @@ module Workflows =
     let getAssetApi
         (getAssetState : AssetHash -> AssetStateDto option)
         (assetHash : AssetHash)
-        : Result<AssetStateDto, AppErrors>
+        : Result<AssetInfoDto, AppErrors>
         =
 
         match getAssetState assetHash with
@@ -1428,7 +1428,12 @@ module Workflows =
             sprintf "Asset %s does not exist." assetHash.Value
             |> Result.appError
         | Some assetState ->
-            assetState
+            {
+                AssetHash = assetHash.Value
+                AssetCode = assetState.AssetCode
+                ControllerAddress = assetState.ControllerAddress
+                IsEligibilityRequired = assetState.IsEligibilityRequired
+            }
             |> Ok
 
     let getAssetKycProvidersApi
