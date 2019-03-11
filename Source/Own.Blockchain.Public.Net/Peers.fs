@@ -74,6 +74,9 @@ module Peers =
     let requestLastBlockFromPeer () =
         requestBlockFromPeer (BlockNumber -1L)
 
+    let requestBlockchainHeadFromPeer () =
+        requestFromPeer NetworkMessageId.BlockchainHead
+
     let requestTxFromPeer txHash =
         requestFromPeer (NetworkMessageId.Tx txHash)
 

@@ -402,6 +402,16 @@ module Mapping =
             IsConfigBlock = isConfigBlock
         }
 
+    let blockchainHeadInfoToDto (info : BlockchainHeadInfo) : BlockchainHeadInfoDto =
+        {
+            BlockNumber = info.BlockNumber.Value
+        }
+
+    let blockchainHeadInfoFromDto (dto : BlockchainHeadInfoDto) : BlockchainHeadInfo =
+        {
+            BlockNumber = BlockNumber dto.BlockNumber
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -819,6 +829,7 @@ module Mapping =
         | Block (BlockNumber blockNr) -> "Block", blockNr |> Convert.ToString
         | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId
         | ConsensusState -> "ConsensusState", ""
+        | BlockchainHead -> "BlockchainHead", ""
         | PeerList -> "PeerList", ""
 
     let private messageTypeToNetworkMessageId (messageType : string) (messageId : string) =
@@ -828,6 +839,7 @@ module Mapping =
         | "Block" -> messageId |> Convert.ToInt64 |> BlockNumber |> Block
         | "Consensus" -> messageId |> ConsensusMessageId |> Consensus
         | "ConsensusState" -> ConsensusState
+        | "BlockchainHead" -> BlockchainHead
         | "PeerList" -> PeerList
         | _ -> failwithf "Invalid network message type %s" messageType
 

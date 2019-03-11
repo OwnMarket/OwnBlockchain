@@ -197,7 +197,7 @@ module Workflows =
         (getLastStoredBlockNumber : unit -> BlockNumber option)
         (getLastAppliedBlockNumber : unit -> BlockNumber)
         (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
-        requestLastBlockFromPeer
+        requestBlockchainHeadFromPeer
         blockchainHeadPollInterval
         =
 
@@ -209,7 +209,7 @@ module Workflows =
             (fun block ->
                 let currentTimestamp = Utils.getNetworkTimestamp ()
                 if currentTimestamp - block.Header.Timestamp.Value >= int64 blockchainHeadPollInterval then
-                    requestLastBlockFromPeer ()
+                    requestBlockchainHeadFromPeer ()
             )
             Log.appErrors
 
@@ -1059,6 +1059,14 @@ module Workflows =
                     |> Some
                     |> Ok
 
+        let processBlockchainHeadMessageFromPeer data =
+            data
+            |> Serialization.deserializeBinary<BlockchainHeadInfoDto>
+            |> fun info -> BlockNumber info.BlockNumber
+            |> BlockchainHeadReceived
+            |> Some
+            |> Ok
+
         let processPeerListMessageFromPeer data =
             data
             |> Serialization.deserializeBinary<GossipDiscoveryMessageDto>
@@ -1076,6 +1084,7 @@ module Workflows =
             | Block blockNr -> processBlockFromPeer isResponse blockNr data
             | Consensus _ -> processConsensusMessageFromPeer data
             | ConsensusState -> processConsensusStateFromPeer isResponse senderIdentity data
+            | BlockchainHead -> processBlockchainHeadMessageFromPeer data
             | PeerList -> processPeerListMessageFromPeer data
 
         let processRequestMessage messageId senderIdentity =
@@ -1136,6 +1145,24 @@ module Workflows =
 
             | Consensus _ -> Result.appError "Cannot request consensus message from Peer"
             | ConsensusState -> Result.appError "Cannot request consensus state from Peer"
+            | BlockchainHead ->
+                {
+                    PeerMessageEnvelope.NetworkId = getNetworkId ()
+                    PeerMessage =
+                        {
+                            MessageId = messageId
+                            Data =
+                                {
+                                    BlockchainHeadInfoDto.BlockNumber =
+                                        getLastAppliedBlockNumber ()
+                                        |> fun (BlockNumber blockNr) -> blockNr
+                                }
+                                |> Serialization.serializeBinary
+                        }
+                        |> ResponseDataMessage
+                }
+                |> respondToPeer senderIdentity
+                Ok None
             | PeerList ->
                 {
                     PeerMessageEnvelope.NetworkId = getNetworkId ()

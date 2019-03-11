@@ -23,4 +23,5 @@ type AppEvent =
     | EquivocationProofReceived of EquivocationProofDto
     | EquivocationProofFetched of EquivocationProofDto
     | EquivocationProofStored of EquivocationProofHash * isFetched : bool
+    | BlockchainHeadReceived of BlockNumber
     | PeerListReceived of GossipMember list

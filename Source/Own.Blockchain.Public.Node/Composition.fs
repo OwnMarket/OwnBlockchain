@@ -335,7 +335,7 @@ module Composition =
             getLastStoredBlockNumber
             getLastAppliedBlockNumber
             getBlock
-            Peers.requestLastBlockFromPeer
+            Peers.requestBlockchainHeadFromPeer
             Config.BlockchainHeadPollInterval
 
     let fetchMissingBlocks publishEvent =

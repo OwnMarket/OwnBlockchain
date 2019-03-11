@@ -164,7 +164,11 @@ module Agents =
             |> formatMessage
             |> Log.debug
         | ConsensusStateResponseReceived response ->
-            sprintf "ConsensusStateResponseReceived"
+            "ConsensusStateResponseReceived"
+            |> formatMessage
+            |> Log.debug
+        | BlockchainHeadReceived blockNr ->
+            sprintf "BlockchainHeadReceived: BlockNumber = %i" blockNr.Value
             |> formatMessage
             |> Log.debug
         | PeerListReceived peerList ->
@@ -225,6 +229,9 @@ module Agents =
         | ConsensusStateResponseReceived state ->
             ConsensusCommand.StateReceived state
             |> invokeValidator
+        | BlockchainHeadReceived blockNr ->
+            // TODO:
+            ()
         | PeerListReceived peerList ->
             invokeUpdatePeerListHandler peerList
 

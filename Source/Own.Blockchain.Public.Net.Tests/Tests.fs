@@ -148,6 +148,8 @@ module PeerTests =
             ()
         | EquivocationProofStored (equivocationProofHash, isFetched) ->
             ()
+        | BlockchainHeadReceived _ ->
+            ()
         | PeerListReceived peerList ->
             () // TODO: fix this
 

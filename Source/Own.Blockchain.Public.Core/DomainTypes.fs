@@ -261,6 +261,10 @@ type BlockEnvelope = {
     Signatures : Signature list
 }
 
+type BlockchainHeadInfo = {
+    BlockNumber : BlockNumber
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Processing
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -483,6 +487,7 @@ type NetworkMessageId =
     | Block of BlockNumber
     | Consensus of ConsensusMessageId
     | ConsensusState
+    | BlockchainHead
     | PeerList
 
 type NetworkNodeConfig = {
