@@ -50,12 +50,19 @@ module Api =
 
     let submitTxHandler : HttpHandler = fun next ctx ->
         task {
-            let! requestDto = ctx.BindJsonAsync<TxEnvelopeDto>()
-
             let response =
-                Composition.submitTx false requestDto
-                |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
-                |> Result.map (fun txHash -> { SubmitTxResponseDto.TxHash = txHash.Value })
+                try
+                    let requestDto =
+                        ctx.BindJsonAsync<TxEnvelopeDto>()
+                        |> Async.AwaitTask
+                        |> Async.RunSynchronously
+
+                    Composition.submitTx false requestDto
+                    |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
+                    |> Result.map (fun txHash -> { SubmitTxResponseDto.TxHash = txHash.Value })
+
+                with
+                | _ -> Result.appError "Invalid request format"
                 |> toApiResponse
 
             return! response next ctx
