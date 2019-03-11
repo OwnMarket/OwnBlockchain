@@ -3834,7 +3834,7 @@ module ProcessingTests =
 
         // ASSERT
         let expectedStatus =
-            (TxActionNumber 1s, TxErrorCode.KycProviderAldreadyExists)
+            (TxActionNumber 1s, TxErrorCode.KycProviderAlreadyExists)
             |> TxActionError
             |> Failure
 

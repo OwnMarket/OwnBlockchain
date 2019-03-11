@@ -793,7 +793,7 @@ module Processing =
                 state.GetKycProviders action.AssetHash
                 |> List.exists (fun provider -> provider = action.ProviderAddress)
             if providerExists then
-                Error TxErrorCode.KycProviderAldreadyExists
+                Error TxErrorCode.KycProviderAlreadyExists
             else
                 state.SetKycProvider(action.AssetHash, action.ProviderAddress, Some KycProviderChange.Add)
                 Ok state
