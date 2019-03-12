@@ -174,23 +174,26 @@ module Transport =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let closeConnection remoteAddress =
-        match dealerSockets.TryGetValue remoteAddress with
+        match dealerSockets.TryRemove remoteAddress with
         | true, socket ->
-            dealerSockets.TryRemove remoteAddress |> ignore
-            socket.Dispose()
+            if not socket.IsDisposed then
+                poller.RemoveAndDispose socket
         | _ -> ()
 
     let closeAllConnections () =
-        if poller.IsRunning then
-            poller.Dispose()
-            dealerMessageQueue.Dispose()
-
         dealerSockets
         |> List.ofDict
         |> List.iter (fun (_, socket) ->
-            socket.Dispose()
+            if not socket.IsDisposed then
+                poller.RemoveAndDispose socket
         )
         dealerSockets.Clear()
 
-        routerSocket |> Option.iter (fun socket -> socket.Dispose())
+        routerSocket |> Option.iter (fun socket -> poller.RemoveAndDispose socket)
         routerSocket <- None
+
+        if not dealerMessageQueue.IsDisposed then
+            poller.Remove dealerMessageQueue
+
+        if poller.IsRunning then
+            poller.Dispose()
