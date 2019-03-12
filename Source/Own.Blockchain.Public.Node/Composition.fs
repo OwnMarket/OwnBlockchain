@@ -259,6 +259,7 @@ module Composition =
 
     let storeReceivedBlock =
         Workflows.storeReceivedBlock
+            Hashing.decode
             Hashing.isValidBlockchainAddress
             getBlock
             createConsensusMessageHash
@@ -443,6 +444,7 @@ module Composition =
     let submitTx =
         Workflows.submitTx
             verifySignature
+            Hashing.decode
             Hashing.isValidBlockchainAddress
             Hashing.hash
             getAvailableChxBalance

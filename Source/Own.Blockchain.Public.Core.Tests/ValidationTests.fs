@@ -24,6 +24,12 @@ module ValidationTests =
     let configureValidatorActionType = "ConfigureValidator"
     let delegateStakeActionType = "DelegateStake"
 
+    let accountHash1, accountHash2 =
+        AccountHash "3dYWB8TyU17SFf3ZLZ7fpQxoQAneoxdn92XRf88ZdxYC",
+        AccountHash "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9"
+
+    let assetHash = AssetHash "BPRi75qm2RYWa2QAtyGwyjDXp7BkS9jR1EWAmUqsdEsC"
+
     [<Fact>]
     let ``Validation.validateTx BasicValidation single validation error`` () =
         let recipientWallet = Signing.generateWallet ()
@@ -45,9 +51,9 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
-                                ToAccountHash = "B"
-                                AssetHash = "asset"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
+                                ToAccountHash = accountHash2.Value
+                                AssetHash = assetHash.Value
                                 Amount = 12m
                             }
                     }
@@ -56,7 +62,13 @@ module ValidationTests =
 
         let expMessage = AppError "Nonce must be positive."
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -85,9 +97,9 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
-                                ToAccountHash = "B"
-                                AssetHash = "asset"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
+                                ToAccountHash = accountHash2.Value
+                                AssetHash = assetHash.Value
                                 Amount = 12m
                             }
                     }
@@ -95,7 +107,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -118,7 +136,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -146,7 +170,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -174,7 +204,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -201,7 +237,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -221,8 +263,8 @@ module ValidationTests =
                         ActionData =
                             {
                                 TransferAssetTxActionDto.FromAccountHash = ""
-                                ToAccountHash = "B"
-                                AssetHash = "asset"
+                                ToAccountHash = accountHash2.Value
+                                AssetHash = assetHash.Value
                                 Amount = 12m
                             }
                     }
@@ -230,7 +272,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -249,9 +297,9 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
                                 ToAccountHash = ""
-                                AssetHash = "asset"
+                                AssetHash = assetHash.Value
                                 Amount = 12m
                             }
                     }
@@ -259,7 +307,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -278,9 +332,9 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
-                                ToAccountHash = "A"
-                                AssetHash = "asset"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
+                                ToAccountHash = accountHash1.Value
+                                AssetHash = assetHash.Value
                                 Amount = 12m
                             }
                     }
@@ -288,7 +342,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -307,8 +367,8 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
-                                ToAccountHash = "B"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
+                                ToAccountHash = accountHash2.Value
                                 AssetHash = ""
                                 Amount = 12m
                             }
@@ -317,7 +377,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -336,9 +402,9 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
-                                ToAccountHash = "B"
-                                AssetHash = "asset"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
+                                ToAccountHash = accountHash2.Value
+                                AssetHash = assetHash.Value
                                 Amount = 0m
                             }
                     }
@@ -346,7 +412,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -365,9 +437,9 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
-                                ToAccountHash = "B"
-                                AssetHash = "asset"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
+                                ToAccountHash = accountHash2.Value
+                                AssetHash = assetHash.Value
                                 Amount = 10.12345678m
                             }
                     }
@@ -375,7 +447,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t -> failwith "Validation should fail in case of this test."
@@ -403,9 +481,9 @@ module ValidationTests =
                         ActionType = transferAssetActionType
                         ActionData =
                             {
-                                TransferAssetTxActionDto.FromAccountHash = "A"
-                                ToAccountHash = "B"
-                                AssetHash = "asset"
+                                TransferAssetTxActionDto.FromAccountHash = accountHash1.Value
+                                ToAccountHash = accountHash2.Value
+                                AssetHash = assetHash.Value
                                 Amount = 1m
                             }
                     }
@@ -413,7 +491,13 @@ module ValidationTests =
         }
 
         let result =
-            Validation.validateTx Hashing.isValidBlockchainAddress Helpers.maxActionCountPerTx chAddress txHash testTx
+            Validation.validateTx
+                Hashing.decode
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
 
         match result with
         | Ok t ->
@@ -440,6 +524,9 @@ module ValidationTests =
         let item = address.Value
         String.IsNullOrWhiteSpace(item) |> not
 
+    let private decodeMock (hash : string) =
+        Array.zeroCreate<byte> 32
+
     [<Fact>]
     let ``Validation.validateTx CreateAssetEmission valid action`` () =
         let expected =
@@ -462,7 +549,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<CreateAssetEmissionTxAction> t.Actions.Head
             test <@ AccountHash expected.EmissionAccountHash = actual.EmissionAccountHash @>
@@ -492,7 +579,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 3 @>
@@ -512,7 +599,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             test <@ t.Actions.Head = CreateAccount @>
         | Error e -> failwithf "%A" e
@@ -532,7 +619,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             test <@ t.Actions.Head = CreateAsset @>
         | Error e -> failwithf "%A" e
@@ -558,7 +645,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<SetAccountControllerTxAction> t.Actions.Head
             test <@ AccountHash expected.AccountHash = actual.AccountHash @>
@@ -586,7 +673,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 2 @>
@@ -612,7 +699,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<SetAssetControllerTxAction> t.Actions.Head
             test <@ AssetHash expected.AssetHash = actual.AssetHash @>
@@ -640,7 +727,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 2 @>
@@ -666,7 +753,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<SetAssetCodeTxAction> t.Actions.Head
             test <@ AssetHash expected.AssetHash = actual.AssetHash @>
@@ -694,7 +781,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 1 @>
@@ -720,7 +807,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 1 @>
@@ -746,7 +833,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 1 @>
@@ -773,7 +860,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<ConfigureValidatorTxAction> t.Actions.Head
             test <@ expected.NetworkAddress = actual.NetworkAddress.Value @>
@@ -802,7 +889,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 1 @>
@@ -828,7 +915,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<DelegateStakeTxAction> t.Actions.Head
             test <@ BlockchainAddress expected.ValidatorAddress = actual.ValidatorAddress @>
@@ -856,7 +943,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail."
         | Error e ->
             test <@ e.Length = 2 @>

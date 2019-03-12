@@ -71,6 +71,7 @@ module SubmissionTests =
         let result =
             Workflows.submitTx
                 Helpers.verifySignature
+                Hashing.decode
                 Hashing.isValidBlockchainAddress
                 Hashing.hash
                 getAvailableChxBalance
@@ -141,6 +142,7 @@ module SubmissionTests =
         let result =
             Workflows.submitTx
                 Helpers.verifySignature
+                Hashing.decode
                 Hashing.isValidBlockchainAddress
                 Hashing.hash
                 getAvailableChxBalance

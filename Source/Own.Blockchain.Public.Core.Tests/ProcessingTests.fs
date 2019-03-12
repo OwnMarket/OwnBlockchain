@@ -11,6 +11,22 @@ open Own.Blockchain.Public.Crypto
 
 module ProcessingTests =
 
+    let accountHash1, accountHash2 =
+        AccountHash "3dYWB8TyU17SFf3ZLZ7fpQxoQAneoxdn92XRf88ZdxYC",
+        AccountHash "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9"
+
+    let assetHash1, assetHash2 =
+        AssetHash "BPRi75qm2RYWa2QAtyGwyjDXp7BkS9jR1EWAmUqsdEsC",
+        AssetHash "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU"
+
+    let resolutionHash1, resolutionHash2 =
+        VotingResolutionHash "ETrivt162Fao3yEdsE1ZaBAdq9s6iRsGHQEBwDwUQYCd",
+        VotingResolutionHash "CRjqV3DLh7jyCKZqj2pCdfw3s3ynXxEf5JMVm1rCYjmp"
+
+    let voteHashYes, voteHashNo =
+        VoteHash "AezU2ekUZu2h1D3UaW1PrGi2WkpBggdHf2iBGa4pGV4x",
+        VoteHash "GiAukfYsxdyNBeh6N2DKVXEkZtASmjbciGfqpU5bSDmE"
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx preparation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -688,9 +704,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -778,9 +794,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -869,9 +885,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -960,9 +976,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -1052,9 +1068,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -1144,9 +1160,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -1236,9 +1252,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -1324,9 +1340,9 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let senderAccountHash = AccountHash "Acc1"
-        let recipientAccountHash = AccountHash "Acc2"
-        let assetHash = AssetHash "EQ1"
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -1416,10 +1432,10 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHash = VoteHash "Yes"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
+        let resolutionHash = resolutionHash1
+        let voteHash = voteHashYes
 
         let initialChxState =
             [
@@ -1510,10 +1526,8 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
-        let rsh1, rsh2 = VotingResolutionHash "RS1", VotingResolutionHash "RS2"
-        let voteHashYes, voteHashNo = VoteHash "Yes", VoteHash "No"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -1543,7 +1557,7 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash.Value
                             AssetHash = assetHash.Value
-                            ResolutionHash = rsh1.Value
+                            ResolutionHash = resolutionHash1.Value
                             VoteHash = voteHashYes.Value
                         }
                 } :> obj
@@ -1559,7 +1573,7 @@ module ProcessingTests =
                         {
                             AccountHash = accountHash.Value
                             AssetHash = assetHash.Value
-                            ResolutionHash = rsh2.Value
+                            ResolutionHash = resolutionHash2.Value
                             VoteHash = voteHashYes.Value
                         }
                 } :> obj
@@ -1582,10 +1596,10 @@ module ProcessingTests =
 
         let getVoteState (voteId: VoteId) =
             // No vote for rsh1
-            if voteId.ResolutionHash = rsh1 then
+            if voteId.ResolutionHash = resolutionHash1 then
                 None
             // Existing non weighted vote for rsh2
-            elif voteId.ResolutionHash = rsh2 then
+            elif voteId.ResolutionHash = resolutionHash2 then
                 Some {VoteState.VoteHash = voteHashNo; VoteWeight = None}
             else
                 None
@@ -1615,9 +1629,9 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash1].Status = Success @>
         test <@ output.TxResults.[txHash2].Status = Success @>
         test <@ output.Votes.Count = 2 @>
-        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = rsh1}]
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash1}]
             = {VoteHash = voteHashYes; VoteWeight = None} @>
-        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = rsh2}]
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash2}]
             = {VoteHash = voteHashYes; VoteWeight = None} @>
 
     [<Fact>]
@@ -1625,10 +1639,10 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHash = VoteHash "Yes"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
+        let resolutionHash = resolutionHash1
+        let voteHash = voteHashYes
 
         let initialChxState =
             [
@@ -1705,13 +1719,9 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash1, accountHash2 =
-            AccountHash "Acc1", AccountHash "Acc2"
-        let assetHash1, assetHash2 =
-            AssetHash "EQ1", AssetHash "EQ2"
 
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHash = VoteHash "Yes"
+        let resolutionHash = resolutionHash1
+        let voteHash = voteHashYes
 
         let initialChxState =
             [
@@ -1819,11 +1829,11 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHash = VoteHash "Yes"
+        let resolutionHash = resolutionHash1
+        let voteHash = voteHashYes
 
         let initialChxState =
             [
@@ -1896,12 +1906,12 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHashYes = VoteHash "Yes"
-        let voteHashNo = VoteHash "No"
+        let resolutionHash = resolutionHash1
+        let voteHashYes = voteHashYes
+        let voteHashNo = voteHashNo
 
         let initialChxState =
             [
@@ -1989,10 +1999,10 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHash = VoteHash "Yes"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
+        let resolutionHash = resolutionHash1
+        let voteHash = voteHashYes
         let voteWeight = VoteWeight 1m
 
         let initialChxState =
@@ -2074,10 +2084,10 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHash = VoteHash "Yes"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
+        let resolutionHash = resolutionHash1
+        let voteHash = voteHashYes
         let voteWeight = VoteWeight 1m
 
         let initialChxState =
@@ -2149,10 +2159,10 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
-        let resolutionHash = VotingResolutionHash "RS1"
-        let voteHash = VoteHash "Yes"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
+        let resolutionHash = resolutionHash1
+        let voteHash = voteHashYes
         let voteWeight = VoteWeight 1m
 
         let initialChxState =
@@ -2229,12 +2239,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash1, accountHash2 =
-            AccountHash "Acc1", AccountHash "Acc2"
-        let assetHash1, assetHash2 =
-            AssetHash "EQ1", AssetHash "EQ2"
 
-        let resolutionHash = VotingResolutionHash "RS1"
+        let resolutionHash = resolutionHash1
         let voteWeight = VoteWeight 1m
 
         let initialChxState =
@@ -2346,8 +2352,8 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -2434,8 +2440,8 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -2527,8 +2533,6 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash1, accountHash2 = AccountHash "Acc1", AccountHash "Acc2"
-        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
         let initialChxState =
             [
@@ -2643,8 +2647,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -2732,8 +2736,6 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash1, accountHash2 = AccountHash "Acc1", AccountHash "Acc2"
-        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
         let initialChxState =
             [
@@ -2856,7 +2858,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "EQ1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -2938,7 +2940,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "EQ1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3018,7 +3020,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "EQ1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3111,8 +3113,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3203,8 +3205,6 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash1, accountHash2 = AccountHash "Acc1", AccountHash "Acc2"
-        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
         let initialChxState =
             [
@@ -3326,8 +3326,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3409,8 +3409,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3502,8 +3502,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3595,8 +3595,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let accountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3691,7 +3691,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "EQ1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3767,7 +3767,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "EQ1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -3848,7 +3848,6 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
         let initialChxState =
             [
@@ -3957,7 +3956,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "EQ1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -4030,7 +4029,6 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
         let initialChxState =
             [
@@ -4136,7 +4134,6 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let otherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash1, assetHash2 = AssetHash "EQ1", AssetHash "EQ2"
 
         let initialChxState =
             [
@@ -4233,8 +4230,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let someOtherWallet = Signing.generateWallet ()
-        let emissionAccountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let emissionAccountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -4312,8 +4309,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let someOtherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let emissionAccountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let emissionAccountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -4399,8 +4396,8 @@ module ProcessingTests =
         let someOtherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let currentControllerWallet = Signing.generateWallet ()
-        let emissionAccountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let emissionAccountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -4486,8 +4483,8 @@ module ProcessingTests =
         let someOtherWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let currentControllerWallet = Signing.generateWallet ()
-        let emissionAccountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let emissionAccountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -4567,8 +4564,8 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let currentControllerWallet = Signing.generateWallet ()
-        let emissionAccountHash = AccountHash "Acc1"
-        let assetHash = AssetHash "EQ1"
+        let emissionAccountHash = accountHash1
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -4823,7 +4820,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let newControllerWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
+        let accountHash = accountHash1
 
         let initialChxState =
             [
@@ -4890,7 +4887,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let newControllerWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
+        let accountHash = accountHash1
 
         let initialChxState =
             [
@@ -4962,7 +4959,7 @@ module ProcessingTests =
         let validatorWallet = Signing.generateWallet ()
         let currentControllerWallet = Signing.generateWallet ()
         let newControllerWallet = Signing.generateWallet ()
-        let accountHash = AccountHash "Acc1"
+        let accountHash = accountHash1
 
         let initialChxState =
             [
@@ -5038,7 +5035,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let newControllerWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "Acc1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -5105,7 +5102,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let newControllerWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "Acc1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -5177,7 +5174,7 @@ module ProcessingTests =
         let validatorWallet = Signing.generateWallet ()
         let currentControllerWallet = Signing.generateWallet ()
         let newControllerWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "Acc1"
+        let assetHash = assetHash1
 
         let initialChxState =
             [
@@ -5257,7 +5254,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "Foo"
+        let assetHash = assetHash1
         let assetCode = AssetCode "BAR"
 
         let initialChxState =
@@ -5328,7 +5325,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "Foo"
+        let assetHash = assetHash1
         let assetCode = AssetCode "BAR"
 
         let initialChxState =
@@ -5399,7 +5396,7 @@ module ProcessingTests =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "Foo"
+        let assetHash = assetHash1
         let assetCode = AssetCode "BAR"
 
         let initialChxState =
@@ -5444,7 +5441,7 @@ module ProcessingTests =
             |> Some
 
         let getAssetHashByCode _ =
-            AssetHash "BLA" |> Some
+            assetHash1 |> Some
 
         // ACT
         let output =
@@ -5474,7 +5471,7 @@ module ProcessingTests =
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let currentControllerWallet = Signing.generateWallet ()
-        let assetHash = AssetHash "Foo"
+        let assetHash = assetHash1
         let assetCode = AssetCode "BAR"
 
         let initialChxState =

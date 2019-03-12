@@ -928,7 +928,7 @@ module Processing =
         |> orderSet []
         |> List.map (fun tx -> tx.TxHash)
 
-    let getTxBody getTx createHash verifySignature isValidAddress maxActionCountPerTx txHash =
+    let getTxBody getTx createHash verifySignature decodeHash isValidAddress maxActionCountPerTx txHash =
         result {
             let! txEnvelopeDto = getTx txHash
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
@@ -937,7 +937,7 @@ module Processing =
             let! tx =
                 txEnvelope.RawTx
                 |> Serialization.deserializeTx
-                >>= (Validation.validateTx isValidAddress maxActionCountPerTx sender txHash)
+                >>= (Validation.validateTx decodeHash isValidAddress maxActionCountPerTx sender txHash)
 
             return tx
         }
@@ -1198,7 +1198,15 @@ module Processing =
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
             let tx =
-                match getTxBody getTx createHash verifySignature isValidAddress maxActionCountPerTx txHash with
+                match
+                    getTxBody
+                        getTx
+                        createHash
+                        verifySignature
+                        decodeHash
+                        isValidAddress
+                        maxActionCountPerTx
+                        txHash with
                 | Ok tx -> tx
                 | Error err ->
                     Log.appErrors err
