@@ -102,7 +102,7 @@ Response JSON payload:
     "validatorAddress": "CHT72YWjChhv5xYeDono6Nn4Z5Qe5Q7aRyq",
     "blockNumber": 123,
     "consensusRound": 0,
-    "consensusStep" : 1,
+    "consensusStep": 1,
     "blockHash1": "9VMtBESNLXWFRQXrd2HbXc2CGWUkdyPQjAKP5MciU59k",
     "blockHash2": "D8ViZH31RHBYrDfUhUC1DK49pY1dxCvgRMsbnS9Lbn3p",
     "signature1": "E5nmjsHcL1hFmJEjphUhg6DBn6gyxYzrTKKtXvDGB8FhefQZQ6o5QJ1MRgXqqY97YMsCe8cs3muDF524Mq1Q9qTzG",
