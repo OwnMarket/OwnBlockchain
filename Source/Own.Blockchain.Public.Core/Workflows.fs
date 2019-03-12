@@ -1348,7 +1348,11 @@ module Workflows =
             getAddressAccounts address
             |> List.map (fun (AccountHash h) -> h)
 
-        Ok {GetAddressAccountsApiResponseDto.Accounts = accounts}
+        {
+            BlockchainAddress = address.Value
+            GetAddressAccountsApiResponseDto.Accounts = accounts
+        }
+        |> Ok
 
     let getAddressAssetsApi
         (getAddressAssets : BlockchainAddress -> AssetHash list)
@@ -1360,7 +1364,11 @@ module Workflows =
             getAddressAssets address
             |> List.map (fun (AssetHash h) -> h)
 
-        Ok {GetAddressAssetsApiResponseDto.Assets = assets}
+        {
+            BlockchainAddress = address.Value
+            GetAddressAssetsApiResponseDto.Assets = assets
+        }
+        |> Ok
 
     let getAddressStakesApi
         (getAddressStakes : BlockchainAddress -> AddressStakeInfoDto list)
@@ -1368,7 +1376,11 @@ module Workflows =
         : Result<GetAddressStakesApiResponseDto, AppErrors>
         =
 
-        Ok {GetAddressStakesApiResponseDto.Stakes = getAddressStakes address}
+        {
+            BlockchainAddress = address.Value
+            GetAddressStakesApiResponseDto.Stakes = getAddressStakes address
+        }
+        |> Ok
 
     let getAccountApi
         (getAccountState : AccountHash -> AccountStateDto option)
@@ -1400,7 +1412,11 @@ module Workflows =
             sprintf "Account %s does not exist." accountHash.Value
             |> Result.appError
         | Some _ ->
-            Ok {Votes = getAccountVotes accountHash assetHash}
+            {
+                AccountHash = accountHash.Value
+                Votes = getAccountVotes accountHash assetHash
+            }
+            |> Ok
 
     let getAccountEligibilitiesApi
         (getAccountState : AccountHash -> AccountStateDto option)
@@ -1414,7 +1430,10 @@ module Workflows =
             sprintf "Account %s does not exist." accountHash.Value
             |> Result.appError
         | Some _ ->
-            {Eligibilities = getAccountEligibilities accountHash}
+            {
+                AccountHash = accountHash.Value
+                Eligibilities = getAccountEligibilities accountHash
+            }
             |> Ok
 
     let getAssetApi
@@ -1451,7 +1470,11 @@ module Workflows =
             let kycProviders =
                 getKycProvidersState assetHash
                 |> List.map (fun provider -> provider.Value)
-            Ok {KycProviders = kycProviders}
+            {
+                AssetHash = assetHash.Value
+                KycProviders = kycProviders
+            }
+            |> Ok
 
     let getValidatorsApi
         (getCurrentValidators : unit -> ValidatorSnapshot list)
@@ -1500,4 +1523,8 @@ module Workflows =
             sprintf "Validator %s does not exist." address.Value
             |> Result.appError
         | Some _ ->
-            Ok {GetValidatorStakesApiResponseDto.Stakes = getValidatorStakes address}
+            {
+                ValidatorAddress = address.Value
+                GetValidatorStakesApiResponseDto.Stakes = getValidatorStakes address
+            }
+            |> Ok

@@ -651,18 +651,22 @@ type GetAddressApiResponseDto = {
 }
 
 type GetAddressAccountsApiResponseDto = {
+    BlockchainAddress : string
     Accounts : string list
 }
 
 type GetAddressAssetsApiResponseDto = {
+    BlockchainAddress : string
     Assets : string list
 }
 
 type GetAddressStakesApiResponseDto = {
+    BlockchainAddress : string
     Stakes : AddressStakeInfoDto list
 }
 
 type GetValidatorStakesApiResponseDto = {
+    ValidatorAddress : string
     Stakes : ValidatorStakeInfoDto list
 }
 
@@ -678,14 +682,17 @@ type GetAccountApiResponseDto = {
 }
 
 type GetAccountApiVoteDto = {
+    AccountHash : string
     Votes : AccountVoteDto list
 }
 
 type GetAccountApiEligibilitiesDto = {
+    AccountHash : string
     Eligibilities : AccountEligibilityInfoDto list
 }
 
 type GetAssetApiKycProvidersDto = {
+    AssetHash : string
     KycProviders : string list
 }
 
