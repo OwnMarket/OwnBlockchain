@@ -199,6 +199,13 @@ module Composition =
             verifySignature
             Config.GenesisSignatures
 
+    let rebuildBlockchainState () =
+        Workflows.rebuildBlockchainState
+            getLastAppliedBlockNumber
+            getLastStoredBlockNumber
+            getBlock
+            saveBlockToDb
+
     let createBlock =
         Workflows.createBlock
             getTx

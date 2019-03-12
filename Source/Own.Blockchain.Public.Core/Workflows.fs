@@ -177,9 +177,10 @@ module Workflows =
 
                     if not genesisBlockExists then
                         do! saveBlock genesisBlock.Header.Number blockEnvelopeDto
-                        do! genesisBlock.Header
-                            |> Mapping.blockHeaderToBlockInfoDto (genesisBlock.Configuration <> None)
-                            |> saveBlockToDb
+
+                    do! genesisBlock.Header
+                        |> Mapping.blockHeaderToBlockInfoDto (genesisBlock.Configuration <> None)
+                        |> saveBlockToDb
 
                     do! genesisState
                         |> Mapping.outputToDto
@@ -192,6 +193,33 @@ module Workflows =
             | Error errors ->
                 Log.appErrors errors
                 failwith "Cannot initialize blockchain state."
+
+    let rebuildBlockchainState
+        (getLastAppliedBlockNumber : unit -> BlockNumber)
+        (getLastStoredBlockNumber : unit -> BlockNumber option)
+        getBlock
+        saveBlockToDb
+        =
+
+        let lastBlockNumber = getLastStoredBlockNumber () |? getLastAppliedBlockNumber ()
+
+        lastBlockNumber + 1
+        |> Seq.unfold (fun n ->
+            getBlock n
+            |> Result.map Blocks.extractBlockFromEnvelopeDto
+            |> Result.handle
+                (fun b -> Some (b, n + 1))
+                (fun _ -> None)
+        )
+        |> Seq.iter (fun b ->
+            b.Header
+            |> Mapping.blockHeaderToBlockInfoDto b.Configuration.IsSome
+            |> saveBlockToDb
+            |> Result.iterError (fun e ->
+                Log.appErrors e
+                failwith "Failed rebuilding the state."
+            )
+        )
 
     let synchronizeBlockchainHead
         (getLastStoredBlockNumber : unit -> BlockNumber option)
