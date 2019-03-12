@@ -6,6 +6,7 @@ Endpoint | Verb | Description
 --- | --- | ---
 `/tx` | `POST` | Transaction submission
 `/tx/{transactionHash}` | `GET` | Transaction info
+`/equivocation/{equivocationProofHash}` | `GET` | EquivocationProof info
 `/block/{blockNumber}` | `GET` | Block info
 `/address/{blockchainAddress}` | `GET` | Address info
 `/address/{blockchainAddress}/accounts` | `GET` | List of accounts controlled by the specified address
@@ -16,6 +17,8 @@ Endpoint | Verb | Description
 `/account/{accountHash}/eligibilities` | `GET` | List of eligibilities for the account.
 `/asset/{assetHash}` | `GET` | Asset info
 `/asset/{assetHash}/kyc-providers` | `GET` | List of KYC providers for the asset
+`/validators?activeOnly={true/false}` | `GET` | List of validators, optionally filtering the active only ones
+`/validator/{validatorAddress}/stakes` | `GET` | List of stakes for a validator
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
 
@@ -85,6 +88,31 @@ Response JSON payload:
 ```
 
 
+## `GET /equivocation/{equivocationProofHash}`
+
+Request URL:
+```
+/equivocation/BTXVBwuTXWTpPtJC71FPGaeC17NVhu9mS6JavqZqHbYH
+```
+
+Response JSON payload:
+```json
+{
+    "equivocationProofHash": "BTXVBwuTXWTpPtJC71FPGaeC17NVhu9mS6JavqZqHbYH",
+    "validatorAddress": "CHT72YWjChhv5xYeDono6Nn4Z5Qe5Q7aRyq",
+    "blockNumber": 123,
+    "consensusRound": 0,
+    "consensusStep" : 1,
+    "blockHash1": "9VMtBESNLXWFRQXrd2HbXc2CGWUkdyPQjAKP5MciU59k",
+    "blockHash2": "D8ViZH31RHBYrDfUhUC1DK49pY1dxCvgRMsbnS9Lbn3p",
+    "signature1": "E5nmjsHcL1hFmJEjphUhg6DBn6gyxYzrTKKtXvDGB8FhefQZQ6o5QJ1MRgXqqY97YMsCe8cs3muDF524Mq1Q9qTzG",
+    "signature2": "M4jAhLWup8fe6NVnUg193uqLzGdgFuo6XFP2pDZFWGNvK6LuwYRqwM8HBADatgTZreXz2oZr5GhA3kZqi2GhaHrZE",
+    "depositTaken": 1000,
+    "includedInBlockNumber": 125
+}
+```
+
+
 ## `GET /block/{blockNumber}`
 
 Request URL:
@@ -142,6 +170,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "blockchainAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "accounts": [
         "wcpUPec7pNUKys9pkvPfhjkezekZ99GHpXavbS6M1R4",
         "Fr5HoamTv7W598duwGQT3p9pqK5oHYjxWqWwycaeg1YC",
@@ -161,6 +190,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "blockchainAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "assets": [
         "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU"
     ]
@@ -178,6 +208,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "blockchainAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "stakes": [
         {
             "validatorAddress": "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
@@ -198,6 +229,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "validatorAddress": "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
     "stakes": [
         {
             "stakerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
@@ -265,6 +297,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
     "votes": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
@@ -292,6 +325,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",  
     "votes": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
@@ -314,6 +348,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",  
     "eligibilities": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
@@ -336,6 +371,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
     "assetCode": "ATP",
     "controllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
     "isEligibilityRequired": false
@@ -353,6 +389,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
+    "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",    
     "kycProviders": [
         "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ"
     ]
@@ -440,6 +477,31 @@ Response JSON payload:
             "sharedRewardPercent": 0,
             "isActive": true
         }
+    ]
+}
+```
+
+
+## `GET /validator/{validatorAddress}/stakes`
+
+Request URL:
+```
+/validator/CHStDQ5ZFeFW9rbMhw83f7FXg19okxQD9E7/stakes
+```
+
+Response JSON payload:
+```json
+{
+    "validatorAddress" : "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
+    "stakes": [
+        {
+            "stakerAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
+            "amount": 100,
+        },
+        {
+            "stakerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
+            "amount": 50
+        }     
     ]
 }
 ```
