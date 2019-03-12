@@ -772,6 +772,7 @@ module Consensus =
             block
             |> Mapping.blockToDto
             |> Validation.validateBlock isValidAddress
+            |> Validation.validateBlock decodeHash isValidAddress
             >>= applyBlockToCurrentState
             |> Result.handle
                 (fun _ -> true)
