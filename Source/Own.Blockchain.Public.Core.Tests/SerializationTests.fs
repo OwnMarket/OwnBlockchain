@@ -172,7 +172,7 @@ module SerializationTests =
         let json =
             """
             {
-                "Nonce":"InvaliValue",
+                "Nonce": "InvalidValue",
                 "ActionFee": 20,
                 "Actions":
                     {

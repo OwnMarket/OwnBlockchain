@@ -180,7 +180,7 @@ module Agents =
             Log.verbose "============================================================"
             peerList
             |> List.map Mapping.gossipMemberToDto
-            |> List.iter (fun m -> Log.verbosef "%s Heartbeat:%i" m.NetworkAddress m.Heartbeat)
+            |> List.iter (fun m -> Log.verbosef "%s Heartbeat: %i" m.NetworkAddress m.Heartbeat)
             Log.verbose "============================================================"
 
     let publishEvent event =

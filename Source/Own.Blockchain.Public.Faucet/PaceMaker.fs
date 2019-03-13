@@ -7,7 +7,7 @@ module PaceMaker =
 
     let rec private loop lastDistributionTime distributionInterval =
         async {
-            do! Async.Sleep(1000)
+            do! Async.Sleep 1000
 
             let lastDistributionTime =
                 try
