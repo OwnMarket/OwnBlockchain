@@ -20,15 +20,10 @@ module PeerTests =
         StandardResolver.Instance
     )
 
-    let address5555, address5556, address5557 =
-        "127.0.0.1:5555",
-        "127.0.0.1:5556",
-        "127.0.0.1:5557"
-
     let testCleanup () =
         DbMock.reset ()
         RawMock.reset ()
-        Thread.Sleep(2000)
+        Thread.Sleep(1000)
 
     let setupTest () =
         testCleanup ()
@@ -225,7 +220,7 @@ module PeerTests =
         // ARRANGE
         let gossipConfig = {
             Fanout = 4
-            IntervalMillis = 1000
+            IntervalMillis = 100
             MissedHeartbeatIntervalMillis = 60000
         }
 
@@ -260,82 +255,97 @@ module PeerTests =
 
         (nodeList, gossipConfig.IntervalMillis)
 
-    let create3NodesConfigSameBootstrapNode () =
+    let create3NodesConfigSameBootstrapNode (ports : int list) =
+        let address1, address2, address3 =
+            sprintf "127.0.0.1:%i" ports.[0],
+            sprintf "127.0.0.1:%i" ports.[1],
+            sprintf "127.0.0.1:%i" ports.[2]
+
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes address5555 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5555
-            PublicAddress = NetworkAddress address5555 |> Some
+            Identity = Conversion.stringToBytes address1 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address1
+            PublicAddress = NetworkAddress address1 |> Some
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
-            Identity = Conversion.stringToBytes address5556 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5556
-            PublicAddress = NetworkAddress address5556|> Some
-            BootstrapNodes = [NetworkAddress address5555]
+            Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address2
+            PublicAddress = NetworkAddress address2|> Some
+            BootstrapNodes = [NetworkAddress address1]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
-            Identity = Conversion.stringToBytes address5557 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5557
-            PublicAddress = NetworkAddress address5557 |> Some
-            BootstrapNodes = [NetworkAddress address5555]
+            Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address3
+            PublicAddress = NetworkAddress address3 |> Some
+            BootstrapNodes = [NetworkAddress address1]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
-    let create3NodesConfigDifferentBoostrapNode () =
+    let create3NodesConfigDifferentBoostrapNode (ports : int list) =
+        let address1, address2, address3 =
+            sprintf "127.0.0.1:%i" ports.[0],
+            sprintf "127.0.0.1:%i" ports.[1],
+            sprintf "127.0.0.1:%i" ports.[2]
+
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes address5555 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5555
-            PublicAddress = NetworkAddress address5555|> Some
+            Identity = Conversion.stringToBytes address1 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address1
+            PublicAddress = NetworkAddress address1|> Some
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
-            Identity = Conversion.stringToBytes address5556 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5556
-            PublicAddress = NetworkAddress address5556 |> Some
-            BootstrapNodes = [NetworkAddress address5555]
+            Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address2
+            PublicAddress = NetworkAddress address2 |> Some
+            BootstrapNodes = [NetworkAddress address1]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
-            Identity = Conversion.stringToBytes address5557 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5557
-            PublicAddress = NetworkAddress address5557 |> Some
-            BootstrapNodes = [NetworkAddress address5556]
+            Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address3
+            PublicAddress = NetworkAddress address3 |> Some
+            BootstrapNodes = [NetworkAddress address2]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
-    let create3NodesMeshedNetwork () =
+    let create3NodesMeshedNetwork (ports : int list) =
+        let address1, address2, address3 =
+            sprintf "127.0.0.1:%i" ports.[0],
+            sprintf "127.0.0.1:%i" ports.[1],
+            sprintf "127.0.0.1:%i" ports.[2]
+
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes address5555 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5555
-            PublicAddress = NetworkAddress address5555 |> Some
-            BootstrapNodes = [NetworkAddress address5556; NetworkAddress address5557]
+            Identity = Conversion.stringToBytes address1 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address1
+            PublicAddress = NetworkAddress address1 |> Some
+            BootstrapNodes = [NetworkAddress address2; NetworkAddress address3]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
-            Identity = Conversion.stringToBytes address5556 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5556
-            PublicAddress = NetworkAddress address5556 |> Some
-            BootstrapNodes = [NetworkAddress address5555; NetworkAddress address5557]
+            Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address2
+            PublicAddress = NetworkAddress address2 |> Some
+            BootstrapNodes = [NetworkAddress address1; NetworkAddress address3]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
-            Identity = Conversion.stringToBytes address5557 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address5557
-            PublicAddress = NetworkAddress address5557 |> Some
-            BootstrapNodes = [NetworkAddress address5555; NetworkAddress address5556]
+            Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address3
+            PublicAddress = NetworkAddress address3 |> Some
+            BootstrapNodes = [NetworkAddress address1; NetworkAddress address2]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
@@ -573,7 +583,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesConfigSameBootstrapNode ()
+        let nodeConfigList = [111; 112; 113] |> create3NodesConfigSameBootstrapNode
 
         testGossipDiscovery nodeConfigList 5
 
@@ -582,7 +592,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesConfigDifferentBoostrapNode ()
+        let nodeConfigList = [211; 212; 213] |> create3NodesConfigDifferentBoostrapNode
 
         testGossipDiscovery nodeConfigList 5
 
@@ -591,37 +601,37 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let address6555 = "127.0.0.1:6555"
+        let address311 = "127.0.0.1:311"
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes address6555 |> PeerNetworkIdentity
-            ListeningAddress = NetworkAddress address6555
-            PublicAddress = NetworkAddress address6555 |> Some
+            Identity = Conversion.stringToBytes address311 |> PeerNetworkIdentity
+            ListeningAddress = NetworkAddress address311
+            PublicAddress = NetworkAddress address311 |> Some
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
 
         let nodeConfigList =
-            [6556..6654]
+            [312..410]
             |> List.map (fun port ->
                 {
                     Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
                     ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                     PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
-                    BootstrapNodes = [NetworkAddress "127.0.0.1:6555"]
+                    BootstrapNodes = [NetworkAddress address311]
                     AllowPrivateNetworkPeers = true
                     MaxConnectedPeers = 200
                 }
             )
 
-        testGossipDiscovery (nodeConfig1 :: nodeConfigList) 20
+        testGossipDiscovery (nodeConfig1 :: nodeConfigList) 40
 
     [<Fact>]
     let ``Network - GossipMessagePassing 3 nodes single message`` () =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1111; 1112; 1113] |> create3NodesMeshedNetwork
 
         testGossipSingleMessage nodeConfigList 5
 
@@ -630,7 +640,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1121; 1122; 1123] |> create3NodesMeshedNetwork
 
         testGossipMultipleDifferentMessageTypes nodeConfigList 5
 
@@ -639,7 +649,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1131; 1132; 1133] |> create3NodesMeshedNetwork
 
         testGossipMultipleSameMessageTypes nodeConfigList 5
 
@@ -648,7 +658,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1141; 1142; 1143] |> create3NodesMeshedNetwork
 
         testMulticastSingleMessage nodeConfigList 5
 
@@ -657,7 +667,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1151; 1152; 1153] |> create3NodesMeshedNetwork
 
         testMulticastMultipleDifferentMessageTypes nodeConfigList 5
 
@@ -666,7 +676,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1161; 1162; 1163] |> create3NodesMeshedNetwork
 
         testMulticastMultipleSameMessageTypes nodeConfigList 5
 
@@ -675,7 +685,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1171; 1172; 1173] |> create3NodesMeshedNetwork
 
         testRequestResponseSingleMessage nodeConfigList 5 true
 
@@ -684,7 +694,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1181; 1182; 1183] |> create3NodesMeshedNetwork
 
         testRequestResponseSingleMessage nodeConfigList 5 false
 
@@ -693,7 +703,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1191; 1192; 1193] |> create3NodesMeshedNetwork
 
         testRequestResponseMultipleDifferentMessageTypes nodeConfigList 5
 
@@ -702,6 +712,6 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = create3NodesMeshedNetwork ()
+        let nodeConfigList = [1101; 1102; 1103] |> create3NodesMeshedNetwork
 
         testRequestResponseMultipleSameMessageTypes nodeConfigList 5

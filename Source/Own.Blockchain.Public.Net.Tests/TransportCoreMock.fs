@@ -1,6 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Net.Tests
 
 open System.Collections.Concurrent
+open System.Threading
 open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
@@ -13,6 +14,8 @@ type internal TransportCoreMock
     messageQueue : ConcurrentDictionary<string, ConcurrentQueue<byte[]>>,
     receiveCallback : PeerMessageEnvelopeDto -> unit
     ) =
+
+    let cts = new CancellationTokenSource()
 
     let packMessage message =
         message |> Serialization.serializeBinary
@@ -74,13 +77,14 @@ type internal TransportCoreMock
                             callback peerMessage
                         | Error error -> Log.error error
                 | _ -> ()
-                do! Async.Sleep(100)
+                do! Async.Sleep(25)
                 return! loop address callback
             }
-        Async.Start (loop networkAddress receiveCallback)
+        Async.Start (loop networkAddress receiveCallback, cts.Token)
 
     member __.CloseConnection networkAddress =
         messageQueue.TryRemove networkAddress |> ignore
 
     member __.CloseAllConnections () =
         messageQueue.Clear()
+        cts.Cancel()
