@@ -3,8 +3,10 @@ namespace Own.Blockchain.Public.Core.Tests
 open System.Collections.Generic
 open Own.Common.FSharp
 open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Consensus
 open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Core.Events
 
 module ConsensusTestHelpers =
@@ -80,6 +82,7 @@ module ConsensusTestHelpers =
         ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
         ?isValidBlock : BlockchainAddress -> Block -> bool,
         ?scheduleMessage : BlockchainAddress -> int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
+        ?scheduleStateResponse : BlockchainAddress -> int -> (BlockNumber * ConsensusStateResponse) -> unit,
         ?schedulePropose : BlockchainAddress -> int -> (BlockNumber * ConsensusRound) -> unit,
         ?scheduleTimeout : BlockchainAddress -> int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
         ?isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
@@ -139,13 +142,7 @@ module ConsensusTestHelpers =
 
                     (proposeBlock |? dummyFn) validatorAddress
 
-                let txExists _ = true
-
-                let equivocationProofExists _ = true
-
-                let requestTx _ = ()
-
-                let requestEquivocationProof _ = ()
+                let ensureBlockReady _ = true
 
                 let isValidBlock =
                     match isValidBlock with
@@ -158,11 +155,19 @@ module ConsensusTestHelpers =
                 let sendConsensusState =
                     __.SendConsensusState validatorAddress
 
+                let requestConsensusState () =
+                    __.RequestConsensusState validatorAddress
+
                 let publishEvent event =
                     _events.Add event
 
                 let scheduleMessage =
                     match scheduleMessage with
+                    | Some f -> f validatorAddress
+                    | None -> fun _ _ -> ()
+
+                let scheduleStateResponse =
+                    match scheduleStateResponse with
                     | Some f -> f validatorAddress
                     | None -> fun _ _ -> ()
 
@@ -176,6 +181,12 @@ module ConsensusTestHelpers =
                     | Some f -> f validatorAddress
                     | None -> fun _ _ -> ()
 
+                let verifyConsensusMessage (e : ConsensusMessageEnvelopeDto) =
+                    (
+                        BlockchainAddress e.Signature, // TODO: Mock this properly
+                            e |> Mapping.consensusMessageEnvelopeFromDto
+                    ) |> Ok
+
                 let state =
                     new ConsensusState(
                         persistConsensusState,
@@ -185,22 +196,24 @@ module ConsensusTestHelpers =
                         getValidators,
                         isValidatorBlacklisted,
                         proposeBlock,
-                        txExists,
-                        equivocationProofExists,
-                        requestTx,
-                        requestEquivocationProof,
+                        ensureBlockReady,
                         isValidBlock,
                         sendConsensusMessage,
                         sendConsensusState,
+                        requestConsensusState,
                         publishEvent,
                         scheduleMessage,
+                        scheduleStateResponse,
                         schedulePropose,
                         scheduleTimeout,
+                        verifyConsensusMessage,
                         0, // No need to pass in the value, because test will trigger the retry explicitly.
                         0, // No need to pass in the value, because test will trigger the retry explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
+                        0, // No need to pass in the value, because test will trigger the timout explicitly.
+                        0, // No need to pass in the value, because test will trigger the request explicitly.
                         validatorAddress
                     )
 

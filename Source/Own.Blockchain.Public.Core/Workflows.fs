@@ -833,7 +833,7 @@ module Workflows =
             }
         )
 
-    let handleReceivedConsensusMessage
+    let verifyConsensusMessage
         decodeHash
         createHash
         (getValidators : unit -> ValidatorSnapshot list)
@@ -868,12 +868,11 @@ module Workflows =
                     sprintf "%A is not a validator. Consensus message ignored: %A" senderAddress envelope
                     |> Result.appError
 
-            return ConsensusCommand.Message (senderAddress, envelope)
+            return senderAddress, envelope
         }
 
     let storeEquivocationProof
         verifySignature
-        createConsensusMessageHash
         decodeHash
         createHash
         saveEquivocationProof
@@ -885,7 +884,7 @@ module Workflows =
             let! equivocationProof =
                 Validation.validateEquivocationProof
                     verifySignature
-                    createConsensusMessageHash
+                    Consensus.createConsensusMessageHash
                     decodeHash
                     createHash
                     equivocationProofDto
@@ -996,6 +995,8 @@ module Workflows =
             }
             |> sendMessageToPeers
 
+            Log.debug "Consensus state requested."
+
     let sendConsensusState
         getNetworkId
         respondToPeer
@@ -1022,7 +1023,7 @@ module Workflows =
         getEquivocationProof
         getBlock
         getLastAppliedBlockNumber
-        handleReceivedConsensusMessage
+        verifyConsensusMessage
         respondToPeer
         getPeerList
         getNetworkId
@@ -1071,8 +1072,8 @@ module Workflows =
         let processConsensusMessageFromPeer data =
             data
             |> Serialization.deserializeBinary<ConsensusMessageEnvelopeDto>
-            |> handleReceivedConsensusMessage
-            |> Result.map (ConsensusMessageReceived >> Some)
+            |> verifyConsensusMessage
+            |> Result.map (ConsensusCommand.Message >> ConsensusMessageReceived >> Some)
 
         let processConsensusStateFromPeer isResponse senderIdentity data =
             if isResponse then

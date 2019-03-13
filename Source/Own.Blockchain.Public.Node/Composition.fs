@@ -395,6 +395,13 @@ module Composition =
             getNetworkId
             Peers.respondToPeer
 
+    let verifyConsensusMessage =
+        Workflows.verifyConsensusMessage
+            Hashing.decode
+            Hashing.hash
+            getCurrentValidators
+            verifySignature
+
     let createConsensusStateInstance publishEvent =
         Consensus.createConsensusStateInstance
             getLastAppliedBlockNumber
@@ -410,10 +417,12 @@ module Composition =
             Hashing.decode
             Hashing.hash
             signHash
+            verifyConsensusMessage
             persistConsensusState
             restoreConsensusState
             persistConsensusMessage
             restoreConsensusMessages
+            requestConsensusState
             sendConsensusState
             Peers.sendMessage
             getNetworkId
@@ -427,18 +436,11 @@ module Composition =
             Config.ConsensusTimeoutCommit
             Config.ConsensusTimeoutDelta
             Config.ConsensusTimeoutIncrements
-
-    let handleReceivedConsensusMessage =
-        Workflows.handleReceivedConsensusMessage
-            Hashing.decode
-            Hashing.hash
-            getCurrentValidators
-            verifySignature
+            Config.StaleRoundDetectionInterval
 
     let storeEquivocationProof =
         Workflows.storeEquivocationProof
             verifySignature
-            Consensus.createConsensusMessageHash
             Hashing.decode
             Hashing.hash
             saveEquivocationProof
@@ -527,7 +529,7 @@ module Composition =
             getEquivocationProof
             getBlock
             getLastAppliedBlockNumber
-            handleReceivedConsensusMessage
+            verifyConsensusMessage
             Peers.respondToPeer
             Peers.getPeerList
             getNetworkId

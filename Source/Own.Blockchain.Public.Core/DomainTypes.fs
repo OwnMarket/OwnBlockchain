@@ -449,10 +449,10 @@ type ConsensusStateRequest = {
 }
 
 type ConsensusStateResponse = {
-    ProposeMessage : ConsensusMessageEnvelope option
-    VoteMessage : ConsensusMessageEnvelope option
-    CommitMessage : ConsensusMessageEnvelope option
-    LockedBlockSignatures : Signature list
+    LatestMessages : ConsensusMessageEnvelope list
+    LockedRound : ConsensusRound
+    LockedProposal : ConsensusMessageEnvelope option
+    LockedVoteSignatures : Signature list
 }
 
 type ConsensusCommand =

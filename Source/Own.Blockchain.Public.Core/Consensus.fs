@@ -18,28 +18,33 @@ module Consensus =
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
         isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
         proposeBlock : BlockNumber -> Result<Block, AppErrors> option,
-        txExists : TxHash -> bool,
-        equivocationProofExists : EquivocationProofHash -> bool,
-        requestTx : TxHash -> unit,
-        requestEquivocationProof : EquivocationProofHash -> unit,
+        ensureBlockReady : Block -> bool,
         isValidBlock : Block -> bool,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
         sendConsensusState : PeerNetworkIdentity -> ConsensusStateResponse -> unit,
+        requestConsensusState : unit -> unit,
         publishEvent : AppEvent -> unit,
         scheduleMessage : int -> BlockchainAddress * ConsensusMessageEnvelope -> unit,
+        scheduleStateResponse : int -> BlockNumber * ConsensusStateResponse -> unit,
         schedulePropose : int -> BlockNumber * ConsensusRound -> unit,
         scheduleTimeout : int -> BlockNumber * ConsensusRound * ConsensusStep -> unit,
+        verifyConsensusMessage :
+            ConsensusMessageEnvelopeDto -> Result<BlockchainAddress * ConsensusMessageEnvelope, AppErrors>,
         messageRetryingInterval : int,
         proposeRetryingInterval : int,
         timeoutPropose : int,
         timeoutVote : int,
         timeoutCommit : int,
+        timeoutDelta : int,
+        staleRoundDetectionInterval : int,
         validatorAddress : BlockchainAddress
         ) =
 
         let mutable _validators = []
         let mutable _qualifiedMajority = 0
         let mutable _validQuorum = 0
+
+        let mutable _roundStartTime = 0L // Used for stale round detection. Updated upon requesting consensus state.
 
         let mutable _blockNumber = BlockNumber 0L
         let mutable _round = ConsensusRound 0
@@ -50,6 +55,7 @@ module Consensus =
         let mutable _lockedRound = ConsensusRound -1
         let mutable _validBlock = None
         let mutable _validRound = ConsensusRound -1
+
         let _proposals =
             new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, Block * ConsensusRound * Signature>()
         let _votes =
@@ -68,14 +74,14 @@ module Consensus =
                 scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
 
             __.Synchronize()
-            __.UpdateState()
+            __.StartStaleRoundDetection()
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             match command with
             | Synchronize ->
                 __.Synchronize()
             | Message (senderAddress, envelope) ->
-                __.ProcessConsensusMessage(senderAddress, envelope)
+                __.ProcessConsensusMessage(senderAddress, envelope, true)
             | RetryPropose (blockNumber, consensusRound) ->
                 __.RetryPropose(blockNumber, consensusRound)
             | Timeout (blockNumber, consensusRound, consensusStep) ->
@@ -88,7 +94,7 @@ module Consensus =
             | StateReceived stateResponse ->
                 __.ApplyReceivedState(stateResponse)
 
-        member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope) =
+        member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope, updateState) =
             if isValidatorBlacklisted (senderAddress, _blockNumber, envelope.BlockNumber) then
                 envelope.ConsensusMessage
                 |> unionCaseName
@@ -98,31 +104,23 @@ module Consensus =
 
                 match envelope.ConsensusMessage with
                 | ConsensusMessage.Propose (block, vr) ->
-                    let missingTxs =
-                        block.TxSet
-                        |> List.filter (txExists >> not)
-
-                    let missingEquivocationProofs =
-                        block.EquivocationProofs
-                        |> List.filter (equivocationProofExists >> not)
-
-                    match missingTxs, missingEquivocationProofs with
-                    | [], [] ->
-                        if _proposals.TryAdd(key, (block, vr, envelope.Signature)) then
-                            __.UpdateState()
-                    | _ ->
-                        if _blockNumber = block.Header.Number then
-                            missingTxs |> List.iter requestTx
-                            missingEquivocationProofs |> List.iter requestEquivocationProof
+                    if block.Header.Number = envelope.BlockNumber then
+                        if ensureBlockReady block then
+                            if _proposals.TryAdd(key, (block, vr, envelope.Signature)) then
+                                if updateState then
+                                    __.UpdateState()
+                        else
                             scheduleMessage messageRetryingInterval (senderAddress, envelope)
                 | ConsensusMessage.Vote blockHash ->
                     if _votes.TryAdd(key, (blockHash, envelope.Signature)) then
-                        __.UpdateState()
+                        if updateState then
+                            __.UpdateState()
                     else
                         __.DetectEquivocation(envelope, senderAddress)
                 | ConsensusMessage.Commit blockHash ->
                     if _commits.TryAdd(key, (blockHash, envelope.Signature)) then
-                        __.UpdateState()
+                        if updateState then
+                            __.UpdateState()
                     else
                         __.DetectEquivocation(envelope, senderAddress)
 
@@ -169,8 +167,121 @@ module Consensus =
 
             __.SetValidators(_blockNumber - 1)
 
-        member private __.ApplyReceivedState(stateResponse) =
-            ()
+        member __.StartStaleRoundDetection() =
+            let rec loop () =
+                async {
+                    do! Async.Sleep staleRoundDetectionInterval
+
+                    let maxRoundDuration =
+                        timeoutPropose + timeoutVote + timeoutCommit + (timeoutDelta * 3 * _round.Value)
+                        |> int64
+
+                    let currentTime = Utils.getMachineTimestamp ()
+                    let roundDuration = currentTime - _roundStartTime
+
+                    if roundDuration > maxRoundDuration then
+                        try
+                            _roundStartTime <- currentTime
+                            requestConsensusState ()
+                        with
+                        | ex -> Log.error ex.AllMessagesAndStackTraces
+
+                    return! loop ()
+                }
+
+            loop ()
+            |> Async.Start
+
+        member private __.ApplyReceivedState(response) =
+            let messages =
+                response.LatestMessages
+                |> List.toArray
+                |> Array.Parallel.map (Mapping.consensusMessageEnvelopeToDto >> verifyConsensusMessage)
+                |> Array.choose (function
+                    | Ok e -> Some e
+                    | _ -> None
+                )
+
+            if messages.Length > 0 then
+                for (s, e) in messages do
+                    __.ProcessConsensusMessage(s, e, false)
+                __.UpdateState()
+
+            let response = {response with LatestMessages = []} // We're done with the messages - no need to keep them.
+
+            if response.LockedRound > _lockedRound then
+                let isValidMessage, lockedBlock =
+                    match response.LockedProposal with
+                    | None -> true, None
+                    | Some e ->
+                        if e.BlockNumber = _blockNumber then
+                            match e.ConsensusMessage with
+                            | Propose (b, _) when b.Header.Number = e.BlockNumber ->
+                                true, Some b
+                            | _ ->
+                                false, None
+                        else
+                            false, None
+
+                if isValidMessage then
+                    let votes =
+                        response.LockedVoteSignatures
+                        |> List.toArray
+                        |> Array.Parallel.map (fun s ->
+                            {
+                                ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                                Round = response.LockedRound
+                                ConsensusMessage =
+                                    lockedBlock
+                                    |> Option.map (fun b -> b.Header.Hash)
+                                    |> ConsensusMessage.Vote
+                                Signature = s
+                            }
+                            |> Mapping.consensusMessageEnvelopeToDto
+                            |> verifyConsensusMessage
+                        )
+                        |> Array.choose (function
+                            | Ok v -> Some v
+                            | Error e ->
+                                Log.appErrors e
+                                None
+                        )
+
+                    let signers =
+                        votes
+                        |> Array.map fst
+                        |> Set.ofArray
+                        |> Set.intersect (_validators |> Set.ofList)
+
+                    if signers.Count >= _qualifiedMajority then
+                        let blockReady =
+                            match lockedBlock with
+                            | None -> true
+                            | Some b -> ensureBlockReady b
+
+                        if not blockReady then
+                            scheduleStateResponse messageRetryingInterval (_blockNumber, response)
+                        else
+                            response.LockedProposal
+                            |> Option.iter (fun e ->
+                                e
+                                |> Mapping.consensusMessageEnvelopeToDto
+                                |> verifyConsensusMessage
+                                |> Result.handle
+                                    (fun (a, _) -> __.ProcessConsensusMessage(a, e, false))
+                                    Log.appErrors
+                            )
+
+                            for s, e in votes do
+                                if signers.Contains s then
+                                    __.ProcessConsensusMessage(s, e, false)
+
+                            _lockedBlock <- lockedBlock
+                            _lockedRound <- response.LockedRound
+                            _round <- _lockedRound
+                            _step <- ConsensusStep.Propose
+
+                            __.UpdateState()
 
         member private __.SendState(request, peerIdentity) =
             if not (_validators |> List.contains request.ValidatorAddress) then
@@ -180,40 +291,73 @@ module Consensus =
                 Log.warningf "Validator %s is blacklisted. Consensus state request ignored."
                     request.ValidatorAddress.Value
             else
-                let key = _blockNumber, _round, validatorAddress
+                let latestMessages =
+                    [
+                        let key = _blockNumber, _round, validatorAddress
 
-                {
-                    ConsensusStateResponse.ProposeMessage =
-                        match _proposals.TryGetValue(key) with
-                        | true, (b, vr, s) ->
-                            Some {
+                        if _proposals.ContainsKey(key) then
+                            let (b, vr, s) = _proposals.[key]
+                            yield {
                                 ConsensusMessageEnvelope.BlockNumber = _blockNumber
                                 Round = _round
                                 ConsensusMessage = Propose (b, vr)
                                 Signature = s
                             }
-                        | _ -> None
-                    VoteMessage =
-                        match _votes.TryGetValue(key) with
-                        | true, (bh, s) ->
-                            Some {
+
+                        if _votes.ContainsKey(key) then
+                            let (bh, s) = _votes.[key]
+                            yield {
                                 ConsensusMessageEnvelope.BlockNumber = _blockNumber
                                 Round = _round
                                 ConsensusMessage = Vote bh
                                 Signature = s
                             }
-                        | _ -> None
-                    CommitMessage =
-                        match _votes.TryGetValue(key) with
-                        | true, (bh, s) ->
-                            Some {
+
+                        if _commits.ContainsKey(key) then
+                            let (bh, s) = _commits.[key]
+                            yield {
                                 ConsensusMessageEnvelope.BlockNumber = _blockNumber
                                 Round = _round
                                 ConsensusMessage = Commit bh
                                 Signature = s
                             }
-                        | _ -> None
-                    LockedBlockSignatures = _lockedBlockSignatures
+                    ]
+
+                let lockedProposal =
+                    if _lockedRound < ConsensusRound 0 then
+                        None
+                    else
+                        _lockedBlock
+                        |> Option.map (fun _ ->
+                            let lockedRoundProposer = Validators.getProposer _blockNumber _lockedRound _validators
+                            let key = _blockNumber, _lockedRound, lockedRoundProposer
+                            match _proposals.TryGetValue(key) with
+                            | true, (b, vr, s) ->
+                                {
+                                    ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                                    Round = _lockedRound
+                                    ConsensusMessage = Propose (b, vr)
+                                    Signature = s
+                                }
+                            | _ ->
+                                failwithf "Cannot find proposal corresponding to locked consensus value. (Key: %A)" key
+                        )
+
+                let lockedVoteSignatures =
+                    if _lockedRound < ConsensusRound 0 then
+                        []
+                    elif _lockedBlockSignatures.Length < _qualifiedMajority then
+                        failwithf "_lockedBlockSignatures has only %i entries, while it should have at least %i."
+                            _lockedBlockSignatures.Length
+                            _qualifiedMajority
+                    else
+                        _lockedBlockSignatures
+
+                {
+                    ConsensusStateResponse.LatestMessages = latestMessages
+                    LockedRound = _lockedRound
+                    LockedProposal = lockedProposal
+                    LockedVoteSignatures = lockedVoteSignatures
                 }
                 |> sendConsensusState peerIdentity
 
@@ -309,6 +453,7 @@ module Consensus =
                     __.TryPropose()
 
         member private __.StartRound(r) =
+            _roundStartTime <- Utils.getMachineTimestamp ()
             _round <- r
             _step <- ConsensusStep.Propose
 
@@ -711,10 +856,12 @@ module Consensus =
         decodeHash
         createHash
         signHash
+        verifyConsensusMessage
         persistConsensusState
         restoreConsensusState
         persistConsensusMessage
         restoreConsensusMessages
+        requestConsensusState
         sendConsensusState
         sendPeerMessage
         getNetworkId
@@ -728,6 +875,7 @@ module Consensus =
         timeoutCommit
         timeoutDelta
         timeoutIncrements
+        staleRoundDetectionInterval
         =
 
         let validatorAddress =
@@ -767,6 +915,23 @@ module Consensus =
                 |> Some
             else
                 None
+
+        let ensureBlockReady (block : Block) =
+            let missingTxs =
+                block.TxSet
+                |> List.filter (txExists >> not)
+
+            let missingEquivocationProofs =
+                block.EquivocationProofs
+                |> List.filter (equivocationProofExists >> not)
+
+            match missingTxs, missingEquivocationProofs with
+            | [], [] ->
+                true
+            | _ ->
+                missingTxs |> List.iter requestTx
+                missingEquivocationProofs |> List.iter requestEquivocationProof
+                false
 
         let isValidBlock = memoizeBy (fun (b : Block) -> b.Header.Hash) <| fun block ->
             block
@@ -865,6 +1030,23 @@ module Consensus =
                 }
                 |> Async.Start
 
+        let scheduleStateResponse timeout (blockNumber, stateResponse : ConsensusStateResponse) =
+            if canParticipateInConsensus blockNumber = Some true then
+                async {
+                    Log.debugf "Consensus state response retry scheduled: LockedRound %i"
+                        stateResponse.LockedRound.Value
+
+                    do! Async.Sleep timeout
+
+                    Log.debugf "Consensus state response retry triggered: LockedRound %i"
+                        stateResponse.LockedRound.Value
+
+                    ConsensusCommand.StateReceived stateResponse
+                    |> ConsensusCommandInvoked
+                    |> publishEvent
+                }
+                |> Async.Start
+
         let schedulePropose timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound) =
             if canParticipateInConsensus blockNumber = Some true then
                 async {
@@ -914,21 +1096,23 @@ module Consensus =
             getValidatorsAtHeight,
             isValidatorBlacklisted,
             proposeBlock,
-            txExists,
-            equivocationProofExists,
-            requestTx,
-            requestEquivocationProof,
+            ensureBlockReady,
             isValidBlock,
             sendConsensusMessage,
             sendConsensusState,
+            requestConsensusState,
             publishEvent,
             scheduleMessage,
+            scheduleStateResponse,
             schedulePropose,
             scheduleTimeout,
+            verifyConsensusMessage,
             messageRetryingInterval,
             proposeRetryingInterval,
             timeoutPropose,
             timeoutVote,
             timeoutCommit,
+            timeoutDelta,
+            staleRoundDetectionInterval,
             validatorAddress
             )

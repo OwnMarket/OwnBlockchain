@@ -793,29 +793,34 @@ module Mapping =
         }
 
     let consensusStateResponseFromDto (dto : ConsensusStateResponseDto) : ConsensusStateResponse =
-        let mapMessage m =
-            if isNull (box m) then
-                None
-            else
-                m |> consensusMessageEnvelopeFromDto |> Some
-
         {
-            ConsensusStateResponse.ProposeMessage = dto.ProposeMessage |> mapMessage
-            VoteMessage = dto.VoteMessage |> mapMessage
-            CommitMessage = dto.CommitMessage |> mapMessage
-            LockedBlockSignatures = dto.LockedBlockSignatures |> List.map Signature
+            ConsensusStateResponse.LatestMessages =
+                dto.LatestMessages
+                |> List.map consensusMessageEnvelopeFromDto
+            LockedRound = dto.LockedRound |> ConsensusRound
+            LockedProposal =
+                if isNull (box dto.LockedProposal) then
+                    None
+                else
+                    dto.LockedProposal |> consensusMessageEnvelopeFromDto |> Some
+            LockedVoteSignatures =
+                dto.LockedVoteSignatures
+                |> List.map Signature
         }
 
     let consensusStateResponseToDto (response : ConsensusStateResponse) : ConsensusStateResponseDto =
-        let mapMessage = function
-            | None -> Unchecked.defaultof<_>
-            | Some e -> consensusMessageEnvelopeToDto e
-
         {
-            ConsensusStateResponseDto.ProposeMessage = response.ProposeMessage |> mapMessage
-            VoteMessage = response.VoteMessage |> mapMessage
-            CommitMessage = response.CommitMessage |> mapMessage
-            LockedBlockSignatures = response.LockedBlockSignatures |> List.map (fun s -> s.Value)
+            ConsensusStateResponseDto.LatestMessages =
+                response.LatestMessages
+                |> List.map consensusMessageEnvelopeToDto
+            LockedRound = response.LockedRound.Value
+            LockedProposal =
+                match response.LockedProposal with
+                | None -> Unchecked.defaultof<_>
+                | Some e -> consensusMessageEnvelopeToDto e
+            LockedVoteSignatures =
+                response.LockedVoteSignatures
+                |> List.map (fun s -> s.Value)
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -25,7 +25,6 @@ module Cli =
         Composition.discoverNetwork ()
         Workers.startBlockchainHeadPoller ()
         Workers.startFetcher ()
-        Composition.requestConsensusState ()
         Api.start () // Blocks and waits for the exit signal.
 
         // Cleanup
