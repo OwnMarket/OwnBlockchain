@@ -10,10 +10,9 @@ type internal TransportCoreMock
     (
     networkId,
     peerIdentity,
+    messageQueue : ConcurrentDictionary<string, ConcurrentQueue<byte[]>>,
     receiveCallback : PeerMessageEnvelopeDto -> unit
     ) =
-
-    let messageQueue = new ConcurrentDictionary<string, ConcurrentQueue<byte[]>>()
 
     let packMessage message =
         message |> Serialization.serializeBinary
@@ -70,7 +69,8 @@ type internal TransportCoreMock
                     let mutable message = Array.empty
                     while queue.TryDequeue &message do
                         match unpackMessage message with
-                        | Ok peerMessage -> callback peerMessage
+                        | Ok peerMessage ->
+                            callback peerMessage
                         | Error error -> Log.error error
                 | _ -> ()
                 do! Async.Sleep(100)

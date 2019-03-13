@@ -1,12 +1,14 @@
 ﻿namespace Own.Blockchain.Public.Net.Tests
 
+open System.Collections.Concurrent
 open Own.Blockchain.Public.Core.Dtos
 
 module TransportMock =
 
     let mutable private transportCoreMock : TransportCoreMock option = None
+    let messageQueue = new ConcurrentDictionary<string, ConcurrentQueue<byte[]>>()
     let init networkId identity receivePeerMessage =
-        let transport = TransportCoreMock (networkId, identity, receivePeerMessage)
+        let transport = TransportCoreMock (networkId, identity, messageQueue, receivePeerMessage)
         transportCoreMock <- transport |> Some
 
     let receiveMessage listeningAddress =

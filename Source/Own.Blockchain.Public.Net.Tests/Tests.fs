@@ -257,25 +257,25 @@ module PeerTests =
 
     let create3NodesConfigSameBootstrapNode () =
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes "5555" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5555" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5555" |> Some
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
-            Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5556" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5556" |> Some
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
-            Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5557" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5557" |> Some
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
@@ -284,25 +284,25 @@ module PeerTests =
 
     let create3NodesConfigDifferentBoostrapNode () =
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes "5555" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5555" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5555" |> Some
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
-            Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5556" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5556" |> Some
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
-            Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5557" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5557" |> Some
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
@@ -311,25 +311,25 @@ module PeerTests =
 
     let create3NodesMeshedNetwork () =
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes "5555" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5555" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5555"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5555" |> Some
             BootstrapNodes = [NetworkAddress "127.0.0.1:5556"; NetworkAddress "127.0.0.1:5557"]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig2 = {
-            Identity = Conversion.stringToBytes "5556" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5556" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5556"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5556" |> Some
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5557"]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
         }
         let nodeConfig3 = {
-            Identity = Conversion.stringToBytes "5557" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:5557" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:5557"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:5557" |> Some
             BootstrapNodes = [NetworkAddress "127.0.0.1:5555"; NetworkAddress "127.0.0.1:5556"]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
@@ -587,9 +587,9 @@ module PeerTests =
         setupTest ()
 
         let nodeConfig1 = {
-            Identity = Conversion.stringToBytes "6555" |> PeerNetworkIdentity
+            Identity = Conversion.stringToBytes "127.0.0.1:6555" |> PeerNetworkIdentity
             ListeningAddress = NetworkAddress "127.0.0.1:6555"
-            PublicAddress = None
+            PublicAddress = NetworkAddress "127.0.0.1:6555" |> Some
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
@@ -599,9 +599,9 @@ module PeerTests =
             [6556..6654]
             |> List.map (fun port ->
                 {
-                    Identity = port.ToString() |> Conversion.stringToBytes |> PeerNetworkIdentity
+                    Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
                     ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
-                    PublicAddress = None
+                    PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
                     BootstrapNodes = [NetworkAddress "127.0.0.1:6555"]
                     AllowPrivateNetworkPeers = true
                     MaxConnectedPeers = 200
