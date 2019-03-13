@@ -212,6 +212,7 @@ type NetworkNode
         let take = nodeConfig.MaxConnectedPeers - activeMembersCount
 
         receivedMembers
+        |> List.except existingMembers
         |> List.shuffle
         |> List.truncate take
         |> List.append existingMembers
