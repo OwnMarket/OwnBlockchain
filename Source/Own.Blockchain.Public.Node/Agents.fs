@@ -52,6 +52,12 @@ module Agents =
         | Some v -> v.Post e
         | None -> Log.error "EquivocationProofVerifier agent not started."
 
+    let mutable private blockchainHeadHandler : MailboxProcessor<BlockNumber> option = None
+    let private invokeBlockchainHeadHandler e =
+        match blockchainHeadHandler with
+        | Some v -> v.Post e
+        | None -> Log.error "BlockchainHeadHandler agent not started."
+
     let mutable private blockVerifier : MailboxProcessor<BlockEnvelopeDto * bool> option = None
     let private invokeBlockVerifier e =
         match blockVerifier with
@@ -233,9 +239,8 @@ module Agents =
         | ConsensusStateResponseReceived state ->
             ConsensusCommand.StateReceived state
             |> invokeValidator
-        | BlockchainHeadReceived blockNr ->
-            // TODO:
-            ()
+        | BlockchainHeadReceived blockNumber ->
+            invokeBlockchainHeadHandler blockNumber
         | PeerListReceived peerList ->
             invokeUpdatePeerListHandler peerList
 
@@ -293,6 +298,17 @@ module Agents =
                             (equivocationProofHash, isFetched) |> EquivocationProofStored |> publishEvent
                         )
                         Log.appErrors
+                }
+            |> Some
+
+    let private startBlockchainHeadHandler () =
+        if blockchainHeadHandler <> None then
+            failwith "BlockchainHeadHandler agent is already started."
+
+        blockchainHeadHandler <-
+            Agent.start <| fun blockNumber ->
+                async {
+                    Composition.handleReceivedBlockchainHead blockNumber
                 }
             |> Some
 
@@ -359,6 +375,7 @@ module Agents =
         startUpdatePeerListHandler ()
         startTxVerifier ()
         startEquivocationProofVerifier ()
+        startBlockchainHeadHandler ()
         startBlockVerifier ()
         startApplier ()
         startValidator ()

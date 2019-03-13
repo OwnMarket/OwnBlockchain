@@ -346,6 +346,11 @@ module Composition =
             Peers.requestBlockchainHeadFromPeer
             Config.BlockchainHeadPollInterval
 
+    let handleReceivedBlockchainHead =
+        Workflows.handleReceivedBlockchainHead
+            blockExists
+            Peers.requestBlockFromPeer
+
     let fetchMissingBlocks publishEvent =
         Synchronization.fetchMissingBlocks
             getLastAppliedBlockNumber

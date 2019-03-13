@@ -246,6 +246,15 @@ module Workflows =
             )
             Log.appErrors
 
+    let handleReceivedBlockchainHead
+        blockExists
+        requestBlockFromPeer
+        blockNumber
+        =
+
+        if not (blockExists blockNumber) then
+            requestBlockFromPeer blockNumber
+
     let createBlock
         getTx
         getEquivocationProof
