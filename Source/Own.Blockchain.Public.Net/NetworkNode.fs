@@ -397,9 +397,7 @@ type NetworkNode
                     deadMembers.TryRemove inputMember.NetworkAddress |> ignore
 
     member private __.GetActiveMember networkAddress =
-        match activeMembers.TryGetValue networkAddress with
-        | true, localMember -> Some localMember
-        | _ -> None
+        __.GetActiveMembers() |> List.tryFind (fun m -> m.NetworkAddress = networkAddress)
 
     member private __.IncreaseHeartbeat () =
         nodeConfig.PublicAddress
