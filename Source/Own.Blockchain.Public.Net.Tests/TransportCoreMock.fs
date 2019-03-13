@@ -47,7 +47,8 @@ type internal TransportCoreMock
 
     member __.SendResponseMessage requestMessage (targetIdentity : byte[]) =
         let msg = packMessage requestMessage
-        send msg ""
+        let targetAddress = Conversion.bytesToString targetIdentity
+        send msg targetAddress
 
     member __.SendMulticastMessage multicastMessage multicastAddresses =
         match multicastAddresses with
