@@ -201,15 +201,20 @@ module Workflows =
         saveBlockToDb
         =
 
+        let logOnce = memoize Log.info
+
         let lastBlockNumber = getLastStoredBlockNumber () |? getLastAppliedBlockNumber ()
 
         lastBlockNumber + 1
         |> Seq.unfold (fun n ->
             getBlock n
             |> Result.map Blocks.extractBlockFromEnvelopeDto
-            |> Result.handle
-                (fun b -> Some (b, n + 1))
-                (fun _ -> None)
+            |> function
+                | Ok b ->
+                    logOnce "Rebuilding blockchain state..."
+                    Some (b, n + 1)
+                | _ ->
+                    None
         )
         |> Seq.iter (fun b ->
             b.Header
