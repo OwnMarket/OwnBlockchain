@@ -9,6 +9,51 @@ open Own.Blockchain.Public.Core.Events
 
 module Synchronization =
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network Time
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let updateNetworkTimeOffset getNetworkTimeOffset =
+        Utils.networkTimeOffset <- getNetworkTimeOffset ()
+        Log.infof "Network time offset set to %i" Utils.networkTimeOffset
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Blockchain Head
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let synchronizeBlockchainHead
+        (getLastStoredBlockNumber : unit -> BlockNumber option)
+        (getLastAppliedBlockNumber : unit -> BlockNumber)
+        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
+        requestBlockchainHeadFromPeer
+        blockchainHeadPollInterval
+        =
+
+        getLastStoredBlockNumber ()
+        |?> getLastAppliedBlockNumber
+        |> getBlock
+        |> Result.map Blocks.extractBlockFromEnvelopeDto
+        |> Result.handle
+            (fun block ->
+                let currentTimestamp = Utils.getNetworkTimestamp ()
+                if currentTimestamp - block.Header.Timestamp.Value >= int64 blockchainHeadPollInterval then
+                    requestBlockchainHeadFromPeer ()
+            )
+            Log.appErrors
+
+    let handleReceivedBlockchainHead
+        blockExists
+        requestBlockFromPeer
+        blockNumber
+        =
+
+        if not (blockExists blockNumber) then
+            requestBlockFromPeer blockNumber
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Blockchain State
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
     let unverifiedBlocks = new ConcurrentDictionary<BlockNumber, BlockEnvelopeDto>()
 
     let private requestBlock requestFromPeer publishEvent blockNumber =
@@ -133,44 +178,3 @@ module Synchronization =
                     removeOrphanEquivocationProofResults ()
                 )
         )
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Blockchain Head
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let synchronizeBlockchainHead
-        (getLastStoredBlockNumber : unit -> BlockNumber option)
-        (getLastAppliedBlockNumber : unit -> BlockNumber)
-        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
-        requestBlockchainHeadFromPeer
-        blockchainHeadPollInterval
-        =
-
-        getLastStoredBlockNumber ()
-        |?> getLastAppliedBlockNumber
-        |> getBlock
-        |> Result.map Blocks.extractBlockFromEnvelopeDto
-        |> Result.handle
-            (fun block ->
-                let currentTimestamp = Utils.getNetworkTimestamp ()
-                if currentTimestamp - block.Header.Timestamp.Value >= int64 blockchainHeadPollInterval then
-                    requestBlockchainHeadFromPeer ()
-            )
-            Log.appErrors
-
-    let handleReceivedBlockchainHead
-        blockExists
-        requestBlockFromPeer
-        blockNumber
-        =
-
-        if not (blockExists blockNumber) then
-            requestBlockFromPeer blockNumber
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Network Time
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    let updateNetworkTimeOffset getNetworkTimeOffset =
-        Utils.networkTimeOffset <- getNetworkTimeOffset ()
-        Log.infof "Network time offset set to %i" Utils.networkTimeOffset

@@ -327,17 +327,6 @@ module Composition =
         Synchronization.updateNetworkTimeOffset
             Ntp.getNetworkTimeOffset
 
-    let tryApplyNextBlock publishEvent =
-        Synchronization.tryApplyNextBlock
-            getLastAppliedBlockNumber
-            getBlock
-            applyBlock
-            txExists
-            equivocationProofExists
-            removeOrphanTxResults
-            removeOrphanEquivocationProofResults
-            publishEvent
-
     let synchronizeBlockchainHead () =
         Synchronization.synchronizeBlockchainHead
             getLastStoredBlockNumber
@@ -365,6 +354,17 @@ module Composition =
             Peers.requestEquivocationProofFromPeer
             publishEvent
             Config.MaxNumberOfBlocksToFetchInParallel
+
+    let tryApplyNextBlock publishEvent =
+        Synchronization.tryApplyNextBlock
+            getLastAppliedBlockNumber
+            getBlock
+            applyBlock
+            txExists
+            equivocationProofExists
+            removeOrphanTxResults
+            removeOrphanEquivocationProofResults
+            publishEvent
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
