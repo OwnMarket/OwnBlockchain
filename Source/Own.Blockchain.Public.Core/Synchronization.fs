@@ -43,11 +43,15 @@ module Synchronization =
 
     let handleReceivedBlockchainHead
         blockExists
+        getLastAppliedBlockNumber
         requestBlockFromPeer
-        blockNumber
+        (blockNumber : BlockNumber)
         =
 
-        if not (blockExists blockNumber) then
+        if blockExists blockNumber then
+            if getLastAppliedBlockNumber () = blockNumber then
+                Log.info "Node is synchronized"
+        else
             requestBlockFromPeer blockNumber
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
