@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.Core
 
+open System
 open System.Collections.Generic
 open Own.Common.FSharp
 open Own.Blockchain.Common
@@ -20,6 +21,8 @@ module Consensus =
         proposeBlock : BlockNumber -> Result<Block, AppErrors> option,
         ensureBlockReady : Block -> bool,
         isValidBlock : Block -> bool,
+        verifyConsensusMessage :
+            ConsensusMessageEnvelopeDto -> Result<BlockchainAddress * ConsensusMessageEnvelope, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
         sendConsensusState : PeerNetworkIdentity -> ConsensusStateResponse -> unit,
         requestConsensusState : unit -> unit,
@@ -27,15 +30,10 @@ module Consensus =
         scheduleMessage : int -> BlockchainAddress * ConsensusMessageEnvelope -> unit,
         scheduleStateResponse : int -> BlockNumber * ConsensusStateResponse -> unit,
         schedulePropose : int -> BlockNumber * ConsensusRound -> unit,
-        scheduleTimeout : int -> BlockNumber * ConsensusRound * ConsensusStep -> unit,
-        verifyConsensusMessage :
-            ConsensusMessageEnvelopeDto -> Result<BlockchainAddress * ConsensusMessageEnvelope, AppErrors>,
+        scheduleTimeout : BlockNumber * ConsensusRound * ConsensusStep -> unit,
+        timeoutForRound : ConsensusStep -> ConsensusRound -> int,
         messageRetryingInterval : int,
         proposeRetryingInterval : int,
-        timeoutPropose : int,
-        timeoutVote : int,
-        timeoutCommit : int,
-        timeoutDelta : int,
         staleRoundDetectionInterval : int,
         validatorAddress : BlockchainAddress
         ) =
@@ -71,7 +69,7 @@ module Consensus =
                     || not (_proposals.ContainsKey(_blockNumber, _round, validatorAddress))
                 then
                     __.StartRound(_round)
-                scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
+                scheduleTimeout (_blockNumber, _round, ConsensusStep.Propose)
 
             __.Synchronize()
             __.StartStaleRoundDetection()
@@ -105,12 +103,20 @@ module Consensus =
                 match envelope.ConsensusMessage with
                 | ConsensusMessage.Propose (block, vr) ->
                     if block.Header.Number = envelope.BlockNumber then
-                        if ensureBlockReady block then
-                            if _proposals.TryAdd(key, (block, vr, envelope.Signature)) then
-                                if updateState then
-                                    __.UpdateState()
+                        let networkTime = Utils.getNetworkTimestamp ()
+                        if block.Header.Number = _blockNumber && block.Header.Timestamp.Value > networkTime then
+                            let timeout = timeoutForRound ConsensusStep.Propose _round |> int64
+                            let maxValidBlockTime = _roundStartTime + timeout
+                            if block.Header.Timestamp.Value < maxValidBlockTime then
+                                let timeToPostpone = block.Header.Timestamp.Value - networkTime |> Convert.ToInt32
+                                scheduleMessage timeToPostpone (senderAddress, envelope)
                         else
-                            scheduleMessage messageRetryingInterval (senderAddress, envelope)
+                            if ensureBlockReady block then
+                                if _proposals.TryAdd(key, (block, vr, envelope.Signature)) then
+                                    if updateState then
+                                        __.UpdateState()
+                            else
+                                scheduleMessage messageRetryingInterval (senderAddress, envelope)
                 | ConsensusMessage.Vote blockHash ->
                     if _votes.TryAdd(key, (blockHash, envelope.Signature)) then
                         if updateState then
@@ -173,7 +179,9 @@ module Consensus =
                     do! Async.Sleep staleRoundDetectionInterval
 
                     let maxRoundDuration =
-                        timeoutPropose + timeoutVote + timeoutCommit + (timeoutDelta * 3 * _round.Value)
+                        timeoutForRound ConsensusStep.Propose _round
+                        + timeoutForRound ConsensusStep.Vote _round
+                        + timeoutForRound ConsensusStep.Commit _round
                         |> int64
 
                     let currentTime = Utils.getMachineTimestamp ()
@@ -460,7 +468,7 @@ module Consensus =
             if Validators.getProposer _blockNumber _round _validators = validatorAddress then
                 __.TryPropose()
 
-            scheduleTimeout timeoutPropose (_blockNumber, _round, ConsensusStep.Propose)
+            scheduleTimeout (_blockNumber, _round, ConsensusStep.Propose)
 
         member private __.UpdateState() =
             // PROPOSE RULES
@@ -486,7 +494,7 @@ module Consensus =
 
             // VOTE RULES
             if _step = ConsensusStep.Vote && __.MajorityVoted(_round) then
-                scheduleTimeout timeoutVote (_blockNumber, _round, ConsensusStep.Vote)
+                scheduleTimeout (_blockNumber, _round, ConsensusStep.Vote)
 
             if _step >= ConsensusStep.Vote then
                 __.GetProposal()
@@ -510,7 +518,7 @@ module Consensus =
 
             // COMMIT RULES
             if __.MajorityCommitted(_round) then
-                scheduleTimeout timeoutCommit (_blockNumber, _round, ConsensusStep.Commit)
+                scheduleTimeout (_blockNumber, _round, ConsensusStep.Commit)
 
             if not (_decisions.ContainsKey _blockNumber) then
                 __.GetProposalCommittedByMajority()
@@ -1066,7 +1074,16 @@ module Consensus =
                 }
                 |> Async.Start
 
-        let scheduleTimeout timeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
+        let timeoutForRound consensusStep (ConsensusRound consensusRound) =
+            let baseTimeout =
+                match consensusStep with
+                | ConsensusStep.Propose -> timeoutPropose
+                | ConsensusStep.Vote -> timeoutVote
+                | ConsensusStep.Commit -> timeoutCommit
+
+            baseTimeout + timeoutDelta * min consensusRound timeoutIncrements
+
+        let scheduleTimeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
             if canParticipateInConsensus blockNumber = Some true then
                 async {
                     Log.debugf "Timeout scheduled: %i / %i / %s"
@@ -1074,7 +1091,7 @@ module Consensus =
                         consensusRound.Value
                         (unionCaseName consensusStep)
 
-                    do! Async.Sleep (timeout + timeoutDelta * min consensusRound.Value timeoutIncrements)
+                    do! Async.Sleep (timeoutForRound consensusStep consensusRound)
 
                     Log.debugf "Timeout elapsed: %i / %i / %s"
                         blockNumber.Value
@@ -1098,6 +1115,7 @@ module Consensus =
             proposeBlock,
             ensureBlockReady,
             isValidBlock,
+            verifyConsensusMessage,
             sendConsensusMessage,
             sendConsensusState,
             requestConsensusState,
@@ -1106,13 +1124,9 @@ module Consensus =
             scheduleStateResponse,
             schedulePropose,
             scheduleTimeout,
-            verifyConsensusMessage,
+            timeoutForRound,
             messageRetryingInterval,
             proposeRetryingInterval,
-            timeoutPropose,
-            timeoutVote,
-            timeoutCommit,
-            timeoutDelta,
             staleRoundDetectionInterval,
             validatorAddress
             )

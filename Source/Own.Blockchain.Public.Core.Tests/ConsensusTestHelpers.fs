@@ -198,6 +198,7 @@ module ConsensusTestHelpers =
                         proposeBlock,
                         ensureBlockReady,
                         isValidBlock,
+                        verifyConsensusMessage,
                         sendConsensusMessage,
                         sendConsensusState,
                         requestConsensusState,
@@ -206,9 +207,9 @@ module ConsensusTestHelpers =
                         scheduleStateResponse,
                         schedulePropose,
                         scheduleTimeout,
-                        verifyConsensusMessage,
                         0, // No need to pass in the value, because test will trigger the retry explicitly.
                         0, // No need to pass in the value, because test will trigger the retry explicitly.
+                        0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the timout explicitly.
