@@ -338,6 +338,7 @@ module Composition =
     let handleReceivedBlockchainHead =
         Synchronization.handleReceivedBlockchainHead
             blockExists
+            getLastAppliedBlockNumber
             Peers.requestBlockFromPeer
 
     let fetchMissingBlocks publishEvent =
