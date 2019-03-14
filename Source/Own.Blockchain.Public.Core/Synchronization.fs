@@ -113,27 +113,26 @@ module Synchronization =
 
         getLastAppliedBlockNumber () + 1
         |> getBlock
-        |> Result.iter
-            (fun blockEnvelopeDto ->
-                result {
-                    let block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
-                    if block.TxSet |> List.forall txExists
-                        && block.EquivocationProofs |> List.forall equivocationProofExists
-                    then
-                        Log.noticef "Applying block %i" block.Header.Number.Value
-                        do! applyBlock block.Header.Number
-                        return (block.Header.Number |> BlockApplied |> Some)
-                    else
-                        return None
-                }
-                |> Result.handle
-                    (Option.iter publishEvent)
-                    (fun errors ->
-                        Log.appErrors errors
-                        removeOrphanTxResults ()
-                        removeOrphanEquivocationProofResults ()
-                    )
-            )
+        |> Result.iter (fun blockEnvelopeDto ->
+            result {
+                let block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
+                if block.TxSet |> List.forall txExists
+                    && block.EquivocationProofs |> List.forall equivocationProofExists
+                then
+                    Log.noticef "Applying block %i" block.Header.Number.Value
+                    do! applyBlock block.Header.Number
+                    return (block.Header.Number |> BlockApplied |> Some)
+                else
+                    return None
+            }
+            |> Result.handle
+                (Option.iter publishEvent)
+                (fun errors ->
+                    Log.appErrors errors
+                    removeOrphanTxResults ()
+                    removeOrphanEquivocationProofResults ()
+                )
+        )
 
     let updateNetworkTimeOffset getNetworkTimeOffset =
         Utils.networkTimeOffset <- getNetworkTimeOffset ()
