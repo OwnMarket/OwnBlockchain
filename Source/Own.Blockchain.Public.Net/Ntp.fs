@@ -32,7 +32,7 @@ module Ntp =
             ntp.GetCorrectionOffset().TotalMilliseconds |> Convert.ToInt64 |> Some
         with
         | ex ->
-            Log.error ex.AllMessages
+            Log.warningf "NTP: %s" ex.AllMessages
             None
 
     /// Returns number of milliseconds network time is ahead (+) or behind (-) local machine time.
