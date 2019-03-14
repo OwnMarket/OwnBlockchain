@@ -131,7 +131,7 @@ module PeerTests =
         | BlockStored (blockNumber, isFetched) ->
             if not isFetched then
                 blockPropagator node blockNumber
-        | BlockCompleted blockNumber
+        | BlockReady blockNumber
         | BlockApplied blockNumber ->
             ()
         | ConsensusMessageReceived c

@@ -130,7 +130,7 @@ module Agents =
             |> string
             |> formatMessage
             |> Log.info
-        | BlockCompleted bn ->
+        | BlockReady bn ->
             bn.Value
             |> string
             |> formatMessage
@@ -225,7 +225,7 @@ module Agents =
             invokeApplier ()
             if not isFetched then
                 blockPropagator.Post blockNumber
-        | BlockCompleted blockNumber ->
+        | BlockReady blockNumber ->
             invokeApplier ()
         | BlockApplied blockNumber ->
             invokeValidator Synchronize // TODO: Don't invoke if not validator (and remove WORKAROUND below).

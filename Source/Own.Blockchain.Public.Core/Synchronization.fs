@@ -92,7 +92,7 @@ module Synchronization =
                     match missingTxs, missingEquivocationProofs with
                     | [], [] ->
                         if block.Header.Number = lastAppliedBlockNumber + 1 then
-                            BlockCompleted block.Header.Number |> publishEvent
+                            BlockReady block.Header.Number |> publishEvent
                     | _ ->
                         missingTxs |> List.iter requestTxFromPeer
                         missingEquivocationProofs |> List.iter requestEquivocationProofFromPeer
