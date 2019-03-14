@@ -104,12 +104,14 @@ module Consensus =
                 | ConsensusMessage.Propose (block, vr) ->
                     if block.Header.Number = envelope.BlockNumber then
                         let networkTime = Utils.getNetworkTimestamp ()
-                        if block.Header.Number = _blockNumber && block.Header.Timestamp.Value > networkTime then
-                            let timeout = timeoutForRound ConsensusStep.Propose _round |> int64
-                            let maxValidBlockTime = _roundStartTime + timeout
-                            if block.Header.Timestamp.Value < maxValidBlockTime then
-                                let timeToPostpone = block.Header.Timestamp.Value - networkTime |> Convert.ToInt32
-                                scheduleMessage timeToPostpone (senderAddress, envelope)
+                        let proposeTimeout = timeoutForRound ConsensusStep.Propose _round |> int64
+                        let maxValidBlockTime = _roundStartTime + proposeTimeout
+                        if block.Header.Number = _blockNumber
+                            && block.Header.Timestamp.Value > networkTime
+                            && block.Header.Timestamp.Value < maxValidBlockTime
+                        then
+                            let timeToPostpone = block.Header.Timestamp.Value - networkTime |> Convert.ToInt32
+                            scheduleMessage timeToPostpone (senderAddress, envelope)
                         else
                             if ensureBlockReady block then
                                 if _proposals.TryAdd(key, (block, vr, envelope.Signature)) then
