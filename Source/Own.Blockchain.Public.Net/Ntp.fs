@@ -27,7 +27,7 @@ module Ntp =
 
     let private getNetworkTimeOffsetFromNtpServer ntpServerName =
         try
-            Log.infof "Fetching time from NTP server: %s" ntpServerName
+            Log.debugf "Fetching time from NTP server: %s" ntpServerName
             use ntp = new NtpClient(Dns.GetHostAddresses(ntpServerName).[0])
             ntp.GetCorrectionOffset().TotalMilliseconds |> Convert.ToInt64 |> Some
         with
