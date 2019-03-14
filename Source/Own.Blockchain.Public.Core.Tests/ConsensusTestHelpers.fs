@@ -84,7 +84,7 @@ module ConsensusTestHelpers =
         ?scheduleMessage : BlockchainAddress -> int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
         ?scheduleStateResponse : BlockchainAddress -> int -> (BlockNumber * ConsensusStateResponse) -> unit,
         ?schedulePropose : BlockchainAddress -> int -> (BlockNumber * ConsensusRound) -> unit,
-        ?scheduleTimeout : BlockchainAddress -> int -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
+        ?scheduleTimeout : BlockchainAddress -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
         ?isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
         ?lastAppliedBlockNumber : BlockNumber
         ) =
@@ -179,7 +179,10 @@ module ConsensusTestHelpers =
                 let scheduleTimeout =
                     match scheduleTimeout with
                     | Some f -> f validatorAddress
-                    | None -> fun _ _ -> ()
+                    | None -> fun _ -> ()
+
+                let timeoutForRound _ _ =
+                    1000
 
                 let verifyConsensusMessage (e : ConsensusMessageEnvelopeDto) =
                     (
@@ -207,13 +210,9 @@ module ConsensusTestHelpers =
                         scheduleStateResponse,
                         schedulePropose,
                         scheduleTimeout,
+                        timeoutForRound,
                         0, // No need to pass in the value, because test will trigger the retry explicitly.
                         0, // No need to pass in the value, because test will trigger the retry explicitly.
-                        0, // No need to pass in the value, because test will trigger the timout explicitly.
-                        0, // No need to pass in the value, because test will trigger the timout explicitly.
-                        0, // No need to pass in the value, because test will trigger the timout explicitly.
-                        0, // No need to pass in the value, because test will trigger the timout explicitly.
-                        0, // No need to pass in the value, because test will trigger the timout explicitly.
                         0, // No need to pass in the value, because test will trigger the request explicitly.
                         validatorAddress
                     )
