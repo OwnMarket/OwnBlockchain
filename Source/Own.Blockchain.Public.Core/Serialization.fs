@@ -60,7 +60,7 @@ module Serialization =
         new CustomCreationConverter<TxActionDto>() with
 
         override __.Create objectType =
-            failwith "NotImplemented"
+            raise (NotImplementedException())
 
         override __.ReadJson
             (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
