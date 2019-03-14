@@ -339,7 +339,7 @@ module Composition =
             publishEvent
 
     let synchronizeBlockchainHead () =
-        Workflows.synchronizeBlockchainHead
+        Synchronization.synchronizeBlockchainHead
             getLastStoredBlockNumber
             getLastAppliedBlockNumber
             getBlock
@@ -347,7 +347,7 @@ module Composition =
             Config.BlockchainHeadPollInterval
 
     let handleReceivedBlockchainHead =
-        Workflows.handleReceivedBlockchainHead
+        Synchronization.handleReceivedBlockchainHead
             blockExists
             Peers.requestBlockFromPeer
 

@@ -226,35 +226,6 @@ module Workflows =
             )
         )
 
-    let synchronizeBlockchainHead
-        (getLastStoredBlockNumber : unit -> BlockNumber option)
-        (getLastAppliedBlockNumber : unit -> BlockNumber)
-        (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>)
-        requestBlockchainHeadFromPeer
-        blockchainHeadPollInterval
-        =
-
-        getLastStoredBlockNumber ()
-        |?> getLastAppliedBlockNumber
-        |> getBlock
-        |> Result.map Blocks.extractBlockFromEnvelopeDto
-        |> Result.handle
-            (fun block ->
-                let currentTimestamp = Utils.getNetworkTimestamp ()
-                if currentTimestamp - block.Header.Timestamp.Value >= int64 blockchainHeadPollInterval then
-                    requestBlockchainHeadFromPeer ()
-            )
-            Log.appErrors
-
-    let handleReceivedBlockchainHead
-        blockExists
-        requestBlockFromPeer
-        blockNumber
-        =
-
-        if not (blockExists blockNumber) then
-            requestBlockFromPeer blockNumber
-
     let createBlock
         getTx
         getEquivocationProof
