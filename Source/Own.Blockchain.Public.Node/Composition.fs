@@ -19,19 +19,19 @@ module Composition =
     let getTx = Raw.getTx Config.DataDir createMixedHashKey
     let txExists = Raw.txExists Config.DataDir createMixedHashKey
 
-    let saveTxResult = Raw.saveTxResult Config.DataDir
-    let getTxResult = Raw.getTxResult Config.DataDir
-    let txResultExists = Raw.txResultExists Config.DataDir
-    let deleteTxResult = Raw.deleteTxResult Config.DataDir
+    let saveTxResult = Raw.saveTxResult Config.DataDir createMixedHashKey
+    let getTxResult = Raw.getTxResult Config.DataDir createMixedHashKey
+    let txResultExists = Raw.txResultExists Config.DataDir createMixedHashKey
+    let deleteTxResult = Raw.deleteTxResult Config.DataDir createMixedHashKey
 
     let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir createMixedHashKey
     let getEquivocationProof = Raw.getEquivocationProof Config.DataDir createMixedHashKey
     let equivocationProofExists = Raw.equivocationProofExists Config.DataDir createMixedHashKey
 
-    let saveEquivocationProofResult = Raw.saveEquivocationProofResult Config.DataDir
-    let getEquivocationProofResult = Raw.getEquivocationProofResult Config.DataDir
-    let equivocationProofResultExists = Raw.equivocationProofResultExists Config.DataDir
-    let deleteEquivocationProofResult = Raw.deleteEquivocationProofResult Config.DataDir
+    let saveEquivocationProofResult = Raw.saveEquivocationProofResult Config.DataDir createMixedHashKey
+    let getEquivocationProofResult = Raw.getEquivocationProofResult Config.DataDir createMixedHashKey
+    let equivocationProofResultExists = Raw.equivocationProofResultExists Config.DataDir createMixedHashKey
+    let deleteEquivocationProofResult = Raw.deleteEquivocationProofResult Config.DataDir createMixedHashKey
 
     let saveBlock = Raw.saveBlock Config.DataDir
     let getBlock = Raw.getBlock Config.DataDir
