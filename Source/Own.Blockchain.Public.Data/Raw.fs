@@ -119,21 +119,44 @@ module Raw =
         |> File.Exists
 
     // TxResult
-    let saveTxResult (dataDir : string) (TxHash txHash) (txResultDto : TxResultDto) : Result<unit, AppErrors> =
-        saveData dataDir TxResult txHash txResultDto
+    let saveTxResult
+        (dataDir : string)
+        createMixedHashKey
+        (TxHash txHash)
+        (txResultDto : TxResultDto)
+        : Result<unit, AppErrors>
+        =
 
-    let getTxResult (dataDir : string) (TxHash txHash) : Result<TxResultDto, AppErrors> =
-        loadData<TxResultDto> dataDir TxResult txHash
+        let key = createMixedHashKey txHash
+        saveData dataDir TxResult key txResultDto
 
-    let txResultExists (dataDir : string) (TxHash txHash) =
+    let getTxResult
+        (dataDir : string)
+        createMixedHashKey
+        (TxHash txHash)
+        : Result<TxResultDto, AppErrors>
+        =
+
+        let key = createMixedHashKey txHash
+        loadData<TxResultDto> dataDir TxResult key
+
+    let txResultExists (dataDir : string) createMixedHashKey (TxHash txHash) =
         txHash
         |> string
+        |> createMixedHashKey
         |> createFileName TxResult
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
 
-    let deleteTxResult (dataDir : string) (TxHash txHash) : Result<unit, AppErrors> =
-        deleteData dataDir TxResult txHash
+    let deleteTxResult
+        (dataDir : string)
+        createMixedHashKey
+        (TxHash txHash)
+        : Result<unit, AppErrors>
+        =
+
+        let key = createMixedHashKey txHash
+        deleteData dataDir TxResult key
 
     // EquivocationProof
     let saveEquivocationProof
@@ -173,35 +196,47 @@ module Raw =
     // EquivocationProofResult
     let saveEquivocationProofResult
         (dataDir : string)
+        createMixedHashKey
         (EquivocationProofHash equivocationProofHash)
         (equivocationProofResultDto : EquivocationProofResultDto)
         : Result<unit, AppErrors>
         =
 
-        saveData dataDir EquivocationProofResult equivocationProofHash equivocationProofResultDto
+        let key = createMixedHashKey equivocationProofHash
+        saveData dataDir EquivocationProofResult key equivocationProofResultDto
 
     let getEquivocationProofResult
         (dataDir : string)
+        createMixedHashKey
         (EquivocationProofHash equivocationProofHash)
         : Result<EquivocationProofResultDto, AppErrors>
         =
 
-        loadData<EquivocationProofResultDto> dataDir EquivocationProofResult equivocationProofHash
+        let key = createMixedHashKey equivocationProofHash
+        loadData<EquivocationProofResultDto> dataDir EquivocationProofResult key
 
-    let equivocationProofResultExists (dataDir : string) (EquivocationProofHash equivocationProofHash) =
+    let equivocationProofResultExists
+        (dataDir : string)
+        createMixedHashKey
+        (EquivocationProofHash equivocationProofHash)
+        =
+
         equivocationProofHash
         |> string
+        |> createMixedHashKey
         |> createFileName EquivocationProofResult
         |> fun fileName -> Path.Combine (dataDir, fileName)
         |> File.Exists
 
     let deleteEquivocationProofResult
         (dataDir : string)
+        createMixedHashKey
         (EquivocationProofHash equivocationProofHash)
         : Result<unit, AppErrors>
         =
 
-        deleteData dataDir EquivocationProofResult equivocationProofHash
+        let key = createMixedHashKey equivocationProofHash
+        deleteData dataDir EquivocationProofResult key
 
     // Block
     let saveBlock
