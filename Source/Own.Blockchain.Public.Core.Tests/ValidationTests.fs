@@ -60,7 +60,7 @@ module ValidationTests =
                 ]
         }
 
-        let expMessage = AppError "Nonce must be positive."
+        let expMessage = AppError "Nonce must be positive"
         let result =
             Validation.validateTx
                 Hashing.decode
@@ -71,7 +71,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
             test <@ errors.[0] = expMessage @>
@@ -116,7 +116,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 3 @>
 
@@ -145,7 +145,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -179,7 +179,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -213,7 +213,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -246,7 +246,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length > 0 @>
 
@@ -281,7 +281,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -316,7 +316,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -351,7 +351,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -386,7 +386,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -421,7 +421,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -456,7 +456,7 @@ module ValidationTests =
                 testTx
 
         match result with
-        | Ok t -> failwith "Validation should fail in case of this test."
+        | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
 
@@ -580,7 +580,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 3 @>
 
@@ -674,7 +674,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 2 @>
 
@@ -728,7 +728,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 2 @>
 
@@ -782,7 +782,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
 
@@ -808,7 +808,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
 
@@ -834,7 +834,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
 
@@ -890,7 +890,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
 
@@ -944,7 +944,7 @@ module ValidationTests =
         }
 
         match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
-        | Ok t -> failwith "This test should fail."
+        | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 2 @>
 
@@ -973,7 +973,7 @@ module ValidationTests =
 
         // ASSERT
         match result with
-        | Ok _ -> failwith "This test should fail."
+        | Ok _ -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
             test <@ e.[0].Message.Contains("Block hashes in equivocation proof must be ordered") @>

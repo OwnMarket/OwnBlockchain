@@ -19,7 +19,7 @@ module DummyHash =
             | 7uy -> 'G'
             | 8uy -> 'H'
             | 9uy -> 'I'
-            | b -> failwithf "%i is invalid value. Dymmy hash supports only bytes with values 0-9." b
+            | b -> failwithf "%i is invalid value (dummy hash supports only bytes with values 0-9)" b
         )
         |> String
 
@@ -36,7 +36,7 @@ module DummyHash =
             | 'G' -> 7uy
             | 'H' -> 8uy
             | 'I' -> 9uy
-            | c -> failwithf "%s has invalid char %A. Dymmy hash supports only characters A-I and a dot for zero" str c
+            | c -> failwithf "%s has invalid char %A (dummy hash supports only characters A-I and a dot for zero)" str c
         )
 
     let merkleTree (hashes : string list) =

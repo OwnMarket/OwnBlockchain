@@ -109,7 +109,7 @@ module PeerTests =
         if found then
             match peerMessageHandler with
             | Some h -> h.Post m
-            | None -> Log.error "PeerMessageHandler agent not started for node %s."
+            | None -> Log.error "PeerMessageHandler agent not started for node %s"
 
     // TODO: Fix the network tests by adjusting the mocked propagation logic.
     let publishEvent node appEvent =

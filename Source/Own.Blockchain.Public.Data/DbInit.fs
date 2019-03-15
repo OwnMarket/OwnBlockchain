@@ -54,7 +54,7 @@ module DbInit =
 
         for (expectedNo, actualNo) in numbers do
             if expectedNo <> actualNo then
-                failwithf "Inconsistent DB change number. Expected %i, found %i." expectedNo actualNo
+                failwithf "Inconsistent DB change number (Expected %i, found %i)" expectedNo actualNo
 
     let private applyDbChange dbEngineType connectionString (dbChange : DbChange) =
         let sql =
@@ -98,7 +98,7 @@ module DbInit =
             if not (RuntimeInformation.IsOSPlatform OSPlatform.Windows) then
                 let firebirdDir = Environment.GetEnvironmentVariable("FIREBIRD")
                 if isNull firebirdDir || firebirdDir <> DbTools.appDir then
-                    failwith "FIREBIRD environment variable not set to the application directory for the shell session."
+                    failwith "FIREBIRD environment variable not set to the application directory for the shell session"
 
             ensureDbExists dbEngineType connectionString
 

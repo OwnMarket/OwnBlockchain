@@ -12,8 +12,8 @@ open Own.Blockchain.Public.Crypto
 module SubmissionTests =
 
     [<Theory>]
-    [<InlineData(1, "Available CHX balance is insufficient to cover the fee.")>]
-    [<InlineData(10, "Available CHX balance is insufficient to cover the fee for all pending transactions.")>]
+    [<InlineData(1, "Available CHX balance is insufficient to cover the fee")>]
+    [<InlineData(10, "Available CHX balance is insufficient to cover the fee for all pending transactions")>]
     let ``Workflows.submitTx fails on insufficient CHX balance to cover Tx fee`` (balance : decimal, error : string) =
         // ARRANGE
         let senderWallet = Signing.generateWallet ()
@@ -122,7 +122,7 @@ module SubmissionTests =
             ]
             |> Helpers.newTx senderWallet nonce actionFee
 
-        let expectedError = sprintf "Max allowed number of actions per transaction is %i." maxActionCountPerTx
+        let expectedError = sprintf "Max allowed number of actions per transaction is %i" maxActionCountPerTx
         let expectedResult : Result<TxHash, AppErrors> = Error [AppError expectedError]
 
         // COMPOSE

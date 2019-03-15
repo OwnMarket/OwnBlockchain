@@ -28,13 +28,13 @@ module Helpers =
         | TransferChx action -> box action :?> 'T
         | TransferAsset action -> box action :?> 'T
         | CreateAssetEmission action -> box action :?> 'T
-        | CreateAccount -> failwith "CreateAccount TxAction has no data to extract."
-        | CreateAsset -> failwith "CreateAsset TxAction has no data to extract."
+        | CreateAccount -> failwith "CreateAccount TxAction has no data to extract"
+        | CreateAsset -> failwith "CreateAsset TxAction has no data to extract"
         | SetAccountController action -> box action :?> 'T
         | SetAssetController action -> box action :?> 'T
         | SetAssetCode action -> box action :?> 'T
         | ConfigureValidator action -> box action :?> 'T
-        | RemoveValidator -> failwith "RemoveValidator TxAction has no data to extract."
+        | RemoveValidator -> failwith "RemoveValidator TxAction has no data to extract"
         | DelegateStake action -> box action :?> 'T
         | SubmitVote action -> box action :?> 'T
         | SubmitVoteWeight action -> box action :?> 'T
@@ -168,7 +168,7 @@ module Helpers =
 
     let processChangesMockedDeps =
         let unexpectedInvocation functionName =
-            failwithf "%s unexpectedly invoked." functionName
+            failwithf "%s unexpectedly invoked" functionName
         {
             GetTx = fun _ -> unexpectedInvocation "GetTx"
             GetEquivocationProof = fun _ -> unexpectedInvocation "GetEquivocationProof"

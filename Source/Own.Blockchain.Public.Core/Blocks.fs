@@ -638,7 +638,7 @@ module Blocks =
                 | Some blockchainAddress ->
                     Ok blockchainAddress
                 | None ->
-                    sprintf "Cannot verify block signature %s." s.Value
+                    sprintf "Cannot verify block signature %s" s.Value
                     |> Result.appError
             )
             |> Array.toList
@@ -646,11 +646,11 @@ module Blocks =
 
         if errors.IsEmpty then
             values
-            |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't happen.")
+            |> List.map (function | Ok a -> a | _ -> failwith "This shouldn't happen")
             |> Ok
         else
             errors
-            |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't happen either.")
+            |> List.collect (function | Error e -> e | _ -> failwith "This shouldn't happen either")
             |> Error
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -687,10 +687,10 @@ module Blocks =
         )
         |> Result.handle
             id
-            (fun _ -> failwithf "Cannot get configuration block at height %i." blockNumber.Value)
+            (fun _ -> failwithf "Cannot get configuration block at height %i" blockNumber.Value)
 
     let getConfigurationAtHeight getBlock blockNumber =
         let configBlock = getConfigBlockAtHeight getBlock blockNumber
         match configBlock.Configuration with
-        | None -> failwithf "Cannot find configuration in configuration block %i." configBlock.Header.Number.Value
+        | None -> failwithf "Cannot find configuration in configuration block %i" configBlock.Header.Number.Value
         | Some config -> configBlock.Header.Number, config

@@ -29,7 +29,7 @@ module Validation =
     let private validateNetworkAddress (networkAddress : string) =
         [
             if networkAddress.IsNullOrWhiteSpace() then
-                yield AppError "NetworkAddress is not provided."
+                yield AppError "NetworkAddress is not provided"
             if networkAddress <> networkAddress.Trim() then
                 yield AppError "NetworkAddress contains leading/trailing spaces"
         ]
@@ -41,36 +41,36 @@ module Validation =
     let validateBlock decodeHash isValidAddress (blockDto : BlockDto) =
         [
             if blockDto.Header.Number < 0L then
-                yield AppError "Block.Header.Number cannot be negative."
+                yield AppError "Block.Header.Number cannot be negative"
 
             yield! validateHash decodeHash blockDto.Header.Hash "Block.Header.Hash"
 
             yield! validateHash decodeHash blockDto.Header.PreviousHash "Block.Header.PreviousHash"
 
             if blockDto.Header.ConfigurationBlockNumber < 0L then
-                yield AppError "Block.Header.ConfigurationBlockNumber cannot be negative."
+                yield AppError "Block.Header.ConfigurationBlockNumber cannot be negative"
 
             if blockDto.Header.Timestamp < 0L then
-                yield AppError "Block.Header.Timestamp cannot be negative."
+                yield AppError "Block.Header.Timestamp cannot be negative"
             if blockDto.Header.Timestamp > Utils.getNetworkTimestamp () then
-                yield AppError "Block.Header.Timestamp cannot be in future."
+                yield AppError "Block.Header.Timestamp cannot be in future"
 
             if blockDto.Header.ProposerAddress.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.ProposerAddress is missing."
+                yield AppError "Block.Header.ProposerAddress is missing"
             elif blockDto.Header.ProposerAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "Block.Header.ProposerAddress is not valid."
+                yield AppError "Block.Header.ProposerAddress is not valid"
 
             if blockDto.Header.TxSetRoot.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.TxSetRoot is missing."
+                yield AppError "Block.Header.TxSetRoot is missing"
 
             if blockDto.Header.TxResultSetRoot.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.TxResultSetRoot is missing."
+                yield AppError "Block.Header.TxResultSetRoot is missing"
 
             if blockDto.Header.StateRoot.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.StateRoot is missing."
+                yield AppError "Block.Header.StateRoot is missing"
 
             if blockDto.TxSet |> Seq.isEmpty then
-                yield AppError "Block.TxSet cannot be empty."
+                yield AppError "Block.TxSet cannot be empty"
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockFromDto blockDto)
 
@@ -85,7 +85,7 @@ module Validation =
             match validateBlock decodeHash isValidAddress blockEnvelopeDto.Block with
             | Ok _ ->
                 if blockEnvelopeDto.Signatures.IsEmpty then
-                    yield AppError "Signatures are missing from the block envelope."
+                    yield AppError "Signatures are missing from the block envelope"
             | Error errors -> yield! errors
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockEnvelopeFromDto blockEnvelopeDto)
@@ -97,15 +97,15 @@ module Validation =
     let private validateTransferChx isValidAddress (action : TransferChxTxActionDto) =
         [
             if action.RecipientAddress.IsNullOrWhiteSpace() then
-                yield AppError "RecipientAddress is not provided."
+                yield AppError "RecipientAddress is not provided"
             elif action.RecipientAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "RecipientAddress is not valid."
+                yield AppError "RecipientAddress is not valid"
 
             if action.Amount <= 0m then
-                yield AppError "CHX amount must be larger than zero."
+                yield AppError "CHX amount must be larger than zero"
 
             if not (Utils.isRounded action.Amount) then
-                yield AppError "CHX amount must have at most 7 decimals."
+                yield AppError "CHX amount must have at most 7 decimals"
         ]
 
     let private validateTransferAsset decodeHash (action : TransferAssetTxActionDto) =
@@ -115,15 +115,15 @@ module Validation =
             yield! validateHash decodeHash action.ToAccountHash "ToAccountHash"
 
             if action.ToAccountHash = action.FromAccountHash then
-                yield AppError "ToAccountHash cannot be the same as FromAccountHash."
+                yield AppError "ToAccountHash cannot be the same as FromAccountHash"
 
             yield! validateHash decodeHash action.AssetHash "AssetHash"
 
             if action.Amount <= 0m then
-                yield AppError "Asset amount must be larger than zero."
+                yield AppError "Asset amount must be larger than zero"
 
             if not (Utils.isRounded action.Amount) then
-                yield AppError "Asset amount must have at most 7 decimals."
+                yield AppError "Asset amount must have at most 7 decimals"
         ]
 
     let private validateCreateAssetEmission decodeHash (action : CreateAssetEmissionTxActionDto) =
@@ -133,10 +133,10 @@ module Validation =
             yield! validateHash decodeHash action.AssetHash "AssetHash"
 
             if action.Amount <= 0m then
-                yield AppError "Asset amount must be larger than zero."
+                yield AppError "Asset amount must be larger than zero"
 
             if not (Utils.isRounded action.Amount) then
-                yield AppError "Asset amount must have at most 7 decimals."
+                yield AppError "Asset amount must have at most 7 decimals"
         ]
 
     let private validateSetAccountController decodeHash isValidAddress (action : SetAccountControllerTxActionDto) =
@@ -144,9 +144,9 @@ module Validation =
             yield! validateHash decodeHash action.AccountHash "AccountHash"
 
             if action.ControllerAddress.IsNullOrWhiteSpace() then
-                yield AppError "ControllerAddress is not provided."
+                yield AppError "ControllerAddress is not provided"
             elif action.ControllerAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "ControllerAddress is not valid."
+                yield AppError "ControllerAddress is not valid"
         ]
 
     let private validateSetAssetController decodeHash isValidAddress (action : SetAssetControllerTxActionDto) =
@@ -154,9 +154,9 @@ module Validation =
             yield! validateHash decodeHash action.AssetHash "AssetHash"
 
             if action.ControllerAddress.IsNullOrWhiteSpace() then
-                yield AppError "ControllerAddress is not provided."
+                yield AppError "ControllerAddress is not provided"
             elif action.ControllerAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "ControllerAddress is not valid."
+                yield AppError "ControllerAddress is not valid"
         ]
 
     let private validateSetAssetCode decodeHash (action : SetAssetCodeTxActionDto) =
@@ -164,13 +164,13 @@ module Validation =
             yield! validateHash decodeHash action.AssetHash "AssetHash"
 
             if action.AssetCode.IsNullOrWhiteSpace() then
-                yield AppError "AssetCode is not provided."
+                yield AppError "AssetCode is not provided"
 
             if action.AssetCode.Length > 20 then
-                yield AppError "Asset code cannot be longer than 20 chars."
+                yield AppError "Asset code cannot be longer than 20 chars"
 
             if not (Regex.IsMatch(action.AssetCode, @"^[0-9A-Z]+$")) then
-                yield AppError "Asset code can only contain digits and upper case letters."
+                yield AppError "Asset code can only contain digits and upper case letters"
         ]
 
     let private validateConfigureValidator (action : ConfigureValidatorTxActionDto) =
@@ -178,23 +178,23 @@ module Validation =
             yield! validateNetworkAddress action.NetworkAddress
 
             if action.SharedRewardPercent < 0m then
-                yield AppError "SharedRewardPercent cannot be negative."
+                yield AppError "SharedRewardPercent cannot be negative"
             if action.SharedRewardPercent > 100m then
-                yield AppError "SharedRewardPercent cannot be greater than 100."
+                yield AppError "SharedRewardPercent cannot be greater than 100"
         ]
 
     let private validateDelegateStake isValidAddress (action : DelegateStakeTxActionDto) =
         [
             if action.ValidatorAddress.IsNullOrWhiteSpace() then
-                yield AppError "ValidatorAddress is not provided."
+                yield AppError "ValidatorAddress is not provided"
             elif action.ValidatorAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "ValidatorAddress is not valid."
+                yield AppError "ValidatorAddress is not valid"
 
             if action.Amount = 0m then
-                yield AppError "CHX amount cannot be zero."
+                yield AppError "CHX amount cannot be zero"
 
             if not (Utils.isRounded action.Amount) then
-                yield AppError "CHX amount must have at most 7 decimals."
+                yield AppError "CHX amount must have at most 7 decimals"
         ]
 
     let private validateSubmitVote decodeHash (action : SubmitVoteTxActionDto) =
@@ -217,10 +217,10 @@ module Validation =
             yield! validateHash decodeHash action.ResolutionHash "ResolutionHash"
 
             if action.VoteWeight < 0m then
-                yield AppError "Vote weight cannot be negative."
+                yield AppError "Vote weight cannot be negative"
 
             if not (Utils.isRounded action.VoteWeight) then
-                yield AppError "Vote weight must have at most 7 decimals."
+                yield AppError "Vote weight must have at most 7 decimals"
         ]
 
     let private validateSetAccountEligibility decodeHash (action : SetAccountEligibilityTxActionDto) =
@@ -246,9 +246,9 @@ module Validation =
             yield! validateHash decodeHash assetHash "AssetHash"
 
             if providerAddress.IsNullOrWhiteSpace() then
-                yield AppError "KYC Provider Address is not provided."
+                yield AppError "KYC Provider Address is not provided"
             elif providerAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "KYC Provider Address is not valid."
+                yield AppError "KYC Provider Address is not valid"
         ]
 
     let private validateChangeKycControllerAddress
@@ -263,9 +263,9 @@ module Validation =
             yield! validateHash decodeHash action.AssetHash "AssetHash"
 
             if action.KycControllerAddress.IsNullOrWhiteSpace() then
-                yield AppError "ValidatorAddress is not provided."
+                yield AppError "ValidatorAddress is not provided"
             elif action.KycControllerAddress |> BlockchainAddress |> isValidAddress |> not then
-                yield AppError "ValidatorAddress is not valid."
+                yield AppError "ValidatorAddress is not valid"
         ]
 
     let private validateAddKycProvider decodeHash isValidAddress (action : AddKycProviderTxActionDto) =
@@ -281,20 +281,20 @@ module Validation =
     let private validateTxFields maxActionCountPerTx (BlockchainAddress signerAddress) (t : TxDto) =
         [
             if t.SenderAddress <> signerAddress then
-                yield AppError "Sender address doesn't match the signature."
+                yield AppError "Sender address doesn't match the signature"
 
             if t.Nonce <= 0L then
-                yield AppError "Nonce must be positive."
+                yield AppError "Nonce must be positive"
 
             if t.ActionFee <= 0m then
-                yield AppError "ActionFee must be positive."
+                yield AppError "ActionFee must be positive"
             if not (Utils.isRounded t.ActionFee) then
-                yield AppError "ActionFee must have at most 7 decimal places."
+                yield AppError "ActionFee must have at most 7 decimal places"
 
             if t.Actions.IsEmpty then
-                yield AppError "There are no actions provided for this transaction."
+                yield AppError "There are no actions provided for this transaction"
             elif t.Actions.Length > maxActionCountPerTx then
-                yield AppError (sprintf "Max allowed number of actions per transaction is %i." maxActionCountPerTx)
+                yield AppError (sprintf "Max allowed number of actions per transaction is %i" maxActionCountPerTx)
         ]
 
     let private validateTxActions decodeHash isValidAddress (actions : TxActionDto list) =
@@ -359,21 +359,21 @@ module Validation =
         let availableBalance = getAvailableBalance senderAddress
 
         if totalTxFee > availableBalance then
-            Result.appError "Available CHX balance is insufficient to cover the fee."
+            Result.appError "Available CHX balance is insufficient to cover the fee"
         else
             let totalFeeForPendingTxs = getTotalFeeForPendingTxs senderAddress
 
             if (totalFeeForPendingTxs + totalTxFee) > availableBalance then
-                Result.appError "Available CHX balance is insufficient to cover the fee for all pending transactions."
+                Result.appError "Available CHX balance is insufficient to cover the fee for all pending transactions"
             else
                 Ok ()
 
     let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
         [
             if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
-                yield AppError "Tx is missing from the tx envelope."
+                yield AppError "Tx is missing from the tx envelope"
             if txEnvelopeDto.Signature.IsNullOrWhiteSpace() then
-                yield AppError "Signature is missing from the tx envelope."
+                yield AppError "Signature is missing from the tx envelope"
         ]
         |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
 
@@ -383,7 +383,7 @@ module Validation =
         | Some blockchainAddress ->
             Ok blockchainAddress
         | None ->
-            Result.appError "Cannot verify tx signature."
+            Result.appError "Cannot verify tx signature"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquivocationProof validation
@@ -401,7 +401,7 @@ module Validation =
 
         let consensusMessage =
             match consensusStep with
-            | 0uy -> failwith "Equivocation is not checked on Propose messages."
+            | 0uy -> failwith "Equivocation is not checked on Propose messages"
             | 1uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> ConsensusMessage.Vote
             | 2uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> ConsensusMessage.Commit
             | c -> failwithf "Unknown consensus step code: %i" c
@@ -424,10 +424,10 @@ module Validation =
         =
 
         if equivocationProofDto.BlockHash1 = equivocationProofDto.BlockHash2 then
-            Result.appError "Block hashes in equivocation proof must differ."
+            Result.appError "Block hashes in equivocation proof must differ"
         elif equivocationProofDto.BlockHash1 > equivocationProofDto.BlockHash2 then
             // This is not expected to happen for honest nodes, due to the ConsensusState.CreateEquivocationProof logic.
-            Result.appError "Block hashes in equivocation proof must be ordered (h1 < h2) to prevent double slashing."
+            Result.appError "Block hashes in equivocation proof must be ordered (h1 < h2) to prevent double slashing"
         else
             let signer1 =
                 verifyEquivocationProofSignature
@@ -450,9 +450,9 @@ module Validation =
 
             match signer1, signer2 with
             | None, _ ->
-                Result.appError "Cannot verify signature 1."
+                Result.appError "Cannot verify signature 1"
             | _, None ->
-                Result.appError "Cannot verify signature 2."
+                Result.appError "Cannot verify signature 2"
             | Some s1, Some s2 ->
                 if s1 <> s2 then
                     sprintf "Signatures are not from the same address (%s / %s)" s1.Value s2.Value

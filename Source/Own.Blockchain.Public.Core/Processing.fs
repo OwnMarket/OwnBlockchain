@@ -952,7 +952,7 @@ module Processing =
             Ok state
         else
             // Logic in excludeTxsWithNonceGap is supposed to prevent this.
-            failwith "Nonce too high."
+            failwith "Nonce too high"
 
     let processValidatorReward validatorDeposit (tx : Tx) validator (state : ProcessingState) =
         {
@@ -1064,7 +1064,7 @@ module Processing =
                     }
                     |> processTransferChxTxAction validatorDeposit state proof.ValidatorAddress true
                     |> Result.iterError
-                        (failwithf "Cannot process equivocation proof %s: (%A)." proof.EquivocationProofHash.Value)
+                        (failwithf "Cannot process equivocation proof %s: (%A)" proof.EquivocationProofHash.Value)
 
             let equivocationProofResult =
                 {
@@ -1084,10 +1084,10 @@ module Processing =
         =
 
         if sharedRewardPercent < 0m then
-            failwithf "SharedRewardPercent cannot be negative: %A." sharedRewardPercent
+            failwithf "SharedRewardPercent cannot be negative: %A" sharedRewardPercent
 
         if sharedRewardPercent > 100m then
-            failwithf "SharedRewardPercent cannot be greater than 100: %A." sharedRewardPercent
+            failwithf "SharedRewardPercent cannot be greater than 100: %A" sharedRewardPercent
 
         if sharedRewardPercent > 0m then
             let stakers = getTopStakers validatorAddress
@@ -1118,7 +1118,7 @@ module Processing =
                 | Ok (state : ProcessingState) ->
                     for r in rewards do
                         state.SetStakingReward(r.StakerAddress, r.Amount) |> ignore
-                | Error err -> failwithf "Cannot process reward distribution: (%A)." err
+                | Error err -> failwithf "Cannot process reward distribution: (%A)" err
 
     let updateValidatorCounters
         getLockedAndBlacklistedValidators

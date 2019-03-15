@@ -59,7 +59,7 @@ module Composition =
     let saveBlockToDb = Db.saveBlock Config.DbEngineType Config.DbConnectionString
     let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbEngineType Config.DbConnectionString
     let getLastAppliedBlockNumber () =
-        tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number."
+        tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number"
     let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbEngineType Config.DbConnectionString
     let getStoredBlockNumbers () = Db.getStoredBlockNumbers Config.DbEngineType Config.DbConnectionString
 

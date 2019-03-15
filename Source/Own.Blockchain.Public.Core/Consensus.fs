@@ -96,7 +96,7 @@ module Consensus =
             if isValidatorBlacklisted (senderAddress, _blockNumber, envelope.BlockNumber) then
                 envelope.ConsensusMessage
                 |> unionCaseName
-                |> Log.warningf "Validator %s is blacklisted. %s consensus message ignored." senderAddress.Value
+                |> Log.warningf "Validator %s is blacklisted - %s consensus message ignored" senderAddress.Value
             elif envelope.BlockNumber >= _blockNumber then
                 let key = envelope.BlockNumber, envelope.Round, senderAddress
 
@@ -295,10 +295,10 @@ module Consensus =
 
         member private __.SendState(request, peerIdentity) =
             if not (_validators |> List.contains request.ValidatorAddress) then
-                Log.warningf "%s is not an active validator. Consensus state request ignored."
+                Log.warningf "%s is not an active validator - consensus state request ignored"
                     request.ValidatorAddress.Value
             elif isValidatorBlacklisted (request.ValidatorAddress, _blockNumber, _blockNumber) then
-                Log.warningf "Validator %s is blacklisted. Consensus state request ignored."
+                Log.warningf "Validator %s is blacklisted - consensus state request ignored"
                     request.ValidatorAddress.Value
             else
                 let latestMessages =
@@ -350,14 +350,14 @@ module Consensus =
                                     Signature = s
                                 }
                             | _ ->
-                                failwithf "Cannot find proposal corresponding to locked consensus value. (Key: %A)" key
+                                failwithf "Cannot find proposal corresponding to locked consensus value (Key: %A)" key
                         )
 
                 let lockedVoteSignatures =
                     if _lockedRound < ConsensusRound 0 then
                         []
                     elif _lockedBlockSignatures.Length < _qualifiedMajority then
-                        failwithf "_lockedBlockSignatures has only %i entries, while it should have at least %i."
+                        failwithf "_lockedBlockSignatures has only %i entries - it should have at least %i"
                             _lockedBlockSignatures.Length
                             _qualifiedMajority
                     else
@@ -429,13 +429,13 @@ module Consensus =
                     let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
                     let nextBlockNumber = lastAppliedBlockNumber + 1
                     if _blockNumber < nextBlockNumber then
-                        Log.warningf "Consensus is at block %i, while the state is at block %i."
+                        Log.warningf "Consensus is at block %i - state is at block %i"
                             _blockNumber.Value
                             lastAppliedBlockNumber.Value
                         __.Synchronize()
                         None
                     elif _blockNumber > nextBlockNumber then
-                        Log.warningf "Cannot propose block %i at this time due to block %i being last applied block."
+                        Log.warningf "Cannot propose block %i at this time due to block %i being last applied block"
                             _blockNumber.Value
                             lastAppliedBlockNumber.Value
                         None
@@ -445,7 +445,7 @@ module Consensus =
                             match r with
                             | Ok b -> Some b
                             | Error e ->
-                                Log.error "Failed to propose block."
+                                Log.error "Failed to propose block"
                                 Log.appErrors e
                                 None
                         )
@@ -453,7 +453,7 @@ module Consensus =
 
             match block with
             | None ->
-                Log.debug "Nothing to propose."
+                Log.debug "Nothing to propose"
                 schedulePropose proposeRetryingInterval (_blockNumber, _round)
             | Some b -> __.SendPropose(_round, b)
 
@@ -669,7 +669,7 @@ module Consensus =
                 |> List.distinct
 
             if signatures.Length < _qualifiedMajority then
-                failwithf "Consensus state doesn't contain enough commits for block %i. Expected (min): %i, Actual: %i"
+                failwithf "Consensus state doesn't contain enough commits for block %i (Expected (min): %i, Actual: %i)"
                     block.Header.Number.Value
                     _qualifiedMajority
                     signatures.Length
@@ -701,13 +701,14 @@ module Consensus =
         member private __.IsTryingToEquivocate(consensusRound, consensusMessage) =
             let blockHash, messages =
                 match consensusMessage with
-                | ConsensusMessage.Propose _ -> failwith "Don't call IsTryingToEquivocate for Propose messages."
+                | ConsensusMessage.Propose _ -> failwith "Don't call IsTryingToEquivocate for Propose messages"
                 | ConsensusMessage.Vote hash -> hash, _votes
                 | ConsensusMessage.Commit hash -> hash, _commits
 
             match messages.TryGetValue((_blockNumber, consensusRound, validatorAddress)) with
             | true, (foundBlockHash, _) when foundBlockHash <> blockHash ->
-                Log.warningf "EQUIVOCATION: This node tries to %s %A in round %i on hight %i, while already did for %A."
+                Log.warningf
+                    "EQUIVOCATION: This node tries to %s %A in round %i on hight %i (it already did that for %A)"
                     (unionCaseName consensusMessage)
                     blockHash
                     consensusRound.Value
@@ -748,7 +749,7 @@ module Consensus =
         /// Detects equivocation for incomming messages.
         member private __.DetectEquivocation(envelope, senderAddress) =
             match envelope.ConsensusMessage with
-            | Propose _ -> failwith "Don't call DetectEquivocation for Propose messages."
+            | Propose _ -> failwith "Don't call DetectEquivocation for Propose messages"
             | Vote blockHash2 ->
                 let blockHash1, signature1 = _votes.[envelope.BlockNumber, envelope.Round, senderAddress]
                 if blockHash2 <> blockHash1 then

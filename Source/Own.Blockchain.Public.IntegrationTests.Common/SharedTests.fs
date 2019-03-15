@@ -304,7 +304,7 @@ module SharedTests =
 
         // TODO: Use separate account hash.
         match Db.getAccountState dbEngineType connectionString (AccountHash address) with
-        | None -> failwith "Unable to get account state."
+        | None -> failwith "Unable to get account state"
         | Some accountState -> test <@ BlockchainAddress accountState.ControllerAddress = wallet.Address @>
 
     let setAccountControllerTest dbEngineType connectionString =

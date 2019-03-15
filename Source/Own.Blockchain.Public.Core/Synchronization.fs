@@ -94,7 +94,7 @@ module Synchronization =
                     getBlock b.Header.ConfigurationBlockNumber
                     |> Result.map Blocks.extractBlockFromEnvelopeDto
             )
-            |> Result.handle id (fun _ -> failwith "Cannot get last verified configuration block.")
+            |> Result.handle id (fun _ -> failwith "Cannot get last verified configuration block")
 
         let lastVerifiedConfiguration =
             lastVerifiedConfigBlock.Configuration

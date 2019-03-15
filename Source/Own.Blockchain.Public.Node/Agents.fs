@@ -32,49 +32,49 @@ module Agents =
     let private invokePeerMessageHandler m =
         match peerMessageHandler with
         | Some h -> h.Post m
-        | None -> Log.error "PeerMessageHandler agent not started."
+        | None -> Log.error "PeerMessageHandler agent not started"
 
     let mutable private updatePeerListHandler : MailboxProcessor<GossipMember list> option = None
     let private invokeUpdatePeerListHandler peerList =
         match updatePeerListHandler with
         | Some h -> h.Post peerList
-        | None -> Log.error "UpdatePeerListHandler agent not started."
+        | None -> Log.error "UpdatePeerListHandler agent not started"
 
     let mutable private txVerifier : MailboxProcessor<TxEnvelopeDto * bool> option = None
     let private invokeTxVerifier e =
         match txVerifier with
         | Some v -> v.Post e
-        | None -> Log.error "TxVerifier agent not started."
+        | None -> Log.error "TxVerifier agent not started"
 
     let mutable private equivocationProofVerifier : MailboxProcessor<EquivocationProofDto * bool> option = None
     let private invokeEquivocationProofVerifier e =
         match equivocationProofVerifier with
         | Some v -> v.Post e
-        | None -> Log.error "EquivocationProofVerifier agent not started."
+        | None -> Log.error "EquivocationProofVerifier agent not started"
 
     let mutable private blockchainHeadHandler : MailboxProcessor<BlockNumber> option = None
     let private invokeBlockchainHeadHandler e =
         match blockchainHeadHandler with
         | Some v -> v.Post e
-        | None -> Log.error "BlockchainHeadHandler agent not started."
+        | None -> Log.error "BlockchainHeadHandler agent not started"
 
     let mutable private blockVerifier : MailboxProcessor<BlockEnvelopeDto * bool> option = None
     let private invokeBlockVerifier e =
         match blockVerifier with
         | Some v -> v.Post e
-        | None -> Log.error "BlockVerifier agent not started."
+        | None -> Log.error "BlockVerifier agent not started"
 
     let mutable private applier : MailboxProcessor<_> option = None
     let private invokeApplier () =
         match applier with
         | Some a -> a.Post ()
-        | None -> Log.error "Applier agent not started."
+        | None -> Log.error "Applier agent not started"
 
     let mutable private validator : MailboxProcessor<ConsensusCommand> option = None
     let private invokeValidator c =
         match validator with
         | Some v -> v.Post c
-        | None -> Log.error "Validator agent not started."
+        | None -> Log.error "Validator agent not started"
 
     let private logEvent event =
         let formatMessage =
@@ -170,7 +170,7 @@ module Agents =
             |> formatMessage
             |> Log.debug
         | ConsensusStateResponseReceived response ->
-            sprintf "%i messages / locked round: %i, locked value: %s, with %i signatures"
+            sprintf "%i messages / locked round: %i / locked value: %s / %i signatures"
                 response.LatestMessages.Length
                 response.LockedRound.Value
                 (unionCaseName response.LockedProposal)
@@ -246,7 +246,7 @@ module Agents =
 
     let private startPeerMessageHandler () =
         if peerMessageHandler <> None then
-            failwith "PeerMessageHandler agent is already started."
+            failwith "PeerMessageHandler agent is already started"
 
         peerMessageHandler <-
             Agent.start <| fun peerMessageEnvelope ->
@@ -262,7 +262,7 @@ module Agents =
 
     let private startUpdatePeerListHandler () =
         if updatePeerListHandler <> None then
-            failwith "UpdatePeerListHandler agent is already started."
+            failwith "UpdatePeerListHandler agent is already started"
 
         updatePeerListHandler <-
             Agent.start <| fun peerList ->
@@ -273,7 +273,7 @@ module Agents =
 
     let private startTxVerifier () =
         if txVerifier <> None then
-            failwith "TxVerifier agent is already started."
+            failwith "TxVerifier agent is already started"
 
         txVerifier <-
             Agent.start <| fun (txEnvelopeDto, isFetched) ->
@@ -287,7 +287,7 @@ module Agents =
 
     let private startEquivocationProofVerifier () =
         if equivocationProofVerifier <> None then
-            failwith "EquivocationProofVerifier agent is already started."
+            failwith "EquivocationProofVerifier agent is already started"
 
         equivocationProofVerifier <-
             Agent.start <| fun (equivocationProofDto, isFetched) ->
@@ -303,7 +303,7 @@ module Agents =
 
     let private startBlockchainHeadHandler () =
         if blockchainHeadHandler <> None then
-            failwith "BlockchainHeadHandler agent is already started."
+            failwith "BlockchainHeadHandler agent is already started"
 
         blockchainHeadHandler <-
             Agent.start <| fun blockNumber ->
@@ -314,7 +314,7 @@ module Agents =
 
     let private startBlockVerifier () =
         if blockVerifier <> None then
-            failwith "BlockVerifier agent is already started."
+            failwith "BlockVerifier agent is already started"
 
         blockVerifier <-
             Agent.start <| fun (blockEnvelopeDto, isFetched) ->
@@ -328,7 +328,7 @@ module Agents =
 
     let private startApplier () =
         if applier <> None then
-            failwith "Applier agent is already started."
+            failwith "Applier agent is already started"
 
         applier <-
             Agent.start <| fun message ->
@@ -339,7 +339,7 @@ module Agents =
 
     let private startValidator () =
         if validator <> None then
-            failwith "Validator agent is already started."
+            failwith "Validator agent is already started"
 
         let state =
             Config.ValidatorPrivateKey
@@ -347,10 +347,10 @@ module Agents =
             |> Option.map (PrivateKey >> Composition.addressFromPrivateKey)
             |> Option.bind (fun validatorAddress ->
                 if not (Hashing.isValidBlockchainAddress validatorAddress) then
-                    Log.error "Configured validator address is not a valid blockchain address."
+                    Log.error "Configured validator address is not a valid blockchain address"
                     None
                 else
-                    Log.infof "Configured as validator with address %s." validatorAddress.Value
+                    Log.infof "Configured as validator with address %s" validatorAddress.Value
                     Composition.createConsensusStateInstance publishEvent
                     |> Some
             )
@@ -363,7 +363,7 @@ module Agents =
                     | None ->
                         // WORKAROUND: Avoid log polution due to Synchronize being invoked upon applying the block.
                         if command <> Synchronize then
-                            Log.warning "Consensus command ignored (node is not configured as validator)."
+                            Log.warning "Consensus command ignored (node is not configured as validator)"
                 }
             |> Some
 

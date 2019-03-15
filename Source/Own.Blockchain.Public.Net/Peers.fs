@@ -9,23 +9,23 @@ module Peers =
     let invokeSendPeerMessage m =
         match peerMessageDispatcher with
         | Some h -> h.Post m
-        | None -> Log.error "SendPeerMessage agent is not started."
+        | None -> Log.error "SendPeerMessage agent is not started"
 
     let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId> option = None
     let invokeRequestFromPeer m =
         match requestFromPeerDispatcher with
         | Some h -> h.Post m
-        | None -> Log.error "RequestFromPeer agent is not started."
+        | None -> Log.error "RequestFromPeer agent is not started"
 
     let mutable respondToPeerDispatcher : MailboxProcessor<PeerNetworkIdentity * PeerMessageEnvelope> option = None
     let invokeRespondToPeer m =
         match respondToPeerDispatcher with
         | Some h -> h.Post m
-        | None -> Log.error "RespondToPeer agent is not started."
+        | None -> Log.error "RespondToPeer agent is not started"
 
     let private startSendPeerMessageDispatcher () =
         if peerMessageDispatcher <> None then
-            failwith "SendPeerMessage agent is already started."
+            failwith "SendPeerMessage agent is already started"
 
         peerMessageDispatcher <-
             Agent.start <| fun peerMessageEnvelope ->
@@ -36,7 +36,7 @@ module Peers =
 
     let private startRequestFromPeerDispatcher () =
         if requestFromPeerDispatcher <> None then
-            failwith "RequestFromPeer agent is already started."
+            failwith "RequestFromPeer agent is already started"
 
         requestFromPeerDispatcher <-
             Agent.start <| fun messageId ->
@@ -47,7 +47,7 @@ module Peers =
 
     let private startRespondToPeerDispatcher () =
         if respondToPeerDispatcher <> None then
-            failwith "RespondToPeer agent is already started."
+            failwith "RespondToPeer agent is already started"
 
         respondToPeerDispatcher <-
             Agent.start <| fun (targetIdentity, peerMessageEnvelope) ->

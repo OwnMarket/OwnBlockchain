@@ -33,7 +33,7 @@ module Validators =
     let getValidatorsAtHeight getBlock blockNumber =
         let configBlockNumber, config = Blocks.getConfigurationAtHeight getBlock blockNumber
         match config.Validators with
-        | [] -> failwithf "Cannot find validators in configuration block %i." configBlockNumber.Value
+        | [] -> failwithf "Cannot find validators in configuration block %i" configBlockNumber.Value
         | validators -> validators
 
     let getCurrentValidators getLastAppliedBlockNumber getBlock =
@@ -55,7 +55,7 @@ module Validators =
         =
 
         if validators.IsEmpty then
-            failwith "No validators to choose the proposer from."
+            failwith "No validators to choose the proposer from"
         let validatorIndex = (blockNumber + int64 consensusRound) % (int64 validators.Length) |> Convert.ToInt32
         validators
         |> List.sort

@@ -47,7 +47,7 @@ module internal Secp256k1 =
 
     let signRecoverable (messageHash : byte[]) privateKey =
         if messageHash.Length > Secp256k1.HASH_LENGTH then
-            failwithf "messageHash too long (%i)." messageHash.Length
+            failwithf "messageHash too long (%i)" messageHash.Length
 
         let signature = Array.zeroCreate<byte> Secp256k1.UNSERIALIZED_SIGNATURE_SIZE
         let secp256k1 = getSecp256k1 ()
@@ -79,7 +79,7 @@ module internal Secp256k1 =
 
     let recoverPublicKeyFromSignature signature (messageHash : byte[]) =
         if messageHash.Length > Secp256k1.HASH_LENGTH then
-            failwithf "messageHash too long (%i)." messageHash.Length
+            failwithf "messageHash too long (%i)" messageHash.Length
 
         let publicKey = Array.zeroCreate<byte> (Secp256k1.PUBKEY_LENGTH)
         let secp256k1 = getSecp256k1 ()
@@ -90,7 +90,7 @@ module internal Secp256k1 =
 
     let verifySignature signature (messageHash : byte[]) publicKey =
         if messageHash.Length > Secp256k1.HASH_LENGTH then
-            failwithf "messageHash too long (%i)." messageHash.Length
+            failwithf "messageHash too long (%i)" messageHash.Length
 
         let secp256k1 = getSecp256k1 ()
         secp256k1.Verify(Span signature, Span messageHash, Span publicKey)

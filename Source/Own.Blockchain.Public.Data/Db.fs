@@ -185,7 +185,7 @@ module Db =
 
         match DbTools.query<GetTxPoolInfoApiDto> dbEngineType dbConnectionString sql [] with
         | [info] -> info
-        | _ -> failwithf "Couldn't get TX pool info from DB."
+        | _ -> failwithf "Couldn't get TX pool info from DB"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquivocationProof
@@ -319,11 +319,11 @@ module Db =
         try
             match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert block."
+            | _ -> Result.appError "Didn't insert block"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert block."
+            Result.appError "Failed to insert block"
 
     let getLastAppliedBlockNumber dbEngineType (dbConnectionString : string) : BlockNumber option =
         let sql =
@@ -360,7 +360,7 @@ module Db =
         match DbTools.query<int64> dbEngineType dbConnectionString sql [] with
         | [] -> None
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
-        | _ -> failwith "getLastStoredBlockNumber query retrieved multiple rows."
+        | _ -> failwith "getLastStoredBlockNumber query retrieved multiple rows"
 
     let getStoredBlockNumbers dbEngineType (dbConnectionString : string) : BlockNumber list =
         let sql =
@@ -558,7 +558,7 @@ module Db =
         match DbTools.query<ConsensusStateInfoDto> dbEngineType dbConnectionString sql [] with
         | [] -> None
         | [state] -> Some state
-        | _ -> failwith "Multiple consensus state entries found."
+        | _ -> failwith "Multiple consensus state entries found"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
@@ -1259,11 +1259,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update applied block number."
+            | _ -> Result.appError "Didn't update applied block number"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update applied block number."
+            Result.appError "Failed to update applied block number"
 
     let private removePreviousBlock conn transaction (BlockNumber currentBlockNumber) : Result<unit, AppErrors> =
         let sql =
@@ -1280,13 +1280,13 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 when currentBlockNumber = 0L -> Ok () // Genesis block doesn't have a predecessor
-            | 0 -> Result.appError "Didn't remove previous block number."
+            | 0 -> Result.appError "Didn't remove previous block number"
             | 1 -> Ok ()
-            | c -> failwithf "Removed %i previous block numbers, instead of only one." c
+            | c -> failwithf "Removed %i previous block numbers instead of only one" c
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to remove previous block number."
+            Result.appError "Failed to remove previous block number"
 
     let private removeOldConsensusMessages conn transaction (BlockNumber currentBlockNumber) =
         let sql =
@@ -1302,13 +1302,13 @@ module Db =
 
         try
             if DbTools.executeWithinTransaction conn transaction sql sqlParams < 0 then
-                Result.appError "Error removing old consensus messages."
+                Result.appError "Error removing old consensus messages"
             else
                 Ok ()
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to remove old consensus messages."
+            Result.appError "Failed to remove old consensus messages"
 
     let private removeConsensusState conn transaction =
         let sql =
@@ -1318,13 +1318,13 @@ module Db =
 
         try
             if DbTools.executeWithinTransaction conn transaction sql [] < 0 then
-                Result.appError "Error removing persisted consensus state."
+                Result.appError "Error removing persisted consensus state"
             else
                 Ok ()
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to remove persisted consensus state."
+            Result.appError "Failed to remove persisted consensus state"
 
     let private addChxAddress conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -1343,11 +1343,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert CHX address state."
+            | _ -> Result.appError "Didn't insert CHX address state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert CHX address state."
+            Result.appError "Failed to insert CHX address state"
 
     let private updateChxAddress conn transaction (chxAddressInfo : ChxAddressInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -1369,11 +1369,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addChxAddress conn transaction chxAddressInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update CHX address state."
+            | _ -> Result.appError "Didn't update CHX address state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update CHX address state."
+            Result.appError "Failed to update CHX address state"
 
     let private updateChxAddresses
         conn
@@ -1419,11 +1419,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert holding state."
+            | _ -> Result.appError "Didn't insert holding state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert holding state."
+            Result.appError "Failed to insert holding state"
 
     let private updateHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -1447,11 +1447,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addHolding conn transaction holdingInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update holding state."
+            | _ -> Result.appError "Didn't update holding state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update holding state."
+            Result.appError "Failed to update holding state"
 
     let private updateHoldings
         conn
@@ -1500,11 +1500,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert vote state."
+            | _ -> Result.appError "Didn't insert vote state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert vote state."
+            Result.appError "Failed to insert vote state"
 
     let private updateVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -1536,11 +1536,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addVote conn transaction voteInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update vote state."
+            | _ -> Result.appError "Didn't update vote state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update vote state."
+            Result.appError "Failed to update vote state"
 
     let private updateVotes
         conn
@@ -1591,11 +1591,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert eligibility state."
+            | _ -> Result.appError "Didn't insert eligibility state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert eligibility state."
+            Result.appError "Failed to insert eligibility state"
 
     let private updateEligibility conn transaction (eligibilityInfo : EligibilityInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -1620,11 +1620,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addEligibility conn transaction eligibilityInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update vote state."
+            | _ -> Result.appError "Didn't update vote state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update vote state."
+            Result.appError "Failed to update vote state"
 
     let private updateEligibilities
         conn
@@ -1676,11 +1676,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert KYC provider."
+            | _ -> Result.appError "Didn't insert KYC provider"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert KYC povider."
+            Result.appError "Failed to insert KYC povider"
 
     let private removeKycProvider
         conn
@@ -1762,11 +1762,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert account state."
+            | _ -> Result.appError "Didn't insert account state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert account state."
+            Result.appError "Failed to insert account state"
 
     let private updateAccount
         conn
@@ -1792,11 +1792,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addAccount conn transaction accountInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update account state."
+            | _ -> Result.appError "Didn't update account state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update account state."
+            Result.appError "Failed to update account state"
 
     let private updateAccounts
         (conn : DbConnection)
@@ -1849,11 +1849,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert asset state."
+            | _ -> Result.appError "Didn't insert asset state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert asset state."
+            Result.appError "Failed to insert asset state"
 
     let private updateAsset
         conn
@@ -1889,11 +1889,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addAsset conn transaction assetInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update asset state."
+            | _ -> Result.appError "Didn't update asset state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update asset state."
+            Result.appError "Failed to update asset state"
 
     let private updateAssets
         (conn : DbConnection)
@@ -1958,11 +1958,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert validator state."
+            | _ -> Result.appError "Didn't insert validator state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert validator state."
+            Result.appError "Failed to insert validator state"
 
     let private removeValidator
         conn
@@ -2026,11 +2026,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update validator state."
+            | _ -> Result.appError "Didn't update validator state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update validator state."
+            Result.appError "Failed to update validator state"
 
     let private updateValidators
         (conn : DbConnection)
@@ -2082,11 +2082,11 @@ module Db =
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert stake state."
+            | _ -> Result.appError "Didn't insert stake state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert stake state."
+            Result.appError "Failed to insert stake state"
 
     let private removeStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
         let sql =
@@ -2135,11 +2135,11 @@ module Db =
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
             | 0 -> addStake conn transaction stakeInfo
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't update stake state."
+            | _ -> Result.appError "Didn't update stake state"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to update stake state."
+            Result.appError "Failed to update stake state"
 
     let private updateStakes
         conn
@@ -2210,7 +2210,7 @@ module Db =
             transaction.Rollback()
             conn.Close()
             Log.appErrors errors
-            Result.appError "Failed to persist state changes."
+            Result.appError "Failed to persist state changes"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
@@ -2245,11 +2245,11 @@ module Db =
         try
             match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't remove peer."
+            | _ -> Result.appError "Didn't remove peer"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to remove peer."
+            Result.appError "Failed to remove peer"
 
     let private getPeerNode
         dbEngineType
@@ -2296,11 +2296,11 @@ module Db =
         try
             match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
             | 1 -> Ok ()
-            | _ -> Result.appError "Didn't insert peer."
+            | _ -> Result.appError "Didn't insert peer"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert peer."
+            Result.appError "Failed to insert peer"
 
     let savePeerNode
         dbEngineType

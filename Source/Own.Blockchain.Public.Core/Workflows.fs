@@ -150,7 +150,7 @@ module Workflows =
                 match genesisBlockFromDisk with
                 | Ok blockFromDisk ->
                     if blockFromDisk <> genesisBlock then
-                        failwith "Stored genesis block is invalid."
+                        failwith "Stored genesis block is invalid"
                     true
                 | Error _ -> false
 
@@ -169,11 +169,11 @@ module Workflows =
                         |> Blocks.verifyBlockSignatures createConsensusMessageHash verifySignature
 
                     match genesisBlock.Configuration with
-                    | None -> return! Result.appError "Genesis block must have configuration."
+                    | None -> return! Result.appError "Genesis block must have configuration"
                     | Some c ->
                         let validators = c.Validators |> List.map (fun v -> v.ValidatorAddress)
                         if (set validators) <> (set genesisSigners) then
-                            return! Result.appError "Genesis signatures don't match genesis validators."
+                            return! Result.appError "Genesis signatures don't match genesis validators"
 
                     if not genesisBlockExists then
                         do! saveBlock genesisBlock.Header.Number blockEnvelopeDto
@@ -189,10 +189,10 @@ module Workflows =
 
             match result with
             | Ok _ ->
-                Log.info "Blockchain state initialized."
+                Log.info "Blockchain state initialized"
             | Error errors ->
                 Log.appErrors errors
-                failwith "Cannot initialize blockchain state."
+                failwith "Cannot initialize blockchain state"
 
     let rebuildBlockchainState
         (getLastAppliedBlockNumber : unit -> BlockNumber)
@@ -222,7 +222,7 @@ module Workflows =
             |> saveBlockToDb
             |> Result.iterError (fun e ->
                 Log.appErrors e
-                failwith "Failed rebuilding the state."
+                failwith "Failed rebuilding the state"
             )
         )
 
@@ -285,13 +285,13 @@ module Workflows =
         let sharedRewardPercent =
             match validators |> List.filter (fun v -> v.ValidatorAddress = validatorAddress) with
             | [] ->
-                failwithf "Validator %s not found to create block %i."
+                failwithf "Validator %s not found to create block %i"
                     validatorAddress.Value
                     blockNumber.Value
             | [v] ->
                 v.SharedRewardPercent
             | vs ->
-                failwithf "%i entries found for validator %s while creating block %i."
+                failwithf "%i entries found for validator %s while creating block %i"
                     vs.Length
                     validatorAddress.Value
                     blockNumber.Value
@@ -376,7 +376,7 @@ module Workflows =
         let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
 
         if blockNumber <> lastAppliedBlockNumber + 1 then
-            sprintf "Cannot propose block %i due to block %i being last applied block."
+            sprintf "Cannot propose block %i due to block %i being last applied block"
                 blockNumber.Value
                 lastAppliedBlockNumber.Value
             |> Result.appError
@@ -428,8 +428,8 @@ module Workflows =
 
                             if newConfiguration.Validators.Length < minValidatorCount then
                                 String.Format(
-                                    "Due to insufficient number of validators ({0}), "
-                                        + "configuration block {1} is taking over previous configuration.",
+                                    "Due to insufficient number of validators ({0})"
+                                        + " configuration block {1} is taking over previous configuration",
                                     newConfiguration.Validators.Length,
                                     blockNumber.Value
                                 )
@@ -479,7 +479,7 @@ module Workflows =
             if not (blockExists block.Header.ConfigurationBlockNumber) then
                 Synchronization.unverifiedBlocks.TryAdd(block.Header.Number, blockEnvelopeDto) |> ignore
                 return!
-                    sprintf "Missing configuration block %i for block %i."
+                    sprintf "Missing configuration block %i for block %i"
                         block.Header.ConfigurationBlockNumber.Value
                         block.Header.Number.Value
                     |> Result.appError
@@ -489,7 +489,7 @@ module Workflows =
                 |> Result.map Blocks.extractBlockFromEnvelopeDto
 
             match configBlock.Configuration with
-            | None -> failwithf "Missing configuration in existing block %i." configBlock.Header.Number.Value
+            | None -> failwithf "Missing configuration in existing block %i" configBlock.Header.Number.Value
             | Some c ->
                 let validators =
                     c.Validators
@@ -497,7 +497,7 @@ module Workflows =
                     |> Set.ofList
 
                 if validators.Count < minValidatorCount then
-                    failwithf "Block %i must have at least %i validators in configuration to verify block %i. Found %i."
+                    failwithf "Block %i must have at least %i validators in configuration to verify block %i. Found %i"
                         configBlock.Header.Number.Value
                         minValidatorCount
                         block.Header.Number.Value
@@ -522,12 +522,12 @@ module Workflows =
                     match block.Configuration with
                     | None ->
                         return!
-                            sprintf "Configuration missing from incoming block %i." block.Header.Number.Value
+                            sprintf "Configuration missing from incoming block %i" block.Header.Number.Value
                             |> Result.appError
                     | Some c ->
                         if c.Validators.Length < minValidatorCount then
                             return!
-                                sprintf "Configuration block %i must have at least %i validators in the configuration."
+                                sprintf "Configuration block %i must have at least %i validators in the configuration"
                                     block.Header.Number.Value
                                     minValidatorCount
                                 |> Result.appError
@@ -600,7 +600,7 @@ module Workflows =
             if block.Header.Timestamp <= previousBlock.Header.Timestamp then
                 return!
                     sprintf
-                        "Block %i timestamp (%i) must be greater than the previous block timestamp (%i)."
+                        "Block %i timestamp (%i) must be greater than the previous block timestamp (%i)"
                         block.Header.Number.Value
                         block.Header.Timestamp.Value
                         previousBlock.Header.Timestamp.Value
@@ -608,14 +608,14 @@ module Workflows =
 
             if not (isValidSuccessorBlock previousBlock.Header.Hash block) then
                 return!
-                    sprintf "Block %i is not a valid successor of the previous block." block.Header.Number.Value
+                    sprintf "Block %i is not a valid successor of the previous block" block.Header.Number.Value
                     |> Result.appError
 
             for txHash in block.TxSet do
                 if txResultExists txHash then
                     return!
                         sprintf
-                            "Tx %s cannot be included in the block %i because it is already processed."
+                            "Tx %s cannot be included in the block %i because it is already processed"
                             txHash.Value
                             block.Header.Number.Value
                         |> Result.appError
@@ -624,7 +624,7 @@ module Workflows =
                 if equivocationProofResultExists equivocationProofHash then
                     return!
                         sprintf
-                            "EquivocationProof %s cannot be included in the block %i because it is already processed."
+                            "EquivocationProof %s cannot be included in the block %i because it is already processed"
                             equivocationProofHash.Value
                             block.Header.Number.Value
                         |> Result.appError
@@ -636,12 +636,12 @@ module Workflows =
                 match block.Configuration with
                 | None ->
                     return!
-                        sprintf "Configuration missing from block %i." block.Header.Number.Value
+                        sprintf "Configuration missing from block %i" block.Header.Number.Value
                         |> Result.appError
                 | Some c ->
                     if c.Validators.Length < minValidatorCount then
                         return!
-                            sprintf "Configuration block %i must have at least %i validators in the configuration."
+                            sprintf "Configuration block %i must have at least %i validators in the configuration"
                                 block.Header.Number.Value
                                 minValidatorCount
                             |> Result.appError
@@ -663,7 +663,7 @@ module Workflows =
                 Log.debugf "RECEIVED BLOCK:\n%A" block
                 Log.debugf "CREATED BLOCK:\n%A" createdBlock
                 return!
-                    sprintf "Applying of block %i didn't result in expected blockchain state." block.Header.Number.Value
+                    sprintf "Applying of block %i didn't result in expected blockchain state" block.Header.Number.Value
                     |> Result.appError
 
             return output
@@ -941,7 +941,7 @@ module Workflows =
                     |> GossipMessage
             }
             |> sendMessageToPeers
-        | _ -> Log.errorf "Block %i does not exist." blockNumber.Value
+        | _ -> Log.errorf "Block %i does not exist" blockNumber.Value
 
     let requestConsensusState
         validatorPrivateKey
@@ -975,7 +975,7 @@ module Workflows =
             }
             |> sendMessageToPeers
 
-            Log.debug "Consensus state requested."
+            Log.debug "Consensus state requested"
 
     let sendConsensusState
         getNetworkId
@@ -1235,7 +1235,7 @@ module Workflows =
             // Txs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
             if not isIncludedInBlock then
                 if tx.ActionFee < minTxActionFee then
-                    return! Result.appError "ActionFee is too low."
+                    return! Result.appError "ActionFee is too low"
 
                 do!
                     Validation.checkIfBalanceCanCoverFees
@@ -1408,7 +1408,7 @@ module Workflows =
 
         match getAccountState accountHash with
         | None ->
-            sprintf "Account %s does not exist." accountHash.Value
+            sprintf "Account %s does not exist" accountHash.Value
             |> Result.appError
         | Some accountState ->
             getAccountHoldings accountHash assetHash
@@ -1425,7 +1425,7 @@ module Workflows =
 
         match getAccountState accountHash with
         | None ->
-            sprintf "Account %s does not exist." accountHash.Value
+            sprintf "Account %s does not exist" accountHash.Value
             |> Result.appError
         | Some _ ->
             {
@@ -1443,7 +1443,7 @@ module Workflows =
 
         match getAccountState accountHash with
         | None ->
-            sprintf "Account %s does not exist." accountHash.Value
+            sprintf "Account %s does not exist" accountHash.Value
             |> Result.appError
         | Some _ ->
             {
@@ -1460,7 +1460,7 @@ module Workflows =
 
         match getAssetState assetHash with
         | None ->
-            sprintf "Asset %s does not exist." assetHash.Value
+            sprintf "Asset %s does not exist" assetHash.Value
             |> Result.appError
         | Some assetState ->
             {
@@ -1480,7 +1480,7 @@ module Workflows =
 
         match getAssetState assetHash with
         | None ->
-            sprintf "Asset %s does not exist." assetHash.Value
+            sprintf "Asset %s does not exist" assetHash.Value
             |> Result.appError
         | Some _ ->
             let kycProviders =
@@ -1536,7 +1536,7 @@ module Workflows =
 
         match getValidatorState address with
         | None ->
-            sprintf "Validator %s does not exist." address.Value
+            sprintf "Validator %s does not exist" address.Value
             |> Result.appError
         | Some _ ->
             {

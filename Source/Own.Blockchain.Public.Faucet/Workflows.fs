@@ -59,7 +59,7 @@ module Workflows =
                 |> List.map createAction
 
             let rawTx =
-                sprintf """{Nonce: %i, ActionFee: %s, Actions: [%s]}"""
+                sprintf "{Nonce: %i, ActionFee: %s, Actions: [%s]}"
                     (addressNonce + 1L)
                     (actionFee.ToString())
                     (String.Join(", ", actions))
@@ -77,24 +77,24 @@ module Workflows =
         let address = BlockchainAddress requestDto.BlockchainAddress
 
         if chxClaimQueue |> Seq.contains address then
-            Result.appError "Address is already in the queue."
+            Result.appError "Address is already in the queue"
         else
             chxClaimQueue.Enqueue address
 
             claimableAmount.ToString()
-            |> sprintf "Address is added to the queue and will soon receive %s CHX."
+            |> sprintf "Address is added to the queue and will soon receive %s CHX"
             |> Ok
 
     let claimAsset (AssetAmount claimableAmount) (requestDto : ClaimAssetRequestDto) : Result<string, AppErrors> =
         let account = AccountHash requestDto.AccountHash
 
         if assetClaimQueue |> Seq.contains account then
-            Result.appError "Account is already in the queue."
+            Result.appError "Account is already in the queue"
         else
             assetClaimQueue.Enqueue account
 
             claimableAmount.ToString()
-            |> sprintf "Account is added to the queue and will soon receive %s unit(s) of asset."
+            |> sprintf "Account is added to the queue and will soon receive %s unit(s) of asset"
             |> Ok
 
     let distributeChx
