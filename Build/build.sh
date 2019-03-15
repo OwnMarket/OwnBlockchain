@@ -22,6 +22,9 @@ mkdir -p "$TEMP_DIR/Node"
 dotnet publish -c Release -o "$TEMP_DIR/Node"
 popd
 
+rm "$TEMP_DIR/Node/Genesis.json"
+rm "$TEMP_DIR/Node/Config.json"
+
 cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native "$TEMP_DIR/Node"
 cp -r ../Docs/Deployment/setup_public_node.sh "$TEMP_DIR/Node"
 cp -r ../Docs/Deployment/setup_public_node_instance.sh "$TEMP_DIR/Node"
