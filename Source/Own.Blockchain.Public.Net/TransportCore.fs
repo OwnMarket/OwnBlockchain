@@ -68,6 +68,7 @@ type internal TransportCore
 
     let createDealerSocket targetHost =
         let dealerSocket = new DealerSocket("tcp://" + targetHost)
+        dealerSocket.Options.IPv4Only <- false
         dealerSocket.Options.Identity <- peerIdentity
         dealerSocket.ReceiveReady
         |> Observable.subscribe (fun e ->
@@ -141,7 +142,10 @@ type internal TransportCore
     member __.ReceiveMessage listeningAddress =
         match routerSocket with
         | Some _ -> ()
-        | None -> routerSocket <- new RouterSocket("@tcp://" + listeningAddress) |> Some
+        | None ->
+            let socket = new RouterSocket("@tcp://" + listeningAddress)
+            socket.Options.IPv4Only <- false
+            routerSocket <- socket |> Some
 
         routerSocket |> Option.iter (fun socket ->
             poller.Add socket
