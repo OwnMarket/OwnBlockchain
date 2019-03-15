@@ -185,10 +185,10 @@ type Config () =
         with get () =
             match Decimal.TryParse(config.["MinTxActionFee"], NumberStyles.Number, CultureInfo.InvariantCulture) with
             | true, value ->
-                if value >= 0.0000001m then // Smallest possible CHX value (7 decimal places).
-                    value
-                else
+                if value < 0.0000001m then // Smallest possible CHX value (7 decimal places).
                     failwith "MinTxActionFee must be at least 0.0000001 CHX"
+                else
+                    value
             | _ -> 0.001m // Default value if not explicitly configured.
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
