@@ -37,7 +37,7 @@ module Raw =
             let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
-                Result.appError (sprintf "%s %s already exists." dataTypeName key)
+                Result.appError (sprintf "%s %s already exists" dataTypeName key)
             else
                 let bytes = data |> LZ4MessagePackSerializer.Serialize
                 use fs = new FileStream(path, FileMode.OpenOrCreate)
@@ -62,7 +62,7 @@ module Raw =
                 |> LZ4MessagePackSerializer.Deserialize<'T>
                 |> Ok
             else
-                Result.appError (sprintf "%s %s not found in storage." dataTypeName key)
+                Result.appError (sprintf "%s %s not found in storage" dataTypeName key)
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
@@ -78,7 +78,7 @@ module Raw =
                 File.Delete path
                 Ok ()
             else
-                Result.appError (sprintf "%s %s not found in storage." dataTypeName key)
+                Result.appError (sprintf "%s %s not found in storage" dataTypeName key)
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces

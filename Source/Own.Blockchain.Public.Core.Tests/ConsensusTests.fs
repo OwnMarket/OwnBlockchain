@@ -433,7 +433,7 @@ type ConsensusTests(output : ITestOutputHelper) =
             |> Seq.exactlyOne
             |> function
                 | AppEvent.EquivocationProofDetected (proof, address) -> proof, address
-                | _ -> failwith "Unexpected event type."
+                | _ -> failwith "Unexpected event type"
 
         let proofBlockHash1 =
             equivocationProof.BlockHash1
@@ -506,7 +506,7 @@ type ConsensusTests(output : ITestOutputHelper) =
             net.Messages.[0]
             |> snd
             |> fun m -> m.ConsensusMessage
-            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected."
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
         test <@ proposedBlock.Header.Number = BlockNumber 1L @>
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
@@ -559,7 +559,7 @@ type ConsensusTests(output : ITestOutputHelper) =
             net.Messages.[0]
             |> snd
             |> fun m -> m.ConsensusMessage
-            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected."
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
         test <@ proposedBlock.Header.Number = BlockNumber 1L @>
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message

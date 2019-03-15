@@ -40,7 +40,7 @@ type internal TransportCore
             let msg = multipartMessage.[2].ToByteArray()
             msg |> Some
         else
-            Log.errorf "Invalid message frame count. Expected 3, received %i" multipartMessage.FrameCount
+            Log.errorf "Invalid message frame count (Expected 3, received %i)" multipartMessage.FrameCount
             None
 
     let packMessage message (identity : byte[] option) =
@@ -58,7 +58,7 @@ type internal TransportCore
                 match unpackMessage msg with
                 | Ok peerMessageEnvelope ->
                     if peerMessageEnvelope.NetworkId <> networkId then
-                        Log.error "Peer message with invalid networkId, ignore"
+                        Log.error "Peer message with invalid networkId ignored"
                     else
                         receivePeerMessage peerMessageEnvelope
                 | Error error -> Log.error error
@@ -78,7 +78,7 @@ type internal TransportCore
                     match unpackMessage msg with
                     | Ok peerMessageEnvelope ->
                         if peerMessageEnvelope.NetworkId <> networkId then
-                            Log.error "Peer message with invalid networkId, ignore"
+                            Log.error "Peer message with invalid networkId ignored"
                         else
                             receivePeerMessage peerMessageEnvelope
                     | Error error -> Log.error error

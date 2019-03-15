@@ -42,7 +42,7 @@ module Common =
 
     let retry timesToRetry f =
         if timesToRetry < 1 then
-            raise (new ArgumentOutOfRangeException("timesToRetry", timesToRetry, "Value must be greater than zero."))
+            raise (new ArgumentOutOfRangeException("timesToRetry", timesToRetry, "Value must be greater than zero"))
 
         let rec retryIfFails n =
             try

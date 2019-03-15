@@ -105,7 +105,7 @@ type Config () =
     static member NetworkDiscoveryTime // Seconds
         with get () =
             match Int32.TryParse config.["NetworkDiscoveryTime"] with
-            | true, t -> if t > 0 then t else failwith "NetworkDiscoveryTime must be greater than zero."
+            | true, t -> if t > 0 then t else failwith "NetworkDiscoveryTime must be greater than zero"
             | _ -> 10
 
     static member AllowPrivateNetworkPeers
@@ -188,7 +188,7 @@ type Config () =
                 if value >= 0.0000001m then // Smallest possible CHX value (7 decimal places).
                     value
                 else
-                    failwith "MinTxActionFee must be at least 0.0000001 CHX."
+                    failwith "MinTxActionFee must be at least 0.0000001 CHX"
             | _ -> 0.001m // Default value if not explicitly configured.
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,25 +203,25 @@ type Config () =
         with get () =
             match Int32.TryParse(genesis.["ConfigurationBlockDelta"]) with
             | true, value when value > 0 -> value
-            | _ -> failwith "ConfigurationBlockDelta must have a valid positive 32-bit integer value in genesis file."
+            | _ -> failwith "ConfigurationBlockDelta must have a valid positive 32-bit integer value in genesis file"
 
     static member ValidatorDepositLockTime // Number of config blocks to keep the deposit locked after leaving.
         with get () =
             match Int16.TryParse(genesis.["ValidatorDepositLockTime"]) with
             | true, value when value > 0s -> value
-            | _ -> failwith "ValidatorDepositLockTime must have a valid positive 16-bit integer value in genesis file."
+            | _ -> failwith "ValidatorDepositLockTime must have a valid positive 16-bit integer value in genesis file"
 
     static member ValidatorBlacklistTime // Number of config blocks to keep the validator blacklisted.
         with get () =
             match Int16.TryParse(genesis.["ValidatorBlacklistTime"]) with
             | true, value when value > 0s -> value
-            | _ -> failwith "ValidatorBlacklistTime must have a valid positive 16-bit integer value in genesis file."
+            | _ -> failwith "ValidatorBlacklistTime must have a valid positive 16-bit integer value in genesis file"
 
     static member MaxTxCountPerBlock
         with get () =
             match Int32.TryParse(genesis.["MaxTxCountPerBlock"]) with
             | true, value when value > 0 -> value
-            | _ -> failwith "MaxTxCountPerBlock must have a valid positive 32-bit integer value in genesis file."
+            | _ -> failwith "MaxTxCountPerBlock must have a valid positive 32-bit integer value in genesis file"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Genesis
@@ -230,7 +230,7 @@ type Config () =
         with get () =
             let networkCode = genesis.["NetworkCode"]
             if networkCode.IsNullOrWhiteSpace() then
-                failwith "NetworkCode not found in genesis file."
+                failwith "NetworkCode not found in genesis file"
             elif Regex.IsMatch(networkCode, "^[A-Z_0-9]+$") then
                 networkCode
             else
@@ -242,7 +242,7 @@ type Config () =
         with get () =
             let genesisAddress = genesis.["GenesisAddress"]
             if genesisAddress.IsNullOrWhiteSpace() then
-                failwith "GenesisAddress not found in genesis file."
+                failwith "GenesisAddress not found in genesis file"
             else
                 genesisAddress
 
@@ -252,7 +252,7 @@ type Config () =
             |> Seq.map (fun e ->
                 match e.Value.Split("@") with
                 | [| validatorAddress; networkAddress |] -> validatorAddress, networkAddress
-                | _ -> failwith "Invalid GenesisValidators configuration."
+                | _ -> failwith "Invalid GenesisValidators configuration"
             )
             |> Seq.toList
 

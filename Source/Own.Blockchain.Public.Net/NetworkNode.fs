@@ -60,7 +60,7 @@ type NetworkNode
     let isDead inputMember =
         match deadMembers.TryGetValue inputMember.NetworkAddress with
         | true, deadMember ->
-            Log.verbosef "Received a node with heartbeat %i, in dead-members it has heartbeat %i"
+            Log.verbosef "Received a node with heartbeat %i - in dead-members it has heartbeat %i"
                 inputMember.Heartbeat
                 deadMember.Heartbeat
             deadMember.Heartbeat >= inputMember.Heartbeat
@@ -127,7 +127,7 @@ type NetworkNode
             let port = networkAddress.Substring(index + 1)
             match UInt16.TryParse port with
             | true, 0us ->
-                Log.verbose "Received peer with port 0, discard"
+                Log.verbose "Received peer with port 0 discarded"
                 false
             | true, _ ->
                 try

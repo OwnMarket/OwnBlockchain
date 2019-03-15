@@ -153,7 +153,7 @@ module Mapping =
             }
             |> RemoveKycProvider
         | _ ->
-            failwith "Invalid action type to map."
+            failwith "Invalid action type to map"
 
     let txFromDto sender hash (dto : TxDto) : Tx =
         {
@@ -216,7 +216,7 @@ module Mapping =
                 | true, true ->
                     let errorCode : TxErrorCode = dto.ErrorCode.Value |> LanguagePrimitives.EnumOfValue
                     TxActionError (TxActionNumber dto.FailedActionNumber.Value, errorCode)
-                | _, _ -> failwith "Invalid error code and action number state in TxResult."
+                | _, _ -> failwith "Invalid error code and action number state in TxResult"
                 |> Failure
             | c -> failwithf "Unknown TxStatus code %i" c
 
@@ -968,7 +968,7 @@ module Mapping =
             requestDataMessageFromDto m |> RequestDataMessage
         | :? ResponseDataMessageDto as m ->
             responseDataMessageFromDto m |> ResponseDataMessage
-        | _ -> failwith "Invalid message type to map."
+        | _ -> failwith "Invalid message type to map"
 
     let private peerMessageToDto (serialize : obj -> byte[]) peerMessage : PeerMessageDto =
         let messageType, data =
