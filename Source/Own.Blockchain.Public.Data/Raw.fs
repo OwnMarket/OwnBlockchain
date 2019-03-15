@@ -24,6 +24,13 @@ module Raw =
     let private createFileName (dataType : RawDataType) (key : string) =
         sprintf "%s_%s" (unionCaseName dataType) key
 
+    let private extractHash (key : string) =
+        let index = key.LastIndexOf "_"
+        if index > 0 then
+            key.Substring(0, index)
+        else
+            key
+
     let createMixedHashKey decode encodeHex (key : string) =
         sprintf "%s_%s" key (key |> decode |> encodeHex)
 
@@ -37,7 +44,7 @@ module Raw =
             let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
-                Result.appError (sprintf "%s %s already exists" dataTypeName key)
+                Result.appError (sprintf "%s %s already exists" dataTypeName (extractHash key))
             else
                 let bytes = data |> LZ4MessagePackSerializer.Serialize
                 use fs = new FileStream(path, FileMode.OpenOrCreate)
@@ -47,7 +54,7 @@ module Raw =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError (sprintf "Saving %s %s failed" dataTypeName key)
+            Result.appError (sprintf "Saving %s %s failed" dataTypeName (extractHash key))
 
     let private loadData<'T> (dataDir : string) (dataType : RawDataType) (key : string) : Result<'T, AppErrors> =
         let dataTypeName = unionCaseName dataType
@@ -62,11 +69,11 @@ module Raw =
                 |> LZ4MessagePackSerializer.Deserialize<'T>
                 |> Ok
             else
-                Result.appError (sprintf "%s %s not found in storage" dataTypeName key)
+                Result.appError (sprintf "%s %s not found in storage" dataTypeName (extractHash key))
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError (sprintf "Loading %s %s failed" dataTypeName key)
+            Result.appError (sprintf "Loading %s %s failed" dataTypeName (extractHash key))
 
     let private deleteData (dataDir : string) (dataType : RawDataType) (key : string) : Result<unit, AppErrors> =
         let dataTypeName = unionCaseName dataType
@@ -78,11 +85,11 @@ module Raw =
                 File.Delete path
                 Ok ()
             else
-                Result.appError (sprintf "%s %s not found in storage" dataTypeName key)
+                Result.appError (sprintf "%s %s not found in storage" dataTypeName (extractHash key))
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError (sprintf "Deleting %s %s failed" dataTypeName key)
+            Result.appError (sprintf "Deleting %s %s failed" dataTypeName (extractHash key))
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Specific
