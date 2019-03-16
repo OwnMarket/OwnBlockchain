@@ -31,6 +31,7 @@ cp -r ../Docs/Deployment/setup_public_node_instance.sh "$TEMP_DIR/Node"
 
 pushd "$TEMP_DIR/Node"
 chmod +x *.sh
+git rev-parse HEAD > Version
 tar czf "$OUTPUT_DIR/Node.tar.gz" *
 popd
 
@@ -43,6 +44,7 @@ popd
 cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native "$TEMP_DIR/Faucet"
 
 pushd "$TEMP_DIR/Faucet"
+git rev-parse HEAD > Version
 tar czf "$OUTPUT_DIR/Faucet.tar.gz" *
 popd
 
