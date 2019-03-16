@@ -918,7 +918,7 @@ module Consensus =
             | Some s when s.TimeToBlacklist > 0s -> true
             | _ -> false
 
-        let canParticipateInConsensus = memoizeWhen (fun output -> output <> None) <| fun blockNumber ->
+        let canParticipateInConsensus = memoizeWhen Option.isSome <| fun blockNumber ->
             let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
             if blockNumber = lastAppliedBlockNumber + 1 then
                 // Participation in consensus is relevant only relative to the current blockchain state,
