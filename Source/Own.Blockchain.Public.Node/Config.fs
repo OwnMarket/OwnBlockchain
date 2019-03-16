@@ -130,9 +130,9 @@ type Config () =
             | true, fanout when fanout > 0 -> fanout
             | _ -> 4
 
-    static member GossipIntervalMillis
+    static member GossipInterval // Milliseconds
         with get () =
-            match Int32.TryParse config.["GossipIntervalMillis"] with
+            match Int32.TryParse config.["GossipInterval"] with
             | true, interval when interval > 0 -> interval
             | _ -> 10000
 

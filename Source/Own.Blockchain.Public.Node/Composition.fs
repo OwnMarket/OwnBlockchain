@@ -549,7 +549,7 @@ module Composition =
             Config.AllowPrivateNetworkPeers
             Config.MaxConnectedPeers
             Config.GossipFanout
-            Config.GossipIntervalMillis
+            Config.GossipInterval
             Config.GossipMaxMissedHeartbeats
             getNetworkId
             getAllPeerNodes
