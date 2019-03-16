@@ -347,7 +347,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
-    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",  
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
     "votes": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
@@ -370,7 +370,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
-    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",  
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
     "eligibilities": [
         {
             "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
@@ -411,7 +411,7 @@ Request URL:
 Response JSON payload:
 ```json
 {
-    "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",    
+    "assetHash": "FnrfMcvwghb4qws7evxSTHdJ43aShxdRXWu3hZ8HX9wU",
     "kycProviders": [
         "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ"
     ]
@@ -523,7 +523,7 @@ Response JSON payload:
         {
             "stakerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
             "amount": 50
-        }     
+        }
     ]
 }
 ```
