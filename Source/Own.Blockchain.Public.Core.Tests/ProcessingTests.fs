@@ -6055,13 +6055,13 @@ module ProcessingTests =
     [<InlineData(40, 10, 50)>]
     [<InlineData(40, -10, 30)>]
     let ``Processing.processChanges DelegateStake - increasing existing stake``
-        (currentStakeAmount, stakeChangeAmount, newStakeAmount)
+        (currentStakeAmount : decimal, stakeChangeAmount : decimal, newStakeAmount : decimal)
         =
 
         // INIT STATE
-        let currentStakeAmount = currentStakeAmount |> decimal |> ChxAmount
-        let stakeChangeAmount = stakeChangeAmount |> decimal |> ChxAmount
-        let newStakeAmount = newStakeAmount |> decimal |> ChxAmount
+        let currentStakeAmount = currentStakeAmount |> ChxAmount
+        let stakeChangeAmount = stakeChangeAmount |> ChxAmount
+        let newStakeAmount = newStakeAmount |> ChxAmount
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
         let stakeValidatorAddress = (Signing.generateWallet ()).Address
