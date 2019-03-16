@@ -576,6 +576,27 @@ module Blocks =
         |> Mapping.blockEnvelopeFromDto
         |> fun e -> e.Block
 
+    let earliestValidEmptyBlockTimestamp minEmptyBlockTime (Timestamp previousBlockTimestamp) =
+        previousBlockTimestamp + int64 (minEmptyBlockTime * 1000)
+        |> Timestamp
+
+    let validateEmptyBlockTimestamp minEmptyBlockTime previousBlockTimestamp (block : Block) =
+        let earliestValidEmptyBlockTimestamp =
+            earliestValidEmptyBlockTimestamp minEmptyBlockTime previousBlockTimestamp
+
+        if block.TxSet.IsEmpty
+            && block.EquivocationProofs.IsEmpty
+            && block.Header.Timestamp < earliestValidEmptyBlockTimestamp
+        then
+            sprintf "Empty block %i (%s) created too early (%i < %i)"
+                block.Header.Number.Value
+                block.Header.Hash.Value
+                block.Header.Timestamp.Value
+                earliestValidEmptyBlockTimestamp.Value
+            |> Result.appError
+        else
+            Ok block
+
     /// Checks if the block is a valid potential successor of a previous block identified by previousBlockHash argument.
     let isValidSuccessorBlock
         decodeHash

@@ -855,6 +855,7 @@ module Consensus =
 
     let createConsensusStateInstance
         (getLastAppliedBlockNumber : unit -> BlockNumber)
+        (getLastAppliedBlockTimestamp : unit -> Timestamp)
         getValidatorsAtHeight
         (getValidatorState : BlockchainAddress -> ValidatorStateDto option)
         proposeBlock
@@ -879,6 +880,7 @@ module Consensus =
         publishEvent
         addressFromPrivateKey
         (validatorPrivateKey : PrivateKey)
+        minEmptyBlockTime
         messageRetryingInterval
         proposeRetryingInterval
         timeoutPropose
@@ -948,6 +950,7 @@ module Consensus =
             block
             |> Mapping.blockToDto
             |> Validation.validateBlock decodeHash isValidAddress
+            >>= Blocks.validateEmptyBlockTimestamp minEmptyBlockTime (getLastAppliedBlockTimestamp ())
             >>= applyBlockToCurrentState
             |> Result.handle
                 (fun _ -> true)

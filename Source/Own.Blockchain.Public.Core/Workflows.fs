@@ -362,6 +362,7 @@ module Workflows =
         getAvailableChxBalanceFromStorage
         addressFromPrivateKey
         minTxActionFee
+        minEmptyBlockTime
         minValidatorCount
         validatorPrivateKey
         (blockNumber : BlockNumber)
@@ -392,31 +393,32 @@ module Workflows =
                 let configBlockNumber, currentConfiguration =
                     Blocks.getConfigurationAtHeight getBlock lastAppliedBlock.Header.Number
 
-                match
+                let txSet =
                     Processing.getTxSetForNewBlock
                         getPendingTxs
                         getChxAddressState
                         getAvailableChxBalance
                         minTxActionFee
                         currentConfiguration.MaxTxCountPerBlock
-                    with
-                | [] -> None // Nothing to propose.
-                | txSet ->
-                    let txSet =
-                        txSet
-                        |> Processing.orderTxSet
+                    |> Processing.orderTxSet
 
-                    let equivocationProofs =
-                        getPendingEquivocationProofs blockNumber
-                        |> List.sortBy (fun p ->
-                            p.BlockNumber,
-                            p.ConsensusRound,
-                            p.ConsensusStep,
-                            p.ValidatorAddress,
-                            p.EquivocationProofHash
-                        )
-                        |> List.map (fun p -> p.EquivocationProofHash |> EquivocationProofHash)
+                let equivocationProofs =
+                    getPendingEquivocationProofs blockNumber
+                    |> List.sortBy (fun p ->
+                        p.BlockNumber,
+                        p.ConsensusRound,
+                        p.ConsensusStep,
+                        p.ValidatorAddress,
+                        p.EquivocationProofHash
+                    )
+                    |> List.map (fun p -> p.EquivocationProofHash |> EquivocationProofHash)
 
+                let earliestValidEmptyBlockTimestamp =
+                    Blocks.earliestValidEmptyBlockTimestamp minEmptyBlockTime lastAppliedBlock.Header.Timestamp
+
+                if txSet.IsEmpty && equivocationProofs.IsEmpty && timestamp < earliestValidEmptyBlockTimestamp then
+                    None // Nothing to propose.
+                else
                     let newConfiguration =
                         if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = blockNumber then
                             let newConfiguration : BlockchainConfiguration =

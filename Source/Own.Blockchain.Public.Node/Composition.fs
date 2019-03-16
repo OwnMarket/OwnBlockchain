@@ -60,6 +60,9 @@ module Composition =
     let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbEngineType Config.DbConnectionString
     let getLastAppliedBlockNumber () =
         tryGetLastAppliedBlockNumber () |?> fun _ -> failwith "Cannot get last applied block number"
+    let getLastAppliedBlockTimestamp () =
+        Db.getLastAppliedBlockTimestamp Config.DbEngineType Config.DbConnectionString
+        |?> fun _ -> failwith "Cannot get last applied block timestamp"
     let getLastStoredBlockNumber () = Db.getLastStoredBlockNumber Config.DbEngineType Config.DbConnectionString
     let getStoredBlockNumbers () = Db.getStoredBlockNumbers Config.DbEngineType Config.DbConnectionString
 
@@ -261,6 +264,7 @@ module Composition =
             getAvailableChxBalance
             addressFromPrivateKey
             (ChxAmount Config.MinTxActionFee)
+            Config.MinEmptyBlockTime
             Config.MinValidatorCount
             (PrivateKey Config.ValidatorPrivateKey)
 
@@ -411,6 +415,7 @@ module Composition =
     let createConsensusStateInstance publishEvent =
         Consensus.createConsensusStateInstance
             getLastAppliedBlockNumber
+            getLastAppliedBlockTimestamp
             getValidatorsAtHeight
             getValidatorState
             proposeBlock
@@ -435,6 +440,7 @@ module Composition =
             publishEvent
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
+            Config.MinEmptyBlockTime
             Config.ConsensusMessageRetryingInterval
             Config.ConsensusProposeRetryingInterval
             Config.ConsensusTimeoutPropose

@@ -338,6 +338,19 @@ module Db =
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
         | numbers -> failwithf "Multiple applied block entries found: %A" numbers
 
+    let getLastAppliedBlockTimestamp dbEngineType (dbConnectionString : string) : Timestamp option =
+        let sql =
+            """
+            SELECT block_timestamp
+            FROM block
+            WHERE is_applied = TRUE
+            """
+
+        match DbTools.query<int64> dbEngineType dbConnectionString sql [] with
+        | [] -> None
+        | [blockTimestamp] -> blockTimestamp |> Timestamp |> Some
+        | timestamps -> failwithf "Multiple applied block entries found: %A" timestamps
+
     let getLastStoredBlockNumber dbEngineType (dbConnectionString : string) : BlockNumber option =
         let sql =
             match dbEngineType with

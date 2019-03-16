@@ -59,18 +59,6 @@ module Validation =
                 yield AppError "Block.Header.ProposerAddress is missing"
             elif blockDto.Header.ProposerAddress |> BlockchainAddress |> isValidAddress |> not then
                 yield AppError "Block.Header.ProposerAddress is not valid"
-
-            if blockDto.Header.TxSetRoot.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.TxSetRoot is missing"
-
-            if blockDto.Header.TxResultSetRoot.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.TxResultSetRoot is missing"
-
-            if blockDto.Header.StateRoot.IsNullOrWhiteSpace() then
-                yield AppError "Block.Header.StateRoot is missing"
-
-            if blockDto.TxSet |> Seq.isEmpty then
-                yield AppError "Block.TxSet cannot be empty"
         ]
         |> Errors.orElseWith (fun _ -> Mapping.blockFromDto blockDto)
 
