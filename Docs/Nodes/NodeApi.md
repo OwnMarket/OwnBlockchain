@@ -107,7 +107,29 @@ Response JSON payload:
     "blockHash2": "D8ViZH31RHBYrDfUhUC1DK49pY1dxCvgRMsbnS9Lbn3p",
     "signature1": "E5nmjsHcL1hFmJEjphUhg6DBn6gyxYzrTKKtXvDGB8FhefQZQ6o5QJ1MRgXqqY97YMsCe8cs3muDF524Mq1Q9qTzG",
     "signature2": "M4jAhLWup8fe6NVnUg193uqLzGdgFuo6XFP2pDZFWGNvK6LuwYRqwM8HBADatgTZreXz2oZr5GhA3kZqi2GhaHrZE",
-    "depositTaken": 1000,
+    "depositTaken": 5000,
+    "depositDistribution" : [
+        {
+            "validatorAddress": "CHc1zbyXodtHMEsixH7ZQEajY2Fun3ab5jy",
+            "amount": "1000"
+        },
+        {
+            "validatorAddress": "CHVkbiNDYsZJTcUUtRDEucceRrZ8kbXgFCJ",
+            "amount": "1000"
+        },
+        {
+            "validatorAddress": "CHZHzBNVMQweCiqYVueEYpmeJMax8382HFr",
+            "amount": "1000"
+        },
+        {
+            "validatorAddress": "CHLwBmcHjN23HCNmLMag3sosxeW13h3cko6",
+            "amount": "1000"
+        },
+        {
+            "validatorAddress": "CHNugxKAxMaPbKpx5yraBNoLh63icwqVa5Y",
+            "amount": "1000"
+        }
+    ],
     "includedInBlockNumber": 125
 }
 ```

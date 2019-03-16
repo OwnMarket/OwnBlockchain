@@ -1050,25 +1050,44 @@ module Processing =
                 )
             | None -> failwithf "Cannot get validator state for %s" proof.ValidatorAddress.Value
 
-            let amountToTake =
-                state.GetChxAddress(proof.ValidatorAddress).Balance
-                |> min validatorDeposit
+            let depositTaken, depositDistribution =
+                let amountAvailable =
+                    state.GetChxAddress(proof.ValidatorAddress).Balance
+                    |> min validatorDeposit
 
-            if amountToTake > ChxAmount 0m then
-                let validators = validators |> List.except [proof.ValidatorAddress]
-                let amountPerValidator = (amountToTake / decimal validators.Length).Rounded
-                for v in validators do
-                    {
-                        RecipientAddress = v
-                        Amount = amountPerValidator
-                    }
-                    |> processTransferChxTxAction validatorDeposit state proof.ValidatorAddress true
-                    |> Result.iterError
-                        (failwithf "Cannot process equivocation proof %s: (%A)" proof.EquivocationProofHash.Value)
+                if amountAvailable > ChxAmount 0m then
+                    let validators = validators |> List.except [proof.ValidatorAddress]
+                    let amountPerValidator = (amountAvailable / decimal validators.Length).Rounded
+                    let depositDistribution =
+                        [
+                            for v in validators do
+                                {
+                                    RecipientAddress = v
+                                    Amount = amountPerValidator
+                                }
+                                |> processTransferChxTxAction validatorDeposit state proof.ValidatorAddress true
+                                |> Result.iterError
+                                    (failwithf "Cannot process equivocation proof %s: (%A)"
+                                         proof.EquivocationProofHash.Value)
+                                yield
+                                    {
+                                        DistributedDeposit.ValidatorAddress = v
+                                        Amount = amountPerValidator
+                                    }
+                        ]
+                    let depositTaken = depositDistribution |> List.sumBy (fun d -> d.Amount)
+                    depositTaken, depositDistribution |> List.filter (fun d -> d.Amount.Value <> 0m)
+                else
+                    if amountAvailable < ChxAmount 0m then
+                        failwithf "Address %s has negative balance: %s"
+                            proof.ValidatorAddress.Value
+                            (amountAvailable.Value.ToString())
+                    amountAvailable, []
 
             let equivocationProofResult =
                 {
-                    DepositTaken = amountToTake
+                    DepositTaken = depositTaken
+                    DepositDistribution = depositDistribution
                     BlockNumber = blockNumber
                 }
             state.SetEquivocationProofResult(proofHash, equivocationProofResult)

@@ -57,13 +57,28 @@ module BlockTests =
         test <@ txResultHash = "ABCB...C.......D" @>
 
     [<Fact>]
-    let ``Blocks.createEquivocationProofResultHash for 1 CHX deposit taken`` () =
+    let ``Blocks.createEquivocationProofResultHash for 2 CHX deposit taken`` () =
         let equivocationProofHash = EquivocationProofHash "ABC"
         let equivocationProofStatus =
             {
-                DepositTaken = ChxAmount 1m
+                DepositTaken = ChxAmount 2m
+                DepositDistribution =
+                    [
+                        {DistributedDeposit.ValidatorAddress = BlockchainAddress "DDD"; Amount = ChxAmount 1m}
+                        {DistributedDeposit.ValidatorAddress = BlockchainAddress "EEE"; Amount = ChxAmount 1m}
+                    ]
                 BlockNumber = BlockNumber 4L
             }
+
+        let expectedHash =
+            [
+                "ABC"
+                "...B............"
+                "DDD...A............"
+                "EEE...A............"
+                ".......D"
+            ]
+            |> String.Concat
 
         // ACT
         let equivocationProofResultHash =
@@ -73,7 +88,7 @@ module BlockTests =
                 (equivocationProofHash, equivocationProofStatus)
 
         // ASSERT
-        test <@ equivocationProofResultHash = "ABC...A...................D" @>
+        test <@ equivocationProofResultHash = expectedHash @>
 
     [<Fact>]
     let ``Blocks.createEquivocationProofResultHash for 0 CHX deposit taken`` () =
@@ -81,6 +96,7 @@ module BlockTests =
         let equivocationProofStatus =
             {
                 DepositTaken = ChxAmount 0m
+                DepositDistribution = []
                 BlockNumber = BlockNumber 4L
             }
 
@@ -340,12 +356,19 @@ module BlockTests =
             |> List.map EquivocationProofHash
 
         let equivocationProofResult1 : EquivocationProofResult = {
-            DepositTaken = ChxAmount 7m
+            DepositTaken = ChxAmount 6m
+            DepositDistribution =
+                [
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "AA"; Amount = ChxAmount 2m}
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "BB"; Amount = ChxAmount 2m}
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "CC"; Amount = ChxAmount 2m}
+                ]
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResult2 : EquivocationProofResult = {
             DepositTaken = ChxAmount 0m
+            DepositDistribution = []
             BlockNumber = BlockNumber 5L
         }
 
@@ -595,7 +618,12 @@ module BlockTests =
 
         let equivocationProofResultsRoot =
             [
-                "DDD...G...................E" // EquivocationProofResult 1
+                "DDD" // EquivocationProofResult 1
+                    + "...F............"
+                    + "AA...B............"
+                    + "BB...B............"
+                    + "CC...B............"
+                    + ".......E"
                 "EEE.......................E" // EquivocationProofResult 2
             ]
             |> String.Concat
@@ -741,12 +769,19 @@ module BlockTests =
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
         let equivocationProofResult1 : EquivocationProofResult = {
-            DepositTaken = ChxAmount 7m
+            DepositTaken = ChxAmount 6m
+            DepositDistribution =
+                [
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "AA"; Amount = ChxAmount 2m}
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "BB"; Amount = ChxAmount 2m}
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "CC"; Amount = ChxAmount 2m}
+                ]
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResult2 : EquivocationProofResult = {
             DepositTaken = ChxAmount 0m
+            DepositDistribution = []
             BlockNumber = BlockNumber 5L
         }
 
@@ -1108,12 +1143,19 @@ module BlockTests =
             |> List.map (Conversion.stringToBytes >> Hashing.hash >> EquivocationProofHash)
 
         let equivocationProofResult1 : EquivocationProofResult = {
-            DepositTaken = ChxAmount 7m
+            DepositTaken = ChxAmount 6m
+            DepositDistribution =
+                [
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "AA"; Amount = ChxAmount 2m}
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "BB"; Amount = ChxAmount 2m}
+                    {DistributedDeposit.ValidatorAddress = BlockchainAddress "CC"; Amount = ChxAmount 2m}
+                ]
             BlockNumber = BlockNumber 5L
         }
 
         let equivocationProofResult2 : EquivocationProofResult = {
             DepositTaken = ChxAmount 0m
+            DepositDistribution = []
             BlockNumber = BlockNumber 5L
         }
 

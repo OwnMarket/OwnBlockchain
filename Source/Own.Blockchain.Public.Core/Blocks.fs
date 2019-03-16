@@ -31,10 +31,21 @@ module Blocks =
         (EquivocationProofHash equivocationProofHash, equivocationProofResult : EquivocationProofResult)
         =
 
+        let depositDistribution =
+            equivocationProofResult.DepositDistribution
+            |> List.map (fun d ->
+                [
+                    d.ValidatorAddress.Value |> decodeHash
+                    d.Amount.Value |> decimalToBytes
+                ]
+                |> Array.concat
+            )
+
         [
-            decodeHash equivocationProofHash
-            equivocationProofResult.DepositTaken.Value |> decimalToBytes
-            equivocationProofResult.BlockNumber.Value |> int64ToBytes
+            yield equivocationProofHash |> decodeHash
+            yield equivocationProofResult.DepositTaken.Value |> decimalToBytes
+            yield! depositDistribution
+            yield equivocationProofResult.BlockNumber.Value |> int64ToBytes
         ]
         |> Array.concat
         |> createHash

@@ -257,15 +257,29 @@ module Mapping =
             ConsensusStep = equivocationProof.ConsensusStep |> consensusStepToCode
         }
 
+    let distributedDepositToDto (distributedDeposit : DistributedDeposit) : DistributedDepositDto =
+        {
+            DistributedDepositDto.ValidatorAddress = distributedDeposit.ValidatorAddress.Value
+            Amount = distributedDeposit.Amount.Value
+        }
+
+    let distributedDepositFromDto (dto : DistributedDepositDto) : DistributedDeposit =
+        {
+            DistributedDeposit.ValidatorAddress = dto.ValidatorAddress |> BlockchainAddress
+            Amount = dto.Amount |> ChxAmount
+        }
+
     let equivocationProofResultToDto (equivocationProofResult : EquivocationProofResult) : EquivocationProofResultDto =
         {
             DepositTaken = equivocationProofResult.DepositTaken.Value
+            DepositDistribution = equivocationProofResult.DepositDistribution |> List.map distributedDepositToDto
             BlockNumber = equivocationProofResult.BlockNumber.Value
         }
 
     let equivocationProofResultFromDto (dto : EquivocationProofResultDto) : EquivocationProofResult =
         {
             DepositTaken = ChxAmount dto.DepositTaken
+            DepositDistribution = dto.DepositDistribution |> List.map distributedDepositFromDto
             BlockNumber = BlockNumber dto.BlockNumber
         }
 
@@ -690,10 +704,10 @@ module Mapping =
         (equivocationProofResult : EquivocationProofResultDto option)
         =
 
-        let depositTaken, blockNumber =
+        let status, depositTaken, depositDistribution, blockNumber =
             match equivocationProofResult with
-            | Some r -> Nullable r.DepositTaken, Nullable r.BlockNumber
-            | None -> Nullable(), Nullable()
+            | Some r -> "Processed", Nullable r.DepositTaken, r.DepositDistribution, Nullable r.BlockNumber
+            | None -> "Pending", Nullable(), [], Nullable()
 
         {
             EquivocationProofHash = equivocationProofHash
@@ -705,7 +719,9 @@ module Mapping =
             BlockHash2 = equivocationProofDto.BlockHash2
             Signature1 = equivocationProofDto.Signature1
             Signature2 = equivocationProofDto.Signature2
+            Status = status
             DepositTaken = depositTaken
+            DepositDistribution = depositDistribution
             IncludedInBlockNumber = blockNumber
         }
 

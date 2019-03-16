@@ -326,9 +326,17 @@ type EquivocationInfoDto = {
 
 [<CLIMutable>]
 [<MessagePackObject>]
+type DistributedDepositDto = {
+    [<Key(0)>] ValidatorAddress : string
+    [<Key(1)>] Amount : decimal
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
 type EquivocationProofResultDto = {
     [<Key(0)>] DepositTaken : decimal
-    [<Key(1)>] BlockNumber : int64
+    [<Key(1)>] DepositDistribution : DistributedDepositDto list
+    [<Key(2)>] BlockNumber : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -611,7 +619,9 @@ type GetEquivocationProofApiResponseDto = {
     Signature1 : string
     Signature2 : string
     // Result
+    Status : string
     DepositTaken : Nullable<decimal>
+    DepositDistribution : DistributedDepositDto list
     IncludedInBlockNumber : Nullable<int64>
 }
 

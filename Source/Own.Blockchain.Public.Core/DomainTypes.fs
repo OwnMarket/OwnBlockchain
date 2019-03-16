@@ -327,8 +327,14 @@ type TxResult = {
     BlockNumber : BlockNumber
 }
 
+type DistributedDeposit = {
+    ValidatorAddress : BlockchainAddress
+    Amount : ChxAmount
+}
+
 type EquivocationProofResult = {
     DepositTaken : ChxAmount
+    DepositDistribution : DistributedDeposit list
     BlockNumber : BlockNumber
 }
 
