@@ -16,7 +16,7 @@ module Blocks =
         let txResult = Mapping.txResultToDto txResult
 
         [
-            decodeHash txHash
+            txHash |> decodeHash
             [| txResult.Status |]
             txResult.ErrorCode |?? 0s |> int16ToBytes
             txResult.FailedActionNumber |?? 0s |> int16ToBytes
@@ -52,9 +52,9 @@ module Blocks =
 
     let createChxAddressStateHash decodeHash createHash (BlockchainAddress address, state : ChxAddressState) =
         [
-            decodeHash address
-            int64ToBytes state.Nonce.Value
-            decimalToBytes state.Balance.Value
+            address |> decodeHash
+            state.Nonce.Value |> int64ToBytes
+            state.Balance.Value |> decimalToBytes
         ]
         |> Array.concat
         |> createHash
@@ -66,10 +66,10 @@ module Blocks =
         =
 
         [
-            decodeHash accountHash
-            decodeHash assetHash
-            decimalToBytes state.Balance.Value
-            boolToBytes state.IsEmission
+            accountHash |> decodeHash
+            assetHash |> decodeHash
+            state.Balance.Value |> decimalToBytes
+            state.IsEmission |> boolToBytes
         ]
         |> Array.concat
         |> createHash
@@ -86,10 +86,10 @@ module Blocks =
             | None -> [| 0uy |]
 
         [
-            decodeHash accountHash
-            decodeHash assetHash
-            decodeHash resolutionHash
-            decodeHash state.VoteHash.Value
+            accountHash |> decodeHash
+            assetHash |> decodeHash
+            resolutionHash |> decodeHash
+            state.VoteHash.Value |> decodeHash
             voteWeightBytes
         ]
         |> Array.concat
@@ -102,11 +102,11 @@ module Blocks =
         =
 
         [
-            decodeHash accountHash
-            decodeHash assetHash
-            boolToBytes state.Eligibility.IsPrimaryEligible
-            boolToBytes state.Eligibility.IsSecondaryEligible
-            decodeHash state.KycControllerAddress.Value
+            accountHash |> decodeHash
+            assetHash |> decodeHash
+            state.Eligibility.IsPrimaryEligible |> boolToBytes
+            state.Eligibility.IsSecondaryEligible |> boolToBytes
+            state.KycControllerAddress.Value |> decodeHash
         ]
         |> Array.concat
         |> createHash
@@ -135,7 +135,7 @@ module Blocks =
         let addressBytes = decodeHash state.ControllerAddress.Value
 
         [
-            decodeHash accountHash
+            accountHash |> decodeHash
             addressBytes
         ]
         |> Array.concat
@@ -154,10 +154,10 @@ module Blocks =
             | None -> [| 0uy |]
 
         [
-            decodeHash assetHash
+            assetHash |> decodeHash
             assetCodeBytes
             addressBytes
-            boolToBytes state.IsEligibilityRequired
+            state.IsEligibilityRequired |> boolToBytes
         ]
         |> Array.concat
         |> createHash
@@ -171,12 +171,12 @@ module Blocks =
         let validatorChangeCodeBytes = [| change |> Mapping.validatorChangeToCode |> byte |]
 
         [
-            decodeHash validatorAddress
-            stringToBytes state.NetworkAddress.Value
-            decimalToBytes state.SharedRewardPercent
-            int16ToBytes state.TimeToLockDeposit
-            int16ToBytes state.TimeToBlacklist
-            boolToBytes state.IsEnabled
+            validatorAddress |> decodeHash
+            state.NetworkAddress.Value |> stringToBytes
+            state.SharedRewardPercent |> decimalToBytes
+            state.TimeToLockDeposit |> int16ToBytes
+            state.TimeToBlacklist |> int16ToBytes
+            state.IsEnabled |> boolToBytes
             validatorChangeCodeBytes
         ]
         |> Array.concat
@@ -189,9 +189,9 @@ module Blocks =
         =
 
         [
-            decodeHash stakerAddress
-            decodeHash validatorAddress
-            decimalToBytes state.Amount.Value
+            stakerAddress |> decodeHash
+            validatorAddress |> decodeHash
+            state.Amount.Value |> decimalToBytes
         ]
         |> Array.concat
         |> createHash
@@ -203,8 +203,8 @@ module Blocks =
         =
 
         [
-            decodeHash stakingReward.StakerAddress.Value
-            decimalToBytes stakingReward.Amount.Value
+            stakingReward.StakerAddress.Value |> decodeHash
+            stakingReward.Amount.Value |> decimalToBytes
         ]
         |> Array.concat
         |> createHash
@@ -216,10 +216,10 @@ module Blocks =
         =
 
         [
-            decodeHash validatorSnapshot.ValidatorAddress.Value
-            stringToBytes validatorSnapshot.NetworkAddress.Value
-            decimalToBytes validatorSnapshot.SharedRewardPercent
-            decimalToBytes validatorSnapshot.TotalStake.Value
+            validatorSnapshot.ValidatorAddress.Value |> decodeHash
+            validatorSnapshot.NetworkAddress.Value |> stringToBytes
+            validatorSnapshot.SharedRewardPercent |> decimalToBytes
+            validatorSnapshot.TotalStake.Value |> decimalToBytes
         ]
         |> Array.concat
         |> createHash
