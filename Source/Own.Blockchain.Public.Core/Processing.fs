@@ -1056,7 +1056,14 @@ module Processing =
                     |> min validatorDeposit
 
                 if amountAvailable > ChxAmount 0m then
-                    let validators = validators |> List.except [proof.ValidatorAddress]
+                    let validators =
+                        validators
+                        |> List.except [proof.ValidatorAddress]
+                        |> List.filter (fun v ->
+                            match state.GetValidator(v) with
+                            | Some s -> s.TimeToBlacklist = 0s
+                            | None -> failwithf "Cannot get state for validator %s" v.Value
+                        )
                     let amountPerValidator = (amountAvailable / decimal validators.Length).Rounded
                     let depositDistribution =
                         [

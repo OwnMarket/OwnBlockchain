@@ -464,6 +464,7 @@ module ValidatorTests =
         let adversaryState = output.Validators.[adversaryWallet.Address] |> fst
 
         test <@ output.EquivocationProofResults.Count = 1 @>
+        test <@ equivocationProofResult.DepositDistribution.Length = 1 @>
         test <@ equivocationProofResult.DepositTaken = Helpers.validatorDeposit @>
         test <@ output.ChxAddresses.[adversaryWallet.Address].Nonce = initialChxState.[adversaryWallet.Address].Nonce @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
@@ -611,6 +612,7 @@ module ValidatorTests =
         let adversaryState = output.Validators.[adversaryWallet.Address] |> fst
 
         test <@ output.EquivocationProofResults.Count = 1 @>
+        test <@ equivocationProofResult.DepositDistribution.Length = 3 @>
         test <@ equivocationProofResult.DepositTaken = deposit - remainder @>
         test <@ equivocationProofResult.DepositDistribution.[0].ValidatorAddress = val1Wallet.Address @>
         test <@ equivocationProofResult.DepositDistribution.[0].Amount = amountPerValidator @>
@@ -627,6 +629,165 @@ module ValidatorTests =
         test <@ output.ChxAddresses.[adversaryWallet.Address].Balance = adversaryChxBalance @>
         test <@ output.ChxAddresses.[val1Wallet.Address].Balance = validator1ChxBalance @>
         test <@ output.ChxAddresses.[val2Wallet.Address].Balance = validator2ChxBalance @>
+        test <@ output.ChxAddresses.[val3Wallet.Address].Balance = validator3ChxBalance @>
+
+        test <@ adversaryState.TimeToBlacklist = Helpers.validatorBlacklistTime @>
+
+    [<Theory>]
+    [<InlineData(1000, 500, 0)>]
+    [<InlineData(5000, 2500, 0)>]
+    let ``Processing.processChanges Equivocation Proof - slashed deposit not given to blacklisted validators``
+        (deposit : decimal, amountPerValidator : decimal, remainder : decimal)
+        =
+
+        let deposit = deposit |> ChxAmount
+        let amountPerValidator = amountPerValidator |> ChxAmount
+        let remainder = remainder |> ChxAmount
+
+        // INIT STATE
+        let adversaryWallet = Signing.generateWallet ()
+        let val1Wallet = Signing.generateWallet ()
+        let blacklistedValidatorWallet = Signing.generateWallet ()
+        let val3Wallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                adversaryWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = deposit}
+                val1Wallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                blacklistedValidatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 200m}
+                val3Wallet.Address, {ChxAddressState.Nonce = Nonce 40L; Balance = ChxAmount 300m}
+            ]
+            |> Map.ofList
+
+        // PREPARE
+        let blockNumber = BlockNumber 1L
+        let consensusRound = ConsensusRound 0
+
+        let blockHashes =
+            [
+                "Block A" |> Conversion.stringToBytes |> Hashing.hash
+                "Block B" |> Conversion.stringToBytes |> Hashing.hash
+            ]
+            |> List.sort
+
+        let blockHash1 = blockHashes.[0]
+        let blockHash2 = blockHashes.[1]
+
+        let signature1 =
+            blockHash1
+            |> BlockHash
+            |> Some
+            |> ConsensusMessage.Vote
+            |> Consensus.createConsensusMessageHash
+                Hashing.decode
+                Hashing.hash
+                blockNumber
+                consensusRound
+            |> Signing.signHash Helpers.getNetworkId adversaryWallet.PrivateKey
+
+        let signature2 =
+            blockHash2
+            |> BlockHash
+            |> Some
+            |> ConsensusMessage.Vote
+            |> Consensus.createConsensusMessageHash
+                Hashing.decode
+                Hashing.hash
+                blockNumber
+                consensusRound
+            |> Signing.signHash Helpers.getNetworkId adversaryWallet.PrivateKey
+
+        let equivocationProofDto : EquivocationProofDto =
+            {
+                BlockNumber = blockNumber.Value
+                ConsensusRound = consensusRound.Value
+                ConsensusStep = ConsensusStep.Vote |> Mapping.consensusStepToCode
+                BlockHash1 = blockHash1
+                BlockHash2 = blockHash2
+                Signature1 = signature1.Value
+                Signature2 = signature2.Value
+            }
+
+        let equivocationProof =
+            Validation.validateEquivocationProof
+                (Signing.verifySignature Helpers.getNetworkId)
+                Consensus.createConsensusMessageHash
+                Hashing.decode
+                Hashing.hash
+                equivocationProofDto
+            |> Result.handle id (failwithf "validateEquivocationProof FAILED: %A")
+
+        // COMPOSE
+        let getEquivocationProof _ =
+            Ok equivocationProofDto
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getValidatorState validatorAddress =
+            let state =
+                {
+                    ValidatorState.NetworkAddress = NetworkAddress ""
+                    SharedRewardPercent = 0m
+                    TimeToLockDeposit = 3s
+                    TimeToBlacklist = 0s
+                    IsEnabled = true
+                }
+            if validatorAddress = val1Wallet.Address then
+                Some {state with NetworkAddress = NetworkAddress "good1.validator.com:12345"}
+            elif validatorAddress = blacklistedValidatorWallet.Address then
+                Some {state with NetworkAddress = NetworkAddress "blacklist.validator.com:12345"; TimeToBlacklist = 1s}
+            elif validatorAddress = val3Wallet.Address then
+                Some {state with NetworkAddress = NetworkAddress "good3.validator.com:12345"}
+            elif validatorAddress = adversaryWallet.Address then
+                Some {state with NetworkAddress = NetworkAddress "bad.validator.com:12345"; TimeToLockDeposit = 2s}
+            else
+                None
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetEquivocationProof = getEquivocationProof
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetValidatorStateFromStorage = getValidatorState
+                Validators =
+                    [
+                        val1Wallet.Address
+                        blacklistedValidatorWallet.Address
+                        val3Wallet.Address
+                        adversaryWallet.Address
+                    ]
+                ValidatorAddress = val1Wallet.Address
+                BlockNumber = BlockNumber 2L
+                EquivocationProofs = [equivocationProof.EquivocationProofHash]
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let adversaryChxBalance =
+            initialChxState.[adversaryWallet.Address].Balance - deposit + remainder
+        let validator1ChxBalance = initialChxState.[val1Wallet.Address].Balance + amountPerValidator
+        let validator2ChxBalance = initialChxState.[blacklistedValidatorWallet.Address].Balance
+        let validator3ChxBalance = initialChxState.[val3Wallet.Address].Balance + amountPerValidator
+        let equivocationProofResult = output.EquivocationProofResults.[equivocationProof.EquivocationProofHash]
+        let adversaryState = output.Validators.[adversaryWallet.Address] |> fst
+
+        test <@ output.EquivocationProofResults.Count = 1 @>
+        test <@ equivocationProofResult.DepositDistribution.Length = 2 @>
+        test <@ equivocationProofResult.DepositTaken = deposit - remainder @>
+        test <@ equivocationProofResult.DepositDistribution.[0].ValidatorAddress = val1Wallet.Address @>
+        test <@ equivocationProofResult.DepositDistribution.[0].Amount = amountPerValidator @>
+        test <@ equivocationProofResult.DepositDistribution.[1].ValidatorAddress = val3Wallet.Address @>
+        test <@ equivocationProofResult.DepositDistribution.[1].Amount = amountPerValidator @>
+
+        test <@ output.ChxAddresses.ContainsKey(blacklistedValidatorWallet.Address) = false @>
+
+        test <@ output.ChxAddresses.[adversaryWallet.Address].Nonce = initialChxState.[adversaryWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[val1Wallet.Address].Nonce = initialChxState.[val1Wallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[val3Wallet.Address].Nonce = initialChxState.[val3Wallet.Address].Nonce @>
+
+        test <@ output.ChxAddresses.[adversaryWallet.Address].Balance = adversaryChxBalance @>
+        test <@ output.ChxAddresses.[val1Wallet.Address].Balance = validator1ChxBalance @>
         test <@ output.ChxAddresses.[val3Wallet.Address].Balance = validator3ChxBalance @>
 
         test <@ adversaryState.TimeToBlacklist = Helpers.validatorBlacklistTime @>
