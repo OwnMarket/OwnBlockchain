@@ -1075,7 +1075,7 @@ module Processing =
                                 |> processTransferChxTxAction validatorDeposit state proof.ValidatorAddress true
                                 |> Result.iterError
                                     (failwithf "Cannot process equivocation proof %s: (%A)"
-                                         proof.EquivocationProofHash.Value)
+                                        proof.EquivocationProofHash.Value)
                                 yield
                                     {
                                         DistributedDeposit.ValidatorAddress = v
