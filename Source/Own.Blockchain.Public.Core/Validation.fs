@@ -23,7 +23,7 @@ module Validation =
             else
                 let bytes = hashValue |> tryDecodeHash
                 if bytes.Length <> 32 then
-                    yield AppError (sprintf "%s is invalid Base58 hash" propertyName)
+                    yield AppError (sprintf "%s is not a valid SHA256 hash" propertyName)
         ]
 
     let private validateNetworkAddress (networkAddress : string) =
