@@ -15,6 +15,7 @@ module internal PeerMessageHandler =
         bootstrapNodes
         allowPrivateNetworkPeers
         maxConnectedPeers
+        dnsResolverCacheTimeout
         gossipFanout
         gossipIntervalMillis
         gossipMaxMissedHeartbeats
@@ -43,6 +44,7 @@ module internal PeerMessageHandler =
                 BootstrapNodes = bootstrapNodes |> List.map NetworkAddress
                 AllowPrivateNetworkPeers = allowPrivateNetworkPeers
                 MaxConnectedPeers = maxConnectedPeers
+                DnsResolverCacheTimeout = dnsResolverCacheTimeout
             }
 
         let gossipConfig = {

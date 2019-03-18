@@ -142,6 +142,12 @@ type Config () =
             | true, cycles when cycles > 0 -> cycles
             | _ -> 10
 
+    static member DnsResolverCacheTimeout
+        with get () =
+            match Int32.TryParse config.["DnsResolverCacheTimeout"] with
+            | true, timeout when timeout > 0 -> timeout
+            | _ -> 10
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////

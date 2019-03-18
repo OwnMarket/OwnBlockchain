@@ -503,6 +503,7 @@ type NetworkNodeConfig = {
     BootstrapNodes : NetworkAddress list
     AllowPrivateNetworkPeers : bool
     MaxConnectedPeers : int
+    DnsResolverCacheTimeout : int
 }
 
 type GossipNetworkConfig = {

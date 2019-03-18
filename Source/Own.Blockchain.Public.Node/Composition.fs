@@ -557,6 +557,7 @@ module Composition =
             Config.GossipFanout
             Config.GossipInterval
             Config.GossipMaxMissedHeartbeats
+            Config.DnsResolverCacheTimeout
             getNetworkId
             getAllPeerNodes
             savePeerNode
