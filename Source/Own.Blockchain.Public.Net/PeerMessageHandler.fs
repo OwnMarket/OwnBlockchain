@@ -102,6 +102,11 @@ module internal PeerMessageHandler =
         | Some n -> n.SendResponseDataMessage targetIdentity peerMessageEnvelope
         | None -> failwith "Please start gossip first"
 
+    let startDnsResolver () =
+        match node with
+        | Some n -> n.StartDnsResolver ()
+        | None -> failwith "Please start gossip first"
+
     let getIdentity () =
         match node with
         | Some n -> n.Identity

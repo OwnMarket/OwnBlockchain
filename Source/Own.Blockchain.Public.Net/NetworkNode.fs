@@ -1,6 +1,7 @@
 ﻿namespace Own.Blockchain.Public.Net
 
 open System
+open System.Linq
 open System.Net
 open System.Collections.Concurrent
 open System.Threading
@@ -36,6 +37,7 @@ type NetworkNode
     let pendingDataRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let memberStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
     let cts = new CancellationTokenSource()
+    let dnsResolverCache = new ConcurrentDictionary<string, NetworkAddress option * DateTime>()
 
     let printActiveMembers () =
         #if DEBUG
@@ -48,8 +50,48 @@ type NetworkNode
             ()
         #endif
 
+    let convertToIpAddress (networkAddress : string) =
+        match networkAddress.LastIndexOf ":" with
+        | index when index > 0 ->
+            let port = networkAddress.Substring(index + 1)
+            match UInt16.TryParse port with
+            | true, 0us ->
+                Log.verbose "Received peer with port 0 discarded"
+                None
+            | true, _ ->
+                try
+                    let host = networkAddress.Substring(0, index)
+                    let ipAddress = Dns.GetHostAddresses(host).OrderBy(fun ip -> ip.AddressFamily).FirstOrDefault()
+                    let isPrivateIp = ipAddress.IsPrivate()
+                    if not nodeConfig.AllowPrivateNetworkPeers && isPrivateIp then
+                        Log.verbose "Private IPs are not allowed as peers"
+                        None
+                    else
+                        sprintf "%s:%s" (ipAddress.ToString()) port
+                        |> NetworkAddress
+                        |> Some
+                with
+                | ex ->
+                    Log.error ex.AllMessages
+                    None
+            | _ ->
+                Log.verbosef "Invalid port value: %s" port
+                None
+        | _ ->
+            Log.verbosef "Invalid peer format: %s" networkAddress
+            None
+
+    let memoizedConvertToIpAddress (networkAddress : string) =
+        dnsResolverCache.GetOrAdd(networkAddress, fun a -> convertToIpAddress a, DateTime.Now)
+        |> fst
+
+    let nodeConfigPublicIPAddress =
+        match nodeConfig.PublicAddress with
+        | Some a -> memoizedConvertToIpAddress a.Value
+        | None -> None
+
     let isSelf networkAddress =
-        nodeConfig.PublicAddress = Some networkAddress
+        nodeConfigPublicIPAddress = Some networkAddress
 
     let optionToList = function | Some x -> [x] | None -> []
 
@@ -121,42 +163,12 @@ type NetworkNode
         Async.Start ((setPendingDeadMember address), cts.Token)
         memberStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
 
-    let isValidAddress (networkAddress : string) =
-        match networkAddress.LastIndexOf ":" with
-        | index when index > 0 ->
-            let port = networkAddress.Substring(index + 1)
-            match UInt16.TryParse port with
-            | true, 0us ->
-                Log.verbose "Received peer with port 0 discarded"
-                false
-            | true, _ ->
-                try
-                    let host = networkAddress.Substring(0, index)
-                    let ipAddress = Dns.GetHostAddresses(host).[0]
-                    let isPrivateIp = ipAddress.IsPrivate()
-                    if not nodeConfig.AllowPrivateNetworkPeers && isPrivateIp then
-                        Log.verbose "Private IPs are not allowed as peers"
-                    nodeConfig.AllowPrivateNetworkPeers || not isPrivateIp
-                with
-                | ex ->
-                    Log.error ex.AllMessages
-                    false
-            | _ ->
-                Log.verbosef "Invalid port value: %s" port
-                false
-        | _ ->
-            Log.verbosef "Invalid peer format: %s" networkAddress
-            false
-
     let updateActiveMember mem =
         activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
 
     let saveActiveMember mem =
-        if isValidAddress mem.NetworkAddress.Value then
-            activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
-            savePeerNode mem.NetworkAddress
-        else
-            Result.appError (sprintf "Invalid network address: %s" mem.NetworkAddress.Value)
+        activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
+        savePeerNode mem.NetworkAddress
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public
@@ -166,10 +178,28 @@ type NetworkNode
         nodeConfig.ListeningAddress
 
     member __.GetPublicAddress () =
-        nodeConfig.PublicAddress
+        nodeConfigPublicIPAddress
 
     member __.Identity =
         nodeConfig.Identity
+
+    member __.StartDnsResolver () =
+        let rec loop () =
+            async {
+                let lastValidTime = DateTime.Now.AddMinutes(-10.) // Cache validity: 10 mins.
+                dnsResolverCache
+                |> Seq.ofDict
+                |> Seq.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
+                |> Seq.iter (fun (dns, (ip, _)) ->
+                    let newIp = convertToIpAddress dns
+                    if newIp <> ip then
+                        let cacheValue = newIp, DateTime.Now
+                        dnsResolverCache.AddOrUpdate(dns, cacheValue, fun _ _ -> cacheValue) |> ignore
+                )
+                do! Async.Sleep(gossipConfig.IntervalMillis)
+                return! loop ()
+            }
+        Async.Start (loop (), cts.Token)
 
     member __.StartGossip publishEvent =
         let networkId = getNetworkId ()
@@ -202,6 +232,13 @@ type NetworkNode
             msg.ActiveMembers
             |> List.shuffle
             |> List.truncate nodeConfig.MaxConnectedPeers
+            |> List.choose (fun m ->
+                m.NetworkAddress.Value
+                |> memoizedConvertToIpAddress
+                |> Option.map(fun ip ->
+                    {GossipMember.NetworkAddress = ip; Heartbeat = m.Heartbeat}
+                )
+            )
 
         // Filter the existing peers, if any, (used to refresh connection, i.e increase heartbeat).
         let existingMembers =
@@ -238,7 +275,7 @@ type NetworkNode
                         Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary message
                     let multicastAddresses =
                         getCurrentValidators ()
-                        |> List.map (fun v -> v.NetworkAddress)
+                        |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress |> Option.map id)
                         |> List.filter (isSelf >> not)
                         |> List.map (fun a -> a.Value)
 
@@ -330,7 +367,7 @@ type NetworkNode
 
     member private __.StartServer publishEvent =
         Log.infof "Listen on: %s" nodeConfig.ListeningAddress.Value
-        nodeConfig.PublicAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
+        nodeConfigPublicIPAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage nodeConfig.ListeningAddress.Value
 
     member private __.StartGossipDiscovery () =
@@ -344,7 +381,7 @@ type NetworkNode
 
     member private __.Discover () =
         __.IncreaseHeartbeat()
-        match nodeConfig.PublicAddress with
+        match nodeConfigPublicIPAddress with
         | Some _ ->
             // Propagate discovery message.
             {
@@ -359,10 +396,14 @@ type NetworkNode
         printActiveMembers ()
 
     member private __.InitializeMemberList () =
-        let publicAddress = nodeConfig.PublicAddress |> optionToList
+        let publicAddress = nodeConfigPublicIPAddress |> optionToList
         getAllPeerNodes () @ nodeConfig.BootstrapNodes @ publicAddress
         |> Set.ofList
-        |> Set.iter (fun a -> __.AddMember { NetworkAddress = a; Heartbeat = 0L })
+        |> Set.iter (fun a ->
+            a.Value |> memoizedConvertToIpAddress |> Option.iter(fun ip ->
+                __.AddMember { NetworkAddress = ip; Heartbeat = 0L }
+            )
+        )
 
     member private __.AddMember inputMember =
         Log.verbosef "Adding new member: %s" inputMember.NetworkAddress.Value
@@ -400,9 +441,9 @@ type NetworkNode
         __.GetActiveMembers() |> List.tryFind (fun m -> m.NetworkAddress = networkAddress)
 
     member private __.IncreaseHeartbeat () =
-        nodeConfig.PublicAddress
-        |> Option.iter (fun publicAddress ->
-            __.GetActiveMember publicAddress
+        nodeConfigPublicIPAddress
+        |> Option.iter(fun ipAddress ->
+            __.GetActiveMember ipAddress
             |> Option.iter (fun m ->
                 let localMember = {
                     NetworkAddress = m.NetworkAddress
@@ -535,7 +576,7 @@ type NetworkNode
                 PeerMessage =
                     {
                         MessageId = gossipMessage.MessageId
-                        SenderAddress = nodeConfig.PublicAddress
+                        SenderAddress = nodeConfigPublicIPAddress
                         Data = gossipMessage.Data
                     }
                     |> GossipMessage
