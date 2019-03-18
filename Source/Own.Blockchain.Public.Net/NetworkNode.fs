@@ -277,7 +277,7 @@ type NetworkNode
                         Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary message
                     let multicastAddresses =
                         getCurrentValidators ()
-                        |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress |> Option.map id)
+                        |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
                         |> List.filter (isSelf >> not)
                         |> List.map (fun a -> a.Value)
 
@@ -384,16 +384,16 @@ type NetworkNode
 
     member private __.Discover () =
         __.IncreaseHeartbeat()
-        match nodeConfigPublicIPAddress with
-        | Some _ ->
-            // Propagate discovery message.
+        match nodeConfig.PublicAddress with
+        | Some address -> // Propagate discovery message.
+            // Propagate public address along (used to handle peer ip change).
+            let self = { GossipMember.NetworkAddress = address; Heartbeat = 0L }
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
-                PeerMessage = { ActiveMembers = __.GetActiveMembers() } |> GossipDiscoveryMessage
+                PeerMessage = { ActiveMembers = self :: __.GetActiveMembers() } |> GossipDiscoveryMessage
             }
             |> __.SendMessage
-        | None ->
-            // Request peer list.
+        | None -> // Request peer list.
             __.SendRequestDataMessage NetworkMessageId.PeerList
 
         printActiveMembers ()
