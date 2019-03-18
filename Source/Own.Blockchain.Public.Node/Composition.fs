@@ -553,11 +553,11 @@ module Composition =
             Config.PublicAddress
             Config.NetworkBootstrapNodes
             Config.AllowPrivateNetworkPeers
+            Config.DnsResolverCacheTimeout
             Config.MaxConnectedPeers
             Config.GossipFanout
             Config.GossipInterval
             Config.GossipMaxMissedHeartbeats
-            Config.DnsResolverCacheTimeout
             getNetworkId
             getAllPeerNodes
             savePeerNode
