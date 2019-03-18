@@ -23,12 +23,6 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "RespondToPeer agent is not started"
 
-    let mutable dnsResolver : MailboxProcessor<unit> option = None
-    let invokeDnsResolver () =
-        match dnsResolver with
-        | Some h -> h.Post ()
-        | None -> Log.error "DnsResolver agent is not started"
-
     let private startSendPeerMessageDispatcher () =
         if peerMessageDispatcher <> None then
             failwith "SendPeerMessage agent is already started"
@@ -59,17 +53,6 @@ module Peers =
             Agent.start <| fun (targetIdentity, peerMessageEnvelope) ->
                 async {
                     PeerMessageHandler.respondToPeer targetIdentity peerMessageEnvelope
-                }
-            |> Some
-
-    let private startDnsResolver () =
-        if dnsResolver <> None then
-            failwith "DnsResolver agent is already started"
-
-        dnsResolver <-
-            Agent.start <| fun _ ->
-                async {
-                    PeerMessageHandler.startDnsResolver ()
                 }
             |> Some
 
@@ -113,4 +96,3 @@ module Peers =
         startSendPeerMessageDispatcher ()
         startRequestFromPeerDispatcher ()
         startRespondToPeerDispatcher ()
-        startDnsResolver ()

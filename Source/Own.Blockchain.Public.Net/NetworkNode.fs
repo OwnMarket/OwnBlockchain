@@ -364,7 +364,8 @@ type NetworkNode
 
     member private __.StartNode publishEvent =
         Log.debug "Start node..."
-        __.InitializeMemberList()
+        __.InitializeMemberList ()
+        __.StartDnsResolver ()
         __.StartServer publishEvent
 
     member private __.StartServer publishEvent =
