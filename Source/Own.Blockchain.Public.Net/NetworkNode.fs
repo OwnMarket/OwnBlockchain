@@ -209,7 +209,7 @@ type NetworkNode
             networkId.Value
             nodeConfig.Identity.Value
             (__.ReceivePeerMessage publishEvent)
-        __.StartNode publishEvent
+        __.StartNode ()
         __.StartGossipDiscovery ()
         Log.info "Network layer initialized"
 
@@ -362,13 +362,13 @@ type NetworkNode
     // Gossip Discovery
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    member private __.StartNode publishEvent =
+    member private __.StartNode () =
         Log.debug "Start node..."
         __.InitializeMemberList ()
         __.StartDnsResolver ()
-        __.StartServer publishEvent
+        __.StartServer ()
 
-    member private __.StartServer publishEvent =
+    member private __.StartServer () =
         Log.infof "Listen on: %s" nodeConfig.ListeningAddress.Value
         nodeConfigPublicIPAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage nodeConfig.ListeningAddress.Value
