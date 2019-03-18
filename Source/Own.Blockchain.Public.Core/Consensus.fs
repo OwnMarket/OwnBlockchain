@@ -288,7 +288,9 @@ module Consensus =
 
                             _lockedBlock <- lockedBlock
                             _lockedRound <- response.LockedRound
-                            _round <- _lockedRound
+                            _validBlock <- lockedBlock
+                            _validRound <- response.LockedRound
+                            _round <- response.LockedRound
                             _step <- ConsensusStep.Propose
 
                             __.UpdateState()
