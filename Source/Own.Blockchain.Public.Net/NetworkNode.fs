@@ -62,7 +62,7 @@ type NetworkNode
                     let host = networkAddress.Substring(0, index)
                     let ipAddress =
                         Dns.GetHostAddresses(host)
-                        |> Array.sortBy(fun ip -> ip.AddressFamily)
+                        |> Array.sortBy (fun ip -> ip.AddressFamily)
                         |> Array.head
                     let isPrivateIp = ipAddress.IsPrivate()
                     if not nodeConfig.AllowPrivateNetworkPeers && isPrivateIp then
@@ -237,7 +237,7 @@ type NetworkNode
             |> List.choose (fun m ->
                 m.NetworkAddress.Value
                 |> memoizedConvertToIpAddress
-                |> Option.map(fun ip ->
+                |> Option.map (fun ip ->
                     {GossipMember.NetworkAddress = ip; Heartbeat = m.Heartbeat}
                 )
             )
@@ -402,7 +402,9 @@ type NetworkNode
         getAllPeerNodes () @ nodeConfig.BootstrapNodes @ publicAddress
         |> Set.ofList
         |> Set.iter (fun a ->
-            a.Value |> memoizedConvertToIpAddress |> Option.iter(fun ip ->
+            a.Value
+            |> memoizedConvertToIpAddress
+            |> Option.iter (fun ip ->
                 __.AddMember { NetworkAddress = ip; Heartbeat = 0L }
             )
         )
@@ -444,7 +446,7 @@ type NetworkNode
 
     member private __.IncreaseHeartbeat () =
         nodeConfigPublicIPAddress
-        |> Option.iter(fun ipAddress ->
+        |> Option.iter (fun ipAddress ->
             __.GetActiveMember ipAddress
             |> Option.iter (fun m ->
                 let localMember = {
