@@ -241,8 +241,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ envelope.BlockNumber = BlockNumber 101L @>
         test <@ block <> None @>
 
-        for s in net.States.Values do
-            test <@ s.Decisions.Count = 100 @>
+        for v in validators do
+            test <@ net.Decisions.[v].Count = 100 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Qualified Majority
@@ -429,6 +429,7 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         let equivocationProof, detectedValidator =
             net.Events
+            |> Seq.map snd
             |> Seq.distinct
             |> Seq.exactlyOne
             |> function
@@ -534,10 +535,10 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.States.[validators.[0]].Decisions.[BlockNumber 1L] = proposedBlock @>
-        test <@ net.States.[validators.[1]].Decisions.[BlockNumber 1L] = proposedBlock @>
-        test <@ net.States.[validators.[2]].Decisions.[BlockNumber 1L] = proposedBlock @>
-        test <@ net.States.[validators.[3]].Decisions.ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[3]].ContainsKey(BlockNumber 1L) = false @>
 
     [<Fact>]
     member __.``Consensus - Distributed Test Cases: CF3`` () =
@@ -587,7 +588,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.States.[validators.[0]].Decisions.[BlockNumber 1L] = proposedBlock @>
-        test <@ net.States.[validators.[1]].Decisions.ContainsKey(BlockNumber 1L) = false @>
-        test <@ net.States.[validators.[2]].Decisions.ContainsKey(BlockNumber 1L) = false @>
-        test <@ net.States.[validators.[3]].Decisions.ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.[validators.[2]].ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.[validators.[3]].ContainsKey(BlockNumber 1L) = false @>

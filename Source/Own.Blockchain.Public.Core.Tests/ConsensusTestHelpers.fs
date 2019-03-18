@@ -90,11 +90,15 @@ module ConsensusTestHelpers =
         ) =
 
         let _state = new Dictionary<BlockchainAddress, ConsensusState>()
+        let _decisions = new Dictionary<BlockchainAddress, Dictionary<BlockNumber, Block>>()
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
-        let _events = new List<AppEvent>()
+        let _events = new List<BlockchainAddress * AppEvent>()
 
         member __.States
             with get () = _state
+
+        member __.Decisions
+            with get () = _decisions
 
         member __.Messages
             with get () = _messages
@@ -110,9 +114,11 @@ module ConsensusTestHelpers =
 
                 let restoreConsensusMessages () = []
 
+                _decisions.Add(validatorAddress, Dictionary<BlockNumber, Block>())
+
                 let getLastAppliedBlockNumber () =
                     lastAppliedBlockNumber |?> fun _ ->
-                        __.States.[validatorAddress].Decisions.Keys
+                        _decisions.[validatorAddress].Keys
                         |> Seq.sortDescending
                         |> Seq.tryHead
                         |? BlockNumber 0L
@@ -159,7 +165,12 @@ module ConsensusTestHelpers =
                     __.RequestConsensusState validatorAddress
 
                 let publishEvent event =
-                    _events.Add event
+                    _events.Add (validatorAddress, event)
+                    match event with
+                    | BlockCommitted (bn, envelopeDto) ->
+                        let envelope = envelopeDto |> Mapping.blockEnvelopeFromDto
+                        _decisions.[validatorAddress].Add(bn, envelope.Block)
+                    | _ -> ()
 
                 let scheduleMessage =
                     match scheduleMessage with

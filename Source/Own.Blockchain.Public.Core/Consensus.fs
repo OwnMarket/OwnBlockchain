@@ -785,9 +785,6 @@ module Consensus =
         // Test Helpers
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member __.Decisions
-            with get () = _decisions
-
         member __.PrintCurrentState() =
             [
                 sprintf "_validators: %A" _validators
