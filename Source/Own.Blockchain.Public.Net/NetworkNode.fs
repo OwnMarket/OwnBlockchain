@@ -1,7 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Net
 
 open System
-open System.Linq
 open System.Net
 open System.Collections.Concurrent
 open System.Threading
@@ -61,7 +60,10 @@ type NetworkNode
             | true, _ ->
                 try
                     let host = networkAddress.Substring(0, index)
-                    let ipAddress = Dns.GetHostAddresses(host).OrderBy(fun ip -> ip.AddressFamily).FirstOrDefault()
+                    let ipAddress =
+                        Dns.GetHostAddresses(host)
+                        |> Array.sortBy(fun ip -> ip.AddressFamily)
+                        |> Array.head
                     let isPrivateIp = ipAddress.IsPrivate()
                     if not nodeConfig.AllowPrivateNetworkPeers && isPrivateIp then
                         Log.verbose "Private IPs are not allowed as peers"
