@@ -136,7 +136,7 @@ module Consensus =
         // State Management
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        member private __.PersistState() =
+        member private __.GetConsensusVariables() =
             {
                 ConsensusStateInfo.BlockNumber = _blockNumber
                 ConsensusRound = _round
@@ -147,6 +147,9 @@ module Consensus =
                 ValidBlock = _validBlock
                 ValidRound = _validRound
             }
+
+        member private __.PersistState() =
+            __.GetConsensusVariables()
             |> persistConsensusState
 
         member private __.RestoreState() =
@@ -175,7 +178,7 @@ module Consensus =
 
             __.SetValidators(_blockNumber - 1)
 
-        member __.StartStaleRoundDetection() =
+        member private __.StartStaleRoundDetection() =
             let rec loop () =
                 async {
                     do! Async.Sleep staleRoundDetectionInterval
@@ -784,6 +787,9 @@ module Consensus =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Test Helpers
         ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        member __.Variables
+            with get () = __.GetConsensusVariables()
 
         member __.PrintCurrentState() =
             [

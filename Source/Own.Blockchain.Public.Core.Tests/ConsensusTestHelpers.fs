@@ -8,6 +8,7 @@ open Own.Blockchain.Public.Core.Consensus
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Core.Events
+open Own.Blockchain.Public.Crypto
 
 module ConsensusTestHelpers =
 
@@ -89,6 +90,7 @@ module ConsensusTestHelpers =
         ?lastAppliedBlockNumber : BlockNumber
         ) =
 
+        let mutable _validators = []
         let _state = new Dictionary<BlockchainAddress, ConsensusState>()
         let _decisions = new Dictionary<BlockchainAddress, Dictionary<BlockNumber, Block>>()
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
@@ -107,131 +109,135 @@ module ConsensusTestHelpers =
             with get () = _events
 
         member __.StartConsensus(validators : BlockchainAddress list) =
-            for validatorAddress in validators do
-                let persistConsensusState _ = ()
+            _validators <- validators
 
-                let restoreConsensusState () = None
-
-                let restoreConsensusMessages () = []
-
-                _decisions.Add(validatorAddress, Dictionary<BlockNumber, Block>())
-
-                let getLastAppliedBlockNumber () =
-                    lastAppliedBlockNumber |?> fun _ ->
-                        _decisions.[validatorAddress].Keys
-                        |> Seq.sortDescending
-                        |> Seq.tryHead
-                        |? BlockNumber 0L
-
-                let getValidators _ =
-                    validators
-                    |> Seq.map (fun a ->
-                        {
-                            ValidatorSnapshot.ValidatorAddress = a
-                            NetworkAddress = NetworkAddress ""
-                            SharedRewardPercent = 0m
-                            TotalStake = ChxAmount 0m
-                        }
-                    )
-                    |> Seq.toList
-
-                let isValidatorBlacklisted =
-                    match isValidatorBlacklisted with
-                    | Some f -> f
-                    | None -> fun _ -> false
-
-                let proposeBlock =
-                    let dummyFn validatorAddress blockNumber =
-                        proposeDummyBlock validatorAddress blockNumber
-                        |> Ok
-                        |> Some
-
-                    (proposeBlock |? dummyFn) validatorAddress
-
-                let ensureBlockReady _ = true
-
-                let isValidBlock =
-                    match isValidBlock with
-                    | Some f -> f validatorAddress
-                    | None -> fun _ -> true
-
-                let sendConsensusMessage =
-                    __.SendConsensusMessage validatorAddress
-
-                let sendConsensusState =
-                    __.SendConsensusState validatorAddress
-
-                let requestConsensusState () =
-                    __.RequestConsensusState validatorAddress
-
-                let publishEvent event =
-                    _events.Add (validatorAddress, event)
-                    match event with
-                    | BlockCommitted (bn, envelopeDto) ->
-                        let envelope = envelopeDto |> Mapping.blockEnvelopeFromDto
-                        _decisions.[validatorAddress].Add(bn, envelope.Block)
-                    | _ -> ()
-
-                let scheduleMessage =
-                    match scheduleMessage with
-                    | Some f -> f validatorAddress
-                    | None -> fun _ _ -> ()
-
-                let scheduleStateResponse =
-                    match scheduleStateResponse with
-                    | Some f -> f validatorAddress
-                    | None -> fun _ _ -> ()
-
-                let schedulePropose =
-                    match schedulePropose with
-                    | Some f -> f validatorAddress
-                    | None -> fun _ _ -> ()
-
-                let scheduleTimeout =
-                    match scheduleTimeout with
-                    | Some f -> f validatorAddress
-                    | None -> fun _ -> ()
-
-                let timeoutForRound _ _ =
-                    1000
-
-                let verifyConsensusMessage (e : ConsensusMessageEnvelopeDto) =
-                    (
-                        BlockchainAddress e.Signature, // TODO: Mock this properly
-                            e |> Mapping.consensusMessageEnvelopeFromDto
-                    ) |> Ok
-
-                let state =
-                    new ConsensusState(
-                        persistConsensusState,
-                        restoreConsensusState,
-                        restoreConsensusMessages,
-                        getLastAppliedBlockNumber,
-                        getValidators,
-                        isValidatorBlacklisted,
-                        proposeBlock,
-                        ensureBlockReady,
-                        isValidBlock,
-                        verifyConsensusMessage,
-                        sendConsensusMessage,
-                        sendConsensusState,
-                        requestConsensusState,
-                        publishEvent,
-                        scheduleMessage,
-                        scheduleStateResponse,
-                        schedulePropose,
-                        scheduleTimeout,
-                        timeoutForRound,
-                        0, // No need to pass in the value, because test will trigger the retry explicitly.
-                        0, // No need to pass in the value, because test will trigger the retry explicitly.
-                        0, // No need to pass in the value, because test will trigger the request explicitly.
-                        validatorAddress
-                    )
-
-                _state.Add(validatorAddress, state)
+            for v in validators do
+                __.StartValidator v
 
             for s in _state.Values do
                 s.StartConsensus()
+
+        member private __.StartValidator validatorAddress =
+            let persistConsensusState _ = ()
+
+            let restoreConsensusState () = None
+
+            let restoreConsensusMessages () = []
+
+            _decisions.Add(validatorAddress, Dictionary<BlockNumber, Block>())
+
+            let getLastAppliedBlockNumber () =
+                lastAppliedBlockNumber |?> fun _ ->
+                    _decisions.[validatorAddress].Keys
+                    |> Seq.sortDescending
+                    |> Seq.tryHead
+                    |? BlockNumber 0L
+
+            let getValidators _ =
+                _validators
+                |> Seq.map (fun a ->
+                    {
+                        ValidatorSnapshot.ValidatorAddress = a
+                        NetworkAddress = NetworkAddress ""
+                        SharedRewardPercent = 0m
+                        TotalStake = ChxAmount 0m
+                    }
+                )
+                |> Seq.toList
+
+            let isValidatorBlacklisted =
+                match isValidatorBlacklisted with
+                | Some f -> f
+                | None -> fun _ -> false
+
+            let proposeBlock =
+                let dummyFn validatorAddress blockNumber =
+                    proposeDummyBlock validatorAddress blockNumber
+                    |> Ok
+                    |> Some
+
+                (proposeBlock |? dummyFn) validatorAddress
+
+            let ensureBlockReady _ = true
+
+            let isValidBlock =
+                match isValidBlock with
+                | Some f -> f validatorAddress
+                | None -> fun _ -> true
+
+            let sendConsensusMessage =
+                __.SendConsensusMessage validatorAddress
+
+            let sendConsensusState =
+                __.SendConsensusState validatorAddress
+
+            let requestConsensusState = ignore
+
+            let publishEvent event =
+                _events.Add (validatorAddress, event)
+                match event with
+                | BlockCommitted (bn, envelopeDto) ->
+                    let envelope = envelopeDto |> Mapping.blockEnvelopeFromDto
+                    _decisions.[validatorAddress].Add(bn, envelope.Block)
+                | _ -> ()
+
+            let scheduleMessage =
+                match scheduleMessage with
+                | Some f -> f validatorAddress
+                | None -> fun _ _ -> ()
+
+            let scheduleStateResponse =
+                match scheduleStateResponse with
+                | Some f -> f validatorAddress
+                | None -> fun _ _ -> ()
+
+            let schedulePropose =
+                match schedulePropose with
+                | Some f -> f validatorAddress
+                | None -> fun _ _ -> ()
+
+            let scheduleTimeout =
+                match scheduleTimeout with
+                | Some f -> f validatorAddress
+                | None -> fun _ -> ()
+
+            let timeoutForRound _ _ =
+                1000
+
+            let verifyConsensusMessage (e : ConsensusMessageEnvelopeDto) =
+                (
+                    BlockchainAddress e.Signature, // TODO: Mock this properly
+                        e |> Mapping.consensusMessageEnvelopeFromDto
+                ) |> Ok
+
+            let state =
+                new ConsensusState(
+                    persistConsensusState,
+                    restoreConsensusState,
+                    restoreConsensusMessages,
+                    getLastAppliedBlockNumber,
+                    getValidators,
+                    isValidatorBlacklisted,
+                    proposeBlock,
+                    ensureBlockReady,
+                    isValidBlock,
+                    verifyConsensusMessage,
+                    sendConsensusMessage,
+                    sendConsensusState,
+                    requestConsensusState,
+                    publishEvent,
+                    scheduleMessage,
+                    scheduleStateResponse,
+                    schedulePropose,
+                    scheduleTimeout,
+                    timeoutForRound,
+                    0, // No need to pass in the value, because test will trigger the retry explicitly.
+                    0, // No need to pass in the value, because test will trigger the retry explicitly.
+                    0, // No need to pass in the value, because test will trigger the request explicitly.
+                    validatorAddress
+                )
+
+            _state.Add(validatorAddress, state)
 
         member private __.SendConsensusMessage validatorAddress blockNumber consensusRound consensusMessage =
             _messages.Add(
@@ -243,12 +249,6 @@ module ConsensusTestHelpers =
                     Signature = Signature validatorAddress.Value // Just for testing convenience.
                 }
             )
-
-        member private __.SendConsensusState validatorAddress recipientValidatorAddress state =
-            () // TODO: Implement
-
-        member private __.RequestConsensusState validatorAddress =
-            () // TODO: Implement
 
         member __.DeliverMessages(?filter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool) =
             let messages = _messages |> Seq.toList
@@ -266,6 +266,49 @@ module ConsensusTestHelpers =
             }
             |> Seq.shuffle
             |> Seq.iter (fun (a, m, s) -> (a, m) |> ConsensusCommand.Message |> s.HandleConsensusCommand)
+
+        member __.CrashValidator validatorAddress =
+            if not (_state.Remove validatorAddress) then
+                failwithf "Didn't remove crashed validator %s" validatorAddress.Value
+            if not (_decisions.Remove validatorAddress) then
+                failwithf "Didn't remove decisions for crashed validator %s" validatorAddress.Value
+
+        member __.RecoverValidator validatorAddress =
+            __.StartValidator validatorAddress
+
+            // Mimicking the block synchronization process by getting the decided blocks from others.
+            _decisions
+            |> List.ofDict
+            |> List.collect (snd >> List.ofDict)
+            |> List.distinct
+            |> List.sort
+            |> List.iter _decisions.[validatorAddress].Add
+
+            _state.[validatorAddress].HandleConsensusCommand ConsensusCommand.Synchronize
+
+            for v in _validators do
+                if v <> validatorAddress then
+                    let consensusStateRequest =
+                        {
+                            ConsensusStateRequest.ValidatorAddress = validatorAddress
+                        }
+
+                    let peerId =
+                        validatorAddress.Value
+                        |> Hashing.decode
+                        |> PeerNetworkIdentity
+
+                    ConsensusCommand.StateRequested (consensusStateRequest, peerId)
+                    |> _state.[v].HandleConsensusCommand
+
+        member private __.SendConsensusState validatorAddress recipientPeerNetworkIdentity consensusStateResponse =
+            let recipientValidatorAddress =
+                recipientPeerNetworkIdentity.Value
+                |> Hashing.encode
+                |> BlockchainAddress
+
+            ConsensusCommand.StateReceived consensusStateResponse
+            |> _state.[recipientValidatorAddress].HandleConsensusCommand
 
         member __.PrintTheState(log) =
             for m in __.Messages do

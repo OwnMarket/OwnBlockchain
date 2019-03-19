@@ -501,6 +501,8 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         // ACT
         net.StartConsensus validators
+        net.CrashValidator crashedFollower
+
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> fst = proposer @>
         let proposedBlock =
@@ -538,7 +540,69 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
-        test <@ net.Decisions.[validators.[3]].ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.ContainsKey(crashedFollower) = false @>
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: CF2`` () =
+        // ARRANGE
+        let validatorCount = 4
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+        let crashedFollower = validators.[3]
+        let reachableValidators = validators |> List.except [crashedFollower]
+
+        let net = new ConsensusSimulationNetwork()
+
+        // Prepare CF1
+        net.StartConsensus validators
+        net.CrashValidator crashedFollower
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = proposer @>
+        let proposedBlock =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock.Header.Number = BlockNumber 1L @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
+        test <@ net.Messages.Count = reachableValidators.Length @>
+        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Vote messages
+        test <@ net.Messages.Count = reachableValidators.Length @>
+        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+
+        let committers = net.Messages |> Seq.map fst |> Seq.toList |> List.sort
+        test <@ committers = reachableValidators @>
+
+        let committedBlockNumber, committedRound =
+            net.Messages
+            |> Seq.map (fun (_, e) -> e.BlockNumber, e.Round)
+            |> Seq.distinct
+            |> Seq.exactlyOne
+        test <@ committedBlockNumber = BlockNumber 1L @>
+        test <@ committedRound = ConsensusRound 0 @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Commit messages
+        test <@ net.Messages.Count = 1 @>
+
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
+
+        // ACT
+        net.RecoverValidator crashedFollower
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.[crashedFollower].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.States.[crashedFollower].Variables.BlockNumber = BlockNumber 2L @>
+        test <@ net.States.[crashedFollower].Variables.ConsensusRound = ConsensusRound 0 @>
+        test <@ net.States.[crashedFollower].Variables.ConsensusStep = ConsensusStep.Propose @>
 
     [<Fact>]
     member __.``Consensus - Distributed Test Cases: CF3`` () =
@@ -554,6 +618,8 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         // ACT
         net.StartConsensus validators
+        net.CrashValidator crashedFollower
+
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> fst = proposer @>
         let proposedBlock =
@@ -591,4 +657,4 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[1]].ContainsKey(BlockNumber 1L) = false @>
         test <@ net.Decisions.[validators.[2]].ContainsKey(BlockNumber 1L) = false @>
-        test <@ net.Decisions.[validators.[3]].ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.ContainsKey(crashedFollower) = false @>
