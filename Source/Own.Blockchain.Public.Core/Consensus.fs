@@ -236,7 +236,7 @@ module Consensus =
                         else
                             false, None
 
-                if isValidMessage then
+                if isValidMessage && lockedBlock <> _lockedBlock then
                     let votes =
                         response.LockedVoteSignatures
                         |> List.toArray
