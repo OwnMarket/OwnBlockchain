@@ -268,7 +268,7 @@ module PeerTests =
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
@@ -277,7 +277,7 @@ module PeerTests =
             BootstrapNodes = [NetworkAddress address1]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
@@ -286,7 +286,7 @@ module PeerTests =
             BootstrapNodes = [NetworkAddress address1]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -303,7 +303,7 @@ module PeerTests =
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
@@ -312,7 +312,7 @@ module PeerTests =
             BootstrapNodes = [NetworkAddress address1]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
@@ -321,7 +321,7 @@ module PeerTests =
             BootstrapNodes = [NetworkAddress address2]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -338,7 +338,7 @@ module PeerTests =
             BootstrapNodes = [NetworkAddress address2; NetworkAddress address3]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
@@ -347,7 +347,7 @@ module PeerTests =
             BootstrapNodes = [NetworkAddress address1; NetworkAddress address3]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
@@ -356,7 +356,7 @@ module PeerTests =
             BootstrapNodes = [NetworkAddress address1; NetworkAddress address2]
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -618,7 +618,7 @@ module PeerTests =
             BootstrapNodes = []
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
-            DnsResolverCacheTimeout = 10
+            DnsResolverCacheExpirationTime = 600
         }
 
         let nodeConfigList =
@@ -631,7 +631,7 @@ module PeerTests =
                     BootstrapNodes = [NetworkAddress address311]
                     AllowPrivateNetworkPeers = true
                     MaxConnectedPeers = 200
-                    DnsResolverCacheTimeout = 10
+                    DnsResolverCacheExpirationTime = 600
                 }
             )
 

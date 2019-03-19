@@ -188,7 +188,7 @@ type NetworkNode
     member __.StartDnsResolver () =
         let rec loop () =
             async {
-                let lastValidTime = DateTime.Now.AddMinutes(-nodeConfig.DnsResolverCacheTimeout |> float)
+                let lastValidTime = DateTime.Now.AddMinutes(-nodeConfig.DnsResolverCacheExpirationTime |> float)
                 dnsResolverCache
                 |> Seq.ofDict
                 |> Seq.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)

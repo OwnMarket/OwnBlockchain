@@ -553,7 +553,7 @@ module Composition =
             Config.PublicAddress
             Config.NetworkBootstrapNodes
             Config.AllowPrivateNetworkPeers
-            Config.DnsResolverCacheTimeout
+            Config.DnsResolverCacheExpirationTime
             Config.MaxConnectedPeers
             Config.GossipFanout
             Config.GossipInterval
