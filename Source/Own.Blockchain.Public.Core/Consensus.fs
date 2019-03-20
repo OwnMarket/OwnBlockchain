@@ -646,21 +646,21 @@ module Consensus =
             )
 
         member private __.SendPropose(consensusRound, block) =
-            __.PersistState()
             ConsensusMessage.Propose (block, _validRound)
             |> sendConsensusMessage _blockNumber consensusRound
+            __.PersistState()
 
         member private __.SendVote(consensusRound, blockHash) =
             let message = ConsensusMessage.Vote blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
-                __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
+                __.PersistState()
 
         member private __.SendCommit(consensusRound, blockHash) =
             let message = ConsensusMessage.Commit blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
-                __.PersistState()
                 sendConsensusMessage _blockNumber consensusRound message
+                __.PersistState()
 
         member private __.SaveBlock(block, consensusRound) =
             let signatures =
