@@ -362,9 +362,11 @@ module Consensus =
                     if _lockedRound < ConsensusRound 0 then
                         []
                     elif _lockedBlockSignatures.Length < _qualifiedMajority then
-                        failwithf "_lockedBlockSignatures has only %i entries - it should have at least %i"
+                        failwithf
+                            "_lockedBlockSignatures has only %i entries - it should have at least %i for lockedRound %i"
                             _lockedBlockSignatures.Length
                             _qualifiedMajority
+                            _lockedRound.Value
                     else
                         _lockedBlockSignatures
 
@@ -506,15 +508,16 @@ module Consensus =
             if _step >= ConsensusStep.Vote then
                 __.GetProposal()
                 |> Option.iter (fun ((_, _, _), (block, _, _)) ->
-                    if __.MajorityVoted(_round, Some block.Header.Hash) && isValidBlock block then
+                    let blockHash = Some block.Header.Hash
+                    if __.MajorityVoted(_round, blockHash) && isValidBlock block then
                         _validBlock <- Some block
                         _validRound <- _round
                         if _step = ConsensusStep.Vote then
-                            _lockedBlockSignatures <- __.GetLockedBlockSignatures()
+                            _lockedBlockSignatures <- __.GetVoteSignatures(_blockNumber, _round, blockHash)
                             _lockedBlock <- Some block
                             _lockedRound <- _round
                             _step <- ConsensusStep.Commit
-                            __.SendCommit(_round, Some block.Header.Hash)
+                            __.SendCommit(_round, blockHash)
                         else
                             __.PersistState()
                 )
@@ -588,13 +591,11 @@ module Consensus =
             |> Seq.sortBy (fun ((_, consensusRound, _), _) -> consensusRound)
             |> Seq.tryHead
 
-        member private __.GetLockedBlockSignatures() =
-            let lockedBlockHash = _lockedBlock |> Option.map (fun b -> b.Header.Hash)
-
+        member private __.GetVoteSignatures(blockNumber, consensusRound, blockHash : BlockHash option) =
             _votes
             |> List.ofDict
             |> List.choose (fun ((bn, r, _), (bh, s)) ->
-                if bn = _blockNumber && r = _lockedRound && bh = lockedBlockHash then
+                if bn = blockNumber && r = consensusRound && bh = blockHash then
                     Some s
                 else
                     None
