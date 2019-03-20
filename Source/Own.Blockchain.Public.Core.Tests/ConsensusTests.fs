@@ -151,7 +151,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
+        test <@ net.Messages |> Seq.forall isPropose @>
 
     [<Fact>]
     member __.``Consensus - Happy Path - Validators vote for valid block`` () =
@@ -170,7 +170,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = validatorCount @>
-        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
 
     [<Fact>]
     member __.``Consensus - Happy Path - Validators commit valid block`` () =
@@ -190,7 +190,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = validatorCount @>
-        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
 
     [<Fact>]
     member __.``Consensus - Happy Path - Proposer proposes next block`` () =
@@ -211,7 +211,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
+        test <@ net.Messages |> Seq.forall isPropose @>
 
     [<Fact>]
     member __.``Consensus - Happy Path - 100 blocks committed`` () =
@@ -266,7 +266,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 6 @>
-        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
 
     [<Fact>]
     member __.``Consensus - Qualified Majority - Validators don't commit block without 2f + 1 votes`` () =
@@ -337,7 +337,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = validatorCount @>
-        test <@ net.Messages |> Seq.forall (snd >> isVoteForNone) @>
+        test <@ net.Messages |> Seq.forall isVoteForNone @>
 
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't commit block if votes timeout`` () =
@@ -360,7 +360,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = validatorCount @>
-        test <@ net.Messages |> Seq.forall (snd >> isCommitForNone) @>
+        test <@ net.Messages |> Seq.forall isCommitForNone @>
 
     [<Fact>]
     member __.``Consensus - Timeouts - Validators don't decide for block if commits timeout`` () =
@@ -384,7 +384,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall (snd >> isPropose) @>
+        test <@ net.Messages |> Seq.forall isPropose @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Equivocation
@@ -424,7 +424,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = validatorCount @>
-        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
         test <@ net.Events.Count = validatorCount @>
 
         let equivocationProof, detectedValidator =
@@ -480,7 +480,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Messages.Count = validatorCount @>
-        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
         test <@ ignoredMessageCount = validatorCount @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -514,11 +514,11 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
         test <@ net.Messages.Count = reachableValidators.Length @>
-        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Vote messages
         test <@ net.Messages.Count = reachableValidators.Length @>
-        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
 
         let committers = net.Messages |> Seq.map fst |> Seq.toList |> List.sort
         test <@ committers = reachableValidators @>
@@ -569,11 +569,11 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
         test <@ net.Messages.Count = reachableValidators.Length @>
-        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Vote messages
         test <@ net.Messages.Count = reachableValidators.Length @>
-        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
 
         let committers = net.Messages |> Seq.map fst |> Seq.toList |> List.sort
         test <@ committers = reachableValidators @>
@@ -631,11 +631,11 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
         test <@ net.Messages.Count = reachableValidators.Length @>
-        test <@ net.Messages |> Seq.forall (snd >> isVoteForBlock) @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
 
         net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Vote messages
         test <@ net.Messages.Count = reachableValidators.Length @>
-        test <@ net.Messages |> Seq.forall (snd >> isCommitForBlock) @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
 
         let committers = net.Messages |> Seq.map fst |> Seq.toList |> List.sort
         test <@ committers = reachableValidators @>
