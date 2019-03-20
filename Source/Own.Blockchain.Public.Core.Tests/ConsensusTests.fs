@@ -252,7 +252,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     member __.``Consensus - Qualified Majority - Validators don't vote for block without receiving proposal`` () =
         // ARRANGE
         let validatorCount = 10
-        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let reachableValidators = validators |> List.take 6
 
         let net = new ConsensusSimulationNetwork()
