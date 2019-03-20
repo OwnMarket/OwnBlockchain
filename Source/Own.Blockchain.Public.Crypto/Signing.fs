@@ -57,10 +57,14 @@ module Signing =
         |> Signature
 
     let signHash getNetworkId privateKey hash =
-        let networkId = getNetworkId ()
-        hash
-        |> Hashing.decode
-        |> signHashBytes (Some networkId) privateKey
+        try
+            let networkId = getNetworkId ()
+            hash
+            |> Hashing.decode
+            |> signHashBytes (Some networkId) privateKey
+        with
+        | ex ->
+            raise (new Exception(sprintf "Failed to sign the hash %s" hash, ex))
 
     let verifySignature getNetworkId (Signature signature) messageHash : BlockchainAddress option =
         let networkId : NetworkId = getNetworkId ()
