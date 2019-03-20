@@ -232,11 +232,8 @@ module ConsensusTestHelpers =
             let timeoutForRound _ _ =
                 1000
 
-            let verifyConsensusMessage (e : ConsensusMessageEnvelopeDto) =
-                (
-                    BlockchainAddress e.Signature, // TODO: Mock this properly
-                        e |> Mapping.consensusMessageEnvelopeFromDto
-                ) |> Ok
+            let verifyConsensusMessage =
+                __.VerifyConsensusMessage
 
             let state =
                 new ConsensusState(
@@ -267,13 +264,49 @@ module ConsensusTestHelpers =
 
             _state.Add(validatorAddress, state)
 
+        member private __.VerifyConsensusMessage (envelope : ConsensusMessageEnvelopeDto) =
+            let envelope = envelope |> Mapping.consensusMessageEnvelopeFromDto
+            let consensusStep = envelope.ConsensusMessage |> Mapping.consensusStepFromMessage
+
+            match envelope.Signature.Value.Split('_') with
+            | [| b; r; s; a |] ->
+                let signedBlockNumber = b |> int64 |> BlockNumber
+                let signedRound = r |> int32 |> ConsensusRound
+                let signedStep = s |> byte |> Mapping.consensusStepFromCode
+                let signerAddress = a |> BlockchainAddress
+
+                if envelope.BlockNumber <> signedBlockNumber then
+                    sprintf "Different block number (%i vs signed %i)"
+                        envelope.BlockNumber.Value
+                        signedBlockNumber.Value
+                    |> Result.appError
+                elif envelope.Round <> signedRound then
+                    sprintf "Different round (%i vs signed %i)" envelope.Round.Value signedRound.Value
+                    |> Result.appError
+                elif consensusStep <> signedStep then
+                    sprintf "Different step (%A vs signed %A)" consensusStep signedStep
+                    |> Result.appError
+                else
+                    Ok (signerAddress, envelope)
+            | _ ->
+                sprintf "Dummy signature must contain four components (%s)" envelope.Signature.Value
+                |> Result.appError
+
         member private __.SendConsensusMessage validatorAddress blockNumber consensusRound consensusMessage =
+            let dummySignature =
+                sprintf "%i_%i_%i_%s"
+                    blockNumber.Value
+                    consensusRound.Value
+                    (consensusMessage |> Mapping.consensusStepFromMessage |> Mapping.consensusStepToCode)
+                    validatorAddress.Value
+                |> Signature
+
             let consensusMessageEnvelope =
                 {
                     ConsensusMessageEnvelope.BlockNumber = blockNumber
                     Round = consensusRound
                     ConsensusMessage = consensusMessage
-                    Signature = Signature validatorAddress.Value // Just for testing convenience.
+                    Signature = dummySignature
                 }
 
             _messages.Add(validatorAddress, consensusMessageEnvelope)
