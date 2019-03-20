@@ -443,7 +443,7 @@ type ConsensusTests(output : ITestOutputHelper) =
             |> ConsensusMessage.Vote
 
         test <@ proofBlockHash1 = equivocationMessage @>
-        test <@ equivocationProof.Signature1 = (byzantineValidator.Value + "_EQ") @>
+        test <@ equivocationProof.Signature1.EndsWith(byzantineValidator.Value + "_EQ") @>
         test <@ detectedValidator = byzantineValidator @>
 
     [<Fact>]
