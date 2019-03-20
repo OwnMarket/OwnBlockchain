@@ -326,18 +326,18 @@ module ConsensusTestHelpers =
 
             _state.[validatorAddress].HandleConsensusCommand ConsensusCommand.Synchronize
 
+            let consensusStateRequest =
+                {
+                    ConsensusStateRequest.ValidatorAddress = validatorAddress
+                }
+
+            let peerId =
+                validatorAddress.Value
+                |> Hashing.decode
+                |> PeerNetworkIdentity
+
             for v in _validators do
-                if v <> validatorAddress then
-                    let consensusStateRequest =
-                        {
-                            ConsensusStateRequest.ValidatorAddress = validatorAddress
-                        }
-
-                    let peerId =
-                        validatorAddress.Value
-                        |> Hashing.decode
-                        |> PeerNetworkIdentity
-
+                if v <> validatorAddress && _state.ContainsKey v then
                     ConsensusCommand.StateRequested (consensusStateRequest, peerId)
                     |> _state.[v].HandleConsensusCommand
 
@@ -346,6 +346,9 @@ module ConsensusTestHelpers =
                 recipientPeerNetworkIdentity.Value
                 |> Hashing.encode
                 |> BlockchainAddress
+
+            if recipientValidatorAddress = validatorAddress then
+                failwithf "Shouldn't send consensus state to self: %s" validatorAddress.Value
 
             ConsensusCommand.StateReceived consensusStateResponse
             |> _state.[recipientValidatorAddress].HandleConsensusCommand
