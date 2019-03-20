@@ -290,11 +290,17 @@ module ConsensusTestHelpers =
                 consensusMessageEnvelope
             )
 
-        member __.DeliverMessages(?filter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool) =
+        member __.DeliverMessages
+            (
+            ?sendFilter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool,
+            ?delayFilter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool
+            ) =
+
             let messages = _messages |> Seq.toList
             _messages.Clear()
 
-            let shouldSend = filter |? fun _ -> true
+            let shouldSend = sendFilter |? fun _ -> true
+            let shouldDelay = delayFilter |? fun _ -> false
 
             let states = _state |> Seq.ofDict
 
@@ -303,6 +309,9 @@ module ConsensusTestHelpers =
                     for address, state in states do
                         if shouldSend (senderAddress, address, msg) then
                             yield senderAddress, msg, state
+                        if shouldDelay (senderAddress, address, msg) then
+                            if not (_messages.Contains (senderAddress, msg)) then
+                                _messages.Add (senderAddress, msg)
             }
             |> Seq.shuffle
             |> Seq.iter (fun (a, m, s) -> (a, m) |> ConsensusCommand.Message |> s.HandleConsensusCommand)
