@@ -335,6 +335,9 @@ module ConsensusTestHelpers =
 
             _state.[validatorAddress].HandleConsensusCommand ConsensusCommand.Synchronize
 
+            __.RequestConsensusState validatorAddress
+
+        member __.RequestConsensusState validatorAddress =
             let consensusStateRequest =
                 {
                     ConsensusStateRequest.ValidatorAddress = validatorAddress
