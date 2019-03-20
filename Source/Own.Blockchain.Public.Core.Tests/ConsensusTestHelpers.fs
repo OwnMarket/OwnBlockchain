@@ -340,7 +340,7 @@ module ConsensusTestHelpers =
             seq {
                 for (senderAddress, msg) in messages do
                     for address, state in states do
-                        if shouldSend (senderAddress, address, msg) then
+                        if shouldSend (senderAddress, address, msg) || address = senderAddress then
                             yield senderAddress, msg, state
                         if shouldDelay (senderAddress, address, msg) then
                             if not (_messages.Contains (senderAddress, msg)) then
