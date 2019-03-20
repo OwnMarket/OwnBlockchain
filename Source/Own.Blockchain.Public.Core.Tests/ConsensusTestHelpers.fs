@@ -403,7 +403,7 @@ module ConsensusTestHelpers =
                 log (sprintf "MESSAGE: %A" m)
             for e in __.Events do
                 log (sprintf "EVENT: %A" e)
-            for s in __.States do
+            for s in __.States |> Seq.sortBy (fun s -> _validators |> List.findIndex (fun v -> v = s.Key)) do
                 log (sprintf "\nVALIDATOR %A STATE:" s.Key)
                 for v in s.Value.PrintCurrentState() do
                     log (sprintf "%s" v)
