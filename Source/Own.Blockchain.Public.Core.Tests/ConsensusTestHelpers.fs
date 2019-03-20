@@ -349,6 +349,15 @@ module ConsensusTestHelpers =
             |> Seq.shuffle
             |> Seq.iter (fun (a, m, s) -> (a, m) |> ConsensusCommand.Message |> s.HandleConsensusCommand)
 
+        member __.PropagateBlock validatorAddress blockNumber =
+            let block = _decisions.[validatorAddress].[blockNumber]
+            _validators
+            |> List.except [validatorAddress]
+            |> List.iter (fun v ->
+                if _decisions.ContainsKey v && not (_decisions.[v].ContainsKey blockNumber) then
+                    _decisions.[v].Add(blockNumber, block)
+            )
+
         member __.CrashValidator validatorAddress =
             if not (_state.Remove validatorAddress) then
                 failwithf "Didn't remove crashed validator %s" validatorAddress.Value
