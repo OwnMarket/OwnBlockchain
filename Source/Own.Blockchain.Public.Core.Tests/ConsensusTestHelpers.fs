@@ -96,6 +96,13 @@ module ConsensusTestHelpers =
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
         let _events = new List<BlockchainAddress * AppEvent>()
 
+        let _persistedState = new Dictionary<BlockchainAddress, ConsensusStateInfo>()
+        let _persistedMessages =
+            new Dictionary<
+                BlockchainAddress,
+                Dictionary<BlockNumber * ConsensusRound * ConsensusStep, ConsensusMessageEnvelope>
+                >()
+
         member __.States
             with get () = _state
 
@@ -118,11 +125,24 @@ module ConsensusTestHelpers =
                 s.StartConsensus()
 
         member private __.StartValidator validatorAddress =
-            let persistConsensusState _ = ()
+            let persistConsensusState s =
+                if _persistedState.ContainsKey validatorAddress then
+                    _persistedState.[validatorAddress] <- s
+                else
+                    _persistedState.Add(validatorAddress, s)
 
-            let restoreConsensusState () = None
+            let restoreConsensusState () =
+                match _persistedState.TryGetValue validatorAddress with
+                | true, s -> Some s
+                | _ -> None
 
-            let restoreConsensusMessages () = []
+            let restoreConsensusMessages () =
+                match _persistedMessages.TryGetValue validatorAddress with
+                | true, ms ->
+                    ms
+                    |> List.ofDict
+                    |> List.map snd
+                | _ -> []
 
             _decisions.Add(validatorAddress, Dictionary<BlockNumber, Block>())
 
@@ -175,10 +195,18 @@ module ConsensusTestHelpers =
 
             let publishEvent event =
                 _events.Add (validatorAddress, event)
+
                 match event with
-                | BlockCommitted (bn, envelopeDto) ->
+                | BlockCommitted (blockNumber, envelopeDto) ->
                     let envelope = envelopeDto |> Mapping.blockEnvelopeFromDto
-                    _decisions.[validatorAddress].Add(bn, envelope.Block)
+                    _decisions.[validatorAddress].Add(blockNumber, envelope.Block)
+
+                    _persistedState.Remove validatorAddress |> ignore
+
+                    _persistedMessages.[validatorAddress]
+                    |> List.ofDict
+                    |> List.filter (fun ((bn, _, _), _) -> bn <= blockNumber)
+                    |> List.iter (fst >> _persistedMessages.[validatorAddress].Remove >> ignore)
                 | _ -> ()
 
             let scheduleMessage =
@@ -240,14 +268,26 @@ module ConsensusTestHelpers =
             _state.Add(validatorAddress, state)
 
         member private __.SendConsensusMessage validatorAddress blockNumber consensusRound consensusMessage =
-            _messages.Add(
-                validatorAddress,
+            let consensusMessageEnvelope =
                 {
                     ConsensusMessageEnvelope.BlockNumber = blockNumber
                     Round = consensusRound
                     ConsensusMessage = consensusMessage
                     Signature = Signature validatorAddress.Value // Just for testing convenience.
                 }
+
+            _messages.Add(validatorAddress, consensusMessageEnvelope)
+
+            if not (_persistedMessages.ContainsKey validatorAddress) then
+                _persistedMessages.Add(
+                    validatorAddress,
+                    Dictionary<BlockNumber * ConsensusRound * ConsensusStep, ConsensusMessageEnvelope>()
+                )
+
+            let consensusStep = consensusMessage |> Mapping.consensusStepFromMessage
+            _persistedMessages.[validatorAddress].Add(
+                (blockNumber, consensusRound, consensusStep),
+                consensusMessageEnvelope
             )
 
         member __.DeliverMessages(?filter : BlockchainAddress * BlockchainAddress * ConsensusMessageEnvelope -> bool) =
