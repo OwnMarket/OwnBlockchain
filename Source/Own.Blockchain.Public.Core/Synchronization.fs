@@ -15,7 +15,7 @@ module Synchronization =
 
     let updateNetworkTimeOffset getNetworkTimeOffset =
         Utils.networkTimeOffset <- getNetworkTimeOffset ()
-        Log.infof "Network time offset set to %i" Utils.networkTimeOffset
+        Log.debugf "Network time offset set to %i" Utils.networkTimeOffset
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Head
