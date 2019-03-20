@@ -289,6 +289,7 @@ module Consensus =
                                 if signers.Contains s then
                                     __.ProcessConsensusMessage(s, e, false)
 
+                            _lockedBlockSignatures <- response.LockedVoteSignatures
                             _lockedBlock <- lockedBlock
                             _lockedRound <- response.LockedRound
                             _validBlock <- lockedBlock
