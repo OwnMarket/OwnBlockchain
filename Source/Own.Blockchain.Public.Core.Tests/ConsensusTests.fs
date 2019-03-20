@@ -734,3 +734,88 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: CF4a`` () =
+        // ARRANGE
+        let validatorCount = 4
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+        let crashedFollower = validators.[3]
+        let reachableValidators = validators |> List.except [crashedFollower]
+
+        let net = new ConsensusSimulationNetwork()
+
+        // Prepare CF3
+        net.StartConsensus validators
+        net.CrashValidator crashedFollower
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = proposer @>
+        let proposedBlock =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock.Header.Number = BlockNumber 1L @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Propose message
+        test <@ net.Messages.Count = reachableValidators.Length @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> crashedFollower && r <> crashedFollower) // Deliver Vote messages
+        test <@ net.Messages.Count = reachableValidators.Length @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
+
+        let committers = net.Messages |> Seq.map fst |> Seq.toList |> List.sort
+        test <@ committers = reachableValidators @>
+
+        let committedBlockNumber, committedRound =
+            net.Messages
+            |> Seq.map (fun (_, e) -> e.BlockNumber, e.Round)
+            |> Seq.distinct
+            |> Seq.exactlyOne
+        test <@ committedBlockNumber = BlockNumber 1L @>
+        test <@ committedRound = ConsensusRound 0 @>
+
+        net.DeliverMessages(
+            (fun (s, r, m) -> s <> crashedFollower && r = validators.[0]),
+            (fun (s, r, m) -> s <> crashedFollower && (r = validators.[1] || r = validators.[2])) // Delayed messages
+        ) // Deliver Commit messages
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
+
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.[validators.[2]].ContainsKey(BlockNumber 1L) = false @>
+        test <@ net.Decisions.ContainsKey(crashedFollower) = false @>
+
+        // ACT
+        net.CrashValidator validators.[0]
+        net.Messages.Clear()
+
+        net.RecoverValidator crashedFollower
+        test <@ net.Messages.Count = 2 @>
+        test <@ net.Messages |> Seq.forall (fun (s, _) -> s = crashedFollower) @>
+        test <@ net.Messages.[0] |> isVoteForBlock @>
+        test <@ net.Messages.[1] |> isCommitForBlock @>
+
+        net.DeliverMessages() // Deliver V3's messages
+        test <@ net.Messages.Count = 0 @>
+        test <@ net.Events.Count = 2 @>
+
+        net.PropagateBlock validators.[3] (BlockNumber 1L)
+        net.States.[validators.[1]].HandleConsensusCommand Synchronize
+        net.States.[validators.[2]].HandleConsensusCommand Synchronize
+
+        test <@ net.States.[validators.[1]].Variables.BlockNumber = BlockNumber 2L @>
+        test <@ net.States.[validators.[2]].Variables.BlockNumber = BlockNumber 2L @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.ContainsKey(validators.[0]) = false @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
