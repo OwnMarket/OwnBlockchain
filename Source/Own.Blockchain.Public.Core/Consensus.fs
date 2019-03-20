@@ -218,7 +218,6 @@ module Consensus =
             if messages.Length > 0 then
                 for (s, e) in messages do
                     __.ProcessConsensusMessage(s, e, false)
-                __.UpdateState()
 
             let response = {response with LatestMessages = []} // We're done with the messages - no need to keep them.
 
@@ -297,7 +296,7 @@ module Consensus =
                             _round <- response.LockedRound
                             _step <- ConsensusStep.Propose
 
-                            __.UpdateState()
+            __.UpdateState()
 
         member private __.SendState(request, peerIdentity) =
             if not (_validators |> List.contains request.ValidatorAddress) then
