@@ -427,6 +427,7 @@ type ConsensusStep =
     | Vote
     | Commit
 
+[<DefaultAugmentation(false)>]
 type ConsensusMessage =
     | Propose of Block * ConsensusRound
     | Vote of BlockHash option
@@ -748,3 +749,11 @@ type Tx with
 
 type PendingTxInfo with
     member __.TotalFee = __.ActionFee * decimal __.ActionCount
+
+type ConsensusMessage with
+    member __.IsPropose =
+        __ |> function Propose _ -> true | _ -> false
+    member __.IsVote =
+        __ |> function Vote _ -> true | _ -> false
+    member __.IsCommit =
+        __ |> function Commit _ -> true | _ -> false
