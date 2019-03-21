@@ -155,7 +155,7 @@ type Config () =
 
     static member BlockchainHeadPollInterval = 60 // Seconds
 
-    static member MaxNumberOfBlocksToFetchInParallel = 10
+    static member MaxNumberOfBlocksToFetchInParallel = 20
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
