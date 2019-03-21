@@ -80,6 +80,7 @@ module ConsensusTestHelpers =
 
     type ConsensusSimulationNetwork
         (
+        validators : BlockchainAddress list,
         ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
         ?isValidBlock : BlockchainAddress -> Block -> bool,
         ?scheduleMessage : BlockchainAddress -> int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
@@ -90,7 +91,6 @@ module ConsensusTestHelpers =
         ?lastAppliedBlockNumber : BlockNumber
         ) =
 
-        let mutable _validators = []
         let _state = new Dictionary<BlockchainAddress, ConsensusState>()
         let _decisions = new Dictionary<BlockchainAddress, Dictionary<BlockNumber, Block>>()
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
@@ -102,6 +102,9 @@ module ConsensusTestHelpers =
                 BlockchainAddress,
                 Dictionary<BlockNumber * ConsensusRound * ConsensusStep, ConsensusMessageEnvelope>
                 >()
+
+        member __.Validators
+            with get () = validators
 
         member __.States
             with get () = _state
@@ -115,9 +118,7 @@ module ConsensusTestHelpers =
         member __.Events
             with get () = _events
 
-        member __.StartConsensus(validators : BlockchainAddress list) =
-            _validators <- validators
-
+        member __.StartConsensus() =
             for v in validators do
                 __.StartValidator v
 
@@ -154,7 +155,7 @@ module ConsensusTestHelpers =
                     |? BlockNumber 0L
 
             let getValidators _ =
-                _validators
+                validators
                 |> Seq.map (fun a ->
                     {
                         ValidatorSnapshot.ValidatorAddress = a
@@ -351,7 +352,7 @@ module ConsensusTestHelpers =
 
         member __.PropagateBlock validatorAddress blockNumber =
             let block = _decisions.[validatorAddress].[blockNumber]
-            _validators
+            validators
             |> List.except [validatorAddress]
             |> List.iter (fun v ->
                 if _decisions.ContainsKey v && not (_decisions.[v].ContainsKey blockNumber) then
@@ -390,7 +391,7 @@ module ConsensusTestHelpers =
                 |> Hashing.decode
                 |> PeerNetworkIdentity
 
-            for v in _validators do
+            for v in validators do
                 if v <> validatorAddress && _state.ContainsKey v then
                     ConsensusCommand.StateRequested (consensusStateRequest, peerId)
                     |> _state.[v].HandleConsensusCommand
@@ -412,7 +413,7 @@ module ConsensusTestHelpers =
                 log (sprintf "MESSAGE: %A" m)
             for e in __.Events do
                 log (sprintf "EVENT: %A" e)
-            for s in __.States |> Seq.sortBy (fun s -> _validators |> List.findIndex (fun v -> v = s.Key)) do
+            for s in __.States |> Seq.sortBy (fun s -> validators |> List.findIndex (fun v -> v = s.Key)) do
                 log (sprintf "\nVALIDATOR %A STATE:" s.Key)
                 for v in s.Value.PrintCurrentState() do
                     log (sprintf "%s" v)
