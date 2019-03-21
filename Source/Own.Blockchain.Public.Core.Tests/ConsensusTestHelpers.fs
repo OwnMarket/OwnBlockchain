@@ -376,7 +376,7 @@ module ConsensusTestHelpers =
             |> List.sort
             |> List.iter _decisions.[validatorAddress].Add
 
-            _state.[validatorAddress].HandleConsensusCommand ConsensusCommand.Synchronize
+            _state.[validatorAddress].HandleConsensusCommand Synchronize
 
             __.RequestConsensusState validatorAddress
 
