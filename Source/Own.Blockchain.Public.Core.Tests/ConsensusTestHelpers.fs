@@ -361,7 +361,7 @@ module ConsensusTestHelpers =
 
         member __.CrashValidator validatorAddress =
             if not (_state.Remove validatorAddress) then
-                failwithf "Didn't remove crashed validator %s" validatorAddress.Value
+                failwithf "Didn't remove state for crashed validator %s" validatorAddress.Value
             if not (_decisions.Remove validatorAddress) then
                 failwithf "Didn't remove decisions for crashed validator %s" validatorAddress.Value
 
