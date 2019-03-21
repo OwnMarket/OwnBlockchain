@@ -121,6 +121,15 @@ module HashingTests =
         // ASSERT
         test <@ isValid = true @>
 
+    [<Theory>]
+    [<InlineData("1uGLMixQzsqUXQRrTEwxq5dSbKuTbyrU8qA6qSekvJ")>]
+    let ``Hashing encode decode rogue hash`` (hash) =
+        // ACT
+        let decoded = Hashing.decode hash
+
+        // ASSERT
+        test <@ decoded.Length = 32 @>
+
     [<Fact>]
     let ``Hashing.merkleTree check if same root has been calculated for multiple runs`` () =
         let transactionMocks =
