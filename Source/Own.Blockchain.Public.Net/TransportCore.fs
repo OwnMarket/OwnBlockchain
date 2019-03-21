@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Concurrent
+open System.Collections.Generic
 open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
@@ -105,7 +106,13 @@ type internal TransportCore
     let wireDealerMessageQueueEvents () =
         dealerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
             let mutable message = "", new NetMQMessage()
+
+            // Deduplicate messages.
+            let messagesSet = new HashSet<string * NetMQMessage>()
             while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
+                messagesSet.Add message |> ignore
+
+            messagesSet |> Seq.iter (fun message ->
                 let targetAddress, payload = message
                 match dealerSockets.TryGetValue targetAddress with
                 | true, socket ->
@@ -113,6 +120,7 @@ type internal TransportCore
                         Log.errorf "Could not send message to %s" targetAddress
                 | _ ->
                     failwithf "Socket not found for target %s" targetAddress
+            )
         )
         |> ignore
 
@@ -128,8 +136,15 @@ type internal TransportCore
     let wireRouterMessageQueueEvents () =
         routerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
             let mutable message = new NetMQMessage()
+
+            // Deduplicate messages.
+            let messagesSet = new HashSet<NetMQMessage>()
             while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
+                messagesSet.Add message |> ignore
+
+            messagesSet |> Seq.iter(fun message ->
                 routerSocket |> Option.iter (fun socket -> socket.TrySendMultipartMessage message |> ignore)
+            )
         )
         |> ignore
 
