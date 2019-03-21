@@ -60,7 +60,7 @@ echo '//////////////////////////////////////////////////////////////////////////
 echo '// Data directory and configuration'
 echo '////////////////////////////////////////////////////////////////////////////////'
 sudo mkdir -p "$INSTANCE_DIR"
-sudo cp Config.json "$INSTANCE_DIR"
+sudo cp Config.json.sample "$INSTANCE_DIR/Config.json"
 
 sudo sed -i -- 's/"DbEngineType".*$/"DbEngineType": "Postgres",/g' "$INSTANCE_DIR/Config.json"
 sudo sed -i -- "s/\"DbConnectionString\".*$/\"DbConnectionString\": \"server=localhost;database=$INSTANCE_DB;user id=$INSTANCE_USER;password=$INSTANCE_PASS;searchpath=own\",/g" "$INSTANCE_DIR/Config.json"
