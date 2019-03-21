@@ -69,9 +69,10 @@ echo '//////////////////////////////////////////////////////////////////////////
 echo '// Starting the instance'
 echo '////////////////////////////////////////////////////////////////////////////////'
 sudo systemctl enable own-blockchain-public-node@$INSTANCE_NAME
-sudo systemctl start own-blockchain-public-node@$INSTANCE_NAME
-sudo systemctl status own-blockchain-public-node@$INSTANCE_NAME
 
+echo 'To start the service:'
+echo "    sudo systemctl start own-blockchain-public-node@$INSTANCE_NAME"
+echo "    sudo systemctl status own-blockchain-public-node@$INSTANCE_NAME"
 echo 'To see the service logs:'
 echo "    journalctl -fu own-blockchain-public-node@$INSTANCE_NAME"
 echo 'To remove the service:'
