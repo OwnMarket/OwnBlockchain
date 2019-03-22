@@ -132,11 +132,8 @@ module ConsensusTestHelpers =
                 s.StartConsensus()
 
         member private __.InstantiateValidator validatorAddress =
-            let persistConsensusState s =
-                if _persistedState.ContainsKey validatorAddress then
-                    _persistedState.[validatorAddress] <- s
-                else
-                    _persistedState.Add(validatorAddress, s)
+            let persistConsensusState =
+                __.PersistConsensusState validatorAddress
 
             let restoreConsensusState () =
                 match _persistedState.TryGetValue validatorAddress with
@@ -299,7 +296,20 @@ module ConsensusTestHelpers =
                 sprintf "Dummy signature must contain four components (%s)" envelope.Signature.Value
                 |> Result.appError
 
-        member private __.SendConsensusMessage validatorAddress blockNumber consensusRound consensusMessage =
+        member private __.PersistConsensusState validatorAddress s =
+            if _persistedState.ContainsKey validatorAddress then
+                _persistedState.[validatorAddress] <- s
+            else
+                _persistedState.Add(validatorAddress, s)
+
+        member private __.SendConsensusMessage
+            validatorAddress
+            blockNumber
+            consensusRound
+            consensusVariables
+            consensusMessage
+            =
+
             let dummySignature =
                 sprintf "%i_%i_%i_%s"
                     blockNumber.Value
@@ -316,7 +326,7 @@ module ConsensusTestHelpers =
                     Signature = dummySignature
                 }
 
-            _messages.Add(validatorAddress, consensusMessageEnvelope)
+            __.PersistConsensusState validatorAddress consensusVariables
 
             if not (_persistedMessages.ContainsKey validatorAddress) then
                 _persistedMessages.Add(
@@ -329,6 +339,8 @@ module ConsensusTestHelpers =
                 (blockNumber, consensusRound, consensusStep),
                 consensusMessageEnvelope
             )
+
+            _messages.Add(validatorAddress, consensusMessageEnvelope)
 
         member __.DeliverMessages
             (
