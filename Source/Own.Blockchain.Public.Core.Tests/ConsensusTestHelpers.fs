@@ -140,6 +140,9 @@ module ConsensusTestHelpers =
                 | true, s -> Some s
                 | _ -> None
 
+            let persistConsensusMessage =
+                __.PersistConsensusMessage validatorAddress
+
             let restoreConsensusMessages () =
                 match _persistedMessages.TryGetValue validatorAddress with
                 | true, ms ->
@@ -243,6 +246,7 @@ module ConsensusTestHelpers =
                 new ConsensusState(
                     persistConsensusState,
                     restoreConsensusState,
+                    persistConsensusMessage,
                     restoreConsensusMessages,
                     getLastAppliedBlockNumber,
                     getValidators,
@@ -302,6 +306,19 @@ module ConsensusTestHelpers =
             else
                 _persistedState.Add(validatorAddress, s)
 
+        member private __.PersistConsensusMessage validatorAddress envelope =
+            if not (_persistedMessages.ContainsKey validatorAddress) then
+                _persistedMessages.Add(
+                    validatorAddress,
+                    Dictionary<BlockNumber * ConsensusRound * ConsensusStep, ConsensusMessageEnvelope>()
+                )
+
+            let consensusStep = envelope.ConsensusMessage |> Mapping.consensusStepFromMessage
+            _persistedMessages.[validatorAddress].Add(
+                (envelope.BlockNumber, envelope.Round, consensusStep),
+                envelope
+            )
+
         member private __.SendConsensusMessage
             validatorAddress
             blockNumber
@@ -326,19 +343,8 @@ module ConsensusTestHelpers =
                     Signature = dummySignature
                 }
 
+            __.PersistConsensusMessage validatorAddress consensusMessageEnvelope
             __.PersistConsensusState validatorAddress consensusVariables
-
-            if not (_persistedMessages.ContainsKey validatorAddress) then
-                _persistedMessages.Add(
-                    validatorAddress,
-                    Dictionary<BlockNumber * ConsensusRound * ConsensusStep, ConsensusMessageEnvelope>()
-                )
-
-            let consensusStep = consensusMessage |> Mapping.consensusStepFromMessage
-            _persistedMessages.[validatorAddress].Add(
-                (blockNumber, consensusRound, consensusStep),
-                consensusMessageEnvelope
-            )
 
             _messages.Add(validatorAddress, consensusMessageEnvelope)
 

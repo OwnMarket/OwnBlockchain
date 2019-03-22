@@ -14,6 +14,7 @@ module Consensus =
         (
         persistConsensusState : ConsensusStateInfo -> unit,
         restoreConsensusState : unit -> ConsensusStateInfo option,
+        persistConsensusMessage : ConsensusMessageEnvelope -> unit,
         restoreConsensusMessages : unit -> ConsensusMessageEnvelope list,
         getLastAppliedBlockNumber : unit -> BlockNumber,
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
@@ -115,6 +116,8 @@ module Consensus =
                         else
                             if ensureBlockReady block then
                                 if _proposals.TryAdd(key, (block, vr, envelope.Signature)) then
+                                    if senderAddress <> validatorAddress then
+                                        persistConsensusMessage envelope
                                     if updateState then
                                         __.UpdateState()
                             else
@@ -168,7 +171,18 @@ module Consensus =
             restoreConsensusMessages ()
             |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
             |> List.iter (fun envelope ->
-                let key = envelope.BlockNumber, envelope.Round, validatorAddress
+                let senderAddress =
+                    envelope
+                    |> Mapping.consensusMessageEnvelopeToDto
+                    |> verifyConsensusMessage
+                    |> Result.handle
+                        fst
+                        (fun e ->
+                            Log.appErrors e
+                            failwithf "Cannot verify persisted consensus message: %A" envelope
+                        )
+
+                let key = envelope.BlockNumber, envelope.Round, senderAddress
 
                 match envelope.ConsensusMessage with
                 | Propose (b, r) -> _proposals.Add(key, (b, r, envelope.Signature))
@@ -1137,6 +1151,7 @@ module Consensus =
             (
             persistConsensusState,
             restoreConsensusState,
+            persistConsensusMessage,
             restoreConsensusMessages,
             getLastAppliedBlockNumber,
             getValidatorsAtHeight,
