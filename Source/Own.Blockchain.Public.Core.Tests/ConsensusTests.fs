@@ -610,6 +610,10 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = 3 @>
         test <@ net.Messages |> Seq.forall isCommitForBlock @>
 
+        test <@ net.States.[validators.[1]].Variables.LockedRound.Value = 0 @>
+        test <@ net.States.[validators.[1]].Variables.LockedBlock = Some proposedBlock @>
+        test <@ net.States.[validators.[1]].Variables.LockedBlockSignatures.Length = 3 @>
+
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
