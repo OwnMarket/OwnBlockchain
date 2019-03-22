@@ -118,6 +118,12 @@ module ConsensusTestHelpers =
         member __.Events
             with get () = _events
 
+        member __.PersistedStates
+            with get () = _persistedState
+
+        member __.PersistedMessages
+            with get () = _persistedMessages
+
         member __.StartConsensus() =
             for v in validators do
                 __.StartValidator v
