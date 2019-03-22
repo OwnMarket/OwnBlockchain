@@ -126,12 +126,12 @@ module ConsensusTestHelpers =
 
         member __.StartConsensus() =
             for v in validators do
-                __.StartValidator v
+                __.InstantiateValidator v
 
             for s in _state.Values do
                 s.StartConsensus()
 
-        member private __.StartValidator validatorAddress =
+        member private __.InstantiateValidator validatorAddress =
             let persistConsensusState s =
                 if _persistedState.ContainsKey validatorAddress then
                     _persistedState.[validatorAddress] <- s
@@ -378,7 +378,7 @@ module ConsensusTestHelpers =
             __.CrashValidator validatorAddress
             _persistedState.Remove validatorAddress |> ignore
             _persistedMessages.[validatorAddress].Clear()
-            __.StartValidator validatorAddress
+            __.InstantiateValidator validatorAddress
             _state.[validatorAddress].StartConsensus()
 
         member __.CrashValidator validatorAddress =
@@ -389,7 +389,7 @@ module ConsensusTestHelpers =
             __.RemoveMessages (fun (sender, message) -> sender = validatorAddress)
 
         member __.RecoverValidator validatorAddress =
-            __.StartValidator validatorAddress
+            __.InstantiateValidator validatorAddress
 
             // Mimicking the block synchronization process by getting the decided blocks from others.
             _decisions
