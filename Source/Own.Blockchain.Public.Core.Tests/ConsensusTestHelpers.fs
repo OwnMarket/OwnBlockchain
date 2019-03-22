@@ -153,7 +153,8 @@ module ConsensusTestHelpers =
                     |> List.map snd
                 | _ -> []
 
-            _decisions.Add(validatorAddress, Dictionary<BlockNumber, Block>())
+            if not (_decisions.ContainsKey validatorAddress) then
+                _decisions.Add(validatorAddress, Dictionary<BlockNumber, Block>())
 
             let getLastAppliedBlockNumber () =
                 lastAppliedBlockNumber |?> fun _ ->
@@ -396,6 +397,7 @@ module ConsensusTestHelpers =
 
         member __.ResetValidator validatorAddress =
             __.CrashValidator validatorAddress
+            _decisions.Remove validatorAddress |> ignore
             _persistedState.Remove validatorAddress |> ignore
             _persistedMessages.[validatorAddress].Clear()
             __.InstantiateValidator validatorAddress
@@ -404,8 +406,6 @@ module ConsensusTestHelpers =
         member __.CrashValidator validatorAddress =
             if not (_state.Remove validatorAddress) then
                 failwithf "Didn't remove state for crashed validator %s" validatorAddress.Value
-            if not (_decisions.Remove validatorAddress) then
-                failwithf "Didn't remove decisions for crashed validator %s" validatorAddress.Value
             __.RemoveMessages (fun (sender, message) -> sender = validatorAddress)
 
         member __.RecoverValidator validatorAddress =
@@ -415,6 +415,7 @@ module ConsensusTestHelpers =
             // Mimicking the block synchronization process by getting the decided blocks from others.
             _decisions
             |> List.ofDict
+            |> List.filter (fst >> _state.ContainsKey) // Ignore crashed validators
             |> List.collect (snd >> List.ofDict)
             |> List.distinct
             |> List.sort

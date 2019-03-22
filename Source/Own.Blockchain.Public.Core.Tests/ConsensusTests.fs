@@ -538,7 +538,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
-        test <@ net.Decisions.ContainsKey(validators.[3]) = false @>
+        test <@ net.Decisions.[validators.[3]].Count = 0 @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
 
@@ -616,7 +616,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[1]].ContainsKey(BlockNumber 1L) = false @>
         test <@ net.Decisions.[validators.[2]].ContainsKey(BlockNumber 1L) = false @>
-        test <@ net.Decisions.ContainsKey(validators.[3]) = false @>
+        test <@ net.Decisions.[validators.[3]].Count = 0 @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
 
@@ -641,7 +641,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Decisions.ContainsKey(validators.[0]) = false @>
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
@@ -656,8 +656,6 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         // ACT
         net.CrashValidator validators.[0]
-        test <@ net.Decisions.Count = 2 @>
-        test <@ net.DecisionCount = 0 @> // No decisions available anymore
 
         net.Messages.Clear()
 
@@ -667,7 +665,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.[0] |> isVoteForBlock @>
         test <@ net.Messages.[1] |> isCommitForBlock @>
         test <@ net.Events.Count = 1 @> // Only V0's commit is there
-        test <@ net.DecisionCount = 0 @> // Stil no decisions available
+        test <@ net.DecisionCount = 1 @> // No new decisions available
 
         net.DeliverMessages() // Deliver V3's messages
         test <@ net.Messages.Count = 0 @>
@@ -683,7 +681,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Decisions.ContainsKey(validators.[0]) = false @>
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
@@ -720,7 +718,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
         test <@ net.States.[validators.[2]].MessageCounts = (0, 1, 1) @>
 
-        test <@ net.DecisionCount = 0 @> // Stil no decision available
+        test <@ net.DecisionCount = 1 @> // No new decision available
 
         net.RequestConsensusState validators.[2]
         test <@ net.Messages.Count = 2 @>
@@ -738,7 +736,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
-        test <@ net.Decisions.ContainsKey(validators.[0]) = false @>
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
@@ -800,7 +798,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[0]].ContainsKey(BlockNumber 1L) = false @>
         test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].ContainsKey(BlockNumber 1L) = false @>
-        test <@ net.Decisions.ContainsKey(validators.[3]) = false @>
+        test <@ net.Decisions.[validators.[3]].Count = 0 @>
 
         test <@ net.States.[validators.[0]].Variables.LockedBlock = Some proposedBlock @>
         test <@ net.States.[validators.[0]].Variables.LockedBlockSignatures.Length = 3 @>
@@ -844,7 +842,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
-        test <@ net.Decisions.ContainsKey(validators.[1]) = false @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
 
@@ -880,14 +878,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 1) @>
         test <@ net.States.[validators.[2]].MessageCounts = (1, 2, 2) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 3, 2) @>
-        test <@ net.DecisionCount = 0 @> // No decisions yet
+        test <@ net.DecisionCount = 1 @> // No new decisions yet
 
         net.DeliverMessages() // Deliver V3's messages
 
         test <@ net.States.[validators.[0]].MessageCounts = (1, 2, 2) @>
         test <@ net.States.[validators.[2]].MessageCounts = (0, 0, 0) @>
         test <@ net.States.[validators.[3]].MessageCounts = (0, 0, 0) @>
-        test <@ net.DecisionCount = 2 @>
+        test <@ net.DecisionCount = 3 @>
 
         test <@ net.Messages.Count = 1 @> // New proposal
         test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[2]) @>
@@ -896,14 +894,14 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         net.PropagateBlock validators.[3] (BlockNumber 1L)
         net.States.[validators.[0]].HandleConsensusCommand Synchronize
-        test <@ net.DecisionCount = 3 @>
+        test <@ net.DecisionCount = 4 @>
         test <@ net.States.[validators.[0]].Variables.BlockNumber = BlockNumber 2L @>
 
         // ASSERT
         net.PrintTheState(output.WriteLine)
 
         test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
-        test <@ net.Decisions.ContainsKey(validators.[1]) = false @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
 
