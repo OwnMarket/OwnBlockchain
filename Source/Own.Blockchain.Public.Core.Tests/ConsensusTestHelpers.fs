@@ -380,9 +380,9 @@ module ConsensusTestHelpers =
         member __.PropagateBlock validatorAddress blockNumber =
             let block = _decisions.[validatorAddress].[blockNumber]
             validators
-            |> List.except [validatorAddress]
+            |> List.filter (fun v -> v <> validatorAddress && _state.ContainsKey v) // Ignore crashed validators
             |> List.iter (fun v ->
-                if _decisions.ContainsKey v && not (_decisions.[v].ContainsKey blockNumber) then
+                if _state.ContainsKey v && not (_decisions.[v].ContainsKey blockNumber) then
                     _decisions.[v].Add(blockNumber, block)
             )
 
@@ -415,7 +415,7 @@ module ConsensusTestHelpers =
             // Mimicking the block synchronization process by getting the decided blocks from others.
             _decisions
             |> List.ofDict
-            |> List.filter (fst >> _state.ContainsKey) // Ignore crashed validators
+            |> List.filter (fun (v, _) -> v <> validatorAddress && _state.ContainsKey v) // Ignore crashed validators
             |> List.collect (snd >> List.ofDict)
             |> List.distinct
             |> List.sort
