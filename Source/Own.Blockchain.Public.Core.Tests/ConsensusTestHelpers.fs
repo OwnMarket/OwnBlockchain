@@ -390,6 +390,7 @@ module ConsensusTestHelpers =
 
         member __.RecoverValidator validatorAddress =
             __.InstantiateValidator validatorAddress
+            _state.[validatorAddress].StartConsensus()
 
             // Mimicking the block synchronization process by getting the decided blocks from others.
             _decisions
