@@ -657,7 +657,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ACT
         net.CrashValidator validators.[0]
         test <@ net.Decisions.Count = 2 @>
-        test <@ net.Decisions |> Seq.forall (fun d -> d.Value.Count = 0) @> // No decisions available anymore
+        test <@ net.DecisionCount = 0 @> // No decisions available anymore
 
         net.Messages.Clear()
 
@@ -667,7 +667,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.[0] |> isVoteForBlock @>
         test <@ net.Messages.[1] |> isCommitForBlock @>
         test <@ net.Events.Count = 1 @> // Only V0's commit is there
-        test <@ net.Decisions |> Seq.forall (fun d -> d.Value.Count = 0) @> // Stil no decisions available
+        test <@ net.DecisionCount = 0 @> // Stil no decisions available
 
         net.DeliverMessages() // Deliver V3's messages
         test <@ net.Messages.Count = 0 @>
@@ -720,7 +720,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
         test <@ net.States.[validators.[2]].MessageCounts = (0, 1, 1) @>
 
-        test <@ net.Decisions |> Seq.forall (fun d -> d.Value.Count = 0) @> // Stil no decision available
+        test <@ net.DecisionCount = 0 @> // Stil no decision available
 
         net.RequestConsensusState validators.[2]
         test <@ net.Messages.Count = 2 @>

@@ -111,6 +111,8 @@ module ConsensusTestHelpers =
 
         member __.Decisions
             with get () = _decisions
+        member __.DecisionCount
+            with get () = _decisions |> Seq.sumBy (fun d -> d.Value.Count)
 
         member __.Messages
             with get () = _messages
