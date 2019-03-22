@@ -204,6 +204,18 @@ type Config () =
 
     static member MaxActionCountPerTx = 1000
 
+    static member TxCacheExpirationTime
+        with get () =
+            match Int32.TryParse config.["TxCacheExpirationTime"] with
+            | true, timeout when timeout > 0 -> timeout
+            | _ -> 10
+
+    static member MaxTxCacheSize
+        with get () =
+            match Int32.TryParse config.["MaxTxCacheSize"] with
+            | true, cacheSize when cacheSize > 0 -> cacheSize
+            | _ -> 10000
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration (initial genesis values)
     ////////////////////////////////////////////////////////////////////////////////////////////////////

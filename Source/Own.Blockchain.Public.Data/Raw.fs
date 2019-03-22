@@ -2,6 +2,7 @@ namespace Own.Blockchain.Public.Data
 
 open System
 open System.IO
+open System.Collections.Concurrent
 open MessagePack
 open Own.Common.FSharp
 open Own.Blockchain.Common
@@ -92,6 +93,44 @@ module Raw =
             Result.appError (sprintf "Deleting %s %s failed" dataTypeName (extractHash key))
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // TxCache
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let private txCache = new ConcurrentDictionary<TxHash, Result<TxEnvelopeDto, AppErrors> * DateTime>()
+
+    let private getTxCached maxTxCacheSize txHash (getTx : TxHash -> Result<TxEnvelopeDto, AppErrors>) =
+        match txCache.TryGetValue txHash with
+        | true, txCacheValue ->
+            txCacheValue
+        | false, _ ->
+            let result = getTx txHash
+            let cacheValue = result, DateTime.Now
+            match result with
+            | Ok _ when txCache.Keys.Count < maxTxCacheSize ->
+                txCache.AddOrUpdate(txHash, cacheValue, fun _ _ -> cacheValue)
+            | _ ->
+                cacheValue
+        |> fst
+
+    let private removeTxFromCache txHash =
+        txCache.TryRemove txHash |> ignore
+
+    let startTxCacheMonitor txCacheExpirationTime =
+        let rec loop () =
+            async {
+                let lastValidTime = DateTime.Now.AddSeconds(-txCacheExpirationTime |> float)
+                txCache
+                |> Seq.ofDict
+                |> Seq.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
+                |> Seq.iter (fun (txHash, _) -> removeTxFromCache txHash)
+
+                do! Async.Sleep(1000);
+                return! loop ()
+            }
+        loop ()
+        |> Async.Start
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Specific
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,13 +148,18 @@ module Raw =
 
     let getTx
         (dataDir : string)
+        maxTxCacheSize
         createMixedHashKey
         (TxHash txHash)
         : Result<TxEnvelopeDto, AppErrors>
         =
 
-        let key = createMixedHashKey txHash
-        loadData<TxEnvelopeDto> dataDir Tx key
+        getTxCached
+            maxTxCacheSize
+            (TxHash txHash)
+            (fun hash ->
+                let key = createMixedHashKey hash.Value
+                loadData<TxEnvelopeDto> dataDir Tx key)
 
     let txExists (dataDir : string) createMixedHashKey (TxHash txHash) =
         txHash
@@ -129,12 +173,13 @@ module Raw =
     let saveTxResult
         (dataDir : string)
         createMixedHashKey
-        (TxHash txHash)
+        txHash
         (txResultDto : TxResultDto)
         : Result<unit, AppErrors>
         =
 
-        let key = createMixedHashKey txHash
+        removeTxFromCache txHash
+        let key = createMixedHashKey txHash.Value
         saveData dataDir TxResult key txResultDto
 
     let getTxResult
@@ -158,11 +203,12 @@ module Raw =
     let deleteTxResult
         (dataDir : string)
         createMixedHashKey
-        (TxHash txHash)
+        txHash
         : Result<unit, AppErrors>
         =
 
-        let key = createMixedHashKey txHash
+        removeTxFromCache txHash
+        let key = createMixedHashKey txHash.Value
         deleteData dataDir TxResult key
 
     // EquivocationProof

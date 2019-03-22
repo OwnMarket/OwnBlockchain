@@ -14,9 +14,9 @@ module Composition =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let createMixedHashKey = Raw.createMixedHashKey Hashing.decode Hashing.encodeHex
-
+    let startTxCacheMonitor () = Raw.startTxCacheMonitor Config.TxCacheExpirationTime
     let saveTx = Raw.saveTx Config.DataDir createMixedHashKey
-    let getTx = Raw.getTx Config.DataDir createMixedHashKey
+    let getTx = Raw.getTx Config.DataDir Config.MaxTxCacheSize createMixedHashKey
     let txExists = Raw.txExists Config.DataDir createMixedHashKey
 
     let saveTxResult = Raw.saveTxResult Config.DataDir createMixedHashKey
