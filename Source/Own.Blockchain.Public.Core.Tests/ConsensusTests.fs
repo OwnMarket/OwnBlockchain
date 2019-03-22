@@ -906,3 +906,50 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: AC2`` () =
+        // ARRANGE
+        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF5`` ()
+        let validators = net.Validators
+
+        // ACT
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 3, 1) @>
+        test <@ net.States.[validators.[1]].MessageCounts = (0, 0, 0) @> // Moved on to height 2
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 1) @>
+
+        net.CrashValidator validators.[0]
+        net.CrashValidator validators.[1]
+        net.CrashValidator validators.[2]
+
+        net.RecoverValidator validators.[0]
+        test <@ net.Messages.Count = 0 @>
+
+        net.RecoverValidator validators.[3]
+        test <@ net.Messages.Count = 0 @>
+
+        net.RecoverValidator validators.[1]
+        test <@ net.Messages.Count = 0 @>
+
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 1) @>
+        test <@ net.States.[validators.[1]].MessageCounts = (0, 0, 0) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (0, 0, 0) @>
+        test <@ net.DecisionCount = 2 @> // V3 got block through sync
+
+        test <@ net.States.[validators.[1]].Variables.BlockNumber = BlockNumber 2L @>
+        test <@ net.States.[validators.[3]].Variables.BlockNumber = BlockNumber 2L @>
+
+        net.PropagateBlock validators.[3] (BlockNumber 1L)
+        net.States.[validators.[0]].HandleConsensusCommand Synchronize
+        test <@ net.DecisionCount = 3 @>
+        test <@ net.States.[validators.[0]].Variables.BlockNumber = BlockNumber 2L @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[2]].Count = 0 @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
+
+        net, proposedBlock // Return the simulation state for dependent tests.
