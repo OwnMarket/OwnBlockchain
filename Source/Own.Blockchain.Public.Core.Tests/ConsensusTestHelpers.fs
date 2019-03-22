@@ -359,11 +359,28 @@ module ConsensusTestHelpers =
                     _decisions.[v].Add(blockNumber, block)
             )
 
+        member __.RemoveMessages condition =
+            _messages
+            |> Seq.filter condition
+            |> Seq.toList
+            |> List.iter (fun (s, m) ->
+                if not (_messages.Remove (s, m)) then
+                    failwithf "Didn't remove message from %s: %A" s.Value m
+            )
+
+        member __.ResetValidator validatorAddress =
+            __.CrashValidator validatorAddress
+            _persistedState.Remove validatorAddress |> ignore
+            _persistedMessages.[validatorAddress].Clear()
+            __.StartValidator validatorAddress
+            _state.[validatorAddress].StartConsensus()
+
         member __.CrashValidator validatorAddress =
             if not (_state.Remove validatorAddress) then
                 failwithf "Didn't remove state for crashed validator %s" validatorAddress.Value
             if not (_decisions.Remove validatorAddress) then
                 failwithf "Didn't remove decisions for crashed validator %s" validatorAddress.Value
+            __.RemoveMessages (fun (sender, message) -> sender = validatorAddress)
 
         member __.RecoverValidator validatorAddress =
             __.StartValidator validatorAddress

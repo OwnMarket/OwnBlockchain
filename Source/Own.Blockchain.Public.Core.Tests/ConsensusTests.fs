@@ -691,6 +691,61 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
+    member __.``Consensus - Distributed Test Cases: MF1`` () =
+        // ARRANGE
+        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF3`` ()
+        let validators = net.Validators
+
+        // ACT
+        net.DeliverMessages(fun (s, r, m) -> s = r) // Deliver own messages only
+
+        net.CrashValidator validators.[0]
+
+        net.ResetValidator validators.[2]
+
+        test <@ net.States.[validators.[1]].MessageCounts = (1, 3, 1) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (0, 0, 0) @>
+
+        net.RecoverValidator validators.[3]
+        test <@ net.Messages.Count = 2 @>
+        test <@ net.Messages.[0] |> isVoteForBlock @>
+        test <@ net.Messages.[1] |> isCommitForBlock @>
+
+        test <@ net.States.[validators.[3]].MessageCounts = (1, 3, 1) @>
+
+        net.DeliverMessages()
+        test <@ net.Messages.Count = 0 @>
+
+        test <@ net.States.[validators.[1]].MessageCounts = (1, 4, 2) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (0, 1, 1) @>
+
+        test <@ net.Decisions |> Seq.forall (fun d -> d.Value.Count = 0) @> // Stil no decision available
+
+        net.RequestConsensusState validators.[2]
+        test <@ net.Messages.Count = 2 @>
+        test <@ net.Messages.[0] |> isVoteForBlock @>
+        test <@ net.Messages.[1] |> isCommitForBlock @>
+
+        net.DeliverMessages ()
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages |> Seq.forall isPropose @>
+
+        test <@ net.States.[validators.[1]].Variables.BlockNumber = BlockNumber 2L @>
+        test <@ net.States.[validators.[2]].Variables.BlockNumber = BlockNumber 2L @>
+        test <@ net.States.[validators.[3]].Variables.BlockNumber = BlockNumber 2L @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.ContainsKey(validators.[0]) = false @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
+
+        net, proposedBlock // Return the simulation state for dependent tests.
+
+    [<Fact>]
     member __.``Consensus - Distributed Test Cases: CF5`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort

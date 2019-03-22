@@ -792,6 +792,18 @@ module Consensus =
         member __.Variables
             with get () = __.GetConsensusVariables()
 
+        member __.Proposals
+            with get () = _proposals |> List.ofDict
+
+        member __.Votes
+            with get () = _votes |> List.ofDict
+
+        member __.Commits
+            with get () = _commits |> List.ofDict
+
+        member __.MessageCounts
+            with get () = _proposals.Count, _votes.Count, _commits.Count
+
         member __.PrintCurrentState() =
             [
                 sprintf "_validators: %A" _validators
