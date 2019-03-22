@@ -953,3 +953,28 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: AC3`` () =
+        // ARRANGE
+        let net, proposedBlock = __.``Consensus - Distributed Test Cases: AC2`` ()
+        let validators = net.Validators
+
+        // ACT
+        net.RecoverValidator validators.[2]
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages |> Seq.forall (fun (s, m) -> s = validators.[2] && m.ConsensusMessage.IsPropose) @>
+
+        test <@ net.DecisionCount = 4 @> // V2 got block through sync
+
+        test <@ net.States.[validators.[2]].Variables.BlockNumber = BlockNumber 2L @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
+
+        net, proposedBlock // Return the simulation state for dependent tests.
