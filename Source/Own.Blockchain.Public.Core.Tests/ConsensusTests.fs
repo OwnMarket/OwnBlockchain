@@ -925,10 +925,10 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.RecoverValidator validators.[0]
         test <@ net.Messages.Count = 0 @>
 
-        net.RecoverValidator validators.[3]
+        net.RecoverValidator validators.[1]
         test <@ net.Messages.Count = 0 @>
 
-        net.RecoverValidator validators.[1]
+        net.RecoverValidator validators.[3]
         test <@ net.Messages.Count = 0 @>
 
         test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 1) @>
