@@ -142,7 +142,7 @@ type internal TransportCore
             while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
                 messagesSet.Add message |> ignore
 
-            messagesSet |> Seq.iter(fun message ->
+            messagesSet |> Seq.iter (fun message ->
                 routerSocket |> Option.iter (fun socket -> socket.TrySendMultipartMessage message |> ignore)
             )
         )
