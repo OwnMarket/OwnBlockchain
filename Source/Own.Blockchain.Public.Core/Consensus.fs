@@ -23,7 +23,7 @@ module Consensus =
         isValidBlock : Block -> bool,
         verifyConsensusMessage :
             ConsensusMessageEnvelopeDto -> Result<BlockchainAddress * ConsensusMessageEnvelope, AppErrors>,
-        sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusMessage -> unit,
+        sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusStateInfo -> ConsensusMessage -> unit,
         sendConsensusState : PeerNetworkIdentity -> ConsensusStateResponse -> unit,
         requestConsensusState : unit -> unit,
         publishEvent : AppEvent -> unit,
@@ -646,21 +646,21 @@ module Consensus =
             )
 
         member private __.SendPropose(consensusRound, block) =
-            ConsensusMessage.Propose (block, _validRound)
-            |> sendConsensusMessage _blockNumber consensusRound
-            __.PersistState()
+            let variables = __.GetConsensusVariables()
+            let message = ConsensusMessage.Propose (block, _validRound)
+            sendConsensusMessage _blockNumber consensusRound variables message
 
         member private __.SendVote(consensusRound, blockHash) =
+            let variables = __.GetConsensusVariables()
             let message = ConsensusMessage.Vote blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
-                sendConsensusMessage _blockNumber consensusRound message
-                __.PersistState()
+                sendConsensusMessage _blockNumber consensusRound variables message
 
         member private __.SendCommit(consensusRound, blockHash) =
+            let variables = __.GetConsensusVariables()
             let message = ConsensusMessage.Commit blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
-                sendConsensusMessage _blockNumber consensusRound message
-                __.PersistState()
+                sendConsensusMessage _blockNumber consensusRound variables message
 
         member private __.SaveBlock(block, consensusRound) =
             let signatures =
@@ -984,7 +984,14 @@ module Consensus =
                 failwith "persistConsensusState FAILED"
             )
 
-        let sendConsensusMessage blockNumber consensusRound consensusMessage =
+        let persistConsensusMessage =
+            persistConsensusMessage
+            >> Result.iterError (fun e ->
+                Log.appErrors e
+                failwith "persistConsensusMessage FAILED"
+            )
+
+        let sendConsensusMessage blockNumber consensusRound consensusVariables consensusMessage =
             if canParticipateInConsensus blockNumber = Some true then
                 let consensusMessageHash =
                     createConsensusMessageHash
@@ -1004,11 +1011,9 @@ module Consensus =
                         Signature = signature
                     }
 
+                // If message is not persisted, variables shouldn't be persisted either.
                 persistConsensusMessage consensusMessageEnvelope
-                |> Result.iterError (fun e ->
-                    Log.appErrors e
-                    failwith "persistConsensusMessage FAILED"
-                )
+                persistConsensusState consensusVariables
 
                 ConsensusCommand.Message (validatorAddress, consensusMessageEnvelope)
                 |> ConsensusCommandInvoked
