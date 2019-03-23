@@ -981,3 +981,100 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: AC4`` () =
+        // ARRANGE
+        let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+        let reachableValidators = validators |> List.except [validators.[3]]
+
+        let net = new ConsensusSimulationNetwork(validators)
+
+        // ACT
+        net.StartConsensus()
+
+        net.CrashValidator validators.[3]
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = proposer @>
+        let proposedBlock =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock.Header.Number = BlockNumber 1L @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> validators.[3] && r <> validators.[3]) // Deliver Propose message
+        test <@ net.Messages.Count = reachableValidators.Length @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        net.DeliverMessages(fun (s, r, m) -> s <> validators.[3] && r = validators.[2]) // Deliver Vote messages to V2
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v = validators.[2]) @>
+
+        net.DeliverMessages(fun (s, r, m) -> s = r) // Deliver own message only
+
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 0) @>
+        test <@ net.States.[validators.[1]].MessageCounts = (1, 1, 0) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 1) @>
+        test <@ net.DecisionCount = 0 @> // No decisions yet
+
+        net.CrashValidator validators.[0]
+        net.CrashValidator validators.[1]
+        net.CrashValidator validators.[2]
+
+        net.RecoverValidator validators.[0]
+        test <@ net.Messages.Count = 0 @>
+
+        net.RecoverValidator validators.[2]
+        test <@ net.Messages.Count = 0 @>
+
+        net.RecoverValidator validators.[3]
+        test <@ net.Messages.Count = 2 @>
+        test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[3]) @>
+        test <@ net.Messages.[0] |> isVoteForBlock @>
+        test <@ net.Messages.[1] |> isCommitForBlock @>
+
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 0) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 2, 1) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (1, 3, 1) @>
+
+        net.DeliverMessages() // Deliver V3's messages
+        test <@ net.Messages.Count = 0 @>
+
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 2, 1) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
+        test <@ net.DecisionCount = 0 @> // No decisions yet
+
+        net.RequestConsensusState validators.[0]
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[0]) @>
+        test <@ net.Messages.[0] |> isCommitForBlock @>
+        test <@ net.DecisionCount = 0 @> // No decisions yet
+
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 4, 2) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
+        test <@ net.DecisionCount = 0 @> // No decisions yet
+
+        net.DeliverMessages() // Deliver V3's messages
+
+        test <@ net.States.[validators.[0]].MessageCounts = (0, 0, 0) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (0, 0, 0) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (0, 0, 0) @>
+        test <@ net.DecisionCount = 3 @> // No decisions yet
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].Count = 0 @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
+
+        net, proposedBlock // Return the simulation state for dependent tests.
