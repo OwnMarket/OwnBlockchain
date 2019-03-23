@@ -214,7 +214,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall isPropose @>
 
     [<Fact>]
-    member __.``Consensus - Happy Path - 100 blocks committed`` () =
+    member __.``Consensus - Happy Path - 20 blocks committed`` () =
         // ARRANGE
         let validatorCount = 10
         let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address)
@@ -223,7 +223,7 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         // ACT
         net.StartConsensus()
-        for _ in [1 .. 100] do
+        for _ in [1 .. 20] do
             net.DeliverMessages() // Deliver Propose message
             net.DeliverMessages() // Deliver Vote messages
             net.DeliverMessages() // Deliver Commit messages
@@ -238,11 +238,11 @@ type ConsensusTests(output : ITestOutputHelper) =
             | Propose (block, _) -> Some block
             | _ -> None
 
-        test <@ envelope.BlockNumber = BlockNumber 101L @>
+        test <@ envelope.BlockNumber = BlockNumber 21L @>
         test <@ block <> None @>
 
         for v in validators do
-            test <@ net.Decisions.[v].Count = 100 @>
+            test <@ net.Decisions.[v].Count = 20 @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Qualified Majority
