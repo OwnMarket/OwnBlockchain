@@ -110,6 +110,12 @@ module ConsensusTestHelpers =
         member __.DecisionCount
             with get () = _decisions |> Seq.sumBy (fun d -> d.Value.Count)
 
+        member __.ScheduledTimeouts
+            with get () = _scheduledTimeouts
+        member __.IsTimeoutScheduled(validatorAddress, blockNumber, consensusRound, consensusStep) =
+            _scheduledTimeouts.[validatorAddress]
+            |> Seq.contains (blockNumber, consensusRound, consensusStep)
+
         member __.Messages
             with get () = _messages
 

@@ -1020,7 +1020,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 0) @>
         test <@ net.States.[validators.[1]].MessageCounts = (1, 1, 0) @>
         test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 1) @>
-        test <@ net.DecisionCount = 0 @> // No decisions yet
+        test <@ net.DecisionCount = 0 @>
 
         net.CrashValidator validators.[0]
         net.CrashValidator validators.[1]
@@ -1048,26 +1048,34 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[0]].MessageCounts = (1, 2, 1) @>
         test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
-        test <@ net.DecisionCount = 0 @> // No decisions yet
+        test <@ net.DecisionCount = 0 @>
+
+        test <@ net.ScheduledTimeouts.[validators.[0]].Count = 0 @>
+        test <@ net.ScheduledTimeouts.[validators.[2]].Count = 0 @>
+        test <@ net.ScheduledTimeouts.[validators.[3]].Count = 2 @>
+        test <@ net.IsTimeoutScheduled(validators.[3], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Propose) @>
+        test <@ net.IsTimeoutScheduled(validators.[3], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote) @>
+        test <@ net.IsTimeoutScheduled(validators.[3], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) |> not @>
+        test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Commit @>
 
         net.RequestConsensusState validators.[0]
 
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[0]) @>
         test <@ net.Messages.[0] |> isCommitForBlock @>
-        test <@ net.DecisionCount = 0 @> // No decisions yet
+        test <@ net.DecisionCount = 0 @>
 
         test <@ net.States.[validators.[0]].MessageCounts = (1, 4, 2) @>
         test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
-        test <@ net.DecisionCount = 0 @> // No decisions yet
+        test <@ net.DecisionCount = 0 @>
 
-        net.DeliverMessages() // Deliver V3's messages
+        net.DeliverMessages() // Deliver V0's messages
 
         test <@ net.States.[validators.[0]].MessageCounts = (0, 0, 0) @>
         test <@ net.States.[validators.[2]].MessageCounts = (0, 0, 0) @>
         test <@ net.States.[validators.[3]].MessageCounts = (0, 0, 0) @>
-        test <@ net.DecisionCount = 3 @> // No decisions yet
+        test <@ net.DecisionCount = 3 @>
 
         // ASSERT
         net.PrintTheState(output.WriteLine)
