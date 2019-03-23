@@ -81,7 +81,6 @@ module ConsensusTestHelpers =
     type ConsensusSimulationNetwork
         (
         validators : BlockchainAddress list,
-        ?scheduleTimeout : BlockchainAddress -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
         ?isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
         ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
         ?isValidBlock : BlockchainAddress -> Block -> bool
@@ -89,6 +88,7 @@ module ConsensusTestHelpers =
 
         let _states = new Dictionary<BlockchainAddress, ConsensusState>()
         let _decisions = new Dictionary<BlockchainAddress, Dictionary<BlockNumber, Block>>()
+        let _scheduledTimeouts = new Dictionary<BlockchainAddress, List<BlockNumber * ConsensusRound * ConsensusStep>>()
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
         let _events = new List<BlockchainAddress * AppEvent>()
 
@@ -220,13 +220,12 @@ module ConsensusTestHelpers =
 
             let schedulePropose _ _ = ()
 
-            let scheduleTimeout =
-                match scheduleTimeout with
-                | Some f -> f validatorAddress
-                | None -> fun _ -> ()
+            _scheduledTimeouts.Add(validatorAddress, new List<BlockNumber * ConsensusRound * ConsensusStep>())
 
-            let timeoutForRound _ _ =
-                1000
+            let scheduleTimeout =
+                _scheduledTimeouts.[validatorAddress].Add
+
+            let timeoutForRound _ _ = 1000
 
             let verifyConsensusMessage =
                 __.VerifyConsensusMessage
@@ -392,6 +391,8 @@ module ConsensusTestHelpers =
         member __.CrashValidator validatorAddress =
             if not (_states.Remove validatorAddress) then
                 failwithf "Didn't remove state for crashed validator %s" validatorAddress.Value
+            if not (_scheduledTimeouts.Remove validatorAddress) then
+                failwithf "Didn't remove scheduled timeouts for crashed validator %s" validatorAddress.Value
             __.RemoveMessages (fun (sender, message) -> sender = validatorAddress)
 
         member __.RecoverValidator validatorAddress =
