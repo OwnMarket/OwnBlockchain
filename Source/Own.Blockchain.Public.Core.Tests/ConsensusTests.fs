@@ -724,6 +724,58 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         test <@ net.DecisionCount = 1 @> // No new decision available
 
+        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.IsTimeoutScheduled(validators.[1], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) |> not @>
+        test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.IsTimeoutScheduled(validators.[3], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) |> not @>
+        test <@ net.States.[validators.[2]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.IsTimeoutScheduled(validators.[2], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Propose) @>
+
+        // Propose timeout triggered
+        net.Events.Clear()
+        net.TriggerScheduledTimeout(validators.[2], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Propose)
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[2]) @>
+        test <@ net.Messages.[0] |> isVoteForNone @>
+
+        test <@ net.Events.Count = 0 @>
+
+        net.DeliverMessages()
+        test <@ net.Messages.Count = 0 @>
+
+        test <@ net.Events.Count = 2 @> // V1 and V3 have detected V2's equivocation
+        test <@ net.Events |> Seq.map fst |> Seq.contains validators.[1] @>
+        test <@ net.Events |> Seq.map fst |> Seq.contains validators.[3] @>
+
+        let equivocationProof, equivocationValidator =
+            net.Events
+            |> Seq.map snd
+            |> Seq.distinct
+            |> Seq.exactlyOne
+            |> function
+                | EquivocationProofDetected (p, v) -> p, v
+                | e -> failwithf "Unexpected event %A" e
+        test <@ equivocationValidator = validators.[2] @>
+        test <@ equivocationProof.BlockNumber = 1L @>
+        test <@ equivocationProof.ConsensusRound = 0 @>
+        test <@ equivocationProof.ConsensusStep = 1uy @>
+        test <@ equivocationProof.BlockHash1 |> isNull @>
+        test <@ equivocationProof.BlockHash2 = proposedBlock.Header.Hash.Value @>
+        test <@ equivocationProof.Signature1.Contains(validators.[2].Value) @>
+        test <@ equivocationProof.Signature2.Contains(validators.[2].Value) @>
+
+        test <@ net.States.[validators.[1]].MessageCounts = (1, 4, 2) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (0, 2, 1) @>
+
+        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.IsTimeoutScheduled(validators.[1], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) |> not @>
+        test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.IsTimeoutScheduled(validators.[3], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) |> not @>
+        test <@ net.States.[validators.[2]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.IsTimeoutScheduled(validators.[2], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote) |> not @>
+
+        // Stale round detected
         net.RequestConsensusState validators.[2]
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> isCommitForBlock @>
@@ -732,9 +784,13 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages |> Seq.forall isPropose @>
 
+        test <@ net.States.[validators.[1]].MessageCounts = (0, 0, 0) @>
+        test <@ net.States.[validators.[3]].MessageCounts = (0, 0, 0) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (0, 0, 0) @>
+
         test <@ net.States.[validators.[1]].Variables.BlockNumber = BlockNumber 2L @>
-        test <@ net.States.[validators.[2]].Variables.BlockNumber = BlockNumber 2L @>
         test <@ net.States.[validators.[3]].Variables.BlockNumber = BlockNumber 2L @>
+        test <@ net.States.[validators.[2]].Variables.BlockNumber = BlockNumber 2L @>
 
         // ASSERT
         net.PrintTheState(output.WriteLine)

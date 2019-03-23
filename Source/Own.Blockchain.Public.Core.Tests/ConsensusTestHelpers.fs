@@ -112,9 +112,6 @@ module ConsensusTestHelpers =
 
         member __.ScheduledTimeouts
             with get () = _scheduledTimeouts
-        member __.IsTimeoutScheduled(validatorAddress, blockNumber, consensusRound, consensusStep) =
-            _scheduledTimeouts.[validatorAddress]
-            |> Seq.contains (blockNumber, consensusRound, consensusStep)
 
         member __.Messages
             with get () = _messages
@@ -385,6 +382,20 @@ module ConsensusTestHelpers =
                 if not (_messages.Remove (s, m)) then
                     failwithf "Didn't remove message from %s: %A" s.Value m
             )
+
+        member __.IsTimeoutScheduled(validatorAddress, blockNumber, consensusRound, consensusStep) =
+            _scheduledTimeouts.[validatorAddress]
+            |> Seq.contains (blockNumber, consensusRound, consensusStep)
+
+        member __.TriggerScheduledTimeout(validatorAddress, blockNumber, consensusRound, consensusStep) =
+            let timeoutKey = blockNumber, consensusRound, consensusStep
+            if _scheduledTimeouts.[validatorAddress].Remove timeoutKey then
+                ConsensusCommand.Timeout timeoutKey |> _states.[validatorAddress].HandleConsensusCommand
+            else
+                failwithf "Didn't remove scheduled timeout: %A" timeoutKey
+
+            if _scheduledTimeouts.[validatorAddress].Contains timeoutKey then
+                failwithf "Scheduled timeout stil in the list: %A" timeoutKey
 
         member __.ResetValidator validatorAddress =
             __.CrashValidator validatorAddress
