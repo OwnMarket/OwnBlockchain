@@ -308,7 +308,11 @@ module Consensus =
                             _validBlock <- lockedBlock
                             _validRound <- response.LockedRound
                             _round <- response.LockedRound
-                            _step <- ConsensusStep.Propose
+                            _step <-
+                                if _votes.ContainsKey (_blockNumber, _round, validatorAddress) then
+                                    ConsensusStep.Vote
+                                else
+                                    ConsensusStep.Propose
 
             __.UpdateState()
 
