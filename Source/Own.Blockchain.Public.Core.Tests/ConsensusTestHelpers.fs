@@ -441,11 +441,26 @@ module ConsensusTestHelpers =
             |> _states.[recipientValidatorAddress].HandleConsensusCommand
 
         member __.PrintTheState(log) =
-            for m in __.Messages do
-                log (sprintf "MESSAGE: %A" m)
-            for e in __.Events do
-                log (sprintf "EVENT: %A" e)
-            for s in __.States |> Seq.sortBy (fun s -> validators |> List.findIndex (fun v -> v = s.Key)) do
+            __.Messages
+            |> Seq.iter (sprintf "MESSAGE: %A" >> log)
+
+            __.Events
+            |> Seq.iter (sprintf "EVENT: %A" >> log)
+
+            __.Decisions
+            |> Seq.sortBy (fun s -> validators |> List.findIndex (fun v -> v = s.Key))
+            |> List.ofDict
+            |> List.iter (sprintf "DECISIONS: %A" >> log)
+
+            __.ScheduledTimeouts
+            |> Seq.sortBy (fun s -> validators |> List.findIndex (fun v -> v = s.Key))
+            |> List.ofDict
+            |> List.iter (sprintf "SCHEDULED TIMEOUTS: %A" >> log)
+
+            __.States
+            |> Seq.sortBy (fun s -> validators |> List.findIndex (fun v -> v = s.Key))
+            |> Seq.iter (fun s ->
                 log (sprintf "\nVALIDATOR %A STATE:" s.Key)
                 for v in s.Value.PrintCurrentState() do
                     log (sprintf "%s" v)
+            )
