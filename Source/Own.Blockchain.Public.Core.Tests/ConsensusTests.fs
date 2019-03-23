@@ -1142,3 +1142,57 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
+
+    [<Fact>]
+    member __.``Consensus - Distributed Test Cases: MF2`` () =
+        // ARRANGE
+        let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+
+        let net = new ConsensusSimulationNetwork(validators)
+
+        // ACT
+        net.StartConsensus()
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = proposer @>
+        let proposedBlock =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock.Header.Number = BlockNumber 1L @>
+
+        net.DeliverMessages() // Deliver Propose message
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        let originalVoteFromV2 =
+            net.Messages
+            |> Seq.choose (fun (v, m) -> if v = validators.[2] then Some m else None)
+            |> Seq.exactlyOne
+        test <@ net.Messages.Remove(validators.[2], originalVoteFromV2) @>
+
+        let maliciousVoteFromV2 =
+            {originalVoteFromV2 with
+                ConsensusMessage = Helpers.randomString () |> BlockHash |> Some |> Vote // Vote for block 1'
+            }
+        test <@ originalVoteFromV2.ConsensusMessage <> maliciousVoteFromV2.ConsensusMessage @>
+        net.Messages.Add(validators.[2], maliciousVoteFromV2)
+
+        net.DeliverMessages() // Deliver Vote messages
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
+
+        net.DeliverMessages() // Deliver Commit messages
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
+
+        net, proposedBlock // Return the simulation state for dependent tests.
