@@ -725,9 +725,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.DecisionCount = 1 @> // No new decision available
 
         net.RequestConsensusState validators.[2]
-        test <@ net.Messages.Count = 2 @>
-        test <@ net.Messages.[0] |> isVoteForBlock @>
-        test <@ net.Messages.[1] |> isCommitForBlock @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> isCommitForBlock @>
 
         net.DeliverMessages ()
         test <@ net.Messages.Count = 1 @>
