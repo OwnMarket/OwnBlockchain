@@ -81,14 +81,10 @@ module ConsensusTestHelpers =
     type ConsensusSimulationNetwork
         (
         validators : BlockchainAddress list,
-        ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
-        ?isValidBlock : BlockchainAddress -> Block -> bool,
-        ?scheduleMessage : BlockchainAddress -> int -> (BlockchainAddress * ConsensusMessageEnvelope) -> unit,
-        ?scheduleStateResponse : BlockchainAddress -> int -> (BlockNumber * ConsensusStateResponse) -> unit,
-        ?schedulePropose : BlockchainAddress -> int -> (BlockNumber * ConsensusRound) -> unit,
         ?scheduleTimeout : BlockchainAddress -> (BlockNumber * ConsensusRound * ConsensusStep) -> unit,
         ?isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
-        ?lastAppliedBlockNumber : BlockNumber
+        ?proposeBlock : BlockchainAddress -> BlockNumber -> Result<Block, AppErrors> option,
+        ?isValidBlock : BlockchainAddress -> Block -> bool
         ) =
 
         let _states = new Dictionary<BlockchainAddress, ConsensusState>()
@@ -157,11 +153,10 @@ module ConsensusTestHelpers =
                 _decisions.Add(validatorAddress, Dictionary<BlockNumber, Block>())
 
             let getLastAppliedBlockNumber () =
-                lastAppliedBlockNumber |?> fun _ ->
-                    _decisions.[validatorAddress].Keys
-                    |> Seq.sortDescending
-                    |> Seq.tryHead
-                    |? BlockNumber 0L
+                _decisions.[validatorAddress].Keys
+                |> Seq.sortDescending
+                |> Seq.tryHead
+                |? BlockNumber 0L
 
             let getValidators _ =
                 validators
@@ -219,20 +214,11 @@ module ConsensusTestHelpers =
                     |> List.iter (fst >> _persistedMessages.[validatorAddress].Remove >> ignore)
                 | _ -> ()
 
-            let scheduleMessage =
-                match scheduleMessage with
-                | Some f -> f validatorAddress
-                | None -> fun _ _ -> ()
+            let scheduleMessage _ _ = ()
 
-            let scheduleStateResponse =
-                match scheduleStateResponse with
-                | Some f -> f validatorAddress
-                | None -> fun _ _ -> ()
+            let scheduleStateResponse _ _ = ()
 
-            let schedulePropose =
-                match schedulePropose with
-                | Some f -> f validatorAddress
-                | None -> fun _ _ -> ()
+            let schedulePropose _ _ = ()
 
             let scheduleTimeout =
                 match scheduleTimeout with
