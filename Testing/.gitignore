@@ -1,3 +1,4 @@
 node_modules
 TestInstances/**/Data
 TestInstances/**/State.fdb
+run_test*.sh
