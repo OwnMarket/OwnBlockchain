@@ -91,7 +91,7 @@ module ConsensusTestHelpers =
         ?lastAppliedBlockNumber : BlockNumber
         ) =
 
-        let _state = new Dictionary<BlockchainAddress, ConsensusState>()
+        let _states = new Dictionary<BlockchainAddress, ConsensusState>()
         let _decisions = new Dictionary<BlockchainAddress, Dictionary<BlockNumber, Block>>()
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
         let _events = new List<BlockchainAddress * AppEvent>()
@@ -107,7 +107,7 @@ module ConsensusTestHelpers =
             with get () = validators
 
         member __.States
-            with get () = _state
+            with get () = _states
 
         member __.Decisions
             with get () = _decisions
@@ -130,7 +130,7 @@ module ConsensusTestHelpers =
             for v in validators do
                 __.InstantiateValidator v
 
-            for s in _state.Values do
+            for s in _states.Values do
                 s.StartConsensus()
 
         member private __.InstantiateValidator validatorAddress =
@@ -273,7 +273,7 @@ module ConsensusTestHelpers =
                     validatorAddress
                 )
 
-            _state.Add(validatorAddress, state)
+            _states.Add(validatorAddress, state)
 
         member private __.VerifyConsensusMessage (envelope : ConsensusMessageEnvelopeDto) =
             let envelope = envelope |> Mapping.consensusMessageEnvelopeFromDto
@@ -363,7 +363,7 @@ module ConsensusTestHelpers =
             let shouldSend = sendFilter |? fun _ -> true
             let shouldDelay = delayFilter |? fun _ -> false
 
-            let states = _state |> Seq.ofDict
+            let states = _states |> Seq.ofDict
 
             seq {
                 for (senderAddress, msg) in messages do
@@ -380,9 +380,9 @@ module ConsensusTestHelpers =
         member __.PropagateBlock validatorAddress blockNumber =
             let block = _decisions.[validatorAddress].[blockNumber]
             validators
-            |> List.filter (fun v -> v <> validatorAddress && _state.ContainsKey v) // Ignore crashed validators
+            |> List.filter (fun v -> v <> validatorAddress && _states.ContainsKey v) // Ignore crashed validators
             |> List.iter (fun v ->
-                if _state.ContainsKey v && not (_decisions.[v].ContainsKey blockNumber) then
+                if _states.ContainsKey v && not (_decisions.[v].ContainsKey blockNumber) then
                     _decisions.[v].Add(blockNumber, block)
             )
 
@@ -401,27 +401,27 @@ module ConsensusTestHelpers =
             _persistedState.Remove validatorAddress |> ignore
             _persistedMessages.[validatorAddress].Clear()
             __.InstantiateValidator validatorAddress
-            _state.[validatorAddress].StartConsensus()
+            _states.[validatorAddress].StartConsensus()
 
         member __.CrashValidator validatorAddress =
-            if not (_state.Remove validatorAddress) then
+            if not (_states.Remove validatorAddress) then
                 failwithf "Didn't remove state for crashed validator %s" validatorAddress.Value
             __.RemoveMessages (fun (sender, message) -> sender = validatorAddress)
 
         member __.RecoverValidator validatorAddress =
             __.InstantiateValidator validatorAddress
-            _state.[validatorAddress].StartConsensus()
+            _states.[validatorAddress].StartConsensus()
 
             // Mimicking the block synchronization process by getting the decided blocks from others.
             _decisions
             |> List.ofDict
-            |> List.filter (fun (v, _) -> v <> validatorAddress && _state.ContainsKey v) // Ignore crashed validators
+            |> List.filter (fun (v, _) -> v <> validatorAddress && _states.ContainsKey v) // Ignore crashed validators
             |> List.collect (snd >> List.ofDict)
             |> List.distinct
             |> List.sort
             |> List.iter _decisions.[validatorAddress].Add
 
-            _state.[validatorAddress].HandleConsensusCommand Synchronize
+            _states.[validatorAddress].HandleConsensusCommand Synchronize
 
             __.RequestConsensusState validatorAddress
 
@@ -437,9 +437,9 @@ module ConsensusTestHelpers =
                 |> PeerNetworkIdentity
 
             for v in validators do
-                if v <> validatorAddress && _state.ContainsKey v then
+                if v <> validatorAddress && _states.ContainsKey v then
                     ConsensusCommand.StateRequested (consensusStateRequest, peerId)
-                    |> _state.[v].HandleConsensusCommand
+                    |> _states.[v].HandleConsensusCommand
 
         member private __.SendConsensusState validatorAddress recipientPeerNetworkIdentity consensusStateResponse =
             let recipientValidatorAddress =
@@ -451,7 +451,7 @@ module ConsensusTestHelpers =
                 failwithf "Shouldn't send consensus state to self: %s" validatorAddress.Value
 
             ConsensusCommand.StateReceived consensusStateResponse
-            |> _state.[recipientValidatorAddress].HandleConsensusCommand
+            |> _states.[recipientValidatorAddress].HandleConsensusCommand
 
         member __.PrintTheState(log) =
             for m in __.Messages do
