@@ -1185,6 +1185,18 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = 4 @>
         test <@ net.Messages |> Seq.forall isCommitForBlock @>
 
+        for v in validators do
+            let goodVotesCount =
+                net.States.[v].Votes
+                |> Seq.filter (fun (_, (h, _)) -> Vote h = originalVoteFromV2.ConsensusMessage)
+                |> Seq.length
+            let badVotesCount =
+                net.States.[v].Votes
+                |> Seq.filter (fun (_, (h, _)) -> Vote h = maliciousVoteFromV2.ConsensusMessage)
+                |> Seq.length
+            test <@ goodVotesCount = 3 @>
+            test <@ badVotesCount = 1 @>
+
         net.DeliverMessages() // Deliver Commit messages
 
         // ASSERT
