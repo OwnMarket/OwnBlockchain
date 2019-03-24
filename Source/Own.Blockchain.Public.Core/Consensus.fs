@@ -44,6 +44,8 @@ module Consensus =
         let mutable _validQuorum = 0
 
         let mutable _roundStartTime = 0L // Used for stale round detection. Updated upon requesting consensus state.
+        let mutable _voteTimeoutScheduled = false
+        let mutable _commitTimeoutScheduled = false
 
         let mutable _blockNumber = BlockNumber 0L
         let mutable _round = ConsensusRound 0
@@ -488,6 +490,8 @@ module Consensus =
                     __.TryPropose()
 
         member private __.StartRound(r) =
+            _voteTimeoutScheduled <- false
+            _commitTimeoutScheduled <- false
             _roundStartTime <- Utils.getMachineTimestamp ()
             _round <- r
             _step <- ConsensusStep.Propose
@@ -520,8 +524,9 @@ module Consensus =
             )
 
             // VOTE RULES
-            if _step = ConsensusStep.Vote && __.MajorityVoted(_round) then
+            if _step = ConsensusStep.Vote && __.MajorityVoted(_round) && not _voteTimeoutScheduled then
                 scheduleTimeout (_blockNumber, _round, ConsensusStep.Vote)
+                _voteTimeoutScheduled <- true
 
             if _step >= ConsensusStep.Vote then
                 __.GetProposal()
@@ -545,8 +550,9 @@ module Consensus =
                 __.SendCommit(_round, None)
 
             // COMMIT RULES
-            if __.MajorityCommitted(_round) then
+            if __.MajorityCommitted(_round) && not _commitTimeoutScheduled then
                 scheduleTimeout (_blockNumber, _round, ConsensusStep.Commit)
+                _commitTimeoutScheduled <- true
 
             if not (_decisions.ContainsKey _blockNumber) then
                 __.GetProposalCommittedByMajority()
