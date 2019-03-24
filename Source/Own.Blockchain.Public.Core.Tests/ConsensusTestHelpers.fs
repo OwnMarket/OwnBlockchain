@@ -88,7 +88,8 @@ module ConsensusTestHelpers =
 
         let _states = new Dictionary<BlockchainAddress, ConsensusState>()
         let _decisions = new Dictionary<BlockchainAddress, Dictionary<BlockNumber, Block>>()
-        let _scheduledTimeouts = new Dictionary<BlockchainAddress, List<BlockNumber * ConsensusRound * ConsensusStep>>()
+        let _scheduledTimeouts =
+            new Dictionary<BlockchainAddress, Dictionary<BlockNumber * ConsensusRound * ConsensusStep, bool>>()
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
         let _events = new List<BlockchainAddress * AppEvent>()
 
@@ -223,10 +224,13 @@ module ConsensusTestHelpers =
 
             let schedulePropose _ _ = ()
 
-            _scheduledTimeouts.Add(validatorAddress, new List<BlockNumber * ConsensusRound * ConsensusStep>())
+            _scheduledTimeouts.Add(
+                validatorAddress,
+                new Dictionary<BlockNumber * ConsensusRound * ConsensusStep, bool>()
+            )
 
-            let scheduleTimeout =
-                _scheduledTimeouts.[validatorAddress].Add
+            let scheduleTimeout key =
+                _scheduledTimeouts.[validatorAddress].Add(key, false)
 
             let timeoutForRound _ _ = 1000
 
@@ -384,18 +388,15 @@ module ConsensusTestHelpers =
             )
 
         member __.IsTimeoutScheduled(validatorAddress, blockNumber, consensusRound, consensusStep) =
-            _scheduledTimeouts.[validatorAddress]
-            |> Seq.contains (blockNumber, consensusRound, consensusStep)
+            _scheduledTimeouts.[validatorAddress].ContainsKey(blockNumber, consensusRound, consensusStep)
 
         member __.TriggerScheduledTimeout(validatorAddress, blockNumber, consensusRound, consensusStep) =
             let timeoutKey = blockNumber, consensusRound, consensusStep
-            if _scheduledTimeouts.[validatorAddress].Remove timeoutKey then
-                ConsensusCommand.Timeout timeoutKey |> _states.[validatorAddress].HandleConsensusCommand
+            if _scheduledTimeouts.[validatorAddress].[timeoutKey] then
+                failwithf "Timeout already triggered: %A" timeoutKey
             else
-                failwithf "Didn't remove scheduled timeout: %A" timeoutKey
-
-            if _scheduledTimeouts.[validatorAddress].Contains timeoutKey then
-                failwithf "Scheduled timeout stil in the list: %A" timeoutKey
+                ConsensusCommand.Timeout timeoutKey |> _states.[validatorAddress].HandleConsensusCommand
+                _scheduledTimeouts.[validatorAddress].[timeoutKey] <- true
 
         member __.ResetValidator validatorAddress =
             __.CrashValidator validatorAddress
