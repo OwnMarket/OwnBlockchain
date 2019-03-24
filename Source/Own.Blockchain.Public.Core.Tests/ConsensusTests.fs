@@ -891,7 +891,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.States.[validators.[2]].HandleConsensusCommand Synchronize
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall (fun (s, e) -> s = validators.[2] && e.ConsensusMessage.IsPropose) @>
+        test <@ net.Messages |> Seq.forall isPropose @>
+        test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[2]) @>
 
         test <@ net.States.[validators.[0]].Variables.BlockNumber = BlockNumber 2L @>
         test <@ net.States.[validators.[2]].Variables.BlockNumber = BlockNumber 2L @>
@@ -1022,7 +1023,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         // ACT
         net.RecoverValidator validators.[2]
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall (fun (s, m) -> s = validators.[2] && m.ConsensusMessage.IsPropose) @>
+        test <@ net.Messages |> Seq.forall isPropose @>
+        test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[2]) @>
 
         test <@ net.DecisionCount = 4 @> // V2 got block through sync
 
