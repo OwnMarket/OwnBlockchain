@@ -123,7 +123,7 @@ module HashingTests =
 
     [<Theory>]
     [<InlineData("1uGLMixQzsqUXQRrTEwxq5dSbKuTbyrU8qA6qSekvJ")>]
-    let ``Hashing encode decode rogue hash`` (hash) =
+    let ``Hashing encode decode rogue hash`` hash =
         // ACT
         let decoded = Hashing.decode hash
 
