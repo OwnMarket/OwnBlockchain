@@ -391,7 +391,7 @@ module Composition =
         Workflows.restoreConsensusState
             getConsensusState
 
-    let requestConsensusState () =
+    let requestConsensusState =
         Workflows.requestConsensusState
             (PrivateKey Config.ValidatorPrivateKey)
             getNetworkId

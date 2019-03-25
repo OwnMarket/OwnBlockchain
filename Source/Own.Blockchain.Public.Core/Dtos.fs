@@ -293,11 +293,12 @@ type ConsensusStateInfoDto = {
 [<MessagePackObject>]
 type ConsensusStateRequestDto = {
     [<Key(0)>] ValidatorAddress : string
+    [<Key(1)>] ConsensusRound : int
 }
 
 [<MessagePackObject>]
 type ConsensusStateResponseDto = {
-    [<Key(0)>] LatestMessages : ConsensusMessageEnvelopeDto list
+    [<Key(0)>] Messages : ConsensusMessageEnvelopeDto list
     [<Key(1)>] LockedRound : int
     [<Key(2)>] LockedProposal : ConsensusMessageEnvelopeDto
     [<Key(3)>] LockedVoteSignatures : string list

@@ -452,10 +452,11 @@ type ConsensusStateInfo = {
 
 type ConsensusStateRequest = {
     ValidatorAddress : BlockchainAddress
+    ConsensusRound : ConsensusRound
 }
 
 type ConsensusStateResponse = {
-    LatestMessages : ConsensusMessageEnvelope list
+    Messages : ConsensusMessageEnvelope list
     LockedRound : ConsensusRound
     LockedProposal : ConsensusMessageEnvelope option
     LockedVoteSignatures : Signature list

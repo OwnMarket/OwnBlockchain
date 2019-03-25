@@ -801,17 +801,19 @@ module Mapping =
     let consensusStateRequestFromDto (dto : ConsensusStateRequestDto) : ConsensusStateRequest =
         {
             ConsensusStateRequest.ValidatorAddress = dto.ValidatorAddress |> BlockchainAddress
+            ConsensusRound = dto.ConsensusRound |> ConsensusRound
         }
 
     let consensusStateRequestToDto (request : ConsensusStateRequest) : ConsensusStateRequestDto =
         {
             ConsensusStateRequestDto.ValidatorAddress = request.ValidatorAddress.Value
+            ConsensusRound = request.ConsensusRound.Value
         }
 
     let consensusStateResponseFromDto (dto : ConsensusStateResponseDto) : ConsensusStateResponse =
         {
-            ConsensusStateResponse.LatestMessages =
-                dto.LatestMessages
+            ConsensusStateResponse.Messages =
+                dto.Messages
                 |> List.map consensusMessageEnvelopeFromDto
             LockedRound = dto.LockedRound |> ConsensusRound
             LockedProposal =
@@ -826,8 +828,8 @@ module Mapping =
 
     let consensusStateResponseToDto (response : ConsensusStateResponse) : ConsensusStateResponseDto =
         {
-            ConsensusStateResponseDto.LatestMessages =
-                response.LatestMessages
+            ConsensusStateResponseDto.Messages =
+                response.Messages
                 |> List.map consensusMessageEnvelopeToDto
             LockedRound = response.LockedRound.Value
             LockedProposal =

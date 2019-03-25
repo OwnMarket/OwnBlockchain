@@ -435,9 +435,12 @@ module ConsensusTestHelpers =
             __.RequestConsensusState validatorAddress
 
         member __.RequestConsensusState validatorAddress =
+            let consensusRound = _states.[validatorAddress].Variables.ConsensusRound
+
             let consensusStateRequest =
                 {
                     ConsensusStateRequest.ValidatorAddress = validatorAddress
+                    ConsensusRound = consensusRound
                 }
 
             let peerId =

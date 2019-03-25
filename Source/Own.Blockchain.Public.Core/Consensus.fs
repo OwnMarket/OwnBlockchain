@@ -26,7 +26,7 @@ module Consensus =
             ConsensusMessageEnvelopeDto -> Result<BlockchainAddress * ConsensusMessageEnvelope, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusStateInfo -> ConsensusMessage -> unit,
         sendConsensusState : PeerNetworkIdentity -> ConsensusStateResponse -> unit,
-        requestConsensusState : unit -> unit,
+        requestConsensusState : ConsensusRound -> unit,
         publishEvent : AppEvent -> unit,
         scheduleMessage : int -> BlockchainAddress * ConsensusMessageEnvelope -> unit,
         scheduleStateResponse : int -> BlockNumber * ConsensusStateResponse -> unit,
@@ -211,7 +211,7 @@ module Consensus =
                     if roundDuration > maxRoundDuration then
                         try
                             _roundStartTime <- currentTime
-                            requestConsensusState ()
+                            requestConsensusState _round
                         with
                         | ex -> Log.error ex.AllMessagesAndStackTraces
 
@@ -223,7 +223,7 @@ module Consensus =
 
         member private __.ApplyReceivedState(response) =
             let messages =
-                response.LatestMessages
+                response.Messages
                 |> List.toArray
                 |> Array.Parallel.map (Mapping.consensusMessageEnvelopeToDto >> verifyConsensusMessage)
                 |> Array.choose (function
@@ -235,7 +235,7 @@ module Consensus =
                 for (s, e) in messages do
                     __.ProcessConsensusMessage(s, e, false)
 
-            let response = {response with LatestMessages = []} // We're done with the messages - no need to keep them.
+            let response = {response with Messages = []} // We're done with the messages - no need to keep them.
 
             if response.LockedRound > _lockedRound then
                 let isValidMessage, lockedBlock =
@@ -326,15 +326,15 @@ module Consensus =
                 Log.warningf "Validator %s is blacklisted - consensus state request ignored"
                     request.ValidatorAddress.Value
             else
-                let latestMessages =
+                let messages =
                     [
-                        let key = _blockNumber, _round, validatorAddress
+                        let key = _blockNumber, request.ConsensusRound, validatorAddress
 
                         if _proposals.ContainsKey(key) then
                             let (b, vr, s) = _proposals.[key]
                             yield {
                                 ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                Round = _round
+                                Round = request.ConsensusRound
                                 ConsensusMessage = Propose (b, vr)
                                 Signature = s
                             }
@@ -343,7 +343,7 @@ module Consensus =
                             let (bh, s) = _votes.[key]
                             yield {
                                 ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                Round = _round
+                                Round = request.ConsensusRound
                                 ConsensusMessage = Vote bh
                                 Signature = s
                             }
@@ -352,7 +352,7 @@ module Consensus =
                             let (bh, s) = _commits.[key]
                             yield {
                                 ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                Round = _round
+                                Round = request.ConsensusRound
                                 ConsensusMessage = Commit bh
                                 Signature = s
                             }
@@ -391,7 +391,7 @@ module Consensus =
                         _lockedBlockSignatures
 
                 {
-                    ConsensusStateResponse.LatestMessages = latestMessages
+                    ConsensusStateResponse.Messages = messages
                     LockedRound = _lockedRound
                     LockedProposal = lockedProposal
                     LockedVoteSignatures = lockedVoteSignatures

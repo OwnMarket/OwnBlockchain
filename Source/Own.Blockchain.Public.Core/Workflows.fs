@@ -952,6 +952,7 @@ module Workflows =
         sendMessageToPeers
         isValidator
         addressFromPrivateKey
+        consensusRound
         =
 
         let validatorAddress = addressFromPrivateKey validatorPrivateKey
@@ -960,6 +961,7 @@ module Workflows =
             let consensusStateRequest =
                 {
                     ConsensusStateRequest.ValidatorAddress = validatorAddress
+                    ConsensusRound = consensusRound
                 }
 
             {

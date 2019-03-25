@@ -171,7 +171,7 @@ module Agents =
             |> Log.debug
         | ConsensusStateResponseReceived response ->
             sprintf "%i messages / locked round: %i / locked value: %s / %i signatures"
-                response.LatestMessages.Length
+                response.Messages.Length
                 response.LockedRound.Value
                 (unionCaseName response.LockedProposal)
                 response.LockedVoteSignatures.Length
