@@ -1264,6 +1264,128 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
+    member __.``Consensus - Distributed Test Cases: ML2`` () =
+        // ARRANGE
+        let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+
+        let net = new ConsensusSimulationNetwork(validators)
+
+        // ACT
+        net.StartConsensus()
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = proposer @>
+        let proposedBlock =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock.Header.Number = BlockNumber 1L @>
+
+        // Prepare malicious message
+        let maliciousBlock =
+            {proposedBlock with
+                Header =
+                    {proposedBlock.Header with
+                        Hash = Helpers.randomString () |> BlockHash
+                    }
+            }
+        test <@ maliciousBlock.Header.Hash <> proposedBlock.Header.Hash @>
+        let maliciousMessage =
+            net.Messages.[0]
+            |> snd
+            |> fun e ->
+                let vr = e.ConsensusMessage |> function Propose (b, vr) -> vr | _ -> failwith "Unexpected message"
+                {e with
+                    ConsensusMessage = Propose (maliciousBlock, vr)
+                }
+        net.Messages.Add(validators.[1], maliciousMessage)
+
+        // Deliver Propose message
+        net.DeliverMessages(
+            (fun (s, r, e) ->
+                match e.ConsensusMessage with
+                | Propose (b, _) ->
+                    b = proposedBlock && (r = validators.[0] || r = validators.[1])
+                    || b = maliciousBlock && (r = validators.[2] || r = validators.[3])
+                | _ -> failwith "Unexpected message"
+            ),
+            ?implicitlyDeliverOwnMessages = Some false // To prevent delivering proposal for B1' to V1
+        )
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        for i in [0 .. 3] do
+            let message =
+                net.Messages
+                |> Seq.filter (fun (v, _) -> v = validators.[i])
+                |> Seq.exactlyOne
+                |> snd
+                |> fun e -> e.ConsensusMessage
+            if i = 2 || i = 3 then
+                test <@ message = Vote (Some maliciousBlock.Header.Hash) @>
+            else
+                test <@ message = Vote (Some proposedBlock.Header.Hash) @>
+
+        net.DeliverMessages() // Deliver Vote messages
+        test <@ net.Messages.Count = 0 @>
+
+        for v in validators do
+            let goodVotesCount =
+                net.States.[v].Votes
+                |> Seq.filter (fun (_, (h, _)) -> Vote h = Vote (Some proposedBlock.Header.Hash))
+                |> Seq.length
+            let badVotesCount =
+                net.States.[v].Votes
+                |> Seq.filter (fun (_, (h, _)) -> Vote h = Vote (Some maliciousBlock.Header.Hash))
+                |> Seq.length
+            test <@ goodVotesCount = 2 @>
+            test <@ badVotesCount = 2 @>
+
+        for i in [0 .. 3] do
+            test <@ net.States.[validators.[i]].MessageCounts = (1, 4, 0) @>
+
+        test <@ net.DecisionCount = 0 @>
+
+        for i in [0 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote) @>
+            net.TriggerScheduledTimeout (validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote)
+            test <@ net.Messages.Count = i + 1 @>
+            test <@ net.Messages |> Seq.forall isCommitForNone @>
+
+        net.DeliverMessages()
+        test <@ net.Messages.Count = 0 @>
+        test <@ net.DecisionCount = 0 @>
+
+        for i in [0 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
+            net.TriggerScheduledTimeout (validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[2] @>
+        test <@ net.Messages |> Seq.forall isPropose @>
+        test <@ net.DecisionCount = 0 @>
+
+        for i in [0 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.BlockNumber.Value = 1L @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 1 @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.[validators.[0]].Count = 0 @>
+        test <@ net.Decisions.[validators.[1]].Count = 0 @>
+        test <@ net.Decisions.[validators.[2]].Count = 0 @>
+        test <@ net.Decisions.[validators.[3]].Count = 0 @>
+
+        net, proposedBlock // Return the simulation state for dependent tests.
+
+    [<Fact>]
     member __.``Consensus - Distributed Test Cases: MF2`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
