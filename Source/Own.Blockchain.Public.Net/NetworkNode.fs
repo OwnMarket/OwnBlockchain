@@ -190,9 +190,9 @@ type NetworkNode
             async {
                 let lastValidTime = DateTime.Now.AddMinutes(-nodeConfig.DnsResolverCacheExpirationTime |> float)
                 dnsResolverCache
-                |> Seq.ofDict
-                |> Seq.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
-                |> Seq.iter (fun (dns, (ip, _)) ->
+                |> List.ofDict
+                |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
+                |> List.iter (fun (dns, (ip, _)) ->
                     let newIp = convertToIpAddress dns
                     if newIp <> ip then
                         let cacheValue = newIp, DateTime.Now

@@ -96,21 +96,22 @@ module Raw =
     // TxCache
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private txCache = new ConcurrentDictionary<TxHash, Result<TxEnvelopeDto, AppErrors> * DateTime>()
+    let private txCache = new ConcurrentDictionary<TxHash, TxEnvelopeDto * DateTime>()
 
     let private getTxCached maxTxCacheSize txHash (getTx : TxHash -> Result<TxEnvelopeDto, AppErrors>) =
         match txCache.TryGetValue txHash with
-        | true, txCacheValue ->
-            txCacheValue
+        | true, (txEnvelopeDto, _) ->
+            Ok txEnvelopeDto
         | false, _ ->
-            let result = getTx txHash
-            let cacheValue = result, DateTime.Now
-            match result with
-            | Ok _ when txCache.Keys.Count < maxTxCacheSize ->
-                txCache.AddOrUpdate(txHash, cacheValue, fun _ _ -> cacheValue)
-            | _ ->
-                cacheValue
-        |> fst
+            txHash
+            |> getTx
+            |> tee (fun r ->
+                r |> Result.iter (fun txEnvelope ->
+                    if txCache.Keys.Count < maxTxCacheSize then
+                        let cacheValue = txEnvelope, DateTime.Now
+                        txCache.AddOrUpdate(txHash, cacheValue, fun _ _ -> cacheValue) |> ignore
+                )
+            )
 
     let private removeTxFromCache txHash =
         txCache.TryRemove txHash |> ignore
@@ -120,9 +121,9 @@ module Raw =
             async {
                 let lastValidTime = DateTime.Now.AddSeconds(-txCacheExpirationTime |> float)
                 txCache
-                |> Seq.ofDict
-                |> Seq.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
-                |> Seq.iter (fun (txHash, _) -> removeTxFromCache txHash)
+                |> List.ofDict
+                |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
+                |> List.iter (fun (txHash, _) -> removeTxFromCache txHash)
 
                 do! Async.Sleep(1000);
                 return! loop ()

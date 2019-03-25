@@ -204,7 +204,7 @@ type Config () =
 
     static member MaxActionCountPerTx = 1000
 
-    static member TxCacheExpirationTime
+    static member TxCacheExpirationTime // Seconds
         with get () =
             match Int32.TryParse config.["TxCacheExpirationTime"] with
             | true, timeout when timeout > 0 -> timeout
