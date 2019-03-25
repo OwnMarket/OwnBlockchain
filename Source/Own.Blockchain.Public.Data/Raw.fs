@@ -105,7 +105,8 @@ module Raw =
         | false, _ ->
             txHash
             |> getTx
-            |> tee (Result.iter (fun txEnvelope ->
+            |> tee (
+                Result.iter (fun txEnvelope ->
                     if txCache.Keys.Count < maxTxCacheSize then
                         let cacheValue = txEnvelope, DateTime.Now
                         txCache.AddOrUpdate(txHash, cacheValue, fun _ _ -> cacheValue) |> ignore
