@@ -44,18 +44,18 @@ module Consensus =
         let mutable _validQuorum = 0
 
         let mutable _roundStartTime = 0L // Used for stale round detection. Updated upon requesting consensus state.
-        let mutable _voteTimeoutScheduled = false
-        let mutable _commitTimeoutScheduled = false
 
         let mutable _blockNumber = BlockNumber 0L
         let mutable _round = ConsensusRound 0
         let mutable _step = ConsensusStep.Propose
-        let mutable _decisions = new Dictionary<BlockNumber, Block>()
         let mutable _lockedBlockSignatures = []
         let mutable _lockedBlock = None
         let mutable _lockedRound = ConsensusRound -1
         let mutable _validBlock = None
         let mutable _validRound = ConsensusRound -1
+
+        let _decisions = new Dictionary<BlockNumber, Block>()
+        let _scheduledTimeouts = new HashSet<ConsensusRound * ConsensusStep>()
 
         let _proposals =
             new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, Block * ConsensusRound * Signature>()
@@ -72,7 +72,9 @@ module Consensus =
                     || not (_proposals.ContainsKey(_blockNumber, _round, validatorAddress))
                 then
                     __.StartRound(_round)
-                scheduleTimeout (_blockNumber, _round, ConsensusStep.Propose)
+
+                if _scheduledTimeouts.Add(_round, ConsensusStep.Propose) then
+                    scheduleTimeout (_blockNumber, _round, ConsensusStep.Propose)
 
             __.Synchronize()
             __.StartStaleRoundDetection()
@@ -429,6 +431,8 @@ module Consensus =
             _validBlock <- None
             _validRound <- ConsensusRound -1
 
+            _scheduledTimeouts.Clear()
+
             _proposals
             |> List.ofDict
             |> List.filter (fun ((b, _, _), _) -> b < _blockNumber)
@@ -490,8 +494,6 @@ module Consensus =
                     __.TryPropose()
 
         member private __.StartRound(r) =
-            _voteTimeoutScheduled <- false
-            _commitTimeoutScheduled <- false
             _roundStartTime <- Utils.getMachineTimestamp ()
             _round <- r
             _step <- ConsensusStep.Propose
@@ -499,7 +501,8 @@ module Consensus =
             if Validators.getProposer _blockNumber _round _validators = validatorAddress then
                 __.TryPropose()
 
-            scheduleTimeout (_blockNumber, _round, ConsensusStep.Propose)
+            if _scheduledTimeouts.Add(_round, ConsensusStep.Propose) then
+                scheduleTimeout (_blockNumber, _round, ConsensusStep.Propose)
 
         member private __.UpdateState() =
             // PROPOSE RULES
@@ -524,9 +527,9 @@ module Consensus =
             )
 
             // VOTE RULES
-            if _step = ConsensusStep.Vote && __.MajorityVoted(_round) && not _voteTimeoutScheduled then
-                scheduleTimeout (_blockNumber, _round, ConsensusStep.Vote)
-                _voteTimeoutScheduled <- true
+            if _step = ConsensusStep.Vote && __.MajorityVoted(_round) then
+                if _scheduledTimeouts.Add(_round, ConsensusStep.Vote) then
+                    scheduleTimeout (_blockNumber, _round, ConsensusStep.Vote)
 
             if _step >= ConsensusStep.Vote then
                 __.GetProposal()
@@ -550,9 +553,9 @@ module Consensus =
                 __.SendCommit(_round, None)
 
             // COMMIT RULES
-            if __.MajorityCommitted(_round) && not _commitTimeoutScheduled then
-                scheduleTimeout (_blockNumber, _round, ConsensusStep.Commit)
-                _commitTimeoutScheduled <- true
+            if __.MajorityCommitted(_round) then
+                if _scheduledTimeouts.Add(_round, ConsensusStep.Commit) then
+                    scheduleTimeout (_blockNumber, _round, ConsensusStep.Commit)
 
             if not (_decisions.ContainsKey _blockNumber) then
                 __.GetProposalCommittedByMajority()
@@ -853,18 +856,16 @@ module Consensus =
                 sprintf "_qualifiedMajority: %A" _qualifiedMajority
                 sprintf "_validQuorum: %A" _validQuorum
 
-                sprintf "_voteTimeoutScheduled: %A" _voteTimeoutScheduled
-                sprintf "_commitTimeoutScheduled: %A" _commitTimeoutScheduled
-
                 sprintf "_blockNumber: %A" _blockNumber
                 sprintf "_round: %A" _round
                 sprintf "_step: %A" _step
-                sprintf "_decisions: %A" _decisions
                 sprintf "_lockedBlockSignatures: %A" _lockedBlockSignatures
                 sprintf "_lockedBlock: %A" _lockedBlock
                 sprintf "_lockedRound: %A" _lockedRound
                 sprintf "_validBlock: %A" _validBlock
                 sprintf "_validRound: %A" _validRound
+                sprintf "_decisions: %A" _decisions
+                sprintf "_scheduledTimeouts: %A" (_scheduledTimeouts |> Seq.toList)
                 sprintf "_proposals: %A" (_proposals |> List.ofDict)
                 sprintf "_votes: %A" (_votes |> List.ofDict)
                 sprintf "_commits: %A" (_commits |> List.ofDict)
