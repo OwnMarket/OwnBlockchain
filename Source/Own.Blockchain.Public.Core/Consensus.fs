@@ -834,10 +834,14 @@ module Consensus =
                 sprintf "_qualifiedMajority: %A" _qualifiedMajority
                 sprintf "_validQuorum: %A" _validQuorum
 
+                sprintf "_voteTimeoutScheduled: %A" _voteTimeoutScheduled
+                sprintf "_commitTimeoutScheduled: %A" _commitTimeoutScheduled
+
                 sprintf "_blockNumber: %A" _blockNumber
                 sprintf "_round: %A" _round
                 sprintf "_step: %A" _step
                 sprintf "_decisions: %A" _decisions
+                sprintf "_lockedBlockSignatures: %A" _lockedBlockSignatures
                 sprintf "_lockedBlock: %A" _lockedBlock
                 sprintf "_lockedRound: %A" _lockedRound
                 sprintf "_validBlock: %A" _validBlock
