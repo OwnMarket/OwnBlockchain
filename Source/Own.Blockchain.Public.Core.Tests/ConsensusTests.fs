@@ -1116,6 +1116,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.IsTimeoutScheduled(validators.[3], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) |> not @>
         test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Commit @>
 
+        // Stale round detected
         net.RequestConsensusState validators.[0]
 
         test <@ net.Messages.Count = 1 @>
