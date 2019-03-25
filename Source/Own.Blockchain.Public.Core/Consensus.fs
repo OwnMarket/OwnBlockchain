@@ -828,6 +828,25 @@ module Consensus =
         member __.MessageCounts
             with get () = _proposals.Count, _votes.Count, _commits.Count
 
+        member __.MessageCountsInRound consensusRound =
+            let proposeCount =
+                _proposals
+                |> Seq.ofDict
+                |> Seq.filter (fun ((b, r, _), _) -> b = _blockNumber && r = consensusRound)
+                |> Seq.length
+            let voteCount =
+                _votes
+                |> Seq.ofDict
+                |> Seq.filter (fun ((b, r, _), _) -> b = _blockNumber && r = consensusRound)
+                |> Seq.length
+            let commitCount =
+                _commits
+                |> Seq.ofDict
+                |> Seq.filter (fun ((b, r, _), _) -> b = _blockNumber && r = consensusRound)
+                |> Seq.length
+
+            proposeCount, voteCount, commitCount
+
         member __.PrintCurrentState() =
             [
                 sprintf "_validators: %A" _validators

@@ -44,6 +44,11 @@ module ConsensusTestHelpers =
         | Propose _ -> true
         | _ -> false
 
+    let isVote (_, consensusMessageEnvelope : ConsensusMessageEnvelope) =
+        match consensusMessageEnvelope.ConsensusMessage with
+        | Vote _ -> true
+        | _ -> false
+
     let isVoteForBlock (_, consensusMessageEnvelope : ConsensusMessageEnvelope) =
         match consensusMessageEnvelope.ConsensusMessage with
         | Vote (Some _) -> true
@@ -52,6 +57,11 @@ module ConsensusTestHelpers =
     let isVoteForNone (_, consensusMessageEnvelope : ConsensusMessageEnvelope) =
         match consensusMessageEnvelope.ConsensusMessage with
         | Vote None -> true
+        | _ -> false
+
+    let isCommit (_, consensusMessageEnvelope : ConsensusMessageEnvelope) =
+        match consensusMessageEnvelope.ConsensusMessage with
+        | Commit _ -> true
         | _ -> false
 
     let isCommitForBlock (_, consensusMessageEnvelope : ConsensusMessageEnvelope) =
