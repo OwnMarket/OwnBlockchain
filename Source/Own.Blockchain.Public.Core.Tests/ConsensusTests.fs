@@ -1453,6 +1453,70 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
+    member __.``Consensus - BFT - T1`` () =
+        // ARRANGE
+        let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+
+        let net = new ConsensusSimulationNetwork(validators)
+
+        // ACT
+        net.StartConsensus()
+
+        // V1 doesn't propose a block
+        net.Messages.Clear()
+        for v in validators do
+            test <@ net.States.[v].Variables.ConsensusStep = ConsensusStep.Propose @>
+            test <@ net.IsTimeoutScheduled(v, BlockNumber 1L, ConsensusRound 0, ConsensusStep.Propose) @>
+            net.TriggerScheduledTimeout(v, BlockNumber 1L, ConsensusRound 0, ConsensusStep.Propose)
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages |> Seq.forall isVoteForNone @>
+
+        net.DeliverMessages() // Deliver Vote messages
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages |> Seq.forall isCommitForNone @>
+
+        net.DeliverMessages() // Deliver Commit messages
+        test <@ net.Messages.Count = 0 @>
+        for v in validators do
+            test <@ net.States.[v].Variables.ConsensusStep = ConsensusStep.Commit @>
+            test <@ net.IsTimeoutScheduled(v, BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
+            net.TriggerScheduledTimeout(v, BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+            test <@ net.States.[v].Variables.ConsensusRound.Value = 1 @>
+
+        // V2 proposes
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[2] @>
+        let proposedBlock2 =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock2.Header.Number = BlockNumber 1L @>
+
+        net.DeliverMessages() // Deliver Propose message
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        net.DeliverMessages() // Deliver Vote messages
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
+
+        net.DeliverMessages() // Deliver Commit messages
+        test <@ net.Messages.Count = 1 @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Decisions.[validators.[0]].[BlockNumber 1L] = proposedBlock2 @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock2 @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock2 @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock2 @>
+
+        net, proposedBlock2 // Return the simulation state for dependent tests.
+
+    [<Fact>]
     member __.``Consensus - BFT - TLB`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
@@ -1766,4 +1830,4 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock2 @>
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock2 @>
 
-        net, proposedBlock1 // Return the simulation state for dependent tests.
+        net, proposedBlock2 // Return the simulation state for dependent tests.
