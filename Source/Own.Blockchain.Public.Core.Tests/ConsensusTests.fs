@@ -1451,3 +1451,319 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
+
+    [<Fact>]
+    member __.``Consensus - BFT - TLB`` () =
+        // ARRANGE
+        let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+
+        let net = new ConsensusSimulationNetwork(validators)
+
+        // ACT
+        net.StartConsensus()
+
+        // --- ROUND 0 ---
+
+        // V1 proposes B1
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
+        let proposedBlock1 =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock1.Header.Number = BlockNumber 1L @>
+
+        // PROPOSE(B1) delivered to V1, V2, V3
+        net.DeliverMessages(fun (s, r, m) -> r <> validators.[0])
+
+        // V1, V2, V3 send VOTE(B1)
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v <> validators.[0]) @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        // V0 times out and sends VOTE(nil)
+        test <@ net.States.[validators.[0]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.IsTimeoutScheduled(validators.[0], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Propose) @>
+        net.TriggerScheduledTimeout(validators.[0], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Propose)
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages.[3] |> fst = validators.[0] @>
+        test <@ net.Messages.[3] |> isVoteForNone @>
+        test <@ (net.Messages.[3] |> snd).Round.Value = 0 @>
+
+        // V1 receives all VOTEs for B1 and locks on it
+        net.DeliverMessages(
+            (fun (s, r, m) -> s <> validators.[0] && r = validators.[1]), // Deliver
+            (fun (s, r, m) -> s = validators.[0] || r <> validators.[1]) // Delay
+        )
+        test <@ net.Messages.Count = 5 @>
+        test <@ net.Messages.[4] |> fst = validators.[1] @>
+        test <@ net.Messages.[4] |> isCommitForBlock @>
+        test <@ net.States.[validators.[1]].Variables.LockedBlock = Some proposedBlock1 @>
+        test <@ net.States.[validators.[1]].Variables.LockedRound.Value = 0 @>
+
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 0) = (0, 1, 0) @>
+        test <@ net.States.[validators.[1]].MessageCountsInRound (ConsensusRound 0) = (1, 3, 0) @>
+        test <@ net.States.[validators.[2]].MessageCountsInRound (ConsensusRound 0) = (1, 1, 0) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 0) = (1, 1, 0) @>
+
+        // V1 crashes
+        net.CrashValidator validators.[1]
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v <> validators.[1]) @>
+        for (v, m) in net.Messages do
+            if v = validators.[0] then
+                test <@ isVoteForNone (v, m) @>
+            else
+                test <@ isVoteForBlock (v, m) @>
+
+        // V0, V2, V3 receive 2 VOTE(B1) and 1 VOTE(nil)
+        net.DeliverMessages()
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 0) = (0, 3, 0) @>
+        test <@ net.States.[validators.[2]].MessageCountsInRound (ConsensusRound 0) = (1, 3, 0) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 0) = (1, 3, 0) @>
+        for i in [0; 2; 3] do
+            let v = validators.[i]
+            test <@ net.States.[v].Votes |> List.filter (fun (_, (bh, _)) -> bh.IsNone) |> List.length = 1 @>
+            test <@ net.States.[v].Votes |> List.filter (fun (_, (bh, _)) -> bh.IsSome) |> List.length = 2 @>
+
+        // V0, V2, V3 timeout and send COMMIT(nil)
+        test <@ net.Messages.Count = 0 @> // No more pending messages
+        for i in [0; 2; 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote) @>
+            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote)
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v <> validators.[1]) @>
+        test <@ net.Messages |> Seq.forall isCommitForNone @>
+        net.DeliverMessages()
+
+        // V0, V2, V3 timeout and move to next round
+        test <@ net.Messages.Count = 0 @> // No more pending messages
+        for i in [0; 2; 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
+            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 1 @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v = validators.[2]) @>
+        test <@ net.Messages |> Seq.forall isPropose @>
+
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 0) = (0, 3, 3) @>
+        test <@ net.States.[validators.[2]].MessageCountsInRound (ConsensusRound 0) = (1, 3, 3) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 0) = (1, 3, 3) @>
+
+        // --- ROUND 1 ---
+
+        // V1 recovers
+        net.RecoverValidator validators.[1]
+        test <@ net.Messages.Count = 1 @> // There's stil only V2's proposal pending
+
+        // V1 moves to next round
+        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.IsTimeoutScheduled(validators.[1], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
+        net.TriggerScheduledTimeout(validators.[1], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+        test <@ net.States.[validators.[1]].Variables.ConsensusRound.Value = 1 @>
+
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 1) = (0, 0, 0) @>
+        test <@ net.States.[validators.[1]].MessageCountsInRound (ConsensusRound 1) = (0, 0, 0) @>
+        test <@ net.States.[validators.[2]].MessageCountsInRound (ConsensusRound 1) = (0, 0, 0) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 1) = (0, 0, 0) @>
+
+        // V2 proposes B2
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[2] @>
+        let proposedBlock2 =
+            net.Messages.[0]
+            |> snd
+            |> fun m -> m.ConsensusMessage
+            |> function Propose (block, _) -> block | _ -> failwith "Propose message expected"
+        test <@ proposedBlock2.Header.Hash <> proposedBlock1.Header.Hash @>
+        test <@ proposedBlock2.Header.Number = BlockNumber 1L @>
+
+        // PROPOSE(B2) delivered to V0, V2, V3
+        net.DeliverMessages(fun (s, r, m) -> r <> validators.[1])
+
+        // V0, V2, V3 send VOTE(B2)
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v <> validators.[1]) @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        // V1 times out and sends VOTE(nil)
+        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.IsTimeoutScheduled(validators.[1], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Propose) @>
+        net.TriggerScheduledTimeout(validators.[1], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Propose)
+        test <@ net.Messages.Count = 4 @>
+        test <@ net.Messages.[3] |> fst = validators.[1] @>
+        test <@ net.Messages.[3] |> isVoteForNone @>
+        test <@ (net.Messages.[3] |> snd).Round.Value = 1 @>
+
+        // V2 receives all VOTEs for B2 and locks on it
+        net.DeliverMessages(
+            (fun (s, r, m) -> s <> validators.[1] && r = validators.[2]), // Deliver
+            (fun (s, r, m) -> s = validators.[1] || r <> validators.[2]) // Delay
+        )
+        test <@ net.Messages.Count = 5 @>
+        test <@ net.Messages.[4] |> fst = validators.[2] @>
+        test <@ net.Messages.[4] |> isCommitForBlock @>
+        test <@ net.States.[validators.[2]].Variables.LockedBlock = Some proposedBlock2 @>
+        test <@ net.States.[validators.[2]].Variables.LockedRound.Value = 1 @>
+
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 1) = (1, 1, 0) @>
+        test <@ net.States.[validators.[1]].MessageCountsInRound (ConsensusRound 1) = (0, 1, 0) @>
+        test <@ net.States.[validators.[2]].MessageCountsInRound (ConsensusRound 1) = (1, 3, 0) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 1) = (1, 1, 0) @>
+
+        // V2 crashes
+        net.CrashValidator validators.[2]
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v <> validators.[2]) @>
+        for (v, m) in net.Messages do
+            if v = validators.[1] then
+                test <@ isVoteForNone (v, m) @>
+            else
+                test <@ isVoteForBlock (v, m) @>
+
+        // V0, V1, V3 receive 2 VOTE(B2) and 1 VOTE(nil)
+        net.DeliverMessages()
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 1) = (1, 3, 0) @>
+        test <@ net.States.[validators.[1]].MessageCountsInRound (ConsensusRound 1) = (0, 3, 0) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 1) = (1, 3, 0) @>
+        for i in [0; 1; 3] do
+            let v = validators.[i]
+            let votesForNone =
+                net.States.[v].Votes
+                |> List.filter (fun ((_, r, _), (bh, _)) -> r.Value = 1 && bh.IsNone)
+                |> List.length
+            let votesForSome =
+                net.States.[v].Votes
+                |> List.filter (fun ((_, r, _), (bh, _)) -> r.Value = 1 && bh.IsSome)
+                |> List.length
+            test <@ votesForNone = 1 @>
+            test <@ votesForSome = 2 @>
+
+        // V0, V1, V3 timeout and send COMMIT(nil)
+        test <@ net.Messages.Count = 0 @> // No more pending messages
+        for i in [0; 1; 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Vote) @>
+            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Vote)
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v <> validators.[2]) @>
+        test <@ net.Messages |> Seq.forall isCommitForNone @>
+        net.DeliverMessages()
+
+        // V0, V1, V3 timeout and move to next round
+        test <@ net.Messages.Count = 0 @> // No more pending messages
+        for i in [0; 1; 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit) @>
+            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit)
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 2 @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages |> Seq.forall (fun (v, _) -> v = validators.[3]) @>
+        test <@ net.Messages |> Seq.forall isPropose @>
+
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 1) = (1, 3, 3) @>
+        test <@ net.States.[validators.[1]].MessageCountsInRound (ConsensusRound 1) = (0, 3, 3) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 1) = (1, 3, 3) @>
+
+        // --- ROUND 2 ---
+
+        // V2 recovers
+        net.RecoverValidator validators.[2]
+        test <@ net.Messages.Count = 1 @> // There's stil only V3's proposal pending
+
+        // V1 moves to next round
+        test <@ net.States.[validators.[2]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.IsTimeoutScheduled(validators.[2], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit) @>
+        net.TriggerScheduledTimeout(validators.[2], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit)
+        test <@ net.States.[validators.[2]].Variables.ConsensusRound.Value = 2 @>
+
+        test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 2) = (0, 0, 0) @>
+        test <@ net.States.[validators.[1]].MessageCountsInRound (ConsensusRound 2) = (0, 0, 0) @>
+        test <@ net.States.[validators.[2]].MessageCountsInRound (ConsensusRound 2) = (0, 0, 0) @>
+        test <@ net.States.[validators.[3]].MessageCountsInRound (ConsensusRound 2) = (0, 0, 0) @>
+
+        // V0 crashes
+        net.CrashValidator validators.[0]
+
+        test <@ net.States.[validators.[1]].Variables.LockedBlock = Some proposedBlock1 @>
+        test <@ net.States.[validators.[1]].Variables.LockedRound.Value = 0 @>
+        test <@ net.States.[validators.[2]].Variables.LockedBlock = Some proposedBlock2 @>
+        test <@ net.States.[validators.[2]].Variables.LockedRound.Value = 1 @>
+        test <@ net.States.[validators.[3]].Variables.LockedBlock = None @>
+        test <@ net.States.[validators.[3]].Variables.LockedRound.Value = -1 @>
+
+        // V1, V2, V3 don't make progres in height
+        while net.DecisionCount <> 3 && net.States.[validators.[3]].Variables.ConsensusRound.Value < 10 do
+            let r =
+                [1 .. 3]
+                |> List.map (fun i -> net.States.[validators.[i]].Variables.ConsensusRound)
+                |> List.distinct
+                |> List.exactlyOne
+            let proposer = validators |> Validators.getProposer (BlockNumber 1L) r
+            if proposer = validators.[0] then
+                for i in [1 .. 3] |> List.shuffle do
+                    test <@ net.States.[validators.[i]].Variables.ConsensusRound = r @>
+                    test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+                    test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Propose) @>
+                    net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Propose)
+                test <@ net.Messages.Count = 3 @>
+                test <@ net.Messages |> Seq.forall isVoteForNone @>
+
+                net.DeliverMessages() // Deliver votes
+            else
+                net.DeliverMessages() // Deliver proposal
+                test <@ net.Messages.Count = 3 @>
+                test <@ net.Messages |> Seq.forall isVote @>
+
+                net.DeliverMessages() // Deliver votes
+                test <@ net.Messages.Count = 0 @>
+                for i in [1 .. 3] |> List.shuffle do
+                    test <@ net.States.[validators.[i]].Variables.ConsensusRound = r @>
+                    test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+                    test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Vote) @>
+                    net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Vote)
+
+            test <@ net.Messages.Count = 3 @>
+            test <@ net.Messages |> Seq.forall isCommitForNone @>
+            net.DeliverMessages() // Deliver commits
+
+            for i in [1 .. 3] |> List.shuffle do
+                test <@ net.States.[validators.[i]].Variables.ConsensusRound = r @>
+                test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
+                test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Commit) @>
+                net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Commit)
+
+            for i in [1 .. 3] do
+                test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = r.Value + 1 @>
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 10 @>
+
+        // Stale height detected
+        net.RequestConsensusState validators.[1]
+
+        // V1, V2, V3 decide B2
+        while net.DecisionCount <> 3 do
+            net.DeliverMessages()
+            if net.Messages.Count = 0 then
+                for i in [1 .. 3] |> List.shuffle do
+                    let r = net.States.[validators.[i]].Variables.ConsensusRound
+                    let s = net.States.[validators.[i]].Variables.ConsensusStep
+                    if net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, s) then
+                        net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, s)
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.DecisionCount = 3 @>
+        test <@ net.Decisions.[validators.[0]].Count = 0 @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock2 @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock2 @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock2 @>
+
+        net, proposedBlock1 // Return the simulation state for dependent tests.
