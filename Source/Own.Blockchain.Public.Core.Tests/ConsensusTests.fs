@@ -488,7 +488,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: CF1`` () =
+    member __.``Consensus - BFT - CF1`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
@@ -543,9 +543,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: CF2`` () =
+    member __.``Consensus - BFT - CF2`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF1`` ()
+        let net, proposedBlock = __.``Consensus - BFT - CF1`` ()
         let validators = net.Validators
 
         // ACT
@@ -562,7 +562,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: CF3`` () =
+    member __.``Consensus - BFT - CF3`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
@@ -625,9 +625,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: CF4`` () =
+    member __.``Consensus - BFT - CF4`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF3`` ()
+        let net, proposedBlock = __.``Consensus - BFT - CF3`` ()
         let validators = net.Validators
 
         // ACT
@@ -653,9 +653,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: CF4a`` () =
+    member __.``Consensus - BFT - CF4a`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF3`` ()
+        let net, proposedBlock = __.``Consensus - BFT - CF3`` ()
         let validators = net.Validators
 
         // ACT
@@ -693,9 +693,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: MF1`` () =
+    member __.``Consensus - BFT - MF1`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF3`` ()
+        let net, proposedBlock = __.``Consensus - BFT - CF3`` ()
         let validators = net.Validators
 
         // ACT
@@ -803,7 +803,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: CF5`` () =
+    member __.``Consensus - BFT - CF5`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
@@ -867,9 +867,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: CL1`` () =
+    member __.``Consensus - BFT - CL1`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF5`` ()
+        let net, proposedBlock = __.``Consensus - BFT - CF5`` ()
         let validators = net.Validators
 
         // ACT
@@ -909,9 +909,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: AC1`` () =
+    member __.``Consensus - BFT - AC1`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF5`` ()
+        let net, proposedBlock = __.``Consensus - BFT - CF5`` ()
         let validators = net.Validators
 
         // ACT
@@ -968,9 +968,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: AC2`` () =
+    member __.``Consensus - BFT - AC2`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: CF5`` ()
+        let net, proposedBlock = __.``Consensus - BFT - CF5`` ()
         let validators = net.Validators
 
         // ACT
@@ -1015,9 +1015,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: AC3`` () =
+    member __.``Consensus - BFT - AC3`` () =
         // ARRANGE
-        let net, proposedBlock = __.``Consensus - Distributed Test Cases: AC2`` ()
+        let net, proposedBlock = __.``Consensus - BFT - AC2`` ()
         let validators = net.Validators
 
         // ACT
@@ -1041,7 +1041,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: AC4`` () =
+    member __.``Consensus - BFT - AC4`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
@@ -1146,7 +1146,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: ML1`` () =
+    member __.``Consensus - BFT - ML1`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
@@ -1264,7 +1264,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: ML2`` () =
+    member __.``Consensus - BFT - ML2`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
@@ -1386,7 +1386,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock // Return the simulation state for dependent tests.
 
     [<Fact>]
-    member __.``Consensus - Distributed Test Cases: MF2`` () =
+    member __.``Consensus - BFT - MF2`` () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
