@@ -502,7 +502,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.CrashValidator validators.[3]
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages.[0] |> fst = proposer @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
         let proposedBlock =
             net.Messages.[0]
             |> snd
@@ -576,7 +576,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.CrashValidator validators.[3]
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages.[0] |> fst = proposer @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
         let proposedBlock =
             net.Messages.[0]
             |> snd
@@ -817,7 +817,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.CrashValidator validators.[3]
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages.[0] |> fst = proposer @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
         let proposedBlock =
             net.Messages.[0]
             |> snd
@@ -1056,7 +1056,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.CrashValidator validators.[3]
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages.[0] |> fst = proposer @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
         let proposedBlock =
             net.Messages.[0]
             |> snd
@@ -1158,7 +1158,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.StartConsensus()
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages.[0] |> fst = proposer @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
         let proposedBlock =
             net.Messages.[0]
             |> snd
@@ -1276,7 +1276,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.StartConsensus()
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages.[0] |> fst = proposer @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
         let proposedBlock =
             net.Messages.[0]
             |> snd
@@ -1398,7 +1398,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.StartConsensus()
 
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages.[0] |> fst = proposer @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
         let proposedBlock =
             net.Messages.[0]
             |> snd
