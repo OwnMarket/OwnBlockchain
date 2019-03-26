@@ -1780,9 +1780,42 @@ type ConsensusTests(output : ITestOutputHelper) =
 
                 net.DeliverMessages() // Deliver votes
             else
+                test <@ net.Messages.Count = 1 @>
+                let proposal = (net.Messages.[0] |> snd).ConsensusMessage
                 net.DeliverMessages() // Deliver proposal
                 test <@ net.Messages.Count = 3 @>
                 test <@ net.Messages |> Seq.forall isVote @>
+                test <@ net.Messages |> Seq.map (fun (_, s) -> s.ConsensusMessage) |> Seq.distinct |> Seq.length = 2 @>
+                if proposer = validators.[1] then
+                    test <@ net.Messages |> Seq.filter isVoteForNone |> Seq.length = 1 @>
+                    test <@ net.Messages |> Seq.filter isVoteForBlock |> Seq.length = 2 @>
+                    let voteForBlock =
+                        net.Messages
+                        |> Seq.filter isVoteForBlock
+                        |> Seq.map (fun (_, s) -> s.ConsensusMessage)
+                        |> Seq.distinct
+                        |> Seq.exactlyOne
+                    test <@ voteForBlock = Vote (Some proposedBlock1.Header.Hash) @>
+                elif proposer = validators.[2] then
+                    test <@ net.Messages |> Seq.filter isVoteForNone |> Seq.length = 1 @>
+                    test <@ net.Messages |> Seq.filter isVoteForBlock |> Seq.length = 2 @>
+                    let voteForBlock =
+                        net.Messages
+                        |> Seq.filter isVoteForBlock
+                        |> Seq.map (fun (_, s) -> s.ConsensusMessage)
+                        |> Seq.distinct
+                        |> Seq.exactlyOne
+                    test <@ voteForBlock = Vote (Some proposedBlock2.Header.Hash) @>
+                else
+                    test <@ net.Messages |> Seq.filter isVoteForNone |> Seq.length = 2 @>
+                    test <@ net.Messages |> Seq.filter isVoteForBlock |> Seq.length = 1 @>
+                    let voteForBlock =
+                        net.Messages
+                        |> Seq.filter isVoteForBlock
+                        |> Seq.map (fun (_, s) -> s.ConsensusMessage)
+                        |> Seq.exactlyOne
+                    test <@ voteForBlock <> Vote (Some proposedBlock1.Header.Hash) @>
+                    test <@ voteForBlock <> Vote (Some proposedBlock2.Header.Hash) @>
 
                 net.DeliverMessages() // Deliver votes
                 test <@ net.Messages.Count = 0 @>
