@@ -11,6 +11,7 @@
         <Compile Include="HashingTests.fs" />
         <Compile Include="MerkleTreeTests.fs" />
         <Compile Include="SigningTests.fs" />
+        <Compile Include="HdCryptoTests.fs" />
     </ItemGroup>
 
     <ItemGroup>
