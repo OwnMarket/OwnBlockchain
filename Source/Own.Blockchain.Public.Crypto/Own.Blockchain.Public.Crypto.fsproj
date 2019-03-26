@@ -10,6 +10,7 @@
         <Compile Include="Hashing.fs" />
         <Compile Include="Secp256k1.fs" />
         <Compile Include="Signing.fs" />
+        <Compile Include="HdCrypto.fs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="NBitcoin" Version="4.1.1.93" />
         <PackageReference Include="Secp256k1.Net" Version="0.1.48" />
         <PackageReference Include="SimpleBase" Version="1.8.0" />
     </ItemGroup>
