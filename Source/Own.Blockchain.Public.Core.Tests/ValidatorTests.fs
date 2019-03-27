@@ -108,6 +108,7 @@ module ValidatorTests =
             {
                 BlockchainConfiguration.ConfigurationBlockDelta = 10
                 Validators = [validatorSnapshot]
+                ValidatorsBlacklist = []
                 ValidatorDepositLockTime = Helpers.validatorDepositLockTime
                 ValidatorBlacklistTime = Helpers.validatorBlacklistTime
                 MaxTxCountPerBlock = 1000
@@ -198,6 +199,7 @@ module ValidatorTests =
             {
                 BlockchainConfiguration.ConfigurationBlockDelta = 10
                 Validators = [validatorSnapshot]
+                ValidatorsBlacklist = []
                 ValidatorDepositLockTime = Helpers.validatorDepositLockTime
                 ValidatorBlacklistTime = Helpers.validatorBlacklistTime
                 MaxTxCountPerBlock = 1000

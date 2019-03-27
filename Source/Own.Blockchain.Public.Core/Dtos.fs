@@ -185,9 +185,10 @@ type ValidatorSnapshotDto = {
 type BlockchainConfigurationDto = {
     [<Key(0)>] ConfigurationBlockDelta : int
     [<Key(1)>] Validators : ValidatorSnapshotDto list
-    [<Key(2)>] ValidatorDepositLockTime : int16
-    [<Key(3)>] ValidatorBlacklistTime : int16
-    [<Key(4)>] MaxTxCountPerBlock : int
+    [<Key(2)>] ValidatorsBlacklist : string list
+    [<Key(3)>] ValidatorDepositLockTime : int16
+    [<Key(4)>] ValidatorBlacklistTime : int16
+    [<Key(5)>] MaxTxCountPerBlock : int
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

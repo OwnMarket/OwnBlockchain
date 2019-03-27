@@ -89,6 +89,7 @@ module Composition =
     let getAllValidators () = Db.getAllValidators Config.DbEngineType Config.DbConnectionString
     let getValidatorState = Db.getValidatorState Config.DbEngineType Config.DbConnectionString
     let getTopValidatorsByStake = Db.getTopValidatorsByStake Config.DbEngineType Config.DbConnectionString
+    let getBlacklistedValidators () = Db.getBlacklistedValidators Config.DbEngineType Config.DbConnectionString
     let getLockedAndBlacklistedValidators () =
         Db.getLockedAndBlacklistedValidators Config.DbEngineType Config.DbConnectionString
 
@@ -163,7 +164,9 @@ module Composition =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let createNewBlockchainConfiguration =
-        Blocks.createNewBlockchainConfiguration getTopValidators
+        Blocks.createNewBlockchainConfiguration
+            getTopValidators
+            getBlacklistedValidators
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain

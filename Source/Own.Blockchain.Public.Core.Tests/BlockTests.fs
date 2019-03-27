@@ -598,6 +598,11 @@ module BlockTests =
                             TotalStake = ChxAmount 6m
                         }
                     ]
+                ValidatorsBlacklist =
+                    [
+                        BlockchainAddress "DD"
+                        BlockchainAddress "EE"
+                    ]
                 ValidatorDepositLockTime = 7s
                 ValidatorBlacklistTime = 8s
                 MaxTxCountPerBlock = 9
@@ -671,6 +676,8 @@ module BlockTests =
                 "AAAAAGGG...A...............D............" // Validator 1
                 "BBBBBHHH...B...............E............" // Validator 2
                 "CCCCCIII...C...............F............" // Validator 3
+                "DD" // Blacklisted validator 1
+                "EE" // Blacklisted validator 2
                 ".G" // ValidatorDepositLockTime
                 ".H" // ValidatorBlacklistTime
                 "...I" // MaxTxCountPerBlock

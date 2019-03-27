@@ -354,6 +354,7 @@ module Mapping =
         {
             BlockchainConfiguration.ConfigurationBlockDelta = dto.ConfigurationBlockDelta
             Validators = dto.Validators |> List.map validatorSnapshotFromDto
+            ValidatorsBlacklist = dto.ValidatorsBlacklist |> List.map BlockchainAddress
             ValidatorDepositLockTime = dto.ValidatorDepositLockTime
             ValidatorBlacklistTime = dto.ValidatorBlacklistTime
             MaxTxCountPerBlock = dto.MaxTxCountPerBlock
@@ -363,6 +364,7 @@ module Mapping =
         {
             BlockchainConfigurationDto.ConfigurationBlockDelta = config.ConfigurationBlockDelta
             Validators = config.Validators |> List.map validatorSnapshotToDto
+            ValidatorsBlacklist = config.ValidatorsBlacklist |> List.map (fun a -> a.Value)
             ValidatorDepositLockTime = config.ValidatorDepositLockTime
             ValidatorBlacklistTime = config.ValidatorBlacklistTime
             MaxTxCountPerBlock = config.MaxTxCountPerBlock

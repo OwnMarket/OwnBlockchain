@@ -239,9 +239,15 @@ module Blocks =
                 |> List.sortBy (fun v -> v.ValidatorAddress) // Ensure a predictable order
                 |> List.map (createValidatorSnapshotHash decodeHash createHash)
 
+            let blacklistedValidatorAddressHashes =
+                c.ValidatorsBlacklist
+                |> List.sort // Ensure a predictable order
+                |> List.map (fun a -> a.Value |> decodeHash |> createHash)
+
             [
                 yield c.ConfigurationBlockDelta |> int32ToBytes |> createHash
                 yield! validatorSnapshotHashes
+                yield! blacklistedValidatorAddressHashes
                 yield c.ValidatorDepositLockTime |> int16ToBytes |> createHash
                 yield c.ValidatorBlacklistTime |> int16ToBytes |> createHash
                 yield c.MaxTxCountPerBlock |> int32ToBytes |> createHash
@@ -547,6 +553,7 @@ module Blocks =
             {
                 BlockchainConfiguration.ConfigurationBlockDelta = configurationBlockDelta
                 Validators = validatorSnapshots
+                ValidatorsBlacklist = []
                 ValidatorDepositLockTime = validatorDepositLockTime
                 ValidatorBlacklistTime = validatorBlacklistTime
                 MaxTxCountPerBlock = maxTxCountPerBlock
@@ -691,6 +698,7 @@ module Blocks =
 
     let createNewBlockchainConfiguration
         (getTopValidators : unit -> ValidatorSnapshot list)
+        (getBlacklistedValidators : unit -> BlockchainAddress list)
         configurationBlockDelta
         validatorDepositLockTime
         validatorBlacklistTime
@@ -698,10 +706,12 @@ module Blocks =
         =
 
         let validators = getTopValidators ()
+        let blacklistedValidators = getBlacklistedValidators () |> List.sort
 
         {
             BlockchainConfiguration.ConfigurationBlockDelta = configurationBlockDelta
             Validators = validators
+            ValidatorsBlacklist = blacklistedValidators
             ValidatorDepositLockTime = validatorDepositLockTime
             ValidatorBlacklistTime = validatorBlacklistTime
             MaxTxCountPerBlock = maxTxCountPerBlock
