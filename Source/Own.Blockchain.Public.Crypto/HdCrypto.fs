@@ -82,4 +82,4 @@ module HdCrypto =
 
     let restoreWalletsFromSeed bip39Seed startIndex walletCount =
         let generate = generateWallet bip39Seed
-        [startIndex .. (startIndex + walletCount)] |> List.map (uint32 >> generate)
+        [startIndex .. (startIndex + walletCount - 1)] |> List.map (uint32 >> generate)

@@ -33,10 +33,9 @@ module HdCryptoTests =
     let ``HdCrypto.recoverMasterExtKeyFromSeed`` () =
         // ARRANGE
         let mnemonic = HdCrypto.generateMnemonic WordCount.Eighteen
-
-        // ACT
         let seed = HdCrypto.generateSeedFromMnemonic mnemonic passphrase
 
+        // ACT
         let masterPrivateKey =
             HdCrypto.recoverMasterExtKeyFromMnemonic (mnemonic.ToString()) passphrase
             |> Option.map HdCrypto.toPrivateKey
@@ -47,3 +46,16 @@ module HdCryptoTests =
 
         // ASSERT
         test <@ masterPrivateKey = masterPrivateKeyFromSeed @>
+
+    [<Fact>]
+    let ``HdCrypto.generateWallet and restoreWallet`` () =
+        // ARRANGE
+        let mnemonic = HdCrypto.generateMnemonic WordCount.Eighteen
+        let seed = HdCrypto.generateSeedFromMnemonic mnemonic passphrase
+
+        // ACT
+        let wallet0 = HdCrypto.generateWallet seed 3u
+        let restoredWallets = HdCrypto.restoreWalletsFromSeed seed 3 1
+
+        // ASSERT
+        test <@ wallet0 = restoredWallets.Head @>
