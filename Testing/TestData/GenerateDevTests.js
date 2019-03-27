@@ -7,7 +7,7 @@ const chainiumSdk = require('chainium-sdk/src/index')
 
 const networkCode = "OWN_PUBLIC_BLOCKCHAIN_DEVNET"
 const genesisPrivateKey = "ZXXkM41yHhkzb2k5KjeWuGCzYj7AXAfJdMXqKM4TGKq"
-const genesisAddress = "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg"
+const genesisAddress = chainiumSdk.crypto.addressFromPrivateKey(genesisPrivateKey)
 
 const validatorAddresses =
     [

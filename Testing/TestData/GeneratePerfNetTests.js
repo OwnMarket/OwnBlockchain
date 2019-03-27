@@ -7,7 +7,7 @@ const chainiumSdk = require('chainium-sdk/src/index')
 
 const networkCode = 'OWN_PUBLIC_BLOCKCHAIN_PERFNET'
 const genesisPrivateKey = '5TYZaZhabnWPhqe7Tfy7ziY61JZZQH24nbf6cRhYDL6W'
-const genesisAddress = 'CHMEgFB4BEyQ5fEv5Ru42yZfQ5egnr776ih'
+const genesisAddress = chainiumSdk.crypto.addressFromPrivateKey(genesisPrivateKey)
 
 const nodeCount = 4
 const initialBalance = 10000
