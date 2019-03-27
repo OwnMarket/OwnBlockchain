@@ -1237,7 +1237,7 @@ module Workflows =
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
             let! tx = Validation.validateTx decodeHash isValidAddress maxActionCountPerTx senderAddress txHash txDto
 
-            // Txs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
+            // TXs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
             if not isIncludedInBlock then
                 if tx.ActionFee < minTxActionFee then
                     return! Result.appError "ActionFee is too low"
