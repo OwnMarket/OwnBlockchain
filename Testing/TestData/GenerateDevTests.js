@@ -25,7 +25,8 @@ const txsPerWallet = 10
 const actionsPerTx = 1
 const actionFee = 0.001
 
-const outputFile = "../run_test.sh"
+const outputDir = './Output'
+const outputFile = `${outputDir}/dev_test_run.sh`
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -118,6 +119,10 @@ function txToCommand(tx) {
 // Compose
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+if (!fs.existsSync(outputDir)){
+    fs.mkdirSync(outputDir)
+}
+
 const wallets = Array(walletCount).fill().map(_ => chainiumSdk.crypto.generateWallet())
 
 const initialTx = signTx(
@@ -126,6 +131,7 @@ const initialTx = signTx(
     composeInitialTx(validatorAddresses, wallets.map(w => w.address)))
 
 fs.writeFileSync(outputFile, txToCommand(initialTx))
+fs.chmodSync(outputFile, '777');
 fs.appendFileSync(outputFile, 'read -p "Press any key..."\n')
 
 for (const nonce of [...Array(txsPerWallet).keys()]) {
