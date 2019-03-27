@@ -33,6 +33,7 @@ module Blocks =
 
         let depositDistribution =
             equivocationProofResult.DepositDistribution
+            |> List.sortBy (fun d -> d.ValidatorAddress, d.Amount) // Ensure a predictable order
             |> List.map (fun d ->
                 [
                     d.ValidatorAddress.Value |> decodeHash
@@ -120,6 +121,7 @@ module Blocks =
         let stateHash =
             state
             |> Map.toList
+            |> List.sort // Ensure a predictable order
             |> List.collect (fun (k, v) -> [decodeHash k.Value; boolToBytes (v = KycProviderChange.Add)])
 
         decodeHash assetHash :: stateHash
