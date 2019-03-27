@@ -1215,6 +1215,7 @@ module Processing =
         (validatorAddress : BlockchainAddress)
         (sharedRewardPercent : decimal)
         (blockNumber : BlockNumber)
+        (blockTimestamp : Timestamp)
         (blockchainConfiguration : BlockchainConfiguration option)
         (equivocationProofs : EquivocationProofHash list)
         (txSet : TxHash list)
@@ -1249,15 +1250,20 @@ module Processing =
                     state.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
                     state
                 | Ok oldState ->
-                    let newState = oldState.Clone()
-                    match processTxActions tx.Sender tx.Nonce tx.Actions newState with
-                    | Error e ->
-                        oldState.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
-                        oldState.MergeStateAfterFailedTx(newState)
+                    if tx.ExpirationTime.Value > 0L && tx.ExpirationTime < blockTimestamp then
+                        let txError = TxError TxErrorCode.TxExpired
+                        oldState.SetTxResult(txHash, { Status = Failure txError; BlockNumber = blockNumber })
                         oldState
-                    | Ok state ->
-                        state.SetTxResult(txHash, { Status = Success; BlockNumber = blockNumber })
-                        state
+                    else
+                        let newState = oldState.Clone()
+                        match processTxActions tx.Sender tx.Nonce tx.Actions newState with
+                        | Error e ->
+                            oldState.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
+                            oldState.MergeStateAfterFailedTx(newState)
+                            oldState
+                        | Ok state ->
+                            state.SetTxResult(txHash, { Status = Success; BlockNumber = blockNumber })
+                            state
 
         let initialState =
             ProcessingState (

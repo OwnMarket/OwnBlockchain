@@ -127,6 +127,7 @@ type TxActionDto = {
 type TxDto = {
     SenderAddress : string
     Nonce : int64
+    ExpirationTime : int64
     ActionFee : decimal
     Actions : TxActionDto list
 }
@@ -600,6 +601,7 @@ type GetTxApiResponseDto = {
     TxHash : string
     SenderAddress : string
     Nonce : int64
+    ExpirationTime : int64
     ActionFee : decimal
     Actions : TxActionDto list
     Status : string

@@ -24,6 +24,7 @@ module SharedTests =
         {
             SenderAddress = senderAddress
             Nonce = nonce
+            ExpirationTime = 0L
             ActionFee = actionFee
             Actions = actions
         }

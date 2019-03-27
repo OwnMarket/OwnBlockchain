@@ -65,6 +65,7 @@ module Helpers =
     let newRawTxDto
         (BlockchainAddress senderAddress)
         (nonce : int64)
+        (expirationTime : int64)
         (actionFee : decimal)
         (actions : obj list)
         =
@@ -75,12 +76,14 @@ module Helpers =
                 {
                     SenderAddress: "%s",
                     Nonce: %i,
+                    ExpirationTime: %i,
                     ActionFee: %s,
                     Actions: %s
                 }
                 """
                 senderAddress
                 nonce
+                expirationTime
                 (actionFee.ToString())
                 (JsonConvert.SerializeObject(actions))
 
@@ -89,11 +92,12 @@ module Helpers =
     let newTx
         (sender : WalletInfo)
         (Nonce nonce)
+        (Timestamp expirationTime)
         (ChxAmount actionFee)
         (actions : obj list)
         =
 
-        let rawTx = newRawTxDto sender.Address nonce actionFee actions
+        let rawTx = newRawTxDto sender.Address nonce expirationTime actionFee actions
 
         let txHash =
             rawTx |> Hashing.hash |> TxHash
@@ -161,6 +165,7 @@ module Helpers =
             ValidatorAddress : BlockchainAddress
             SharedRewardPercent : decimal
             BlockNumber : BlockNumber
+            BlockTimestamp : Timestamp
             BlockchainConfiguration : BlockchainConfiguration option
             EquivocationProofs : EquivocationProofHash list
             TxSet : TxHash list
@@ -200,6 +205,7 @@ module Helpers =
             ValidatorAddress = BlockchainAddress ""
             SharedRewardPercent = 0m
             BlockNumber = BlockNumber 1L
+            BlockTimestamp = Timestamp 0L
             BlockchainConfiguration = None
             EquivocationProofs = []
             TxSet = []
@@ -237,6 +243,7 @@ module Helpers =
             mockedDeps.ValidatorAddress
             mockedDeps.SharedRewardPercent
             mockedDeps.BlockNumber
+            mockedDeps.BlockTimestamp
             mockedDeps.BlockchainConfiguration
             mockedDeps.EquivocationProofs
             mockedDeps.TxSet

@@ -11,6 +11,7 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
 {
     "senderAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "nonce": 1,
+    "expirationTime": 0,
     "actionFee": 0.001,
     "actions": [
         {
@@ -37,7 +38,8 @@ Transactions in the Own Public Blockchain are composed in the form of a JSON obj
 
 - `senderAddress` is the blockchain address corresponding to the private key used to sign the transaction.
 - `nonce` is an incrementing number (64-bit integer) representing the number of transactions coming from the `senderAddress`.
-- `fee` is a decimal number representing the fee **per action**, expressed in CHX (e.g. if the `fee` is set to 0.001 and the transaction has three actions, total fee paid for transaction will be 0.003 CHX)
+- `expirationTime` is the max block timestamp at which this transaction can be successfully processed. If expiration time is set to a number greater than zero and the transaction is included in the block with block timestamp greater than the expiration time, the transaction will fail with `TxExpired` error code.
+- `fee` is a decimal number representing the fee **per action**, expressed in CHX (e.g. if the fee is set to 0.001 and the transaction has three actions, total fee paid for transaction will be 0.003 CHX)
 - `actions` is an array of action objects, each representing one action that should be performed on the blockchain state.
 - `actionType` identifies the type of the action that should be performed against the blockchain state. There are following action types available:
     - [`TransferChx`](TxActions.md#transferchx)
@@ -68,8 +70,9 @@ Here is a sample transaction containing two actions:
 
 ```json
 {
-    "senderAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
+    "senderAddress": "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg",
     "nonce": 42,
+    "expirationTime": 0,
     "actionFee": 0.001,
     "actions": [
         {
@@ -85,7 +88,7 @@ Here is a sample transaction containing two actions:
                 "fromAccountHash": "wcpUPec7pNUKys9pkvPfhjkezekZ99GHpXavbS6M1R4",
                 "toAccountHash": "Fr5HoamTv7W598duwGQT3p9pqK5oHYjxWqWwycaeg1YC",
                 "assetHash": "BTXVBwuTXWTpPtJC71FPGaeC17NVhu9mS6JavqZqHbYH",
-                "amount": 12345.6789,
+                "amount": 12345.6789
             }
         }
     ]
@@ -112,8 +115,7 @@ Here is a transaction envelope created by signing the transaction from the examp
 
 ```json
 {
-    "tx":"ewogICAgInNlbmRlckFkZHJlc3MiOiAiQ0hMc1ZhWVNQSkdGaThCTkdkNnRQMVZ2QjhVZEtiVlJES0QiLAogICAgIm5vbmNlIjogNDIsCiAgICAiZmVlIjogMC4wMDEsCiAgICAiYWN0aW9ucyI6IFsKICAgICAgICB7CiAgICAgICAgICAgICJhY3Rpb25UeXBlIjogIlRyYW5zZmVyQ2h4IiwKICAgICAgICAgICAgImFjdGlvbkRhdGEiOiB7CiAgICAgICAgICAgICAgICAicmVjaXBpZW50QWRkcmVzcyI6ICJDSGZEZXVCMXkxZUpuV2Q2YVdmWWFSdnBTOVFncmgxZXFlNyIsCiAgICAgICAgICAgICAgICAiYW1vdW50IjogMTIzNC41Njc4OQogICAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAgICJhY3Rpb25UeXBlIjogIlRyYW5zZmVyQXNzZXQiLAogICAgICAgICAgICAiYWN0aW9uRGF0YSI6IHsKICAgICAgICAgICAgICAgICJmcm9tQWNjb3VudEhhc2giOiAid2NwVVBlYzdwTlVLeXM5cGt2UGZoamtlemVrWjk5R0hwWGF2YlM2TTFSNCIsCiAgICAgICAgICAgICAgICAidG9BY2NvdW50SGFzaCI6ICJGcjVIb2FtVHY3VzU5OGR1d0dRVDNwOXBxSzVvSFlqeFdxV3d5Y2FlZzFZQyIsCiAgICAgICAgICAgICAgICAiYXNzZXRIYXNoIjogIkJUWFZCd3VUWFdUcFB0SkM3MUZQR2FlQzE3TlZodTltUzZKYXZxWnFIYllIIiwKICAgICAgICAgICAgICAgICJhbW91bnQiOiAxMjM0NS42Nzg5LAogICAgICAgICAgICB9CiAgICAgICAgfQogICAgXQp9",
-    "signature":"EZy81BYb1W4AUgxhXmbQ89Zj8KNYYQCmTwZXE5eQBAopHyhtYDesAJk5cejvtjQJM588f85kdDdL85pwAdtqJi9p3"
+    "tx":"ewogICAgInNlbmRlckFkZHJlc3MiOiAiQ0hHZVFDMjNXalRoS29Eb1NiS1J1VUt2cTFFR2tCYUE1R2ciLAogICAgIm5vbmNlIjogNDIsCiAgICAiZXhwaXJhdGlvblRpbWUiOiAwLAogICAgImFjdGlvbkZlZSI6IDAuMDAxLAogICAgImFjdGlvbnMiOiBbCiAgICAgICAgewogICAgICAgICAgICAiYWN0aW9uVHlwZSI6ICJUcmFuc2ZlckNoeCIsCiAgICAgICAgICAgICJhY3Rpb25EYXRhIjogewogICAgICAgICAgICAgICAgInJlY2lwaWVudEFkZHJlc3MiOiAiQ0hmRGV1QjF5MWVKbldkNmFXZllhUnZwUzlRZ3JoMWVxZTciLAogICAgICAgICAgICAgICAgImFtb3VudCI6IDEyMzQuNTY3ODkKICAgICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgewogICAgICAgICAgICAiYWN0aW9uVHlwZSI6ICJUcmFuc2ZlckFzc2V0IiwKICAgICAgICAgICAgImFjdGlvbkRhdGEiOiB7CiAgICAgICAgICAgICAgICAiZnJvbUFjY291bnRIYXNoIjogIndjcFVQZWM3cE5VS3lzOXBrdlBmaGprZXpla1o5OUdIcFhhdmJTNk0xUjQiLAogICAgICAgICAgICAgICAgInRvQWNjb3VudEhhc2giOiAiRnI1SG9hbVR2N1c1OThkdXdHUVQzcDlwcUs1b0hZanhXcVd3eWNhZWcxWUMiLAogICAgICAgICAgICAgICAgImFzc2V0SGFzaCI6ICJCVFhWQnd1VFhXVHBQdEpDNzFGUEdhZUMxN05WaHU5bVM2SmF2cVpxSGJZSCIsCiAgICAgICAgICAgICAgICAiYW1vdW50IjogMTIzNDUuNjc4OQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgXQp9",   "signature":"PJD6p2TTcqwu2B6ueMEgkFhiWbSfha88pGnN88hrMoa6Y6fgj5o9rrdhQYVaaq5v8xjYaaEAuPnye8KNLTmzBRSa3"
 }
 ```
 

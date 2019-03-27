@@ -160,6 +160,7 @@ module Mapping =
             TxHash = hash
             Sender = sender
             Nonce = Nonce dto.Nonce
+            ExpirationTime = Timestamp dto.ExpirationTime
             ActionFee = ChxAmount dto.ActionFee
             Actions = dto.Actions |> List.map txActionFromDto
         }
@@ -689,6 +690,7 @@ module Mapping =
             TxHash = txHash
             SenderAddress = senderAddress
             Nonce = txDto.Nonce
+            ExpirationTime = txDto.ExpirationTime
             ActionFee = txDto.ActionFee
             Actions = txDto.Actions
             Status = txStatus |> txStatusNumberToString

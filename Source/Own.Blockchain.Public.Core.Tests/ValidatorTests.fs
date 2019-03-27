@@ -92,7 +92,7 @@ module ValidatorTests =
                     ActionData = CreateAccountTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -182,7 +182,7 @@ module ValidatorTests =
                     ActionData = CreateAccountTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -299,7 +299,7 @@ module ValidatorTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx validatorWallet nonce actionFee
+            |> Helpers.newTx validatorWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 

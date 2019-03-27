@@ -43,7 +43,7 @@ module SubmissionTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let expectedResult : Result<TxHash, AppErrors> = Error [AppError error]
 
@@ -120,7 +120,7 @@ module SubmissionTests =
                     ActionData = new CreateAccountTxActionDto ()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let expectedError = sprintf "Max allowed number of actions per transaction is %i" maxActionCountPerTx
         let expectedResult : Result<TxHash, AppErrors> = Error [AppError expectedError]

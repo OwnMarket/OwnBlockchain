@@ -78,8 +78,6 @@ type KycProvider = {
 // Tx
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type TxHash = TxHash of string
-
 type TransferChxTxAction = {
     RecipientAddress : BlockchainAddress
     Amount : ChxAmount
@@ -181,10 +179,14 @@ type TxAction =
     | AddKycProvider of AddKycProviderTxAction
     | RemoveKycProvider of RemoveKycProviderTxAction
 
+type TxHash = TxHash of string
+type Timestamp = Timestamp of int64 // Unix timestamp in milliseconds
+
 type Tx = {
     TxHash : TxHash
     Sender : BlockchainAddress
     Nonce : Nonce
+    ExpirationTime : Timestamp
     ActionFee : ChxAmount
     Actions : TxAction list
 }
@@ -217,7 +219,6 @@ type BlockchainConfiguration = {
 // Block
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-type Timestamp = Timestamp of int64 // Unix timestamp in milliseconds
 type BlockNumber = BlockNumber of int64
 type BlockHash = BlockHash of string
 type MerkleTreeRoot = MerkleTreeRoot of string
@@ -273,6 +274,9 @@ type TxActionNumber = TxActionNumber of int16
 
 type TxErrorCode =
     // CHANGING THESE NUMBERS WILL INVALIDATE TX RESULTS MERKLE ROOT IN EXISTING BLOCKS!!!
+
+    // TX
+    | TxExpired = 10s
 
     // Address
     | NonceTooLow = 100s

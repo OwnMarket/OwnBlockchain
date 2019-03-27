@@ -274,6 +274,9 @@ module Validation =
             if t.Nonce <= 0L then
                 yield AppError "Nonce must be positive"
 
+            if t.ExpirationTime < 0L then
+                yield AppError "ExpirationTime cannot be negative"
+
             if t.ActionFee <= 0m then
                 yield AppError "ActionFee must be positive"
             if not (Utils.isRounded t.ActionFee) then

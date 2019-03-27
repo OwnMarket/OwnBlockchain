@@ -70,6 +70,7 @@ Response JSON payload:
     "txHash": "CRjqV3DLh7jyCKZqj2pCdfw3s3ynXxEf5JMVm1rCYjmp",
     "senderAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
     "nonce": 1,
+    "expirationTime": 0,
     "actionFee": 0.001,
     "actions": [
         {

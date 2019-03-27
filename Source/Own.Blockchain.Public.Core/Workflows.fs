@@ -330,6 +330,7 @@ module Workflows =
                 validatorAddress
                 sharedRewardPercent
                 blockNumber
+                timestamp
                 blockchainConfiguration
                 equivocationProofs
                 txSet

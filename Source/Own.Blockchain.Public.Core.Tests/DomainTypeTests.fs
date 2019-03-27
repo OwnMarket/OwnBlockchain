@@ -17,6 +17,7 @@ module DomainTypesTests =
                 Tx.TxHash = TxHash ""
                 Sender = BlockchainAddress ""
                 Nonce = Nonce 0L
+                ExpirationTime = Timestamp 0L
                 ActionFee = ChxAmount 2m
                 Actions =
                     [

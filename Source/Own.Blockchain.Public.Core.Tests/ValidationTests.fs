@@ -36,6 +36,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = -10L
+            ExpirationTime = 0L
             ActionFee = 20m
             Actions =
                 [
@@ -82,6 +83,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = ""
             Nonce = -10L
+            ExpirationTime = -1L
             ActionFee = 0m
             Actions =
                 [
@@ -118,13 +120,14 @@ module ValidationTests =
         match result with
         | Ok t -> failwith "Validation should fail in case of this test"
         | Error errors ->
-            test <@ errors.Length = 3 @>
+            test <@ errors.Length = 4 @>
 
     [<Fact>]
     let ``Validation.validateTx BasicValidation unknown action type`` () =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -155,6 +158,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -189,6 +193,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -222,6 +227,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -255,6 +261,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -290,6 +297,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -325,6 +333,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -360,6 +369,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -395,6 +405,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -430,6 +441,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -466,6 +478,7 @@ module ValidationTests =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -539,6 +552,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -569,6 +583,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -589,6 +604,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -609,6 +625,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -635,6 +652,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -663,6 +681,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -689,6 +708,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -717,6 +737,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -743,6 +764,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -771,6 +793,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -797,6 +820,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -823,6 +847,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -850,6 +875,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -879,6 +905,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -905,6 +932,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [
@@ -933,6 +961,7 @@ module ValidationTests =
         let tx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
+            ExpirationTime = 0L
             ActionFee = 1m
             Actions =
                 [

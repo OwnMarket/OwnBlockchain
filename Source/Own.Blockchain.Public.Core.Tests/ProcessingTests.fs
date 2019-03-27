@@ -154,6 +154,77 @@ module ProcessingTests =
         test <@ txHashes = ["Tx6"; "Tx1"; "Tx3"; "Tx5"; "Tx2"] @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // TX level errors
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processChanges TX expired`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 9m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+        let amountToTransfer = ChxAmount 5m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 1L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                ValidatorAddress = validatorWallet.Address
+                BlockTimestamp = Timestamp 2L
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus = TxErrorCode.TxExpired |> TxError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.ContainsKey recipientWallet.Address = false @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Reward distribution
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -204,7 +275,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -306,7 +377,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -396,7 +467,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -462,7 +533,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -529,7 +600,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -596,7 +667,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -652,7 +723,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -740,7 +811,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -830,7 +901,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -921,7 +992,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1012,7 +1083,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1104,7 +1175,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1196,7 +1267,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1288,7 +1359,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1376,7 +1447,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1467,7 +1538,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1562,7 +1633,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce1 actionFee
+            |> Helpers.newTx senderWallet nonce1 (Timestamp 0L) actionFee
 
         // Vote Yes on RS2
         let txHash2, txEnvelope2 =
@@ -1578,7 +1649,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce2 actionFee
+            |> Helpers.newTx senderWallet nonce2 (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -1668,7 +1739,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1747,7 +1818,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -1762,7 +1833,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -1859,7 +1930,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -1943,7 +2014,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2029,7 +2100,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2114,7 +2185,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2189,7 +2260,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2267,7 +2338,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -2282,7 +2353,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -2379,7 +2450,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2467,7 +2538,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2558,7 +2629,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -2573,7 +2644,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -2674,7 +2745,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2761,7 +2832,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -2776,7 +2847,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -2882,7 +2953,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -2964,7 +3035,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3044,7 +3115,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3139,7 +3210,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3229,7 +3300,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -3243,7 +3314,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -3352,7 +3423,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3435,7 +3506,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3528,7 +3599,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3621,7 +3692,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3715,7 +3786,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3791,7 +3862,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -3871,7 +3942,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -3884,7 +3955,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -3980,7 +4051,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4052,7 +4123,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -4065,7 +4136,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -4157,7 +4228,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txHash2, txEnvelope2 =
             [
@@ -4170,7 +4241,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet (nonce + 1) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
         let txSet = [txHash1; txHash2]
 
@@ -4257,7 +4328,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4342,7 +4413,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4423,7 +4494,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4510,7 +4581,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4591,7 +4662,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4672,7 +4743,7 @@ module ProcessingTests =
                     ActionData = CreateAccountTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4752,7 +4823,7 @@ module ProcessingTests =
                     ActionData = CreateAssetTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4844,7 +4915,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4911,7 +4982,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -4983,7 +5054,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5059,7 +5130,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5126,7 +5197,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5198,7 +5269,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5279,7 +5350,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5350,7 +5421,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5421,7 +5492,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5496,7 +5567,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5577,7 +5648,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5656,7 +5727,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5725,7 +5796,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce actionFee
+            |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5819,7 +5890,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce actionFee
+            |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5897,7 +5968,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce actionFee
+            |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -5986,7 +6057,7 @@ module ProcessingTests =
                     ActionData = RemoveValidatorTxActionDto()
                 } :> obj
             ]
-            |> Helpers.newTx senderValidatorWallet nonce actionFee
+            |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -6088,7 +6159,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -6158,7 +6229,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -6225,7 +6296,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -6297,7 +6368,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
@@ -6372,7 +6443,7 @@ module ProcessingTests =
                         }
                 } :> obj
             ]
-            |> Helpers.newTx senderWallet nonce actionFee
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let txSet = [txHash]
 
