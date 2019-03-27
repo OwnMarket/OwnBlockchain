@@ -19,11 +19,11 @@ module HdCryptoTests =
         // ACT
         let privateKey =
             HdCrypto.recoverMasterExtKeyFromMnemonic mnemonicPhrase passphrase
-            |> Option.map HdCrypto.getMasterPrivateKey
+            |> Option.map HdCrypto.toPrivateKey
 
         let privateKeyWithWrongPassphrase =
             HdCrypto.recoverMasterExtKeyFromMnemonic mnemonicPhrase "wrong password"
-            |> Option.map (fun extKey -> HdCrypto.getMasterPrivateKey extKey)
+            |> Option.map HdCrypto.toPrivateKey
 
         // ASSERT
         test <@ privateKey = expectedPrivateKey @>
@@ -39,11 +39,11 @@ module HdCryptoTests =
 
         let masterPrivateKey =
             HdCrypto.recoverMasterExtKeyFromMnemonic (mnemonic.ToString()) passphrase
-            |> Option.map HdCrypto.getMasterPrivateKey
+            |> Option.map HdCrypto.toPrivateKey
 
         let masterPrivateKeyFromSeed =
             HdCrypto.recoverMasterExtKeyFromSeed seed
-            |> Option.map HdCrypto.getMasterPrivateKey
+            |> Option.map HdCrypto.toPrivateKey
 
         // ASSERT
         test <@ masterPrivateKey = masterPrivateKeyFromSeed @>

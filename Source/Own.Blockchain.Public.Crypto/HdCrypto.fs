@@ -15,8 +15,7 @@ module HdCrypto =
             new Mnemonic(mnemonicPhrase, Wordlist.English)
             |> Some
         with
-        | e ->
-            failwith e.Message
+        | _ -> None
 
     let private generateMasterExtKeyFromMnemonic (mnemonic : Mnemonic) passphrase =
         mnemonic.DeriveExtKey(passphrase)
@@ -33,15 +32,14 @@ module HdCrypto =
             generateMasterExtKeyFromMnemonic mnemonic passphrase
         )
 
-    let recoverMasterExtKeyFromSeed seed =
+    let recoverMasterExtKeyFromSeed bip39Seed =
         try
-            seed
+            bip39Seed
             |> Encoders.Hex.DecodeData
             |> ExtKey
             |> Some
         with
-        | _ ->
-            failwith "Invalid seed"
+        | _ -> None
 
     let generateMasterExtKeyWithWordcount (wordCount : WordCount) passphrase =
         let mnemonic = generateMnemonic wordCount
@@ -50,11 +48,38 @@ module HdCrypto =
     let generateMasterExtKey passphrase =
         generateMasterExtKeyWithWordcount WordCount.Eighteen passphrase
 
-    let getMasterPrivateKey (masterExtKey : ExtKey) =
-        masterExtKey.PrivateKey.ToBytes()
+    let toPrivateKey (extKey : ExtKey) =
+        extKey.PrivateKey.ToBytes()
         |> Hashing.encode
         |> PrivateKey
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // BIP44
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let bip44RegistrationIndex = 1234567
+
+    let generateWallet bip39Seed (walletIndex : uint32) =
+        let privateKey =
+            try
+                match recoverMasterExtKeyFromSeed bip39Seed with
+                | Some masterExtKey ->
+                    sprintf "m/44'/%i'/0'/0/%i" bip44RegistrationIndex walletIndex
+                    |> KeyPath.Parse
+                    |> masterExtKey.Derive
+                    |> toPrivateKey
+                | _ ->
+                    failwith "Error generating wallet, invalid seed."
+            with
+            | e -> failwithf "Error generating wallet, %s" e.Message
+
+        {
+            PrivateKey = privateKey
+            Address =
+                privateKey
+                |> Signing.addressFromPrivateKey
+        }
+
+    let restoreWalletsFromSeed bip39Seed startIndex walletCount =
+        let generate = generateWallet bip39Seed
+        [startIndex .. (startIndex + walletCount)] |> List.map (uint32 >> generate)
