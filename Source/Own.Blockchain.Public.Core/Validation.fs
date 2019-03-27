@@ -92,7 +92,7 @@ module Validation =
             if action.Amount <= 0m then
                 yield AppError "CHX amount must be larger than zero"
 
-            if not (Utils.isRounded action.Amount) then
+            if not (Utils.isRounded7 action.Amount) then
                 yield AppError "CHX amount must have at most 7 decimals"
         ]
 
@@ -110,7 +110,7 @@ module Validation =
             if action.Amount <= 0m then
                 yield AppError "Asset amount must be larger than zero"
 
-            if not (Utils.isRounded action.Amount) then
+            if not (Utils.isRounded7 action.Amount) then
                 yield AppError "Asset amount must have at most 7 decimals"
         ]
 
@@ -123,7 +123,7 @@ module Validation =
             if action.Amount <= 0m then
                 yield AppError "Asset amount must be larger than zero"
 
-            if not (Utils.isRounded action.Amount) then
+            if not (Utils.isRounded7 action.Amount) then
                 yield AppError "Asset amount must have at most 7 decimals"
         ]
 
@@ -167,8 +167,12 @@ module Validation =
 
             if action.SharedRewardPercent < 0m then
                 yield AppError "SharedRewardPercent cannot be negative"
+
             if action.SharedRewardPercent > 100m then
                 yield AppError "SharedRewardPercent cannot be greater than 100"
+
+            if not (Utils.isRounded2 action.SharedRewardPercent) then
+                yield AppError "Shared reward percent must have at most 2 decimals"
         ]
 
     let private validateDelegateStake isValidAddress (action : DelegateStakeTxActionDto) =
@@ -181,7 +185,7 @@ module Validation =
             if action.Amount = 0m then
                 yield AppError "CHX amount cannot be zero"
 
-            if not (Utils.isRounded action.Amount) then
+            if not (Utils.isRounded7 action.Amount) then
                 yield AppError "CHX amount must have at most 7 decimals"
         ]
 
@@ -207,7 +211,7 @@ module Validation =
             if action.VoteWeight < 0m then
                 yield AppError "Vote weight cannot be negative"
 
-            if not (Utils.isRounded action.VoteWeight) then
+            if not (Utils.isRounded7 action.VoteWeight) then
                 yield AppError "Vote weight must have at most 7 decimals"
         ]
 
@@ -279,7 +283,7 @@ module Validation =
 
             if t.ActionFee <= 0m then
                 yield AppError "ActionFee must be positive"
-            if not (Utils.isRounded t.ActionFee) then
+            if not (Utils.isRounded7 t.ActionFee) then
                 yield AppError "ActionFee must have at most 7 decimal places"
 
             if t.Actions.IsEmpty then

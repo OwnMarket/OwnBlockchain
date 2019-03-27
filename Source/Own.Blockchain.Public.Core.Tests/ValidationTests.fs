@@ -922,6 +922,34 @@ module ValidationTests =
             test <@ e.Length = 1 @>
 
     [<Fact>]
+    let ``Validation.validateTx ConfigureValidator invalid action too may decimals`` () =
+        let expected =
+            {
+                ConfigureValidatorTxActionDto.NetworkAddress = "A"
+                SharedRewardPercent = 42.123m
+                IsEnabled = true
+            }
+
+        let tx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = configureValidatorActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        | Ok t -> failwith "This test should fail"
+        | Error e ->
+            test <@ e.Length = 1 @>
+
+    [<Fact>]
     let ``Validation.validateTx DelegateStake valid action`` () =
         let expected =
             {

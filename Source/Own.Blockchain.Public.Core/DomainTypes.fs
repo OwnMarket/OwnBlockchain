@@ -704,7 +704,7 @@ type ChxAmount with
     member __.Value =
         __ |> fun (ChxAmount v) -> v
     member __.Rounded =
-        __ |> fun (ChxAmount v) -> Utils.round v |> ChxAmount
+        __ |> fun (ChxAmount v) -> Utils.round v 7 |> ChxAmount
     static member Zero =
         ChxAmount 0m
     static member (+) (ChxAmount a1, ChxAmount a2) =
@@ -728,7 +728,7 @@ type AssetAmount with
     member __.Value =
         __ |> fun (AssetAmount v) -> v
     member __.Rounded =
-        __ |> fun (AssetAmount v) -> Utils.round v |> AssetAmount
+        __ |> fun (AssetAmount v) -> Utils.round v 7 |> AssetAmount
     static member Zero =
         AssetAmount 0m
     static member (+) (AssetAmount a1, AssetAmount a2) =

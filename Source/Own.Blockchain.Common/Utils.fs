@@ -16,11 +16,15 @@ module Utils =
     let getNetworkTimestamp () =
         getMachineTimestamp () + networkTimeOffset
 
-    /// Truncates a decimal number to blockchain default of 7 decimal digits.
-    let round (x : decimal) =
-        let multiplier = 10_000_000m // 7 decimal digits
+    /// Truncates a decimal number to a specific number of decimal digits.
+    let round (x : decimal) (digits : int) =
+        let multiplier = pown 10 digits |> decimal
         Math.Truncate(x * multiplier) / multiplier
 
     /// Checks if a decimal number is truncated to blockchain default of 7 decimal digits.
-    let isRounded x =
-        x = round x
+    let isRounded7 x =
+        x = round x 7
+
+    /// Checks if a decimal number is truncated to 2 decimal digits.
+    let isRounded2 x =
+        x = round x 2
