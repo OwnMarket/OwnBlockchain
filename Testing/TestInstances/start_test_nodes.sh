@@ -3,7 +3,6 @@
 set -e
 
 pushd "${0%/*}" # Go to script directory
-cd TestInstances
 
 APP_DIR="../../../Source/Own.Blockchain.Public.Node/bin/Release/netcoreapp2.1"
 APP_COMMAND="dotnet $APP_DIR/Own.Blockchain.Public.Node.dll"
