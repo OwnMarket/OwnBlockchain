@@ -10,6 +10,12 @@ module Common =
 
     let notNull x = not (isNull x)
 
+    let between l r x =
+        l <= x && x <= r
+
+    let betweenExcluding l r x =
+        l < x && x < r
+
     let flip f x y = f y x
 
     let tee f x = f x; x
