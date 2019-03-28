@@ -523,16 +523,24 @@ module Workflows =
                 // Verify signatures
                 let! blockSigners =
                     Blocks.verifyBlockSignatures createConsensusMessageHash verifySignature blockEnvelope
-                    |> Result.map (Set.ofList >> Set.intersect validators)
+                    |> Result.map (Set.ofList >> Set.intersect validators >> Set.toList)
 
                 let qualifiedMajority = Validators.calculateQualifiedMajority validators.Count
-                if blockSigners.Count < qualifiedMajority then
+
+                if blockSigners.Length < qualifiedMajority then
                     return!
                         sprintf "Block %i (%s) is not signed by qualified majority. Expected (min): %i / Actual: %i"
                             block.Header.Number.Value
                             block.Header.Hash.Value
                             qualifiedMajority
-                            blockSigners.Count
+                            blockSigners.Length
+                        |> Result.appError
+
+                if (blockSigners |> List.except blacklist).Length < qualifiedMajority then
+                    return!
+                        sprintf "Block %i (%s) is signed by blacklisted validator(s)"
+                            block.Header.Number.Value
+                            block.Header.Hash.Value
                         |> Result.appError
 
                 // Validate configuration of the incoming block
