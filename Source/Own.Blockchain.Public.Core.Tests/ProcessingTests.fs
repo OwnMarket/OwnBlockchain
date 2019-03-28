@@ -570,6 +570,64 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
+    let ``Processing.processChanges TransferChx fails with amount overflow`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 99_999_999_999m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 1000m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+        let amountToTransfer = ChxAmount 99_999_999_990m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValueTooBig) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+
+    [<Fact>]
     let ``Processing.processChanges TransferChx with insufficient balance to cover fee`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
