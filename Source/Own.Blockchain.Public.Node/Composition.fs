@@ -267,6 +267,7 @@ module Composition =
             getAvailableChxBalance
             addressFromPrivateKey
             (ChxAmount Config.MinTxActionFee)
+            Config.CreateEmptyBlocks
             Config.MinEmptyBlockTime
             Config.MinValidatorCount
             (PrivateKey Config.ValidatorPrivateKey)

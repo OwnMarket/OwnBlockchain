@@ -363,6 +363,7 @@ module Workflows =
         getAvailableChxBalanceFromStorage
         addressFromPrivateKey
         minTxActionFee
+        createEmptyBlocks
         minEmptyBlockTime
         minValidatorCount
         validatorPrivateKey
@@ -417,7 +418,9 @@ module Workflows =
                 let earliestValidEmptyBlockTimestamp =
                     Blocks.earliestValidEmptyBlockTimestamp minEmptyBlockTime lastAppliedBlock.Header.Timestamp
 
-                if txSet.IsEmpty && equivocationProofs.IsEmpty && timestamp < earliestValidEmptyBlockTimestamp then
+                if txSet.IsEmpty && equivocationProofs.IsEmpty
+                    && (timestamp < earliestValidEmptyBlockTimestamp || not createEmptyBlocks)
+                then
                     None // Nothing to propose.
                 else
                     let newConfiguration =
