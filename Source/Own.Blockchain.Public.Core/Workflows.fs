@@ -769,10 +769,6 @@ module Workflows =
                 consensusStateInfo.ConsensusStep
                 |> Mapping.consensusStepToCode
                 |> Convert.ToInt16
-            LockedBlockSignatures =
-                consensusStateInfo.LockedBlockSignatures
-                |> List.map (fun s -> s.Value)
-                |> fun signatures -> String.Join(',', signatures)
             LockedBlock =
                 consensusStateInfo.LockedBlock
                 |> Option.map (Mapping.blockToDto >> Serialization.serializeBinary >> Convert.ToBase64String)
@@ -783,6 +779,10 @@ module Workflows =
                 |> Option.map (Mapping.blockToDto >> Serialization.serializeBinary >> Convert.ToBase64String)
                 |> Option.toObj
             ValidRound = consensusStateInfo.ValidRound.Value
+            ValidBlockSignatures =
+                consensusStateInfo.ValidBlockSignatures
+                |> List.map (fun s -> s.Value)
+                |> fun signatures -> String.Join(',', signatures)
         }
         |> saveConsensusState
 
@@ -796,13 +796,6 @@ module Workflows =
                     s.ConsensusStep
                     |> Convert.ToByte
                     |> Mapping.consensusStepFromCode
-                LockedBlockSignatures =
-                    if s.LockedBlockSignatures.IsNullOrWhiteSpace() then
-                        []
-                    else
-                        s.LockedBlockSignatures.Split(',')
-                        |> Seq.map Signature
-                        |> Seq.toList
                 LockedBlock =
                     s.LockedBlock
                     |> Option.ofObj
@@ -813,6 +806,13 @@ module Workflows =
                     |> Option.ofObj
                     |> Option.map (Convert.FromBase64String >> Serialization.deserializeBinary >> Mapping.blockFromDto)
                 ValidRound = ConsensusRound s.ValidRound
+                ValidBlockSignatures =
+                    if s.ValidBlockSignatures.IsNullOrWhiteSpace() then
+                        []
+                    else
+                        s.ValidBlockSignatures.Split(',')
+                        |> Seq.map Signature
+                        |> Seq.toList
             }
         )
 

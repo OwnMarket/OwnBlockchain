@@ -612,7 +612,9 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         test <@ net.States.[validators.[1]].Variables.LockedRound.Value = 0 @>
         test <@ net.States.[validators.[1]].Variables.LockedBlock = Some proposedBlock @>
-        test <@ net.States.[validators.[1]].Variables.LockedBlockSignatures.Length = 3 @>
+        test <@ net.States.[validators.[1]].Variables.ValidRound.Value = 0 @>
+        test <@ net.States.[validators.[1]].Variables.ValidBlock = Some proposedBlock @>
+        test <@ net.States.[validators.[1]].Variables.ValidBlockSignatures.Length = 3 @>
 
         // ASSERT
         net.PrintTheState(output.WriteLine)
@@ -860,9 +862,11 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Decisions.[validators.[3]].Count = 0 @>
 
         test <@ net.States.[validators.[0]].Variables.LockedBlock = Some proposedBlock @>
-        test <@ net.States.[validators.[0]].Variables.LockedBlockSignatures.Length = 3 @>
+        test <@ net.States.[validators.[0]].Variables.ValidBlock = Some proposedBlock @>
+        test <@ net.States.[validators.[0]].Variables.ValidBlockSignatures.Length = 3 @>
         test <@ net.States.[validators.[2]].Variables.LockedBlock = Some proposedBlock @>
-        test <@ net.States.[validators.[2]].Variables.LockedBlockSignatures.Length = 3 @>
+        test <@ net.States.[validators.[2]].Variables.ValidBlock = Some proposedBlock @>
+        test <@ net.States.[validators.[2]].Variables.ValidBlockSignatures.Length = 3 @>
 
         net, proposedBlock // Return the simulation state for dependent tests.
 

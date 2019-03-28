@@ -448,11 +448,11 @@ type ConsensusStateInfo = {
     BlockNumber : BlockNumber
     ConsensusRound : ConsensusRound
     ConsensusStep : ConsensusStep
-    LockedBlockSignatures : Signature list
     LockedBlock : Block option
     LockedRound : ConsensusRound
     ValidBlock : Block option
     ValidRound : ConsensusRound
+    ValidBlockSignatures : Signature list
 }
 
 type ConsensusStateRequest = {

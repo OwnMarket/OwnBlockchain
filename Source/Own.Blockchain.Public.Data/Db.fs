@@ -454,22 +454,22 @@ module Db =
                         block_number,
                         consensus_round,
                         consensus_step,
-                        locked_block_signatures,
                         locked_block,
                         locked_round,
                         valid_block,
-                        valid_round
+                        valid_round,
+                        valid_block_signatures
                     )
                     VALUES (
                         0,
                         @blockNumber,
                         @consensusRound,
                         @consensusStep,
-                        @lockedBlockSignatures,
                         @lockedBlock,
                         @lockedRound,
                         @validBlock,
-                        @validRound
+                        @validRound,
+                        @validBlockSignatures
                     )
                     """
                 | Postgres ->
@@ -479,39 +479,33 @@ module Db =
                         block_number,
                         consensus_round,
                         consensus_step,
-                        locked_block_signatures,
                         locked_block,
                         locked_round,
                         valid_block,
-                        valid_round
+                        valid_round,
+                        valid_block_signatures
                     )
                     VALUES (
                         0,
                         @blockNumber,
                         @consensusRound,
                         @consensusStep,
-                        @lockedBlockSignatures,
                         @lockedBlock,
                         @lockedRound,
                         @validBlock,
-                        @validRound
+                        @validRound,
+                        @validBlockSignatures
                     )
                     ON CONFLICT (consensus_state_id) DO UPDATE
                     SET block_number = @blockNumber,
                         consensus_round = @consensusRound,
                         consensus_step = @consensusStep,
-                        locked_block_signatures = @lockedBlockSignatures,
                         locked_block = @lockedBlock,
                         locked_round = @lockedRound,
                         valid_block = @validBlock,
-                        valid_round = @validRound
+                        valid_round = @validRound,
+                        valid_block_signatures = @validBlockSignatures
                     """
-
-            let lockedBlockSignaturesParamValue =
-                if consensusStateInfoDto.LockedBlockSignatures.IsNullOrWhiteSpace() then
-                    DBNull.Value |> box
-                else
-                    consensusStateInfoDto.LockedBlockSignatures |> box
 
             let lockedBlockParamValue =
                 if consensusStateInfoDto.LockedBlock.IsNullOrWhiteSpace() then
@@ -525,16 +519,22 @@ module Db =
                 else
                     consensusStateInfoDto.ValidBlock |> box
 
+            let validBlockSignaturesParamValue =
+                if consensusStateInfoDto.ValidBlockSignatures.IsNullOrWhiteSpace() then
+                    DBNull.Value |> box
+                else
+                    consensusStateInfoDto.ValidBlockSignatures |> box
+
             let result =
                 [
                     "@blockNumber", consensusStateInfoDto.BlockNumber |> box
                     "@consensusRound", consensusStateInfoDto.ConsensusRound |> box
                     "@consensusStep", consensusStateInfoDto.ConsensusStep |> box
-                    "@lockedBlockSignatures", lockedBlockSignaturesParamValue
                     "@lockedBlock", lockedBlockParamValue
                     "@lockedRound", consensusStateInfoDto.LockedRound |> box
                     "@validBlock", validBlockParamValue
                     "@validRound", consensusStateInfoDto.ValidRound |> box
+                    "@validBlockSignatures", validBlockSignaturesParamValue
                 ]
                 |> DbTools.execute dbEngineType dbConnectionString sql
 
@@ -561,11 +561,11 @@ module Db =
                 block_number,
                 consensus_round,
                 consensus_step,
-                locked_block_signatures,
                 locked_block,
                 locked_round,
                 valid_block,
-                valid_round
+                valid_round,
+                valid_block_signatures
             FROM consensus_state
             """
         match DbTools.query<ConsensusStateInfoDto> dbEngineType dbConnectionString sql [] with

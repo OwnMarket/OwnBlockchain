@@ -231,11 +231,11 @@ module DbChanges =
                         block_number BIGINT NOT NULL,
                         consensus_round INT NOT NULL,
                         consensus_step SMALLINT NOT NULL,
-                        locked_block_signatures BLOB SUB_TYPE TEXT,
                         locked_block BLOB SUB_TYPE TEXT,
                         locked_round INT NOT NULL,
                         valid_block BLOB SUB_TYPE TEXT,
                         valid_round INT NOT NULL,
+                        valid_block_signatures BLOB SUB_TYPE TEXT,
 
                         CONSTRAINT consensus_state__pk PRIMARY KEY (consensus_state_id),
                         CONSTRAINT consensus_state__ck__id__is_0 CHECK (consensus_state_id = 0) -- Single row table
@@ -469,11 +469,11 @@ module DbChanges =
                         block_number BIGINT NOT NULL,
                         consensus_round INT NOT NULL,
                         consensus_step SMALLINT NOT NULL,
-                        locked_block_signatures TEXT,
                         locked_block TEXT,
                         locked_round INT NOT NULL,
                         valid_block TEXT,
                         valid_round INT NOT NULL,
+                        valid_block_signatures TEXT,
 
                         CONSTRAINT consensus_state__pk PRIMARY KEY (consensus_state_id),
                         CONSTRAINT consensus_state__ck__id__is_0 CHECK (consensus_state_id = 0) -- Single row table

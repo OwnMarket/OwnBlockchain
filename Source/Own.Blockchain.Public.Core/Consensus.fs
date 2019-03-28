@@ -48,11 +48,11 @@ module Consensus =
         let mutable _blockNumber = BlockNumber 0L
         let mutable _round = ConsensusRound 0
         let mutable _step = ConsensusStep.Propose
-        let mutable _lockedBlockSignatures = []
         let mutable _lockedBlock = None
         let mutable _lockedRound = ConsensusRound -1
         let mutable _validBlock = None
         let mutable _validRound = ConsensusRound -1
+        let mutable _validBlockSignatures = []
 
         let _decisions = new Dictionary<BlockNumber, Block>()
         let _scheduledTimeouts = new HashSet<ConsensusRound * ConsensusStep>()
@@ -148,11 +148,11 @@ module Consensus =
                 ConsensusStateInfo.BlockNumber = _blockNumber
                 ConsensusRound = _round
                 ConsensusStep = _step
-                LockedBlockSignatures = _lockedBlockSignatures
                 LockedBlock = _lockedBlock
                 LockedRound = _lockedRound
                 ValidBlock = _validBlock
                 ValidRound = _validRound
+                ValidBlockSignatures = _validBlockSignatures
             }
 
         member private __.PersistState() =
@@ -165,11 +165,11 @@ module Consensus =
                 _blockNumber <- s.BlockNumber
                 _round <- s.ConsensusRound
                 _step <- s.ConsensusStep
-                _lockedBlockSignatures <- s.LockedBlockSignatures
                 _lockedBlock <- s.LockedBlock
                 _lockedRound <- s.LockedRound
                 _validBlock <- s.ValidBlock
                 _validRound <- s.ValidRound
+                _validBlockSignatures <- s.ValidBlockSignatures
             )
 
             restoreConsensusMessages ()
@@ -306,11 +306,11 @@ module Consensus =
                                 if signers.Contains s then
                                     __.ProcessConsensusMessage(s, e, false)
 
-                            _lockedBlockSignatures <- response.LockedVoteSignatures
                             _lockedBlock <- lockedBlock
                             _lockedRound <- response.LockedRound
                             _validBlock <- lockedBlock
                             _validRound <- response.LockedRound
+                            _validBlockSignatures <- response.LockedVoteSignatures
                             _round <- response.LockedRound
                             _step <-
                                 if _votes.ContainsKey (_blockNumber, _round, validatorAddress) then
@@ -360,43 +360,43 @@ module Consensus =
                             }
                     ]
 
-                let lockedProposal =
-                    if _lockedRound < ConsensusRound 0 then
+                let validProposal =
+                    if _validRound < ConsensusRound 0 then
                         None
                     else
-                        _lockedBlock
+                        _validBlock
                         |> Option.map (fun _ ->
-                            let lockedRoundProposer = Validators.getProposer _blockNumber _lockedRound _validators
-                            let key = _blockNumber, _lockedRound, lockedRoundProposer
+                            let validRoundProposer = Validators.getProposer _blockNumber _validRound _validators
+                            let key = _blockNumber, _validRound, validRoundProposer
                             match _proposals.TryGetValue(key) with
                             | true, (b, vr, s) ->
                                 {
                                     ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                    Round = _lockedRound
+                                    Round = _validRound
                                     ConsensusMessage = Propose (b, vr)
                                     Signature = s
                                 }
                             | _ ->
-                                failwithf "Cannot find proposal corresponding to locked consensus value (Key: %A)" key
+                                failwithf "Cannot find proposal corresponding to valid consensus value (Key: %A)" key
                         )
 
-                let lockedVoteSignatures =
-                    if _lockedRound < ConsensusRound 0 then
+                let validVoteSignatures =
+                    if _validRound < ConsensusRound 0 then
                         []
-                    elif _lockedBlockSignatures.Length < _qualifiedMajority then
+                    elif _validBlockSignatures.Length < _qualifiedMajority then
                         failwithf
-                            "_lockedBlockSignatures has only %i entries - it should have at least %i for lockedRound %i"
-                            _lockedBlockSignatures.Length
+                            "_validBlockSignatures has only %i entries - it should have at least %i for validRound %i"
+                            _validBlockSignatures.Length
                             _qualifiedMajority
-                            _lockedRound.Value
+                            _validRound.Value
                     else
-                        _lockedBlockSignatures
+                        _validBlockSignatures
 
                 {
                     ConsensusStateResponse.Messages = messages
-                    LockedRound = _lockedRound
-                    LockedProposal = lockedProposal
-                    LockedVoteSignatures = lockedVoteSignatures
+                    LockedRound = _validRound
+                    LockedProposal = validProposal
+                    LockedVoteSignatures = validVoteSignatures
                 }
                 |> sendConsensusState peerIdentity
 
@@ -425,11 +425,11 @@ module Consensus =
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member private __.ResetState() =
-            _lockedBlockSignatures <- []
             _lockedBlock <- None
             _lockedRound <- ConsensusRound -1
             _validBlock <- None
             _validRound <- ConsensusRound -1
+            _validBlockSignatures <- []
 
             _scheduledTimeouts.Clear()
 
@@ -538,8 +538,8 @@ module Consensus =
                     if __.MajorityVoted(_round, blockHash) && isValidBlock block then
                         _validBlock <- Some block
                         _validRound <- _round
+                        _validBlockSignatures <- __.GetVoteSignatures(_blockNumber, _round, blockHash)
                         if _step = ConsensusStep.Vote then
-                            _lockedBlockSignatures <- __.GetVoteSignatures(_blockNumber, _round, blockHash)
                             _lockedBlock <- Some block
                             _lockedRound <- _round
                             _step <- ConsensusStep.Commit
@@ -859,11 +859,11 @@ module Consensus =
                 sprintf "_blockNumber: %A" _blockNumber
                 sprintf "_round: %A" _round
                 sprintf "_step: %A" _step
-                sprintf "_lockedBlockSignatures: %A" _lockedBlockSignatures
                 sprintf "_lockedBlock: %A" _lockedBlock
                 sprintf "_lockedRound: %A" _lockedRound
                 sprintf "_validBlock: %A" _validBlock
                 sprintf "_validRound: %A" _validRound
+                sprintf "_lockedBlockSignatures: %A" _validBlockSignatures
                 sprintf "_decisions: %A" _decisions
                 sprintf "_scheduledTimeouts: %A" (_scheduledTimeouts |> Seq.toList)
                 sprintf "_proposals: %A" (_proposals |> List.ofDict)
