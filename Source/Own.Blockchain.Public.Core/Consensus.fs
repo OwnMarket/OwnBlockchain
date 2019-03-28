@@ -124,7 +124,7 @@ module Consensus =
                                         persistConsensusMessage envelope
                                     if updateState then
                                         __.UpdateState()
-                            else
+                            elif envelope.Round >= _round then
                                 scheduleMessage messageRetryingInterval (senderAddress, envelope)
                 | ConsensusMessage.Vote blockHash ->
                     if _votes.TryAdd(key, (blockHash, envelope.Signature)) then
