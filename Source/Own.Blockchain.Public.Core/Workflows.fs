@@ -517,8 +517,9 @@ module Workflows =
                 let qualifiedMajority = Validators.calculateQualifiedMajority validators.Count
                 if blockSigners.Count < qualifiedMajority then
                     return!
-                        sprintf "Block %i is not signed by qualified majority. Expected (min): %i / Actual: %i"
+                        sprintf "Block %i (%s) is not signed by qualified majority. Expected (min): %i / Actual: %i"
                             block.Header.Number.Value
+                            block.Header.Hash.Value
                             qualifiedMajority
                             blockSigners.Count
                         |> Result.appError
@@ -528,13 +529,16 @@ module Workflows =
                     match block.Configuration with
                     | None ->
                         return!
-                            sprintf "Configuration missing from incoming block %i" block.Header.Number.Value
+                            sprintf "Configuration missing from incoming block %i (%s)"
+                                block.Header.Number.Value
+                                block.Header.Hash.Value
                             |> Result.appError
                     | Some c ->
                         if c.Validators.Length < minValidatorCount then
                             return!
-                                sprintf "Configuration block %i must have at least %i validators in the configuration"
+                                sprintf "Config block %i (%s) must have at least %i validators in the configuration"
                                     block.Header.Number.Value
+                                    block.Header.Hash.Value
                                     minValidatorCount
                                 |> Result.appError
 
@@ -647,7 +651,7 @@ module Workflows =
                 | Some c ->
                     if c.Validators.Length < minValidatorCount then
                         return!
-                            sprintf "Configuration block %i must have at least %i validators in the configuration"
+                            sprintf "Config block %i must have at least %i validators in the configuration"
                                 block.Header.Number.Value
                                 minValidatorCount
                             |> Result.appError
