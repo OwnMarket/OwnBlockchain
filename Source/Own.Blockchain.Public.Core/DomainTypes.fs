@@ -276,8 +276,9 @@ type TxActionNumber = TxActionNumber of int16
 type TxErrorCode =
     // CHANGING THESE NUMBERS WILL INVALIDATE TX RESULTS MERKLE ROOT IN EXISTING BLOCKS!!!
 
-    // TX
+    // Common
     | TxExpired = 10s
+    | ValueTooBig = 50s
 
     // Address
     | NonceTooLow = 100s

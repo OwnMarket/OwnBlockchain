@@ -378,7 +378,12 @@ module Processing =
             let newToState = { toState with Balance = toState.Balance + action.Amount }
             state.SetChxAddress(action.RecipientAddress, newToState)
 
-            Ok state
+            if state.GetChxAddress(senderAddress).Balance.Value > Utils.maxBlockchainNumeric
+                || state.GetChxAddress(action.RecipientAddress).Balance.Value > Utils.maxBlockchainNumeric
+            then
+                Error TxErrorCode.ValueTooBig
+            else
+                Ok state
 
     let processTransferAssetTxAction
         (state : ProcessingState)
@@ -422,7 +427,14 @@ module Processing =
                     let newToState = { toState with Balance = toState.Balance + action.Amount }
                     state.SetHolding(action.ToAccountHash, action.AssetHash, newToState)
 
-                    Ok state
+                    let holdingFromAcccount = state.GetHolding(action.FromAccountHash, action.AssetHash)
+                    let holdingToAccount = state.GetHolding(action.ToAccountHash, action.AssetHash)
+                    if holdingFromAcccount.Balance.Value > Utils.maxBlockchainNumeric
+                        || holdingToAccount.Balance.Value > Utils.maxBlockchainNumeric
+                    then
+                        Error TxErrorCode.ValueTooBig
+                    else
+                        Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
 
@@ -445,7 +457,12 @@ module Processing =
                 action.AssetHash,
                 { holdingState with Balance = holdingState.Balance + action.Amount; IsEmission = true }
             )
-            Ok state
+
+            if state.GetHolding(action.EmissionAccountHash, action.AssetHash).Balance.Value > Utils.maxBlockchainNumeric
+            then
+                Error TxErrorCode.ValueTooBig
+            else
+                Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
@@ -638,7 +655,15 @@ module Processing =
             else
                 state.SetStake(senderAddress, action.ValidatorAddress, stakeState)
                 state.SetTotalChxStaked(senderAddress, totalChxStaked + action.Amount)
-                Ok state
+
+                if state.GetTotalChxStaked(senderAddress).Value > Utils.maxBlockchainNumeric then
+                    Error TxErrorCode.ValueTooBig
+                else
+                    match state.GetStake(senderAddress, action.ValidatorAddress) with
+                    | Some stake when stake.Amount.Value > Utils.maxBlockchainNumeric ->
+                        Error TxErrorCode.ValueTooBig
+                    | _ ->
+                        Ok state
 
     let processSubmitVoteTxAction
         (state : ProcessingState)
@@ -1065,6 +1090,9 @@ module Processing =
                             | None -> failwithf "Cannot get state for validator %s" v.Value
                         )
                     let amountPerValidator = (amountAvailable / decimal validators.Length).Rounded
+                    if amountPerValidator.Value > Utils.maxBlockchainNumeric then
+                        failwithf "Amount per validator too big: %M" amountPerValidator.Value
+
                     let depositDistribution =
                         [
                             for v in validators do
@@ -1143,7 +1171,11 @@ module Processing =
                 match processTxActions validatorAddress nonce actions state with
                 | Ok (state : ProcessingState) ->
                     for r in rewards do
-                        state.SetStakingReward(r.StakerAddress, r.Amount) |> ignore
+                        if r.Amount.Value > Utils.maxBlockchainNumeric then
+                            failwithf "Reward amount too big: %M" r.Amount.Value
+                        else
+                            state.SetStakingReward(r.StakerAddress, r.Amount) |> ignore
+
                 | Error err -> failwithf "Cannot process reward distribution: (%A)" err
 
     let updateValidatorCounters

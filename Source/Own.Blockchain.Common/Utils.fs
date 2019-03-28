@@ -5,6 +5,8 @@ open System
 [<RequireQualifiedAccess>]
 module Utils =
 
+    let maxBlockchainNumeric = 99999999999.9999999m
+
     /// Machine time as Unix timestamp in milliseconds.
     let getMachineTimestamp () =
         System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
