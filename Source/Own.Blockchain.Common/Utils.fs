@@ -5,7 +5,7 @@ open System
 [<RequireQualifiedAccess>]
 module Utils =
 
-    let maxBlockchainNumeric = 99999999999.9999999m
+    let maxBlockchainNumeric = 99_999_999_999.9_999_999m
 
     /// Machine time as Unix timestamp in milliseconds.
     let getMachineTimestamp () =

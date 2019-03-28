@@ -600,6 +600,34 @@ module ValidationTests =
             test <@ e.Length = 3 @>
 
     [<Fact>]
+    let ``Validation.validateTx CreateAssetEmission invalid action, amount too big`` () =
+        let expected =
+            {
+                CreateAssetEmissionTxActionDto.EmissionAccountHash = "AAA"
+                AssetHash = "BBB"
+                Amount = 999999999999m
+            }
+
+        let tx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = createAssetEmissionActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        | Ok t -> failwith "This test should fail"
+        | Error e ->
+            test <@ e.Length = 1 @>
+
+    [<Fact>]
     let ``Validation.validateTx CreateAccount valid action`` () =
         let tx = {
             SenderAddress = chAddress.Value

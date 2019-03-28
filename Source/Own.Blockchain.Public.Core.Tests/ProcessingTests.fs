@@ -861,6 +861,90 @@ module ProcessingTests =
         test <@ output.Holdings.[recipientAccountHash, assetHash].IsEmission = false @>
 
     [<Fact>]
+    let ``Processing.processChanges TransferAsset, failure if amount too big`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let senderAccountHash = accountHash1
+        let recipientAccountHash = accountHash2
+        let assetHash = assetHash1
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (senderAccountHash, assetHash), {HoldingState.Balance = AssetAmount 99_999_999_999m; IsEmission = false}
+                (recipientAccountHash, assetHash), {HoldingState.Balance = AssetAmount 999m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 99_999_999_990m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccountHash = senderAccountHash.Value
+                            ToAccountHash = recipientAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.ValueTooBig)
+            |> TxActionError
+            |> Failure
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.Holdings.[senderAccountHash, assetHash].Balance = AssetAmount 99_999_999_999m @>
+        test <@ output.Holdings.[recipientAccountHash, assetHash].Balance = AssetAmount 999m @>
+
+    [<Fact>]
     let ``Processing.processChanges TransferAsset success if transfer from emission to EligibleInPrimary`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
