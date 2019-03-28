@@ -1206,7 +1206,6 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 // When applying the block during catch-up, tx might not be in the pool.
             | 1 -> Ok ()
             | _ ->
                 sprintf "Didn't remove processed transaction from the pool: %s" txHash
@@ -1246,7 +1245,6 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0 // When applying the block during catch-up, equivocation proof might not be in the pool.
             | 1 -> Ok ()
             | _ ->
                 sprintf "Didn't remove processed equivocation proof from the pool: %s" equivocationProofHash
