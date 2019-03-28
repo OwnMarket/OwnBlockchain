@@ -1128,7 +1128,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.[0] |> isCommitForBlock @>
         test <@ net.DecisionCount = 0 @>
 
-        test <@ net.States.[validators.[0]].MessageCounts = (1, 4, 2) @>
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 3, 2) @>
         test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
         test <@ net.DecisionCount = 0 @>
