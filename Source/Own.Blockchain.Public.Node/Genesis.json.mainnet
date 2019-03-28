@@ -1,0 +1,20 @@
+{
+    "NetworkCode": "OWN_PUBLIC_BLOCKCHAIN_MAINNET",
+    "GenesisAddress": "CHXGEzcvxLFDTnS4L5pETLXxLsp3heH6KK1",
+    "GenesisValidators": [
+        "CHXV1i4NmCENFPFzqEk1ANb7BgBEiF9GHyT@val01.mainnet.weown.com:25718",
+        "CHXV2wFEyFie38RUWmEev8UJwhzMj5mPwmn@val02.mainnet.weown.com:25718",
+        "CHXV3e3pjQnk2YuCaTt8GYQJgELASiy57kh@val03.mainnet.weown.com:25718",
+        "CHXV4vyfhtXjwP9navSG5NVk2mvCZqhnMZa@val04.mainnet.weown.com:25718"
+    ],
+    "GenesisSignatures": [
+        "L5MMuLu15R8UKq3LXX4pSgfwwfRTtWWeC6r34NXpi6mh5xo9EWbFiZH5EcvxFjzfgspSqoP8sW9cEoATFdZPnZf1R",
+        "FuRpJUnRUWnaG9a5nvPQN64Crz55PXEUXkjhwnfxFbDaFPWKL2Y58ExW2qnuHi3EiK4G6svWM22s1oYjpbt6pidSF",
+        "PUUq6bWT4bWs1SYUgmkjbfggd52DZD3SAEbiwdzjKDRjDGEZLDb8HA2LxAVSKS276iYJsKRXbg6ACpuQUxGKUL1DZ",
+        "6myM3JZ2UAvLZDSbMtr5uwf42zh7vGKuaQzmGtfJb5qaR1StfeAy8QGJh43MddSUYkpk6v4AEAFJHncpSQfvwXYZv"
+    ],
+    "ConfigurationBlockDelta": 20000,
+    "ValidatorDepositLockTime": 5,
+    "ValidatorBlacklistTime": 50,
+    "MaxTxCountPerBlock": 1000
+}
