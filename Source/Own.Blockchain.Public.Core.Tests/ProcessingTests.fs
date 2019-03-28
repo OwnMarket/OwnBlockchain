@@ -4545,6 +4545,81 @@ module ProcessingTests =
         test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
 
     [<Fact>]
+    let ``Processing.processChanges CreateAssetEmission fails if amount overflow`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let someOtherWallet = Signing.generateWallet ()
+        let emissionAccountHash = accountHash1
+        let assetHash = assetHash1
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+        let emissionAmount = AssetAmount 999m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAssetEmission"
+                    ActionData =
+                        {
+                            EmissionAccountHash = emissionAccountHash.Value
+                            AssetHash = assetHash.Value
+                            Amount = emissionAmount.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            Some { HoldingState.Balance = AssetAmount 99_999_999_999m; IsEmission = true }
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = someOtherWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.ValueTooBig)
+            |> TxActionError
+            |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+
+    [<Fact>]
     let ``Processing.processChanges CreateAssetEmission fails if sender not current controller`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
