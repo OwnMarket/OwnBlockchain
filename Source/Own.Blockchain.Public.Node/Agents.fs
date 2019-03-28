@@ -170,11 +170,11 @@ module Agents =
             |> formatMessage
             |> Log.debug
         | ConsensusStateResponseReceived response ->
-            sprintf "%i messages / locked round: %i / locked value: %s / %i signatures"
+            sprintf "%i messages / valid round: %i / valid value: %s / %i signatures"
                 response.Messages.Length
-                response.LockedRound.Value
-                (unionCaseName response.LockedProposal)
-                response.LockedVoteSignatures.Length
+                response.ValidRound.Value
+                (unionCaseName response.ValidProposal)
+                response.ValidVoteSignatures.Length
             |> formatMessage
             |> Log.debug
         | BlockchainHeadReceived blockNr ->

@@ -239,9 +239,9 @@ module Consensus =
 
             let response = {response with Messages = []} // We're done with the messages - no need to keep them.
 
-            if response.LockedRound > _lockedRound then
-                let isValidMessage, lockedBlock =
-                    match response.LockedProposal with
+            if response.ValidRound > _validRound then
+                let isValidMessage, validBlock =
+                    match response.ValidProposal with
                     | None -> true, None
                     | Some e ->
                         if e.BlockNumber = _blockNumber then
@@ -253,16 +253,16 @@ module Consensus =
                         else
                             false, None
 
-                if isValidMessage && lockedBlock <> _lockedBlock then
+                if isValidMessage && validBlock <> _validBlock then
                     let votes =
-                        response.LockedVoteSignatures
+                        response.ValidVoteSignatures
                         |> List.toArray
                         |> Array.Parallel.map (fun s ->
                             {
                                 ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                Round = response.LockedRound
+                                Round = response.ValidRound
                                 ConsensusMessage =
-                                    lockedBlock
+                                    validBlock
                                     |> Option.map (fun b -> b.Header.Hash)
                                     |> ConsensusMessage.Vote
                                 Signature = s
@@ -285,14 +285,14 @@ module Consensus =
 
                     if signers.Count >= _qualifiedMajority then
                         let blockReady =
-                            match lockedBlock with
+                            match validBlock with
                             | None -> true
                             | Some b -> ensureBlockReady b
 
                         if not blockReady then
                             scheduleStateResponse messageRetryingInterval (_blockNumber, response)
                         else
-                            response.LockedProposal
+                            response.ValidProposal
                             |> Option.iter (fun e ->
                                 e
                                 |> Mapping.consensusMessageEnvelopeToDto
@@ -306,12 +306,12 @@ module Consensus =
                                 if signers.Contains s then
                                     __.ProcessConsensusMessage(s, e, false)
 
-                            _lockedBlock <- lockedBlock
-                            _lockedRound <- response.LockedRound
-                            _validBlock <- lockedBlock
-                            _validRound <- response.LockedRound
-                            _validBlockSignatures <- response.LockedVoteSignatures
-                            _round <- response.LockedRound
+                            _lockedBlock <- validBlock
+                            _lockedRound <- response.ValidRound
+                            _validBlock <- validBlock
+                            _validRound <- response.ValidRound
+                            _validBlockSignatures <- response.ValidVoteSignatures
+                            _round <- response.ValidRound
                             _step <-
                                 if _votes.ContainsKey (_blockNumber, _round, validatorAddress) then
                                     ConsensusStep.Vote
@@ -394,9 +394,9 @@ module Consensus =
 
                 {
                     ConsensusStateResponse.Messages = messages
-                    LockedRound = _validRound
-                    LockedProposal = validProposal
-                    LockedVoteSignatures = validVoteSignatures
+                    ValidRound = _validRound
+                    ValidProposal = validProposal
+                    ValidVoteSignatures = validVoteSignatures
                 }
                 |> sendConsensusState peerIdentity
 
@@ -863,7 +863,7 @@ module Consensus =
                 sprintf "_lockedRound: %A" _lockedRound
                 sprintf "_validBlock: %A" _validBlock
                 sprintf "_validRound: %A" _validRound
-                sprintf "_lockedBlockSignatures: %A" _validBlockSignatures
+                sprintf "_validBlockSignatures: %A" _validBlockSignatures
                 sprintf "_decisions: %A" _decisions
                 sprintf "_scheduledTimeouts: %A" (_scheduledTimeouts |> Seq.toList)
                 sprintf "_proposals: %A" (_proposals |> List.ofDict)
@@ -1118,13 +1118,13 @@ module Consensus =
         let scheduleStateResponse timeout (blockNumber, stateResponse : ConsensusStateResponse) =
             if canParticipateInConsensus blockNumber = Some true then
                 async {
-                    Log.debugf "Consensus state response retry scheduled: LockedRound %i"
-                        stateResponse.LockedRound.Value
+                    Log.debugf "Consensus state response retry scheduled: ValidRound %i"
+                        stateResponse.ValidRound.Value
 
                     do! Async.Sleep timeout
 
-                    Log.debugf "Consensus state response retry triggered: LockedRound %i"
-                        stateResponse.LockedRound.Value
+                    Log.debugf "Consensus state response retry triggered: ValidRound %i"
+                        stateResponse.ValidRound.Value
 
                     ConsensusCommand.StateReceived stateResponse
                     |> ConsensusCommandInvoked

@@ -819,14 +819,14 @@ module Mapping =
             ConsensusStateResponse.Messages =
                 dto.Messages
                 |> List.map consensusMessageEnvelopeFromDto
-            LockedRound = dto.LockedRound |> ConsensusRound
-            LockedProposal =
-                if isNull (box dto.LockedProposal) then
+            ValidRound = dto.ValidRound |> ConsensusRound
+            ValidProposal =
+                if isNull (box dto.ValidProposal) then
                     None
                 else
-                    dto.LockedProposal |> consensusMessageEnvelopeFromDto |> Some
-            LockedVoteSignatures =
-                dto.LockedVoteSignatures
+                    dto.ValidProposal |> consensusMessageEnvelopeFromDto |> Some
+            ValidVoteSignatures =
+                dto.ValidVoteSignatures
                 |> List.map Signature
         }
 
@@ -835,13 +835,13 @@ module Mapping =
             ConsensusStateResponseDto.Messages =
                 response.Messages
                 |> List.map consensusMessageEnvelopeToDto
-            LockedRound = response.LockedRound.Value
-            LockedProposal =
-                match response.LockedProposal with
+            ValidRound = response.ValidRound.Value
+            ValidProposal =
+                match response.ValidProposal with
                 | None -> Unchecked.defaultof<_>
                 | Some e -> consensusMessageEnvelopeToDto e
-            LockedVoteSignatures =
-                response.LockedVoteSignatures
+            ValidVoteSignatures =
+                response.ValidVoteSignatures
                 |> List.map (fun s -> s.Value)
         }
 

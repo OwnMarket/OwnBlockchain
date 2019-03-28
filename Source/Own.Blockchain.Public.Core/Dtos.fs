@@ -301,9 +301,9 @@ type ConsensusStateRequestDto = {
 [<MessagePackObject>]
 type ConsensusStateResponseDto = {
     [<Key(0)>] Messages : ConsensusMessageEnvelopeDto list
-    [<Key(1)>] LockedRound : int
-    [<Key(2)>] LockedProposal : ConsensusMessageEnvelopeDto
-    [<Key(3)>] LockedVoteSignatures : string list
+    [<Key(1)>] ValidRound : int
+    [<Key(2)>] ValidProposal : ConsensusMessageEnvelopeDto
+    [<Key(3)>] ValidVoteSignatures : string list
 }
 
 [<CLIMutable>]
