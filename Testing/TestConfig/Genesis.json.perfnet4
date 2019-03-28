@@ -2,16 +2,16 @@
     "NetworkCode": "OWN_PUBLIC_BLOCKCHAIN_PERFNET",
     "GenesisAddress": "CHMEgFB4BEyQ5fEv5Ru42yZfQ5egnr776ih",
     "GenesisValidators": [
-        "CHfN8DuKmMxUUwX7EtqAe6kfURzb9c5ieXu@val001.testnet.weown.com:25718",
-        "CHbC3Y147ukTMgLfKYDDReUXXHQxwcekbJL@val002.testnet.weown.com:25718",
-        "CHHpyhutk2sEPNtNgfQ43WwHueyTPseS3sc@val003.testnet.weown.com:25718",
-        "CHbiXgyWuDdx2U8gdpAwcW64ZwW83gvG8o4@val004.testnet.weown.com:25718"
+        "CHfN8DuKmMxUUwX7EtqAe6kfURzb9c5ieXu@val001.perfnet.weown.com:25718",
+        "CHbC3Y147ukTMgLfKYDDReUXXHQxwcekbJL@val002.perfnet.weown.com:25718",
+        "CHHpyhutk2sEPNtNgfQ43WwHueyTPseS3sc@val003.perfnet.weown.com:25718",
+        "CHbiXgyWuDdx2U8gdpAwcW64ZwW83gvG8o4@val004.perfnet.weown.com:25718"
     ],
     "GenesisSignatures": [
-        "E977jf4TTyGt41Dge4aWUSVnG5KZRz678m3yHnKnkNX2qypTa34pVUmoLevqiPjAAt7UZF9PACPoW8qVa5tqN1V5S",
-        "BgHisJeLcqZNZiAjzroSGohWbhTC9QD5ALXjhc31Ug5XtJTw5UU2bJjNWDXkEiYcdAqH5TtpmTc77tApdHRmEDna3",
-        "3ejXGQWfFFmRa9ZZmvSjfWhqP8MVfJpJKuYatqfnJqr1dy4V3HckmuAMxKhTmtsE4jWHboM27ntHQysu7X8rLgm1h",
-        "7Ud5j8BSmYBDzYU991US5Bvn4AxYzvtY2cX78ubQ4fJWiGRNvrHp6y1m1VGJ7qr8EjRRuVnwCMm9ovfRbpYrfDSZV"
+        "9FCELR8ZRUbtnp9G83kALT6mQfehNxtqwhxPDb2vq7EYDkHx7YsA4SJHz8Y4BbJ53fe3q7byfkDNz2cM8dkprjmA7",
+        "5EGoWj3Gr6k4wwi2nVD45FZH3CsBfxe4swc7vKciwvGLo1ERWbN5iAD58moE2ZskWRpseCCtfRuaSXjDy6iMXGKuy",
+        "vzMbcjvqr4XqUBDthV4TU7TvCkVRsLbGQGxDArP5pYqrVw7SSvGHY99afege7L9qHgz7pJS8HNzh4E7yPRPXwuf5",
+        "DunhTHTDtE16zdqTH1Wd2UV8639DA7TbShwNjDjmrrtiw3SuFosruP4nLJbtNLAbq31pHM6rr86k2SvMQtCx87np8"
     ],
     "ConfigurationBlockDelta": 20000,
     "ValidatorDepositLockTime": 5,
