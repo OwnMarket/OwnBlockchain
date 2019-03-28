@@ -509,8 +509,10 @@ module Workflows =
                         block.Header.Number.Value
                         validators.Count
 
+                let blacklist = c.ValidatorsBlacklist
+
                 // Verify proposer
-                if c.ValidatorsBlacklist |> List.contains block.Header.ProposerAddress then
+                if blacklist |> List.contains block.Header.ProposerAddress then
                     return!
                         sprintf "Block %i (%s) is proposed by a blacklisted validator %s"
                             block.Header.Number.Value
@@ -549,6 +551,12 @@ module Workflows =
                                     block.Header.Number.Value
                                     block.Header.Hash.Value
                                     minValidatorCount
+                                |> Result.appError
+                        if c.Validators |> List.exists (fun v -> blacklist |> List.contains v.ValidatorAddress) then
+                            return!
+                                sprintf "Config block %i (%s) contains blacklisted validators in the validator snapshot"
+                                    block.Header.Number.Value
+                                    block.Header.Hash.Value
                                 |> Result.appError
 
             do! saveBlock block.Header.Number blockEnvelopeDto
