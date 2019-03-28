@@ -509,6 +509,15 @@ module Workflows =
                         block.Header.Number.Value
                         validators.Count
 
+                // Verify proposer
+                if c.ValidatorsBlacklist |> List.contains block.Header.ProposerAddress then
+                    return!
+                        sprintf "Block %i (%s) is proposed by a blacklisted validator %s"
+                            block.Header.Number.Value
+                            block.Header.Hash.Value
+                            block.Header.ProposerAddress.Value
+                        |> Result.appError
+
                 // Verify signatures
                 let! blockSigners =
                     Blocks.verifyBlockSignatures createConsensusMessageHash verifySignature blockEnvelope
