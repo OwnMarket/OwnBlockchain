@@ -24,7 +24,7 @@ Own blockchain address is created using following algorithm:
 
 Here is a sample address generated from a private key using this algorithm:
 
-Private Key | Address
+Private Key (Base58 encoded) | Address
 ---|---
 `48wM487Ti6XGJW1oHopFfLiUKb5FLgArPTrZCcS4QHF3` | `CHa52gXkAcfZ8RNnuTszdE3XvxaNhtrdFrM`
 
