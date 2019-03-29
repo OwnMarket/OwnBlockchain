@@ -730,23 +730,44 @@ module Consensus =
         // Equivocation
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        member private __.TryDetectEquivocation(blockNumber, consensusRound, consensusMessage, senderAddress) =
+            let key = blockNumber, consensusRound, senderAddress
+
+            match consensusMessage with
+            | Propose (incomingBlock, incomingVr) ->
+                match _proposals.TryGetValue(key) with
+                | true, (existingBlock, existingVr, signature1) ->
+                    let ev1 = (existingBlock.Header.Hash, existingVr) |> EquivocationValue.BlockHashAndValidRound
+                    let ev2 = (incomingBlock.Header.Hash, incomingVr) |> EquivocationValue.BlockHashAndValidRound
+                    Some (ev1, ev2, signature1)
+                | _ -> None
+            | Vote incomingHash ->
+                match _votes.TryGetValue(key) with
+                | true, (existingHash, signature1) ->
+                    let ev1 = existingHash |> EquivocationValue.BlockHash
+                    let ev2 = incomingHash |> EquivocationValue.BlockHash
+                    Some (ev1, ev2, signature1)
+                | _ -> None
+            | Commit incomingHash ->
+                match _commits.TryGetValue(key) with
+                | true, (existingHash, signature1) ->
+                    let ev1 = existingHash |> EquivocationValue.BlockHash
+                    let ev2 = incomingHash |> EquivocationValue.BlockHash
+                    Some (ev1, ev2, signature1)
+                | _ -> None
+            |> Option.filter (fun (ev1, ev2, _) -> ev1 <> ev2)
+
         /// This is a safety measure to prevent accidental equivocation in outgoing messages for honest nodes.
         member private __.IsTryingToEquivocate(consensusRound, consensusMessage) =
-            let blockHash, messages =
-                match consensusMessage with
-                | Propose _ -> failwith "Don't call IsTryingToEquivocate for Propose messages"
-                | Vote hash -> hash, _votes
-                | Commit hash -> hash, _commits
-
-            match messages.TryGetValue((_blockNumber, consensusRound, validatorAddress)) with
-            | true, (foundBlockHash, _) when foundBlockHash <> blockHash ->
+            match __.TryDetectEquivocation(_blockNumber, consensusRound, consensusMessage, validatorAddress) with
+            | Some (ev1, ev2, _) ->
                 Log.warningf
-                    "EQUIVOCATION: This node tries to %s %A in round %i on hight %i (it already did that for %A)"
+                    "EQUIVOCATION: This node is trying to %s %A in round %i on hight %i (it already did that for %A)"
                     (unionCaseName consensusMessage)
-                    blockHash
+                    ev2
                     consensusRound.Value
                     _blockNumber.Value
-                    foundBlockHash
+                    ev1
                 true
             | _ ->
                 false
@@ -755,62 +776,49 @@ module Consensus =
             (BlockNumber blockNumber)
             (ConsensusRound consensusRound)
             (consensusStep : ConsensusStep)
-            (blockHash1 : BlockHash option)
-            (blockHash2 : BlockHash option)
+            (equivocationValue1 : EquivocationValue)
+            (equivocationValue2 : EquivocationValue)
             (Signature signature1)
             (Signature signature2)
             =
 
-            // Prevent the same two hashes being propagated as two distinct proofs (h1/h2 and h2/h1),
+            // Prevent the same two values being propagated as two distinct proofs (v1/v2 and v2/v1),
             // to avoid deposit being slashed twice for essentialy the same proof.
-            let blockHash1, blockHash2, signature1, signature2 =
-                if blockHash1 > blockHash2 then
-                    blockHash2, blockHash1, signature2, signature1 // Swap
+            let equivocationValue1, equivocationValue2, signature1, signature2 =
+                if equivocationValue1 > equivocationValue2 then
+                    equivocationValue2, equivocationValue1, signature2, signature1 // Swap
                 else
-                    blockHash1, blockHash2, signature1, signature2
+                    equivocationValue1, equivocationValue2, signature1, signature2
 
             {
                 BlockNumber = blockNumber
                 ConsensusRound = consensusRound
                 ConsensusStep = consensusStep |> Mapping.consensusStepToCode
-                BlockHash1 = blockHash1 |> Option.map (fun h -> h.Value) |> Option.toObj
-                BlockHash2 = blockHash2 |> Option.map (fun h -> h.Value) |> Option.toObj
+                EquivocationValue1 = equivocationValue1 |> Mapping.equivocationValueToString
+                EquivocationValue2 = equivocationValue2 |> Mapping.equivocationValueToString
                 Signature1 = signature1
                 Signature2 = signature2
             }
 
         /// Detects equivocation for incomming messages.
         member private __.DetectEquivocation(envelope, senderAddress) =
-            match envelope.ConsensusMessage with
-            | Propose _ -> failwith "Don't call DetectEquivocation for Propose messages"
-            | Vote blockHash2 ->
-                let blockHash1, signature1 = _votes.[envelope.BlockNumber, envelope.Round, senderAddress]
-                if blockHash2 <> blockHash1 then
-                    let equivocationProofDto =
-                        __.CreateEquivocationProof
-                            envelope.BlockNumber
-                            envelope.Round
-                            ConsensusStep.Vote
-                            blockHash1
-                            blockHash2
-                            signature1
-                            envelope.Signature
-                    EquivocationProofDetected (equivocationProofDto, senderAddress)
-                    |> publishEvent
-            | Commit blockHash2 ->
-                let blockHash1, signature1 = _commits.[envelope.BlockNumber, envelope.Round, senderAddress]
-                if blockHash2 <> blockHash1 then
-                    let equivocationProofDto =
-                        __.CreateEquivocationProof
-                            envelope.BlockNumber
-                            envelope.Round
-                            ConsensusStep.Commit
-                            blockHash1
-                            blockHash2
-                            signature1
-                            envelope.Signature
-                    EquivocationProofDetected (equivocationProofDto, senderAddress)
-                    |> publishEvent
+            __.TryDetectEquivocation(envelope.BlockNumber, envelope.Round, envelope.ConsensusMessage, senderAddress)
+            |> Option.iter (fun (ev1, ev2, signature1) ->
+                let consensusStep = envelope.ConsensusMessage |> Mapping.consensusStepFromMessage
+
+                let equivocationProofDto =
+                    __.CreateEquivocationProof
+                        envelope.BlockNumber
+                        envelope.Round
+                        consensusStep
+                        ev1
+                        ev2
+                        signature1
+                        envelope.Signature
+
+                EquivocationProofDetected (equivocationProofDto, senderAddress)
+                |> publishEvent
+            )
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Test Helpers

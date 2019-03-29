@@ -436,13 +436,12 @@ type ConsensusTests(output : ITestOutputHelper) =
                 | AppEvent.EquivocationProofDetected (proof, address) -> proof, address
                 | _ -> failwith "Unexpected event type"
 
-        let proofBlockHash1 =
-            equivocationProof.BlockHash1
-            |> Option.ofObj
-            |> Option.map BlockHash
-            |> Vote
+        let proofValue1 =
+            equivocationProof.EquivocationValue1
+            |> Mapping.equivocationValueFromString
+            |> function EquivocationValue.BlockHash h -> h | v -> failwithf "Unexpected value %A" v
 
-        test <@ proofBlockHash1 = equivocationMessage @>
+        test <@ Vote proofValue1 = equivocationMessage @>
         test <@ equivocationProof.Signature1.EndsWith(byzantineValidator.Value + "_EQ") @>
         test <@ detectedValidator = byzantineValidator @>
 
@@ -761,8 +760,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ equivocationProof.BlockNumber = 1L @>
         test <@ equivocationProof.ConsensusRound = 0 @>
         test <@ equivocationProof.ConsensusStep = 1uy @>
-        test <@ equivocationProof.BlockHash1 |> isNull @>
-        test <@ equivocationProof.BlockHash2 = proposedBlock.Header.Hash.Value @>
+        test <@ equivocationProof.EquivocationValue1 |> isNull @>
+        test <@ equivocationProof.EquivocationValue2 = proposedBlock.Header.Hash.Value @>
         test <@ equivocationProof.Signature1.Contains(validators.[2].Value) @>
         test <@ equivocationProof.Signature2.Contains(validators.[2].Value) @>
 

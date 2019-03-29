@@ -1041,8 +1041,8 @@ module ValidationTests =
                 BlockNumber = 1L
                 ConsensusRound = 0
                 ConsensusStep = 1uy
-                BlockHash1 = "B"
-                BlockHash2 = "A"
+                EquivocationValue1 = "B"
+                EquivocationValue2 = "A"
                 Signature1 = "S1"
                 Signature2 = "S2"
             }
@@ -1061,4 +1061,4 @@ module ValidationTests =
         | Ok _ -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
-            test <@ e.[0].Message.Contains("Block hashes in equivocation proof must be ordered") @>
+            test <@ e.[0].Message.Contains("Values in equivocation proof must be ordered") @>

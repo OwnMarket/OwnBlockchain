@@ -312,8 +312,8 @@ type EquivocationProofDto = {
     [<Key(0)>] BlockNumber : int64
     [<Key(1)>] ConsensusRound : int
     [<Key(2)>] ConsensusStep : byte
-    [<Key(3)>] BlockHash1 : string
-    [<Key(4)>] BlockHash2 : string
+    [<Key(3)>] EquivocationValue1 : string
+    [<Key(4)>] EquivocationValue2 : string
     [<Key(5)>] Signature1 : string
     [<Key(6)>] Signature2 : string
 }
@@ -618,8 +618,8 @@ type GetEquivocationProofApiResponseDto = {
     BlockNumber : int64
     ConsensusRound : int
     ConsensusStep : string
-    BlockHash1 : string
-    BlockHash2 : string
+    EquivocationValue1 : string
+    EquivocationValue2 : string
     Signature1 : string
     Signature2 : string
     // Result

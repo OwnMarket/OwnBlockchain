@@ -404,8 +404,8 @@ module ValidatorTests =
                 BlockNumber = blockNumber.Value
                 ConsensusRound = consensusRound.Value
                 ConsensusStep = ConsensusStep.Vote |> Mapping.consensusStepToCode
-                BlockHash1 = blockHash1
-                BlockHash2 = blockHash2
+                EquivocationValue1 = blockHash1
+                EquivocationValue2 = blockHash2
                 Signature1 = signature1.Value
                 Signature2 = signature2.Value
             }
@@ -543,8 +543,8 @@ module ValidatorTests =
                 BlockNumber = blockNumber.Value
                 ConsensusRound = consensusRound.Value
                 ConsensusStep = ConsensusStep.Vote |> Mapping.consensusStepToCode
-                BlockHash1 = blockHash1
-                BlockHash2 = blockHash2
+                EquivocationValue1 = blockHash1
+                EquivocationValue2 = blockHash2
                 Signature1 = signature1.Value
                 Signature2 = signature2.Value
             }
@@ -704,8 +704,8 @@ module ValidatorTests =
                 BlockNumber = blockNumber.Value
                 ConsensusRound = consensusRound.Value
                 ConsensusStep = ConsensusStep.Vote |> Mapping.consensusStepToCode
-                BlockHash1 = blockHash1
-                BlockHash2 = blockHash2
+                EquivocationValue1 = blockHash1
+                EquivocationValue2 = blockHash2
                 Signature1 = signature1.Value
                 Signature2 = signature2.Value
             }

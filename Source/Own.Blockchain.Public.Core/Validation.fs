@@ -437,11 +437,11 @@ module Validation =
         : Result<EquivocationProof, AppErrors>
         =
 
-        if equivocationProofDto.BlockHash1 = equivocationProofDto.BlockHash2 then
-            Result.appError "Block hashes in equivocation proof must differ"
-        elif equivocationProofDto.BlockHash1 > equivocationProofDto.BlockHash2 then
+        if equivocationProofDto.EquivocationValue1 = equivocationProofDto.EquivocationValue2 then
+            Result.appError "Values in equivocation proof must differ"
+        elif equivocationProofDto.EquivocationValue1 > equivocationProofDto.EquivocationValue2 then
             // This is not expected to happen for honest nodes, due to the ConsensusState.CreateEquivocationProof logic.
-            Result.appError "Block hashes in equivocation proof must be ordered (h1 < h2) to prevent double slashing"
+            Result.appError "Values in equivocation proof must be ordered (v1 < v2) to prevent double slashing"
         else
             let signer1 =
                 verifyEquivocationProofSignature
@@ -450,7 +450,7 @@ module Validation =
                     equivocationProofDto.BlockNumber
                     equivocationProofDto.ConsensusRound
                     equivocationProofDto.ConsensusStep
-                    equivocationProofDto.BlockHash1
+                    equivocationProofDto.EquivocationValue1
                     equivocationProofDto.Signature1
             let signer2 =
                 verifyEquivocationProofSignature
@@ -459,7 +459,7 @@ module Validation =
                     equivocationProofDto.BlockNumber
                     equivocationProofDto.ConsensusRound
                     equivocationProofDto.ConsensusStep
-                    equivocationProofDto.BlockHash2
+                    equivocationProofDto.EquivocationValue2
                     equivocationProofDto.Signature2
 
             match signer1, signer2 with
@@ -473,13 +473,23 @@ module Validation =
                     |> Result.appError
                 else
                     let validatorAddress = s1
+
+                    let equivocationValue1Bytes =
+                        equivocationProofDto.EquivocationValue1
+                        |> Mapping.equivocationValueFromString
+                        |> Mapping.equivocationValueToBytes decodeHash
+                    let equivocationValue2Bytes =
+                        equivocationProofDto.EquivocationValue2
+                        |> Mapping.equivocationValueFromString
+                        |> Mapping.equivocationValueToBytes decodeHash
+
                     let equivocationProofHash =
                         [
                             equivocationProofDto.BlockNumber |> Conversion.int64ToBytes
                             equivocationProofDto.ConsensusRound |> Conversion.int32ToBytes
                             [| equivocationProofDto.ConsensusStep |]
-                            equivocationProofDto.BlockHash1 |> Option.ofObj |> Option.map decodeHash |? [| 0uy |]
-                            equivocationProofDto.BlockHash2 |> Option.ofObj |> Option.map decodeHash |? [| 0uy |]
+                            equivocationValue1Bytes
+                            equivocationValue2Bytes
                             equivocationProofDto.Signature1 |> decodeHash
                             equivocationProofDto.Signature2 |> decodeHash
                         ]
@@ -493,8 +503,10 @@ module Validation =
                         BlockNumber = equivocationProofDto.BlockNumber |> BlockNumber
                         ConsensusRound = equivocationProofDto.ConsensusRound |> ConsensusRound
                         ConsensusStep = equivocationProofDto.ConsensusStep |> Mapping.consensusStepFromCode
-                        BlockHash1 = equivocationProofDto.BlockHash1 |> Option.ofObj |> Option.map BlockHash
-                        BlockHash2 = equivocationProofDto.BlockHash2 |> Option.ofObj |> Option.map BlockHash
+                        EquivocationValue1 =
+                            equivocationProofDto.EquivocationValue1 |> Mapping.equivocationValueFromString
+                        EquivocationValue2 =
+                            equivocationProofDto.EquivocationValue2 |> Mapping.equivocationValueFromString
                         Signature1 = equivocationProofDto.Signature1 |> Signature
                         Signature2 = equivocationProofDto.Signature2 |> Signature
                     }

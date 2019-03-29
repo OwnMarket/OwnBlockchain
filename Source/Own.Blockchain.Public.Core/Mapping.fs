@@ -2,6 +2,7 @@ namespace Own.Blockchain.Public.Core
 
 open System
 open Own.Common.FSharp
+open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 
@@ -248,6 +249,40 @@ module Mapping =
         | Propose _ -> ConsensusStep.Propose
         | Vote _ -> ConsensusStep.Vote
         | Commit _ -> ConsensusStep.Commit
+
+    let equivocationValueFromString (ev : string) =
+        if ev.IsNullOrWhiteSpace() then
+            EquivocationValue.BlockHash None
+        else
+            match ev.Split(",") with
+            | [| bh |] ->
+                if bh.IsNullOrWhiteSpace() then
+                    None
+                else
+                    bh |> Option.ofObj |> Option.map BlockHash
+                |> EquivocationValue.BlockHash
+            | [| bh; vr |] ->
+                let bh = bh |> BlockHash
+                let vr = vr |> Convert.ToInt32 |> ConsensusRound
+                (bh, vr) |> EquivocationValue.BlockHashAndValidRound
+            | _ -> failwithf "Cannot parse equivocation value: %s" ev
+
+    let equivocationValueToString ev =
+        match ev with
+        | EquivocationValue.BlockHash bh ->
+            bh |> Option.map (fun h -> h.Value) |> Option.toObj
+        | EquivocationValue.BlockHashAndValidRound (bh, vr) ->
+            sprintf "%s,%i" bh.Value vr.Value
+
+    let equivocationValueToBytes decodeHash ev =
+        match ev with
+        | EquivocationValue.BlockHash bh ->
+            bh |> Option.map (fun h -> h.Value |> decodeHash) |? [| 0uy |]
+        | EquivocationValue.BlockHashAndValidRound (bh, vr) ->
+            [|
+                yield! bh.Value |> decodeHash
+                yield! vr.Value |> Conversion.int32ToBytes
+            |]
 
     let equivocationProofToEquivocationInfoDto (equivocationProof : EquivocationProof) =
         {
@@ -719,8 +754,8 @@ module Mapping =
             BlockNumber = equivocationProofDto.BlockNumber
             ConsensusRound = equivocationProofDto.ConsensusRound
             ConsensusStep = equivocationProofDto.ConsensusStep |> consensusStepFromCode |> unionCaseName
-            BlockHash1 = equivocationProofDto.BlockHash1
-            BlockHash2 = equivocationProofDto.BlockHash2
+            EquivocationValue1 = equivocationProofDto.EquivocationValue1
+            EquivocationValue2 = equivocationProofDto.EquivocationValue2
             Signature1 = equivocationProofDto.Signature1
             Signature2 = equivocationProofDto.Signature2
             Status = status

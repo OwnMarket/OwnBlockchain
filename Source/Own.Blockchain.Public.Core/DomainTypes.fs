@@ -479,14 +479,19 @@ type ConsensusCommand =
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
 
+[<RequireQualifiedAccess>]
+type EquivocationValue =
+    | BlockHash of BlockHash option
+    | BlockHashAndValidRound of BlockHash * ConsensusRound
+
 type EquivocationProof = {
     EquivocationProofHash : EquivocationProofHash
     ValidatorAddress : BlockchainAddress
     BlockNumber : BlockNumber
     ConsensusRound : ConsensusRound
     ConsensusStep : ConsensusStep
-    BlockHash1 : BlockHash option
-    BlockHash2 : BlockHash option
+    EquivocationValue1 : EquivocationValue
+    EquivocationValue2 : EquivocationValue
     Signature1 : Signature
     Signature2 : Signature
 }
