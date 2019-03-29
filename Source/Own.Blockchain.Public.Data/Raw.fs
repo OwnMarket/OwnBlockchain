@@ -108,7 +108,7 @@ module Raw =
             |> tee (
                 Result.iter (fun txEnvelope ->
                     if txCache.Keys.Count < maxTxCacheSize then
-                        let cacheValue = txEnvelope, DateTime.Now
+                        let cacheValue = txEnvelope, DateTime.UtcNow
                         txCache.AddOrUpdate(txHash, cacheValue, fun _ _ -> cacheValue) |> ignore
                 )
             )
@@ -119,7 +119,7 @@ module Raw =
     let startTxCacheMonitor txCacheExpirationTime =
         let rec loop () =
             async {
-                let lastValidTime = DateTime.Now.AddSeconds(-txCacheExpirationTime |> float)
+                let lastValidTime = DateTime.UtcNow.AddSeconds(-txCacheExpirationTime |> float)
                 txCache
                 |> List.ofDict
                 |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)

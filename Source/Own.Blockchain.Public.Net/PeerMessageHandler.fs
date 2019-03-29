@@ -19,6 +19,7 @@ module internal PeerMessageHandler =
         gossipFanout
         gossipIntervalMillis
         gossipMaxMissedHeartbeats
+        peerResponseThrottingTime
         getNetworkId
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
@@ -51,6 +52,7 @@ module internal PeerMessageHandler =
             Fanout = gossipFanout
             IntervalMillis = gossipIntervalMillis
             MissedHeartbeatIntervalMillis = gossipMaxMissedHeartbeats * gossipIntervalMillis
+            PeerResponseThrottlingTime = peerResponseThrottingTime
         }
 
         let n =

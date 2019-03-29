@@ -142,6 +142,12 @@ type Config () =
             | true, cycles when cycles > 0 -> cycles
             | _ -> 10
 
+    static member PeerResponseThrottlingTime // Milliseconds
+        with get () =
+            match Int32.TryParse config.["PeerResponseThrottlingTime"] with
+            | true, cycles when cycles >= 0 -> cycles
+            | _ -> 3000
+
     static member DnsResolverCacheExpirationTime // Seconds
         with get () =
             match Int32.TryParse config.["DnsResolverCacheExpirationTime"] with

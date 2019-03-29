@@ -222,6 +222,7 @@ module PeerTests =
             Fanout = 4
             IntervalMillis = 100
             MissedHeartbeatIntervalMillis = 60000
+            PeerResponseThrottlingTime = 5000
         }
 
         let createNode (nodeConfig : NetworkNodeConfig) =

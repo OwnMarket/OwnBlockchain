@@ -8,6 +8,7 @@ module Stats =
 
     type Counter =
         | PeerRequests
+        | PeerResponses
 
     type StatsSummaryEntry = {
         Counter : string

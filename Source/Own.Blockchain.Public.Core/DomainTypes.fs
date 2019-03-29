@@ -523,6 +523,7 @@ type GossipNetworkConfig = {
     Fanout : int
     IntervalMillis : int
     MissedHeartbeatIntervalMillis : int
+    PeerResponseThrottlingTime : int
 }
 
 type GossipMember = {
