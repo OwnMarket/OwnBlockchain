@@ -673,7 +673,7 @@ module Blocks =
                     createConsensusMessageHash
                         block.Header.Number
                         blockEnvelope.ConsensusRound
-                        (block.Header.Hash |> Some |> ConsensusMessage.Commit)
+                        (block.Header.Hash |> Some |> Commit)
 
                 match verifySignature s messageHash with
                 | Some blockchainAddress ->

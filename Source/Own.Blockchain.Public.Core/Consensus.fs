@@ -106,7 +106,7 @@ module Consensus =
                 let key = envelope.BlockNumber, envelope.Round, senderAddress
 
                 match envelope.ConsensusMessage with
-                | ConsensusMessage.Propose (block, vr) ->
+                | Propose (block, vr) ->
                     if block.Header.Number = envelope.BlockNumber then
                         let networkTime = Utils.getNetworkTimestamp ()
                         let proposeTimeout = timeoutForRound ConsensusStep.Propose _round |> int64
@@ -126,13 +126,13 @@ module Consensus =
                                         __.UpdateState()
                             elif envelope.Round >= _round then
                                 scheduleMessage messageRetryingInterval (senderAddress, envelope)
-                | ConsensusMessage.Vote blockHash ->
+                | Vote blockHash ->
                     if _votes.TryAdd(key, (blockHash, envelope.Signature)) then
                         if updateState then
                             __.UpdateState()
                     else
                         __.DetectEquivocation(envelope, senderAddress)
-                | ConsensusMessage.Commit blockHash ->
+                | Commit blockHash ->
                     if _commits.TryAdd(key, (blockHash, envelope.Signature)) then
                         if updateState then
                             __.UpdateState()
@@ -264,7 +264,7 @@ module Consensus =
                                 ConsensusMessage =
                                     validBlock
                                     |> Option.map (fun b -> b.Header.Hash)
-                                    |> ConsensusMessage.Vote
+                                    |> Vote
                                 Signature = s
                             }
                             |> Mapping.consensusMessageEnvelopeToDto
@@ -674,18 +674,18 @@ module Consensus =
 
         member private __.SendPropose(consensusRound, block) =
             let variables = __.GetConsensusVariables()
-            let message = ConsensusMessage.Propose (block, _validRound)
+            let message = Propose (block, _validRound)
             sendConsensusMessage _blockNumber consensusRound variables message
 
         member private __.SendVote(consensusRound, blockHash) =
             let variables = __.GetConsensusVariables()
-            let message = ConsensusMessage.Vote blockHash
+            let message = Vote blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
                 sendConsensusMessage _blockNumber consensusRound variables message
 
         member private __.SendCommit(consensusRound, blockHash) =
             let variables = __.GetConsensusVariables()
-            let message = ConsensusMessage.Commit blockHash
+            let message = Commit blockHash
             if not (__.IsTryingToEquivocate(consensusRound, message)) then
                 sendConsensusMessage _blockNumber consensusRound variables message
 
@@ -734,9 +734,9 @@ module Consensus =
         member private __.IsTryingToEquivocate(consensusRound, consensusMessage) =
             let blockHash, messages =
                 match consensusMessage with
-                | ConsensusMessage.Propose _ -> failwith "Don't call IsTryingToEquivocate for Propose messages"
-                | ConsensusMessage.Vote hash -> hash, _votes
-                | ConsensusMessage.Commit hash -> hash, _commits
+                | Propose _ -> failwith "Don't call IsTryingToEquivocate for Propose messages"
+                | Vote hash -> hash, _votes
+                | Commit hash -> hash, _commits
 
             match messages.TryGetValue((_blockNumber, consensusRound, validatorAddress)) with
             | true, (foundBlockHash, _) when foundBlockHash <> blockHash ->

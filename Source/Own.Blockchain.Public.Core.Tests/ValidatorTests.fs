@@ -379,7 +379,7 @@ module ValidatorTests =
             blockHash1
             |> BlockHash
             |> Some
-            |> ConsensusMessage.Vote
+            |> Vote
             |> Consensus.createConsensusMessageHash
                 Hashing.decode
                 Hashing.hash
@@ -391,7 +391,7 @@ module ValidatorTests =
             blockHash2
             |> BlockHash
             |> Some
-            |> ConsensusMessage.Vote
+            |> Vote
             |> Consensus.createConsensusMessageHash
                 Hashing.decode
                 Hashing.hash
@@ -518,7 +518,7 @@ module ValidatorTests =
             blockHash1
             |> BlockHash
             |> Some
-            |> ConsensusMessage.Vote
+            |> Vote
             |> Consensus.createConsensusMessageHash
                 Hashing.decode
                 Hashing.hash
@@ -530,7 +530,7 @@ module ValidatorTests =
             blockHash2
             |> BlockHash
             |> Some
-            |> ConsensusMessage.Vote
+            |> Vote
             |> Consensus.createConsensusMessageHash
                 Hashing.decode
                 Hashing.hash
@@ -679,7 +679,7 @@ module ValidatorTests =
             blockHash1
             |> BlockHash
             |> Some
-            |> ConsensusMessage.Vote
+            |> Vote
             |> Consensus.createConsensusMessageHash
                 Hashing.decode
                 Hashing.hash
@@ -691,7 +691,7 @@ module ValidatorTests =
             blockHash2
             |> BlockHash
             |> Some
-            |> ConsensusMessage.Vote
+            |> Vote
             |> Consensus.createConsensusMessageHash
                 Hashing.decode
                 Hashing.hash

@@ -48,7 +48,7 @@ type ConsensusTests(output : ITestOutputHelper) =
                 Configuration = None
             }
 
-        let consensusMessage = ConsensusMessage.Propose (block, consensusRound)
+        let consensusMessage = Propose (block, consensusRound)
 
         let expectedHash =
             [
@@ -79,7 +79,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         let blockHash = BlockHash "HHH"
         let consensusRound = ConsensusRound 1
 
-        let consensusMessage = ConsensusMessage.Vote (Some blockHash)
+        let consensusMessage = Vote (Some blockHash)
 
         let expectedHash =
             [
@@ -109,7 +109,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         let blockHash = BlockHash "HHH"
         let consensusRound = ConsensusRound 1
 
-        let consensusMessage = ConsensusMessage.Commit (Some blockHash)
+        let consensusMessage = Commit (Some blockHash)
 
         let expectedHash =
             [
@@ -404,7 +404,7 @@ type ConsensusTests(output : ITestOutputHelper) =
             |> List.shuffle
             |> List.head
 
-        let equivocationMessage = ConsensusMessage.Vote Option<BlockHash>.None
+        let equivocationMessage = Vote Option<BlockHash>.None
 
         let net = new ConsensusSimulationNetwork(validators)
 
@@ -440,7 +440,7 @@ type ConsensusTests(output : ITestOutputHelper) =
             equivocationProof.BlockHash1
             |> Option.ofObj
             |> Option.map BlockHash
-            |> ConsensusMessage.Vote
+            |> Vote
 
         test <@ proofBlockHash1 = equivocationMessage @>
         test <@ equivocationProof.Signature1.EndsWith(byzantineValidator.Value + "_EQ") @>

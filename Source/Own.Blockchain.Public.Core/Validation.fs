@@ -416,8 +416,8 @@ module Validation =
         let consensusMessage =
             match consensusStep with
             | 0uy -> failwith "Equivocation is not checked on Propose messages"
-            | 1uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> ConsensusMessage.Vote
-            | 2uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> ConsensusMessage.Commit
+            | 1uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> Vote
+            | 2uy -> blockHash |> Option.ofObj |> Option.map BlockHash |> Commit
             | c -> failwithf "Unknown consensus step code: %i" c
 
         let consensusMessageHash =

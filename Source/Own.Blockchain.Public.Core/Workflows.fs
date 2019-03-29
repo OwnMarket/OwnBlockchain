@@ -125,7 +125,7 @@ module Workflows =
         createConsensusMessageHash
             block.Header.Number
             (ConsensusRound 0)
-            (block.Header.Hash |> Some |> ConsensusMessage.Commit)
+            (block.Header.Hash |> Some |> Commit)
         |> signHash privateKey
 
     let initBlockchainState
