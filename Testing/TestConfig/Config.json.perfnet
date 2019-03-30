@@ -2,10 +2,10 @@
     "DbEngineType": "Postgres",
     "DbConnectionString": "server=localhost;database=own_public_blockchain;user id=XXXXXXXXXX;password=XXXXXXXXXX;searchpath=own",
     "NetworkBootstrapNodes": [
-        "val01.perfnet.weown.com:25718",
-        "val02.perfnet.weown.com:25718",
-        "val03.perfnet.weown.com:25718",
-        "val04.perfnet.weown.com:25718"
+        "val001.perfnet.weown.com:25718",
+        "val002.perfnet.weown.com:25718",
+        "val003.perfnet.weown.com:25718",
+        "val004.perfnet.weown.com:25718"
     ],
     "AllowPrivateNetworkPeers": true,
     "PublicAddress": "<<PUBLIC_ADDRESS>>:25718",
