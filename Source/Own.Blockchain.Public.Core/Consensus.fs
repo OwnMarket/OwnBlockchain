@@ -510,13 +510,13 @@ module Consensus =
             |> Option.iter (fun ((_, _, _), (block, vr, _)) ->
                 if _step = ConsensusStep.Propose then
                     _step <- ConsensusStep.Vote
-                    if isValidBlock block && (_lockedRound = ConsensusRound -1 || _lockedBlock = Some block) then
+                    if isValidBlock block && (_lockedRound.Value = -1 || _lockedBlock = Some block) then
                         __.SendVote(_round, Some block.Header.Hash)
                     else
                         __.SendVote(_round, None)
 
                 if _step = ConsensusStep.Propose
-                    && (vr >= ConsensusRound 0 && vr < _round)
+                    && (vr.Value >= 0 && vr < _round)
                     && __.MajorityVoted(vr, Some block.Header.Hash)
                 then
                     _step <- ConsensusStep.Vote
