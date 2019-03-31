@@ -127,7 +127,7 @@ type NetworkNode
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
             let found, _ = activeMembers.TryGetValue networkAddress
             if not found then
-                Log.warningf "*** Member marked as DEAD %s" networkAddress.Value
+                Log.warningf "Member marked as DEAD %s" networkAddress.Value
 
                 deadMembers.TryRemove networkAddress |> ignore
                 memberStateMonitor.TryRemove networkAddress |> ignore
@@ -152,7 +152,7 @@ type NetworkNode
     let setPendingDeadMember (networkAddress : NetworkAddress) =
         async {
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
-            Log.verbosef "*** Member potentially DEAD: %s" networkAddress.Value
+            Log.verbosef "Member potentially DEAD: %s" networkAddress.Value
             match activeMembers.TryGetValue networkAddress with
             | true, activeMember ->
                 activeMembers.TryRemove networkAddress |> ignore
