@@ -3,13 +3,13 @@
 open System
 open System.Collections.Concurrent
 open System.Collections.Generic
+open NetMQ
+open NetMQ.Sockets
+open Newtonsoft.Json
 open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Dtos
-open NetMQ
-open NetMQ.Sockets
-open Newtonsoft.Json
 
 type internal TransportCore
     (
