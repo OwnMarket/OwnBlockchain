@@ -1590,6 +1590,7 @@ module Workflows =
         let peers =
             getPeerList ()
             |> List.map (fun m -> m.NetworkAddress.Value)
+            |> List.sort
 
         { GetPeerListApiDto.Peers = peers }
         |> Ok
