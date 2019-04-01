@@ -56,13 +56,16 @@ type internal TransportCore
         if eventArgs.Socket.TryReceiveMultipartMessage &message then
             extractMessageFromMultipart message
             |> Option.iter (fun msg ->
-                match unpackMessage msg with
-                | Ok peerMessageEnvelope ->
-                    if peerMessageEnvelope.NetworkId <> networkId then
-                        Log.error "Peer message with invalid networkId ignored"
-                    else
-                        receivePeerMessage peerMessageEnvelope
-                | Error error -> Log.error error
+                msg
+                |> unpackMessage
+                |> Result.handle
+                    (fun peerMessageEnvelope ->
+                        if peerMessageEnvelope.NetworkId <> networkId then
+                            Log.error "Peer message with invalid networkId ignored"
+                        else
+                            receivePeerMessage peerMessageEnvelope
+                    )
+                    Log.error
             )
         else
             Log.warning "An error has occurred while trying to read the message"
@@ -77,13 +80,16 @@ type internal TransportCore
             if hasMore then
                 let mutable msg = Array.empty<byte>
                 if e.Socket.TryReceiveFrameBytes &msg then
-                    match unpackMessage msg with
-                    | Ok peerMessageEnvelope ->
-                        if peerMessageEnvelope.NetworkId <> networkId then
-                            Log.error "Peer message with invalid networkId ignored"
-                        else
-                            receivePeerMessage peerMessageEnvelope
-                    | Error error -> Log.error error
+                    msg
+                    |> unpackMessage
+                    |> Result.handle
+                        (fun peerMessageEnvelope ->
+                            if peerMessageEnvelope.NetworkId <> networkId then
+                                Log.error "Peer message with invalid networkId ignored"
+                            else
+                                receivePeerMessage peerMessageEnvelope
+                        )
+                        Log.error
             else
                 Log.warning "Possible invalid multipart message format"
         )
