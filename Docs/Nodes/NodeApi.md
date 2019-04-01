@@ -19,6 +19,7 @@ Endpoint | Verb | Description
 `/asset/{assetHash}/kyc-providers` | `GET` | List of KYC providers for the asset
 `/validators?activeOnly={true/false}` | `GET` | List of validators, optionally filtering the active only ones
 `/validator/{validatorAddress}/stakes` | `GET` | List of stakes for a validator
+`/peers` | `GET` | List of peers
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
 
@@ -525,6 +526,26 @@ Response JSON payload:
             "stakerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
             "amount": 50
         }
+    ]
+}
+```
+
+
+## `GET /peers`
+
+Request URL:
+```
+/peers
+```
+
+Response JSON payload:
+```json
+{
+    "peers": [
+        "127.0.0.1:25701",
+        "127.0.0.1:25702",
+        "127.0.0.1:25703",
+        "127.0.0.1:25704"                
     ]
 }
 ```
