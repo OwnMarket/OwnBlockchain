@@ -220,7 +220,8 @@ module PeerTests =
         // ARRANGE
         let gossipConfig = {
             Fanout = 4
-            IntervalMillis = 100
+            GossipDiscoveryIntervalMillis = 100
+            GossipIntervalMillis = 100
             MissedHeartbeatIntervalMillis = 60000
             PeerResponseThrottlingTime = 5000
         }
@@ -254,7 +255,7 @@ module PeerTests =
             nodeConfigList
             |> List.map (fun config -> createNode config)
 
-        (nodeList, gossipConfig.IntervalMillis)
+        (nodeList, gossipConfig.GossipIntervalMillis)
 
     let create3NodesConfigSameBootstrapNode (ports : int list) =
         let address1, address2, address3 =

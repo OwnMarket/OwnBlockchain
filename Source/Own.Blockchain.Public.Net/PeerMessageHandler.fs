@@ -17,6 +17,7 @@ module internal PeerMessageHandler =
         maxConnectedPeers
         dnsResolverCacheExpirationTime
         gossipFanout
+        gossipDiscoveryIntervalMillis
         gossipIntervalMillis
         gossipMaxMissedHeartbeats
         peerResponseThrottingTime
@@ -50,7 +51,8 @@ module internal PeerMessageHandler =
 
         let gossipConfig = {
             Fanout = gossipFanout
-            IntervalMillis = gossipIntervalMillis
+            GossipDiscoveryIntervalMillis = gossipDiscoveryIntervalMillis
+            GossipIntervalMillis = gossipIntervalMillis
             MissedHeartbeatIntervalMillis = gossipMaxMissedHeartbeats * gossipIntervalMillis
             PeerResponseThrottlingTime = peerResponseThrottingTime
         }

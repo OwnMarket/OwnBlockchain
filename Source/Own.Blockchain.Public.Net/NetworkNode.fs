@@ -187,7 +187,7 @@ type NetworkNode
                 |> List.iter (fun (requestItem, _) ->
                     requestsMap.TryRemove requestItem |> ignore
                 )
-                do! Async.Sleep(gossipConfig.IntervalMillis)
+                do! Async.Sleep(gossipConfig.GossipIntervalMillis)
                 return! loop ()
             }
 
@@ -220,7 +220,7 @@ type NetworkNode
                         let cacheValue = newIp, DateTime.UtcNow
                         dnsResolverCache.AddOrUpdate(dns, cacheValue, fun _ _ -> cacheValue) |> ignore
                 )
-                do! Async.Sleep(gossipConfig.IntervalMillis)
+                do! Async.Sleep(gossipConfig.GossipDiscoveryIntervalMillis)
                 return! loop ()
             }
         Async.Start (loop (), cts.Token)
@@ -377,7 +377,7 @@ type NetworkNode
                         sendRequestMessage peerMessageEnvelopeDto address.Value
                     )
 
-                    do! Async.Sleep(4 * gossipConfig.IntervalMillis)
+                    do! Async.Sleep(4 * gossipConfig.GossipIntervalMillis)
 
                     (*
                         If no answer is received within 2 cycles (request - response i.e 4xtCycle),
@@ -424,7 +424,7 @@ type NetworkNode
         let rec loop () =
             async {
                 __.Discover ()
-                do! Async.Sleep(gossipConfig.IntervalMillis)
+                do! Async.Sleep(gossipConfig.GossipDiscoveryIntervalMillis)
                 return! loop ()
             }
         Async.Start (loop (), cts.Token)
@@ -571,17 +571,17 @@ type NetworkNode
                     |> List.map (fun m -> m.NetworkAddress)
 
                 let senderAddress = msg.SenderAddress |> optionToList
-                let remainingrecipientAddresses =
+                let remainingRecipientAddresses =
                     match gossipMessages.TryGetValue msg.MessageId with
                     | true, processedAddresses ->
                         List.except (processedAddresses @ senderAddress) recipientAddresses
                     | _ ->
                         List.except senderAddress recipientAddresses
 
-                __.ProcessGossipMessage msg remainingrecipientAddresses
+                __.ProcessGossipMessage msg remainingRecipientAddresses
 
-                if remainingrecipientAddresses.Length >= gossipConfig.Fanout then
-                    do! Async.Sleep(gossipConfig.IntervalMillis)
+                if remainingRecipientAddresses.Length >= gossipConfig.Fanout then
+                    do! Async.Sleep(gossipConfig.GossipIntervalMillis)
                     return! loop msg
             }
 

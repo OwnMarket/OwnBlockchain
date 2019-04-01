@@ -521,7 +521,8 @@ type NetworkNodeConfig = {
 
 type GossipNetworkConfig = {
     Fanout : int
-    IntervalMillis : int
+    GossipDiscoveryIntervalMillis : int
+    GossipIntervalMillis : int
     MissedHeartbeatIntervalMillis : int
     PeerResponseThrottlingTime : int
 }

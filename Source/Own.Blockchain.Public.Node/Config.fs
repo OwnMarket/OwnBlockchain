@@ -134,13 +134,19 @@ type Config () =
         with get () =
             match Int32.TryParse config.["GossipInterval"] with
             | true, interval when interval > 0 -> interval
+            | _ -> 2000
+
+    static member GossipDiscoveryInterval // Milliseconds
+        with get () =
+            match Int32.TryParse config.["GossipDiscoveryInterval"] with
+            | true, interval when interval > 0 -> interval
             | _ -> 10000
 
     static member GossipMaxMissedHeartbeats
         with get () =
             match Int32.TryParse config.["GossipMaxMissedHeartbeats"] with
             | true, cycles when cycles > 0 -> cycles
-            | _ -> 10
+            | _ -> 30
 
     static member PeerResponseThrottlingTime // Milliseconds
         with get () =

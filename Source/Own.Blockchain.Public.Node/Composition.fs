@@ -562,6 +562,7 @@ module Composition =
             Config.DnsResolverCacheExpirationTime
             Config.MaxConnectedPeers
             Config.GossipFanout
+            Config.GossipDiscoveryInterval
             Config.GossipInterval
             Config.GossipMaxMissedHeartbeats
             Config.PeerResponseThrottlingTime
