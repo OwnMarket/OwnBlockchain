@@ -48,13 +48,14 @@ module Raw =
                 Result.appError (sprintf "%s %s already exists" dataTypeName (extractHash key))
             else
                 let bytes = data |> LZ4MessagePackSerializer.Serialize
-                use fs = new FileStream(path, FileMode.OpenOrCreate)
+                use fs = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None)
                 use bw = new BinaryWriter(fs)
                 bw.Write(bytes)
                 Ok ()
         with
         | ex ->
-            Log.error ex.AllMessagesAndStackTraces
+            Log.warning ex.AllMessages
+            Log.debug ex.AllMessagesAndStackTraces
             Result.appError (sprintf "Saving %s %s failed" dataTypeName (extractHash key))
 
     let private loadData<'T> (dataDir : string) (dataType : RawDataType) (key : string) : Result<'T, AppErrors> =
@@ -64,7 +65,7 @@ module Raw =
             let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
-                use fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+                use fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read)
                 use br = new BinaryReader(fs)
                 br.ReadBytes (fs.Length |> Convert.ToInt32)
                 |> LZ4MessagePackSerializer.Deserialize<'T>
@@ -73,7 +74,8 @@ module Raw =
                 Result.appError (sprintf "%s %s not found in storage" dataTypeName (extractHash key))
         with
         | ex ->
-            Log.error ex.AllMessagesAndStackTraces
+            Log.warning ex.AllMessages
+            Log.debug ex.AllMessagesAndStackTraces
             Result.appError (sprintf "Loading %s %s failed" dataTypeName (extractHash key))
 
     let private deleteData (dataDir : string) (dataType : RawDataType) (key : string) : Result<unit, AppErrors> =
