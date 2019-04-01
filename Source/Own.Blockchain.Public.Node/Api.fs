@@ -199,6 +199,15 @@ module Api =
             return! response next ctx
         }
 
+    let getPeersHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getPeersApi ()
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,6 +232,7 @@ module Api =
                 routef "/asset/%s" getAssetHandler
                 route "/validators" >=> getValidatorsHandler
                 routef "/validator/%s/stakes" getValidatorStakesHandler
+                route "/peers" >=> getPeersHandler
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler

@@ -721,3 +721,7 @@ type GetValidatorInfoApiDto = {
 type GetValidatorsApiDto = {
     Validators : GetValidatorInfoApiDto list
 }
+
+type GetPeerListApiDto = {
+    Peers : string list
+}

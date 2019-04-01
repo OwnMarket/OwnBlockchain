@@ -1581,3 +1581,15 @@ module Workflows =
                 GetValidatorStakesApiResponseDto.Stakes = getValidatorStakes address
             }
             |> Ok
+
+    let getPeerListApi
+        (getPeerList : unit -> GossipMember list)
+        : Result<GetPeerListApiDto, AppErrors>
+        =
+
+        let peers =
+            getPeerList ()
+            |> List.map (fun m -> m.NetworkAddress.Value)
+
+        { GetPeerListApiDto.Peers = peers }
+        |> Ok
