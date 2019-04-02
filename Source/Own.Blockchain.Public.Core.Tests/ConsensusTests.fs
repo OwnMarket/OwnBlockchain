@@ -777,7 +777,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.IsTimeoutScheduled(validators.[2], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote) |> not @>
 
         // Stale round detected
-        net.RequestConsensusState validators.[2]
+        net.RequestConsensusState validators.[2] (ConsensusRound 0)
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> isCommitForBlock @>
 
@@ -1120,7 +1120,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Commit @>
 
         // Stale round detected
-        net.RequestConsensusState validators.[0]
+        net.RequestConsensusState validators.[0] (ConsensusRound 0)
 
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[0]) @>
@@ -2159,10 +2159,12 @@ type ConsensusTests(output : ITestOutputHelper) =
             test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 10 @>
 
         // Stale height detected
-        net.RequestConsensusState validators.[1]
+        net.RequestConsensusState validators.[1] (ConsensusRound 10)
 
         // V1, V2, V3 decide B2
         while net.DecisionCount <> 3 do
+            if net.States.[validators.[3]].Variables.ConsensusRound.Value > 20 then
+                failwith "CONSENSUS DEADLOCK"
             net.DeliverMessages()
             if net.Messages.Count = 0 then
                 for i in [1 .. 3] |> List.shuffle do
