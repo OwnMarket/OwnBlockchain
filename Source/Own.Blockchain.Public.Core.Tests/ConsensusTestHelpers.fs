@@ -494,7 +494,7 @@ module ConsensusTestHelpers =
 
         member __.PrintTheState(log) =
             __.Validators
-            |> Seq.iteri (fun i v -> sprintf "VALIDATOR %i: %A" (i + 1) v |> log)
+            |> Seq.iteri (fun i v -> sprintf "VALIDATOR %i: %s" (i + 1) v.Value |> log)
 
             __.Messages
             |> Seq.iter (sprintf "MESSAGE: %A" >> log)

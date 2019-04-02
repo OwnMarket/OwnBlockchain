@@ -1833,8 +1833,8 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         net, proposedBlock2 // Return the simulation state for dependent tests.
 
-    [<Fact>]
-    member __.``Consensus - BFT - TLB`` () =
+    // TLB
+    member __.ArrangeTLB () =
         // ARRANGE
         let validators = List.init 4 (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
         let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
@@ -2077,6 +2077,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[2]].Variables.LockedRound.Value = 1 @>
         test <@ net.States.[validators.[3]].Variables.LockedBlock = None @>
         test <@ net.States.[validators.[3]].Variables.LockedRound.Value = -1 @>
+
+        net, proposedBlock1, proposedBlock2 // Return the simulation state for dependent tests.
+
+    [<Fact>]
+    member __.``Consensus - BFT - TLB - timed unlock`` () =
+        // ARRANGE
+        let net, proposedBlock1, proposedBlock2 = __.ArrangeTLB ()
+        let validators = net.Validators
 
         // V1, V2, V3 don't make progres in height
         while net.DecisionCount <> 3 && net.States.[validators.[3]].Variables.ConsensusRound.Value < 10 do
