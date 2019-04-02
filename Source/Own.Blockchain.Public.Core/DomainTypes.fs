@@ -517,6 +517,7 @@ type NetworkNodeConfig = {
     AllowPrivateNetworkPeers : bool
     MaxConnectedPeers : int
     DnsResolverCacheExpirationTime : int
+    NetworkSendoutRetryTimeout : int
 }
 
 type GossipNetworkConfig = {

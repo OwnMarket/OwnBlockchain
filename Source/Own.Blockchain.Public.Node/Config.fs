@@ -118,6 +118,12 @@ type Config () =
                 | true, allow -> allow
                 | _ -> false
 
+    static member DnsResolverCacheExpirationTime // Seconds
+        with get () =
+            match Int32.TryParse config.["DnsResolverCacheExpirationTime"] with
+            | true, timeout when timeout > 0 -> timeout
+            | _ -> 600
+
     static member MaxConnectedPeers
         with get () =
             match Int32.TryParse config.["MaxConnectedPeers"] with
@@ -130,17 +136,17 @@ type Config () =
             | true, fanout when fanout > 0 -> fanout
             | _ -> 4
 
-    static member GossipInterval // Milliseconds
-        with get () =
-            match Int32.TryParse config.["GossipInterval"] with
-            | true, interval when interval > 0 -> interval
-            | _ -> 2000
-
     static member GossipDiscoveryInterval // Milliseconds
         with get () =
             match Int32.TryParse config.["GossipDiscoveryInterval"] with
             | true, interval when interval > 0 -> interval
             | _ -> 10000
+
+    static member GossipInterval // Milliseconds
+        with get () =
+            match Int32.TryParse config.["GossipInterval"] with
+            | true, interval when interval > 0 -> interval
+            | _ -> 2000
 
     static member GossipMaxMissedHeartbeats
         with get () =
@@ -154,11 +160,11 @@ type Config () =
             | true, cycles when cycles >= 0 -> cycles
             | _ -> 3000
 
-    static member DnsResolverCacheExpirationTime // Seconds
+    static member NetworkSendoutRetryTimeout // Milliseconds
         with get () =
-            match Int32.TryParse config.["DnsResolverCacheExpirationTime"] with
-            | true, timeout when timeout > 0 -> timeout
-            | _ -> 600
+            match Int32.TryParse config.["NetworkSendoutRetryTimeout"] with
+            | true, timeout when timeout >= 0 -> timeout
+            | _ -> 500
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization

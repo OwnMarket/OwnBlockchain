@@ -236,6 +236,7 @@ type NetworkNode
         initTransport
             networkId.Value
             nodeConfig.Identity.Value
+            nodeConfig.NetworkSendoutRetryTimeout
             (__.ReceivePeerMessage publishEvent)
         __.StartNode ()
         __.StartGossipDiscovery ()

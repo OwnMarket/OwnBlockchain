@@ -271,6 +271,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
@@ -280,6 +281,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
@@ -289,6 +291,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -306,6 +309,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
@@ -315,6 +319,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
@@ -324,6 +329,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -341,6 +347,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         let nodeConfig2 = {
             Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
@@ -350,6 +357,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         let nodeConfig3 = {
             Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
@@ -359,6 +367,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
@@ -621,6 +630,7 @@ module PeerTests =
             AllowPrivateNetworkPeers = true
             MaxConnectedPeers = 200
             DnsResolverCacheExpirationTime = 600
+            NetworkSendoutRetryTimeout = 500
         }
 
         let nodeConfigList =
@@ -634,6 +644,7 @@ module PeerTests =
                     AllowPrivateNetworkPeers = true
                     MaxConnectedPeers = 200
                     DnsResolverCacheExpirationTime = 600
+                    NetworkSendoutRetryTimeout = 500
                 }
             )
 

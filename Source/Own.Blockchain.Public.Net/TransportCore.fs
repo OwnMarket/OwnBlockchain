@@ -15,6 +15,7 @@ type internal TransportCore
     (
     networkId,
     peerIdentity,
+    networkSendoutRetryTimeout,
     receivePeerMessage : PeerMessageEnvelopeDto -> unit
     ) =
 
@@ -126,10 +127,11 @@ type internal TransportCore
                 let targetAddress, payload = message
                 match dealerSockets.TryGetValue targetAddress with
                 | true, socket ->
-                    if not (socket.TrySendMultipartMessage(TimeSpan.FromMilliseconds(500.), payload)) then
+                    let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
+                    if not (socket.TrySendMultipartMessage(timeout, payload)) then
                         Log.errorf "Could not send message to %s" targetAddress
                 | _ ->
-                    failwithf "Socket not found for target %s" targetAddress
+                    Log.errorf "Socket not found for target %s" targetAddress
             )
         )
         |> ignore
@@ -154,7 +156,9 @@ type internal TransportCore
 
             messagesSet |> Seq.iter (fun message ->
                 routerSocket |> Option.iter (fun socket ->
-                    socket.TrySendMultipartMessage(TimeSpan.FromMilliseconds(500.), message) |> ignore)
+                    let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
+                    socket.TrySendMultipartMessage(timeout, message) |> ignore
+                )
             )
         )
         |> ignore

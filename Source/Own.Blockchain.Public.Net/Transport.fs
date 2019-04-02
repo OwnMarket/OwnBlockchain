@@ -6,8 +6,8 @@ module Transport =
 
     let mutable private transportCore : TransportCore option = None
 
-    let init networkId identity receivePeerMessage =
-        let transport = TransportCore (networkId, identity, receivePeerMessage)
+    let init networkId identity networkSendoutRetryTimeout receivePeerMessage =
+        let transport = TransportCore (networkId, identity, networkSendoutRetryTimeout, receivePeerMessage)
         transport.Init ()
         transportCore <- transport |> Some
 
