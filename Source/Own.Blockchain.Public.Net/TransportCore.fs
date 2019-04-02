@@ -104,9 +104,13 @@ type internal TransportCore
     let dealerSendAsync (msg : NetMQMessage) targetAddress =
         let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
-            let dealerSocket = createDealerSocket targetAddress
-            poller.Add dealerSocket
-            dealerSockets.AddOrUpdate (targetAddress, dealerSocket, fun _ _ -> dealerSocket) |> ignore
+            try
+                let dealerSocket = createDealerSocket targetAddress
+                poller.Add dealerSocket
+                dealerSockets.AddOrUpdate (targetAddress, dealerSocket, fun _ _ -> dealerSocket) |> ignore
+            with
+            | :? ObjectDisposedException ->
+                Log.error "Poller was disposed while adding socket"
         dealerMessageQueue.Enqueue (targetAddress, msg)
 
     let wireDealerMessageQueueEvents () =

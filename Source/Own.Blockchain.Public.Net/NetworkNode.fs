@@ -24,7 +24,7 @@ type NetworkNode
     sendResponseMessage,
     receiveMessage,
     closeConnection,
-    closeAllConnections,
+    closeAllConnections : _ -> unit,
     getCurrentValidators : unit -> ValidatorSnapshot list,
     nodeConfig,
     gossipConfig
@@ -242,8 +242,8 @@ type NetworkNode
         Log.info "Network layer initialized"
 
     member __.StopGossip () =
-        closeAllConnections ()
         cts.Cancel()
+        closeAllConnections ()
 
     member __.GetActiveMembers () =
         let result =
