@@ -506,31 +506,6 @@ Response JSON payload:
 ```
 
 
-## `GET /validator/{validatorAddress}/stakes`
-
-Request URL:
-```
-/validator/CHStDQ5ZFeFW9rbMhw83f7FXg19okxQD9E7/stakes
-```
-
-Response JSON payload:
-```json
-{
-    "validatorAddress" : "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
-    "stakes": [
-        {
-            "stakerAddress": "CHLsVaYSPJGFi8BNGd6tP1VvB8UdKbVRDKD",
-            "amount": 100,
-        },
-        {
-            "stakerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ",
-            "amount": 50
-        }
-    ]
-}
-```
-
-
 ## `GET /peers`
 
 Request URL:
