@@ -564,6 +564,9 @@ module Consensus =
                 __.SendCommit(_round, None)
 
             // COMMIT RULES
+            if __.MajorityCommitted(_round, None) then
+                __.StartRound(_round + 1)
+
             if __.MajorityCommitted(_round) then
                 if _scheduledTimeouts.Add(_round, ConsensusStep.Commit) then
                     scheduleTimeout (_blockNumber, _round, ConsensusStep.Commit)
