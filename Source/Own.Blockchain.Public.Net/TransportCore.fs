@@ -119,14 +119,14 @@ type internal TransportCore
 
             // Deduplicate messages.
             let messagesSet = new HashSet<string * NetMQMessage>()
-            while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
+            while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(100.)) do
                 messagesSet.Add message |> ignore
 
             messagesSet |> Seq.iter (fun message ->
                 let targetAddress, payload = message
                 match dealerSockets.TryGetValue targetAddress with
                 | true, socket ->
-                    if not (socket.TrySendMultipartMessage payload) then
+                    if not (socket.TrySendMultipartMessage(TimeSpan.FromMilliseconds(500.), payload)) then
                         Log.errorf "Could not send message to %s" targetAddress
                 | _ ->
                     failwithf "Socket not found for target %s" targetAddress
@@ -149,11 +149,12 @@ type internal TransportCore
 
             // Deduplicate messages.
             let messagesSet = new HashSet<NetMQMessage>()
-            while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(10.)) do
+            while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(100.)) do
                 messagesSet.Add message |> ignore
 
             messagesSet |> Seq.iter (fun message ->
-                routerSocket |> Option.iter (fun socket -> socket.TrySendMultipartMessage message |> ignore)
+                routerSocket |> Option.iter (fun socket ->
+                    socket.TrySendMultipartMessage(TimeSpan.FromMilliseconds(500.), message) |> ignore)
             )
         )
         |> ignore
