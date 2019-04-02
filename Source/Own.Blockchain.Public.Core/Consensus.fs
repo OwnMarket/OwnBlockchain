@@ -17,6 +17,7 @@ module Consensus =
         persistConsensusMessage : ConsensusMessageEnvelope -> unit,
         restoreConsensusMessages : unit -> ConsensusMessageEnvelope list,
         getLastAppliedBlockNumber : unit -> BlockNumber,
+        getLastAppliedBlockTimestamp : unit -> Timestamp,
         getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list,
         isValidatorBlacklisted : BlockchainAddress * BlockNumber * BlockNumber -> bool,
         proposeBlock : BlockNumber -> Result<Block, AppErrors> option,
@@ -35,7 +36,9 @@ module Consensus =
         timeoutForRound : ConsensusStep -> ConsensusRound -> int,
         messageRetryingInterval : int,
         proposeRetryingInterval : int,
-        staleRoundDetectionInterval : int,
+        staleConsensusDetectionInterval : int,
+        emptyBlocksEnabled : bool,
+        minEmptyBlockTime : int,
         validatorAddress : BlockchainAddress
         ) =
 
@@ -77,7 +80,7 @@ module Consensus =
                     scheduleTimeout (_blockNumber, _round, ConsensusStep.Propose)
 
             __.Synchronize()
-            __.StartStaleRoundDetection()
+            __.StartStaleConsensusDetection()
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             match command with
@@ -196,26 +199,34 @@ module Consensus =
 
             __.SetValidators(_blockNumber - 1)
 
-        member private __.StartStaleRoundDetection() =
+        member private __.StartStaleConsensusDetection() =
+            let maxRoundDuration r =
+                timeoutForRound ConsensusStep.Propose r
+                + timeoutForRound ConsensusStep.Vote r
+                + timeoutForRound ConsensusStep.Commit r
+                |> int64
+
+            let maxHeightDuration =
+                int64 minEmptyBlockTime
+                + maxRoundDuration (ConsensusRound 0) // Give one round time to commit an empty block.
+
             let rec loop () =
                 async {
-                    do! Async.Sleep staleRoundDetectionInterval
-
-                    let maxRoundDuration =
-                        timeoutForRound ConsensusStep.Propose _round
-                        + timeoutForRound ConsensusStep.Vote _round
-                        + timeoutForRound ConsensusStep.Commit _round
-                        |> int64
+                    do! Async.Sleep staleConsensusDetectionInterval
 
                     let currentTime = Utils.getMachineTimestamp ()
-                    let roundDuration = currentTime - _roundStartTime
 
-                    if roundDuration > maxRoundDuration then
-                        try
-                            _roundStartTime <- currentTime
+                    // Detect stale round
+                    let roundDuration = currentTime - _roundStartTime
+                    if roundDuration > maxRoundDuration _round then
+                        Log.warning "Stale consensus round detected"
+                        requestConsensusState _round
+                    elif emptyBlocksEnabled then
+                        // Detect stale height (relies on empty block pace)
+                        let heightDuration = currentTime - (getLastAppliedBlockTimestamp ()).Value
+                        if heightDuration > maxHeightDuration then
+                            Log.warning "Stale consensus height detected"
                             requestConsensusState _round
-                        with
-                        | ex -> Log.error ex.AllMessagesAndStackTraces
 
                     return! loop ()
                 }
@@ -954,7 +965,9 @@ module Consensus =
         publishEvent
         addressFromPrivateKey
         (validatorPrivateKey : PrivateKey)
+        emptyBlocksEnabled
         minEmptyBlockTime
+        staleConsensusDetectionInterval
         messageRetryingInterval
         proposeRetryingInterval
         timeoutPropose
@@ -962,7 +975,6 @@ module Consensus =
         timeoutCommit
         timeoutDelta
         timeoutIncrements
-        staleRoundDetectionInterval
         =
 
         let validatorAddress =
@@ -1196,6 +1208,7 @@ module Consensus =
             persistConsensusMessage,
             restoreConsensusMessages,
             getLastAppliedBlockNumber,
+            getLastAppliedBlockTimestamp,
             getValidatorsAtHeight,
             isValidatorBlacklisted,
             proposeBlock,
@@ -1213,6 +1226,8 @@ module Consensus =
             timeoutForRound,
             messageRetryingInterval,
             proposeRetryingInterval,
-            staleRoundDetectionInterval,
+            staleConsensusDetectionInterval,
+            emptyBlocksEnabled,
+            minEmptyBlockTime,
             validatorAddress
             )

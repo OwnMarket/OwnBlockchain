@@ -444,7 +444,9 @@ module Composition =
             publishEvent
             addressFromPrivateKey
             (PrivateKey Config.ValidatorPrivateKey)
+            Config.CreateEmptyBlocks
             Config.MinEmptyBlockTime
+            Config.StaleConsensusDetectionInterval
             Config.ConsensusMessageRetryingInterval
             Config.ConsensusProposeRetryingInterval
             Config.ConsensusTimeoutPropose
@@ -452,7 +454,6 @@ module Composition =
             Config.ConsensusTimeoutCommit
             Config.ConsensusTimeoutDelta
             Config.ConsensusTimeoutIncrements
-            Config.StaleRoundDetectionInterval
 
     let storeEquivocationProof =
         Workflows.storeEquivocationProof

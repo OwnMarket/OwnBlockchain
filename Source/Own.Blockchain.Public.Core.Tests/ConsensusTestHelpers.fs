@@ -172,6 +172,14 @@ module ConsensusTestHelpers =
                 |> Seq.tryHead
                 |? BlockNumber 0L
 
+            let getLastAppliedBlockTimestamp () =
+                _decisions.[validatorAddress]
+                |> Seq.ofDict
+                |> Seq.sortDescending
+                |> Seq.tryHead
+                |> Option.map (fun (_, b) -> b.Header.Timestamp)
+                |? Timestamp 0L
+
             let getValidators _ =
                 validators
                 |> Seq.map (fun a ->
@@ -254,6 +262,7 @@ module ConsensusTestHelpers =
                     persistConsensusMessage,
                     restoreConsensusMessages,
                     getLastAppliedBlockNumber,
+                    getLastAppliedBlockTimestamp,
                     getValidators,
                     isValidatorBlacklisted,
                     proposeBlock,
@@ -269,9 +278,11 @@ module ConsensusTestHelpers =
                     schedulePropose,
                     scheduleTimeout,
                     timeoutForRound,
-                    0, // No need to pass in the value, because test will trigger the retry explicitly.
-                    0, // No need to pass in the value, because test will trigger the retry explicitly.
-                    0, // No need to pass in the value, because test will trigger the request explicitly.
+                    1000, // Test will trigger the retry explicitly.
+                    1000, // Test will trigger the retry explicitly.
+                    10000, // Test will trigger the request explicitly.
+                    false,
+                    30000, // Test will trigger the request explicitly.
                     validatorAddress
                 )
 

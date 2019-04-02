@@ -190,7 +190,7 @@ type Config () =
     static member ConsensusTimeoutDelta = 1000 // Milliseconds
     static member ConsensusTimeoutIncrements = 10
 
-    static member StaleRoundDetectionInterval = 10000 // Milliseconds
+    static member StaleConsensusDetectionInterval = 10000 // Milliseconds
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Validator
