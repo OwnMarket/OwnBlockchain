@@ -164,7 +164,7 @@ type Config () =
         with get () =
             match Int32.TryParse config.["NetworkSendoutRetryTimeout"] with
             | true, timeout when timeout >= 0 -> timeout
-            | _ -> 500
+            | _ -> 100
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
