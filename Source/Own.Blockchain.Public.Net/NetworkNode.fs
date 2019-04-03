@@ -255,7 +255,7 @@ type NetworkNode
         // Fallback to boostrapnodes when no peers available.
         match result with
         | [] | [_] ->
-            __.InitializeMemberList false
+            __.BootstrapNode ()
         | _ -> ()
 
         result
@@ -413,7 +413,7 @@ type NetworkNode
 
     member private __.StartNode () =
         Log.debug "Start node..."
-        __.InitializeMemberList true
+        __.InitializeMemberList ()
         __.StartDnsResolver ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
@@ -449,16 +449,31 @@ type NetworkNode
 
         printActiveMembers ()
 
-    member private __.InitializeMemberList includeDbPeers =
+    member private __.InitializeMemberList () =
         let publicAddress = nodeConfigPublicIPAddress |> optionToList
-        let persistedNodes = if includeDbPeers then getAllPeerNodes () else []
-        persistedNodes @ nodeConfig.BootstrapNodes @ publicAddress
+        getAllPeerNodes () @ nodeConfig.BootstrapNodes @ publicAddress
         |> Set.ofList
         |> Set.iter (fun a ->
             a.Value
             |> memoizedConvertToIpAddress
             |> Option.iter (fun ip ->
                 __.AddMember { NetworkAddress = ip; Heartbeat = 0L }
+            )
+        )
+
+    member private __.BootstrapNode () =
+        let publicAddress = nodeConfigPublicIPAddress |> optionToList
+        nodeConfig.BootstrapNodes @ publicAddress
+        |> Set.ofList
+        |> Set.iter (fun a ->
+            a.Value
+            |> memoizedConvertToIpAddress
+            |> Option.iter (fun ip ->
+                let heartbeat =
+                    match activeMembers.TryGetValue ip with
+                    | true, m -> m.Heartbeat
+                    | _ -> 0L
+                __.AddMember { NetworkAddress = ip; Heartbeat = heartbeat }
             )
         )
 
