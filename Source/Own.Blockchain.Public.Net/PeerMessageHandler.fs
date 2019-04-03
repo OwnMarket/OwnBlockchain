@@ -55,7 +55,7 @@ module internal PeerMessageHandler =
             Fanout = gossipFanout
             GossipDiscoveryIntervalMillis = gossipDiscoveryIntervalMillis
             GossipIntervalMillis = gossipIntervalMillis
-            MissedHeartbeatIntervalMillis = gossipMaxMissedHeartbeats * gossipIntervalMillis
+            MissedHeartbeatIntervalMillis = gossipMaxMissedHeartbeats * gossipDiscoveryIntervalMillis
             PeerResponseThrottlingTime = peerResponseThrottingTime
         }
 

@@ -254,8 +254,11 @@ type NetworkNode
 
         // Fallback to boostrapnodes when no peers available.
         match result with
-        | [] -> nodeConfig.BootstrapNodes |> List.map (fun n -> { GossipMember.NetworkAddress = n; Heartbeat = 0L })
-        | _ -> result
+        | [] | [_] ->
+            __.InitializeMemberList false
+        | _ -> ()
+
+        result
 
     member __.ReceiveMembers msg =
         // Keep max allowed peers.
@@ -410,7 +413,7 @@ type NetworkNode
 
     member private __.StartNode () =
         Log.debug "Start node..."
-        __.InitializeMemberList ()
+        __.InitializeMemberList true
         __.StartDnsResolver ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
@@ -446,9 +449,10 @@ type NetworkNode
 
         printActiveMembers ()
 
-    member private __.InitializeMemberList () =
+    member private __.InitializeMemberList includeDbPeers =
         let publicAddress = nodeConfigPublicIPAddress |> optionToList
-        getAllPeerNodes () @ nodeConfig.BootstrapNodes @ publicAddress
+        let persistedNodes = if includeDbPeers then getAllPeerNodes () else []
+        persistedNodes @ nodeConfig.BootstrapNodes @ publicAddress
         |> Set.ofList
         |> Set.iter (fun a ->
             a.Value
