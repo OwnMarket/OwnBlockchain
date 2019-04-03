@@ -480,7 +480,7 @@ type NetworkNode
 
     member private __.MergeMember inputMember =
         if not (isSelf inputMember.NetworkAddress) then
-            Log.verbosef "Receive member: %s Heartbeat: %i"
+            Log.verbosef "Received member %s with heartbeat %i"
                 inputMember.NetworkAddress.Value
                 inputMember.Heartbeat
             match __.GetActiveMember inputMember.NetworkAddress with
