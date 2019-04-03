@@ -127,6 +127,8 @@ module Consensus =
                                         persistConsensusMessage envelope
                                     if updateState then
                                         __.UpdateState()
+                                else
+                                    __.DetectEquivocation(envelope, senderAddress)
                             elif envelope.Round >= _round then
                                 scheduleMessage messageRetryingInterval (senderAddress, envelope)
                 | Vote blockHash ->
@@ -711,7 +713,8 @@ module Consensus =
         member private __.SendPropose(consensusRound, block) =
             let variables = __.GetConsensusVariables()
             let message = Propose (block, _validRound)
-            sendConsensusMessage _blockNumber consensusRound variables message
+            if not (__.IsTryingToEquivocate(consensusRound, message)) then
+                sendConsensusMessage _blockNumber consensusRound variables message
 
         member private __.SendVote(consensusRound, blockHash) =
             let variables = __.GetConsensusVariables()
