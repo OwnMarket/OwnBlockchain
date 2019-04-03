@@ -1361,13 +1361,9 @@ type ConsensusTests(output : ITestOutputHelper) =
             test <@ net.Messages |> Seq.forall isCommitForNone @>
 
         net.DeliverMessages()
-        test <@ net.Messages.Count = 0 @>
-        test <@ net.DecisionCount = 0 @>
 
         for i in [0 .. 3] do
-            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
-            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
-            net.TriggerScheduledTimeout (validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
 
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> fst = validators.[2] @>
@@ -1481,11 +1477,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall isCommitForNone @>
 
         net.DeliverMessages() // Deliver Commit messages
-        test <@ net.Messages.Count = 0 @>
         for v in validators do
-            test <@ net.States.[v].Variables.ConsensusStep = ConsensusStep.Commit @>
-            test <@ net.IsTimeoutScheduled(v, BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
-            net.TriggerScheduledTimeout(v, BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+            test <@ net.States.[v].Variables.ConsensusStep = ConsensusStep.Propose @>
             test <@ net.States.[v].Variables.ConsensusRound.Value = 1 @>
 
         // V2 proposes
@@ -1635,12 +1628,9 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         // Deliver pending messages
         net.DeliverMessages()
-        test <@ net.Messages.Count = 0 @>
 
         for i in [0 .. 3] do
-            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
-            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
-            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
             test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 1 @>
 
         test <@ net.Messages.Count = 1 @>
@@ -1787,12 +1777,9 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         // Deliver pending messages
         net.DeliverMessages()
-        test <@ net.Messages.Count = 0 @>
 
         for i in [0 .. 3] do
-            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
-            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
-            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
             test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 1 @>
 
         // V2 proposes B2
@@ -1921,12 +1908,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall isCommitForNone @>
         net.DeliverMessages()
 
-        // V0, V2, V3 timeout and move to next round
-        test <@ net.Messages.Count = 0 @> // No more pending messages
+        // V0, V2, V3 move to next round
         for i in [0; 2; 3] do
-            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
-            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
-            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
             test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 1 @>
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages |> Seq.forall (fun (v, _) -> v = validators.[2]) @>
@@ -1943,9 +1927,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.Count = 1 @> // There's stil only V2's proposal pending
 
         // V1 moves to next round
-        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Commit @>
-        test <@ net.IsTimeoutScheduled(validators.[1], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit) @>
-        net.TriggerScheduledTimeout(validators.[1], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Commit)
+        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Propose @>
         test <@ net.States.[validators.[1]].Variables.ConsensusRound.Value = 1 @>
 
         test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 1) = (0, 0, 0) @>
@@ -2036,12 +2018,9 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages |> Seq.forall isCommitForNone @>
         net.DeliverMessages()
 
-        // V0, V1, V3 timeout and move to next round
-        test <@ net.Messages.Count = 0 @> // No more pending messages
+        // V0, V1, V3 move to next round
         for i in [0; 1; 3] do
-            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
-            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit) @>
-            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit)
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
             test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 2 @>
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages |> Seq.forall (fun (v, _) -> v = validators.[3]) @>
@@ -2057,10 +2036,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.RecoverValidator validators.[2]
         test <@ net.Messages.Count = 1 @> // There's stil only V3's proposal pending
 
-        // V1 moves to next round
-        test <@ net.States.[validators.[2]].Variables.ConsensusStep = ConsensusStep.Commit @>
-        test <@ net.IsTimeoutScheduled(validators.[2], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit) @>
-        net.TriggerScheduledTimeout(validators.[2], BlockNumber 1L, ConsensusRound 1, ConsensusStep.Commit)
+        // V2 moves to next round
+        test <@ net.States.[validators.[2]].Variables.ConsensusStep = ConsensusStep.Propose @>
         test <@ net.States.[validators.[2]].Variables.ConsensusRound.Value = 2 @>
 
         test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 2) = (0, 0, 0) @>
@@ -2154,13 +2131,8 @@ type ConsensusTests(output : ITestOutputHelper) =
             test <@ net.Messages |> Seq.forall isCommitForNone @>
             net.DeliverMessages() // Deliver commits
 
-            for i in [1 .. 3] |> List.shuffle do
-                test <@ net.States.[validators.[i]].Variables.ConsensusRound = r @>
-                test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
-                test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Commit) @>
-                net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Commit)
-
             for i in [1 .. 3] do
+                test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
                 test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = r.Value + 1 @>
 
         for i in [1 .. 3] do
