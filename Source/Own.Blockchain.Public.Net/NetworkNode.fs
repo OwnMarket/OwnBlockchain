@@ -457,7 +457,8 @@ type NetworkNode
             a.Value
             |> memoizedConvertToIpAddress
             |> Option.iter (fun ip ->
-                __.AddMember { NetworkAddress = ip; Heartbeat = 0L }
+                let heartbeat = if isSelf ip then -2L else 0L
+                __.AddMember { NetworkAddress = ip; Heartbeat = heartbeat }
             )
         )
 
@@ -469,11 +470,9 @@ type NetworkNode
             a.Value
             |> memoizedConvertToIpAddress
             |> Option.iter (fun ip ->
-                let heartbeat =
-                    match activeMembers.TryGetValue ip with
-                    | true, m -> m.Heartbeat
-                    | _ -> 0L
-                __.AddMember { NetworkAddress = ip; Heartbeat = heartbeat }
+                let found, _ = activeMembers.TryGetValue ip
+                if not found then
+                    __.AddMember { NetworkAddress = ip; Heartbeat = 0L }
             )
         )
 
@@ -483,16 +482,15 @@ type NetworkNode
         if not (isSelf inputMember.NetworkAddress) then
             monitorActiveMember inputMember.NetworkAddress
 
-    member private __.ReceiveActiveMember inputMember =
+    member private __.UpdateMember inputMember =
         __.GetActiveMember inputMember.NetworkAddress
-        |> Option.iter (fun m ->
-            let localMember = {
-                NetworkAddress = m.NetworkAddress
-                Heartbeat = inputMember.Heartbeat
-            }
-            saveActiveMember localMember |> Result.iterError Log.appErrors
-            monitorActiveMember localMember.NetworkAddress
+        |> Option.iter (fun _ ->
+            saveActiveMember inputMember |> Result.iterError Log.appErrors
+            monitorActiveMember inputMember.NetworkAddress
         )
+
+    member private __.ResetLocalMember localMember =
+        __.UpdateMember {localMember with Heartbeat = 0L}
 
     member private __.MergeMemberList members =
         members |> List.iter __.MergeMember
@@ -502,13 +500,19 @@ type NetworkNode
             Log.verbosef "Received member %s with heartbeat %i"
                 inputMember.NetworkAddress.Value
                 inputMember.Heartbeat
+            if inputMember.Heartbeat = -1L then
+                Log.verbosef "Peer %s has been restarted, reset its heartbeat to 0"
+                    inputMember.NetworkAddress.Value
             match __.GetActiveMember inputMember.NetworkAddress with
             | Some localMember ->
-                if localMember.Heartbeat < inputMember.Heartbeat then
-                    __.ReceiveActiveMember inputMember
+                if inputMember.Heartbeat = -1L then
+                    __.ResetLocalMember localMember
+                else if localMember.Heartbeat < inputMember.Heartbeat then
+                    __.UpdateMember inputMember
             | None ->
-                if not (isDead inputMember) then
-                    __.AddMember inputMember
+                if inputMember.Heartbeat = -1L || not (isDead inputMember) then
+                    let heartbeat = max inputMember.Heartbeat 0L
+                    __.AddMember { inputMember with Heartbeat = heartbeat }
                     deadMembers.TryRemove inputMember.NetworkAddress |> ignore
 
     member private __.GetActiveMember networkAddress =
