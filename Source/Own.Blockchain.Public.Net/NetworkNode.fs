@@ -480,7 +480,9 @@ type NetworkNode
 
     member private __.MergeMember inputMember =
         if not (isSelf inputMember.NetworkAddress) then
-            Log.verbosef "Receive member: %s" inputMember.NetworkAddress.Value
+            Log.verbosef "Receive member: %s Heartbeat: %i"
+                inputMember.NetworkAddress.Value
+                inputMember.Heartbeat
             match __.GetActiveMember inputMember.NetworkAddress with
             | Some localMember ->
                 if localMember.Heartbeat < inputMember.Heartbeat then
