@@ -319,18 +319,6 @@ module Consensus =
                                 if signers.Contains s then
                                     __.ProcessConsensusMessage(s, e, false)
 
-                            _lockedBlock <- validBlock
-                            _lockedRound <- response.ValidRound
-                            _validBlock <- validBlock
-                            _validRound <- response.ValidRound
-                            _validBlockSignatures <- response.ValidVoteSignatures
-                            _round <- response.ValidRound
-                            _step <-
-                                if _votes.ContainsKey (_blockNumber, _round, validatorAddress) then
-                                    ConsensusStep.Vote
-                                else
-                                    ConsensusStep.Propose
-
             __.UpdateState()
 
         member private __.SendState(request, peerIdentity) =
@@ -520,23 +508,30 @@ module Consensus =
         member private __.UpdateState() =
             // PROPOSE RULES
             __.GetProposal()
-            |> Option.iter (fun ((_, _, _), (block, vr, _)) ->
-                if _step = ConsensusStep.Propose then
+            |> Option.iter (fun ((_, _, senderAddress), (block, vr, _)) ->
+                if _step = ConsensusStep.Propose && vr.Value = -1 then
                     _step <- ConsensusStep.Vote
                     if isValidBlock block && (_lockedRound.Value = -1 || _lockedBlock = Some block) then
                         __.SendVote(_round, Some block.Header.Hash)
                     else
                         __.SendVote(_round, None)
 
-                if _step = ConsensusStep.Propose
-                    && (vr.Value >= 0 && vr < _round)
-                    && __.MajorityVoted(vr, Some block.Header.Hash)
-                then
-                    _step <- ConsensusStep.Vote
-                    if isValidBlock block && (_lockedRound <= vr || _lockedBlock = Some block) then
-                        __.SendVote(_round, Some block.Header.Hash)
+                if _step = ConsensusStep.Propose && (vr.Value >= 0 && vr < _round) then
+                    if __.MajorityVoted(vr, Some block.Header.Hash) then
+                        _step <- ConsensusStep.Vote
+                        if isValidBlock block && (_lockedRound <= vr || _lockedBlock = Some block) then
+                            __.SendVote(_round, Some block.Header.Hash)
+                        else
+                            __.SendVote(_round, None)
                     else
-                        __.SendVote(_round, None)
+                        if isValidBlock block && (_lockedRound < vr || _lockedBlock = Some block) then
+                            // We have a proposal which looks good, but we're missing the corresponding votes.
+                            Log.warningf "Missing votes for Propose %s in valid round %i sent by %s"
+                                block.Header.Hash.Value
+                                vr.Value
+                                senderAddress.Value
+
+                            requestConsensusState vr
             )
 
             // VOTE RULES
@@ -612,13 +607,10 @@ module Consensus =
             =
 
             let proposerAddress = Validators.getProposer _blockNumber _round _validators
-            _proposals
-            |> Seq.ofDict
-            |> Seq.filter (fun ((blockNumber, _, senderAddress), _) ->
-                blockNumber = _blockNumber && senderAddress = proposerAddress
-            )
-            |> Seq.sortByDescending (fun ((_, consensusRound, _), _) -> consensusRound)
-            |> Seq.tryHead
+            let key = _blockNumber, _round, proposerAddress
+            match _proposals.TryGetValue(key) with
+            | true, v -> Some (key, v)
+            | _ -> None
 
         member private __.GetProposalCommittedByMajority()
             : ((BlockNumber * ConsensusRound * BlockchainAddress) * (Block * ConsensusRound * Signature)) option

@@ -2023,8 +2023,8 @@ type ConsensusTests(output : ITestOutputHelper) =
             test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
             test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 2 @>
         test <@ net.Messages.Count = 1 @>
-        test <@ net.Messages |> Seq.forall (fun (v, _) -> v = validators.[3]) @>
-        test <@ net.Messages |> Seq.forall isPropose @>
+        test <@ net.Messages.[0] |> fst = validators.[3] @>
+        test <@ net.Messages.[0] |> isPropose @>
 
         test <@ net.States.[validators.[0]].MessageCountsInRound (ConsensusRound 1) = (1, 3, 3) @>
         test <@ net.States.[validators.[1]].MessageCountsInRound (ConsensusRound 1) = (0, 3, 3) @>
@@ -2058,100 +2058,276 @@ type ConsensusTests(output : ITestOutputHelper) =
         net, proposedBlock1, proposedBlock2 // Return the simulation state for dependent tests.
 
     [<Fact>]
+    member __.``Consensus - BFT - TLB - algorithmic unlock`` () =
+        // ARRANGE
+        let net, proposedBlock1, proposedBlock2 = __.ArrangeTLB ()
+        let validators = net.Validators
+        validators |> List.iteri (fun i v -> sprintf "VALIDATOR %i: %s" i v.Value |> output.WriteLine)
+
+        test <@ proposedBlock1 <> proposedBlock2 @>
+
+        // ACT
+
+        // --- ROUND 2 (continuing) ---
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 2 @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> isPropose @>
+
+        net.DeliverMessages() // Deliver proposal
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isVote @>
+        test <@ net.Messages |> Seq.map (fun (_, s) -> s.ConsensusMessage) |> Seq.distinct |> Seq.length = 2 @>
+        test <@ net.Messages |> Seq.filter isVoteForNone |> Seq.length = 2 @>
+        test <@ net.Messages |> Seq.filter isVoteForBlock |> Seq.length = 1 @>
+        let voteForBlock =
+            net.Messages
+            |> Seq.filter isVoteForBlock
+            |> Seq.map (fun (_, s) -> s.ConsensusMessage)
+            |> Seq.exactlyOne
+        test <@ voteForBlock <> Vote (Some proposedBlock1.Header.Hash) @>
+        test <@ voteForBlock <> Vote (Some proposedBlock2.Header.Hash) @>
+
+        net.DeliverMessages() // Deliver votes
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.Messages.Count = 0 @>
+
+        for i in [1 .. 3] |> List.shuffle do
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 2, ConsensusStep.Vote) @>
+            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 2, ConsensusStep.Vote)
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isCommitForNone @>
+
+        net.DeliverMessages() // Deliver commits
+
+        // --- ROUND 3 ---
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 3 @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.Messages.Count = 0 @>
+
+        for i in [1 .. 3] |> List.shuffle do
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 3, ConsensusStep.Propose) @>
+            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 3, ConsensusStep.Propose)
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isVoteForNone @>
+
+        net.DeliverMessages() // Deliver votes
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isCommitForNone @>
+
+        net.DeliverMessages() // Deliver commits
+
+        // --- ROUND 4 ---
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 4 @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> isPropose @>
+
+        test <@ net.StateRequests.Count = 0 @>
+        net.DeliverMessages() // Deliver proposal
+        test <@ net.StateRequests.Count = 1 @>
+
+        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.States.[validators.[2]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[1] @>
+        let voteForBlock =
+            net.Messages.[0]
+            |> (fun (_, s) -> s.ConsensusMessage)
+        test <@ voteForBlock = Vote (Some proposedBlock1.Header.Hash) @>
+
+        net.DeliverMessages() // Deliver votes
+
+        test <@ net.States.[validators.[1]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.States.[validators.[2]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.Messages.Count = 0 @>
+
+        test <@ net.StateRequests.Count = 2 @>
+        test <@ net.StateRequests.[0] = net.StateRequests.[1] @>
+        test <@ net.StateRequests.[0] |> fst = validators.[3] @>
+        net.StateRequests.[0] ||> net.RequestConsensusState
+        test <@ net.States.[validators.[3]].Variables.LockedRound.Value = -1 @>
+        test <@ net.States.[validators.[3]].Variables.ValidRound.Value = -1 @>
+        test <@ net.StateRequests.Count = 0 @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[3] @>
+        let voteForBlock = net.Messages.[0] |> (fun (_, s) -> s.ConsensusMessage)
+        test <@ voteForBlock = Vote (Some proposedBlock1.Header.Hash) @>
+
+        test <@ net.IsTimeoutScheduled(validators.[2], BlockNumber 1L, ConsensusRound 4, ConsensusStep.Propose) @>
+        net.TriggerScheduledTimeout(validators.[2], BlockNumber 1L, ConsensusRound 4, ConsensusStep.Propose)
+        test <@ net.Messages.Count = 2 @>
+        test <@ net.Messages.[1] |> fst = validators.[2] @>
+        test <@ net.Messages.[1] |> isVoteForNone @>
+
+        net.DeliverMessages() // Deliver votes
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.Messages.Count = 0 @>
+
+        for i in [1 .. 3] |> List.shuffle do
+            test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, ConsensusRound 4, ConsensusStep.Vote) @>
+            net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, ConsensusRound 4, ConsensusStep.Vote)
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isCommitForNone @>
+
+        net.DeliverMessages() // Deliver commits
+
+        // --- ROUND 5 ---
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 5 @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[2] @>
+        test <@ net.Messages.[0] |> isPropose @>
+
+        net.DeliverMessages() // Deliver proposal
+        test <@ net.Messages.Count = 2 @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+
+        test <@ net.StateRequests.Count = 1 @>
+        test <@ net.StateRequests.[0] |> fst = validators.[1] @>
+        net.StateRequests.[0] ||> net.RequestConsensusState
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+        let voteForBlock =
+            net.Messages
+            |> Seq.map (fun (_, s) -> s.ConsensusMessage)
+            |> Seq.distinct
+            |> Seq.exactlyOne
+        test <@ voteForBlock = Vote (Some proposedBlock2.Header.Hash) @>
+
+        net.DeliverMessages() // Deliver votes
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
+        test <@ net.Messages.Count = 3 @>
+        test <@ net.Messages |> Seq.forall isCommitForBlock @>
+        let voteForBlock =
+            net.Messages
+            |> Seq.map (fun (_, s) -> s.ConsensusMessage)
+            |> Seq.distinct
+            |> Seq.exactlyOne
+        test <@ voteForBlock = Commit (Some proposedBlock2.Header.Hash) @>
+
+        net.DeliverMessages() // Deliver commits
+
+        for i in [1 .. 3] do
+            test <@ net.States.[validators.[i]].Variables.BlockNumber.Value = 2L @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 0 @>
+            test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> isPropose @>
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.DecisionCount = 3 @>
+        test <@ net.Decisions.[validators.[0]].Count = 0 @>
+        test <@ net.Decisions.[validators.[1]].[BlockNumber 1L] = proposedBlock2 @>
+        test <@ net.Decisions.[validators.[2]].[BlockNumber 1L] = proposedBlock2 @>
+        test <@ net.Decisions.[validators.[3]].[BlockNumber 1L] = proposedBlock2 @>
+
+        net, proposedBlock2 // Return the simulation state for dependent tests.
+
+    [<Fact>]
     member __.``Consensus - BFT - TLB - timed unlock`` () =
         // ARRANGE
         let net, proposedBlock1, proposedBlock2 = __.ArrangeTLB ()
         let validators = net.Validators
 
-        // V1, V2, V3 don't make progres in height
-        while net.DecisionCount <> 3 && net.States.[validators.[3]].Variables.ConsensusRound.Value < 10 do
+        // V1, V2, V3 don't make progress in height
+        while net.DecisionCount <> 3 do
             let r =
                 [1 .. 3]
                 |> List.map (fun i -> net.States.[validators.[i]].Variables.ConsensusRound)
                 |> List.distinct
                 |> List.exactlyOne
-            let proposer = validators |> Validators.getProposer (BlockNumber 1L) r
-            if proposer = validators.[0] then
+
+            if r.Value > 20 then
+                failwith "CONSENSUS DEADLOCK"
+
+            if net.Messages.Count = 0 then
                 for i in [1 .. 3] |> List.shuffle do
-                    test <@ net.States.[validators.[i]].Variables.ConsensusRound = r @>
                     test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
                     test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Propose) @>
                     net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Propose)
-                test <@ net.Messages.Count = 3 @>
-                test <@ net.Messages |> Seq.forall isVoteForNone @>
-
-                net.DeliverMessages() // Deliver votes
             else
                 test <@ net.Messages.Count = 1 @>
-                let proposal = (net.Messages.[0] |> snd).ConsensusMessage
                 net.DeliverMessages() // Deliver proposal
-                test <@ net.Messages.Count = 3 @>
-                test <@ net.Messages |> Seq.forall isVote @>
-                test <@ net.Messages |> Seq.map (fun (_, s) -> s.ConsensusMessage) |> Seq.distinct |> Seq.length = 2 @>
-                if proposer = validators.[1] then
-                    test <@ net.Messages |> Seq.filter isVoteForNone |> Seq.length = 1 @>
-                    test <@ net.Messages |> Seq.filter isVoteForBlock |> Seq.length = 2 @>
-                    let voteForBlock =
-                        net.Messages
-                        |> Seq.filter isVoteForBlock
-                        |> Seq.map (fun (_, s) -> s.ConsensusMessage)
-                        |> Seq.distinct
-                        |> Seq.exactlyOne
-                    test <@ voteForBlock = Vote (Some proposedBlock1.Header.Hash) @>
-                elif proposer = validators.[2] then
-                    test <@ net.Messages |> Seq.filter isVoteForNone |> Seq.length = 1 @>
-                    test <@ net.Messages |> Seq.filter isVoteForBlock |> Seq.length = 2 @>
-                    let voteForBlock =
-                        net.Messages
-                        |> Seq.filter isVoteForBlock
-                        |> Seq.map (fun (_, s) -> s.ConsensusMessage)
-                        |> Seq.distinct
-                        |> Seq.exactlyOne
-                    test <@ voteForBlock = Vote (Some proposedBlock2.Header.Hash) @>
-                else
-                    test <@ net.Messages |> Seq.filter isVoteForNone |> Seq.length = 2 @>
-                    test <@ net.Messages |> Seq.filter isVoteForBlock |> Seq.length = 1 @>
-                    let voteForBlock =
-                        net.Messages
-                        |> Seq.filter isVoteForBlock
-                        |> Seq.map (fun (_, s) -> s.ConsensusMessage)
-                        |> Seq.exactlyOne
-                    test <@ voteForBlock <> Vote (Some proposedBlock1.Header.Hash) @>
-                    test <@ voteForBlock <> Vote (Some proposedBlock2.Header.Hash) @>
 
-                net.DeliverMessages() // Deliver votes
-                test <@ net.Messages.Count = 0 @>
-                for i in [1 .. 3] |> List.shuffle do
-                    test <@ net.States.[validators.[i]].Variables.ConsensusRound = r @>
-                    test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
-                    test <@ net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Vote) @>
+            if r.Value = 10 then // Mimic time-based stale height detection
+                net.RequestConsensusState validators.[1] r
+                net.RequestConsensusState validators.[2] r
+                net.RequestConsensusState validators.[3] r
+                net.DeliverMessages(
+                    (fun (s, r, m) -> s = r),
+                    (fun (s, r, m) -> s <> r)
+                )
+
+            for i in [1 .. 3] |> List.shuffle do
+                if net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose
+                    && net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Propose)
+                then
+                    net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Propose)
+
+            // ALL IN VOTE STEP
+            for i in [1 .. 3] do
+                test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
+
+            net.DeliverMessages() // Deliver votes
+
+            for i in [1 .. 3] |> List.shuffle do
+                if net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote
+                    && net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Vote)
+                then
                     net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Vote)
 
-            test <@ net.Messages.Count = 3 @>
-            test <@ net.Messages |> Seq.forall isCommitForNone @>
-            net.DeliverMessages() // Deliver commits
-
+            // ALL IN COMMIT STEP
             for i in [1 .. 3] do
-                test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
-                test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = r.Value + 1 @>
+                test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit @>
 
-        for i in [1 .. 3] do
-            test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 10 @>
+            net.DeliverMessages() // Deliver votes
 
-        // Stale height detected
-        net.RequestConsensusState validators.[1] (ConsensusRound 10)
+            for i in [1 .. 3] |> List.shuffle do
+                if net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Commit
+                    && net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, ConsensusStep.Commit)
+                then
+                    net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, ConsensusStep.Commit)
 
-        // V1, V2, V3 decide B2
-        while net.DecisionCount <> 3 do
-            if net.States.[validators.[3]].Variables.ConsensusRound.Value > 20 then
-                failwith "CONSENSUS DEADLOCK"
-            net.DeliverMessages()
-            if net.Messages.Count = 0 then
-                for i in [1 .. 3] |> List.shuffle do
-                    let r = net.States.[validators.[i]].Variables.ConsensusRound
-                    let s = net.States.[validators.[i]].Variables.ConsensusStep
-                    if net.IsTimeoutScheduled(validators.[i], BlockNumber 1L, r, s) then
-                        net.TriggerScheduledTimeout(validators.[i], BlockNumber 1L, r, s)
+            let proposer = Validators.getProposer (BlockNumber 1L) r validators
+            for i in [1 .. 3] do
+                if r.Value > 10 && proposer = validators.[2] then
+                    test <@ net.States.[validators.[i]].Variables.BlockNumber.Value = 2L @>
+                    test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = 0 @>
+                    test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
+                else
+                    test <@ net.States.[validators.[i]].Variables.ConsensusRound.Value = r.Value + 1 @>
+                    test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Propose @>
 
         // ASSERT
         net.PrintTheState(output.WriteLine)
