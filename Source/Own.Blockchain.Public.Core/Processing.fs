@@ -306,7 +306,8 @@ module Processing =
                     |> Map.ofSeq
                 Eligibilities =
                     eligibilities
-                    |> Seq.choose (fun a -> a.Value |> Option.map (fun s -> a.Key, s))
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
                 KycProviders =
                     kycProviders
