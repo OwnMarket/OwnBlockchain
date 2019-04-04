@@ -5831,6 +5831,266 @@ module ProcessingTests =
         test <@ output.Assets.[assetHash].AssetCode = None @>
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Asset management with multiple actions
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Processing.processChanges Create and completely distribute emitted asset`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let actionFee = ChxAmount 1m
+        let assetHash = Hashing.deriveHash senderWallet.Address (Nonce 11L) (TxActionNumber 1s) |> AssetHash
+        let emissionAccountHash = Hashing.deriveHash senderWallet.Address (Nonce 11L) (TxActionNumber 2s) |> AccountHash
+        let accountHash1 = Hashing.deriveHash senderWallet.Address (Nonce 12L) (TxActionNumber 1s) |> AccountHash
+        let accountHash2 = Hashing.deriveHash senderWallet.Address (Nonce 13L) (TxActionNumber 1s) |> AccountHash
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "CreateAsset"
+                    ActionData = CreateAssetTxActionDto()
+                } :> obj
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAssetTxActionDto()
+                } :> obj
+                {
+                    ActionType = "CreateAssetEmission"
+                    ActionData =
+                        {
+                            CreateAssetEmissionTxActionDto.AssetHash = assetHash.Value
+                            EmissionAccountHash = emissionAccountHash.Value
+                            Amount = 30m
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAssetTxActionDto()
+                } :> obj
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            TransferAssetTxActionDto.FromAccountHash = emissionAccountHash.Value
+                            ToAccountHash = accountHash1.Value
+                            AssetHash = assetHash.Value
+                            Amount = 10m
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
+
+        let txHash3, txEnvelope3 =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAssetTxActionDto()
+                } :> obj
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            TransferAssetTxActionDto.FromAccountHash = emissionAccountHash.Value
+                            ToAccountHash = accountHash2.Value
+                            AssetHash = assetHash.Value
+                            Amount = 20m
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (Nonce 13L) (Timestamp 0L) actionFee
+
+        let txSet = [txHash1; txHash2; txHash3]
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            elif txHash = txHash3 then Ok txEnvelope3
+            else failwithf "Unknown TX hash: %s" txHash.Value
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState _ =
+            None
+
+        let getAccountState _ =
+            None
+
+        let getAssetState _ =
+            None
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee * 7m
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee * 7m
+        let expectedAssetState =
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = senderWallet.Address
+                IsEligibilityRequired = false
+            }
+
+        test <@ output.TxResults.Count = 3 @>
+        for txHash in txSet do
+            test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = Nonce 13L @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+        test <@ output.Assets.Count = 1 @>
+        test <@ output.Assets.[assetHash] = expectedAssetState @>
+        test <@ output.Accounts.Count = 3 @>
+        test <@ output.Accounts.[emissionAccountHash].ControllerAddress = senderWallet.Address @>
+        test <@ output.Accounts.[accountHash1].ControllerAddress = senderWallet.Address @>
+        test <@ output.Accounts.[accountHash2].ControllerAddress = senderWallet.Address @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].IsEmission = true @>
+        test <@ output.Holdings.[accountHash1, assetHash].IsEmission = false @>
+        test <@ output.Holdings.[accountHash2, assetHash].IsEmission = false @>
+        test <@ output.Holdings.[emissionAccountHash, assetHash].Balance = AssetAmount 0m @>
+        test <@ output.Holdings.[accountHash1, assetHash].Balance = AssetAmount 10m @>
+        test <@ output.Holdings.[accountHash2, assetHash].Balance = AssetAmount 20m @>
+
+    [<Fact>]
+    let ``Processing.processChanges Do not store empty state for the asset created in failed TX`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let assetHash = assetHash1
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (accountHash1, assetHash), {HoldingState.Balance = AssetAmount 15m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+        let amountToTransfer = AssetAmount 20m
+        let accountHash2 = Hashing.deriveHash senderWallet.Address nonce (TxActionNumber 1s) |> AccountHash
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CreateAccount"
+                    ActionData = CreateAccountTxActionDto()
+                } :> obj
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            FromAccountHash = accountHash1.Value
+                            ToAccountHash = accountHash2.Value
+                            AssetHash = assetHash.Value
+                            Amount = amountToTransfer.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getAccountState accountHash =
+            if accountHash = accountHash1 then
+                Some {AccountState.ControllerAddress = senderWallet.Address}
+            else
+                None
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetHoldingStateFromStorage = getHoldingState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee * 2m
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee * 2m
+        let senderAssetBalance = initialHoldingState.[accountHash1, assetHash].Balance
+        let expectedStatus =
+            (TxActionNumber 2s, TxErrorCode.InsufficientAssetHoldingBalance)
+            |> TxActionError
+            |> Failure
+        let expectedAssetState =
+            {
+                AssetState.AssetCode = None
+                ControllerAddress = senderWallet.Address
+                IsEligibilityRequired = false
+            }
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.Assets.Count = 1 @>
+        test <@ output.Assets.[assetHash] = expectedAssetState @>
+
+        test <@ output.Accounts.Count = 1 @>
+        test <@ output.Accounts.ContainsKey accountHash1 @>
+        test <@ output.Accounts.ContainsKey accountHash2 = false @>
+
+        test <@ output.Holdings.Count = 1 @>
+        test <@ output.Holdings.[accountHash1, assetHash].Balance = senderAssetBalance @>
+        test <@ output.Holdings.ContainsKey(accountHash2, assetHash) = false@>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // ConfigureValidator
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
