@@ -26,7 +26,7 @@ module Processing =
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
         chxAddresses : ConcurrentDictionary<BlockchainAddress, ChxAddressState>,
-        holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState>,
+        holdings : ConcurrentDictionary<AccountHash * AssetHash, HoldingState option>,
         votes : ConcurrentDictionary<VoteId, VoteState option>,
         eligibilities : ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>,
         kycProviders :
@@ -45,10 +45,6 @@ module Processing =
         let getChxAddressState address =
             getChxAddressStateFromStorage address
             |? {Nonce = Nonce 0L; Balance = ChxAmount 0m}
-        let getHoldingState (accountHash, assetHash) =
-            getHoldingStateFromStorage (accountHash, assetHash)
-            |? {Balance = AssetAmount 0m; IsEmission = false}
-
         new
             (
             getChxAddressStateFromStorage : BlockchainAddress -> ChxAddressState option,
@@ -80,7 +76,7 @@ module Processing =
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAddressState>(),
-                ConcurrentDictionary<AccountHash * AssetHash, HoldingState>(),
+                ConcurrentDictionary<AccountHash * AssetHash, HoldingState option>(),
                 ConcurrentDictionary<VoteId, VoteState option>(),
                 ConcurrentDictionary<AccountHash * AssetHash, EligibilityState option>(),
                 ConcurrentDictionary<AssetHash, ConcurrentDictionary<BlockchainAddress, KycProviderChange option>>(),
@@ -156,7 +152,9 @@ module Processing =
             chxAddresses.GetOrAdd(address, getChxAddressState)
 
         member __.GetHolding (accountHash : AccountHash, assetHash : AssetHash) =
-            holdings.GetOrAdd((accountHash, assetHash), getHoldingState)
+            holdings.GetOrAdd((accountHash, assetHash), getHoldingStateFromStorage)
+        member __.GetHoldingOrDefault (accountHash : AccountHash, assetHash : AssetHash) =
+            __.GetHolding(accountHash, assetHash) |? {Balance = AssetAmount 0m; IsEmission = false}
 
         member __.GetVote (voteId : VoteId) =
             votes.GetOrAdd(voteId, getVoteStateFromStorage)
@@ -208,6 +206,7 @@ module Processing =
             chxAddresses.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
 
         member __.SetHolding (accountHash, assetHash, state : HoldingState) =
+            let state = Some state
             holdings.AddOrUpdate((accountHash, assetHash), state, fun _ _ -> state) |> ignore
 
         member __.SetVote (voteId, state : VoteState) =
@@ -297,8 +296,9 @@ module Processing =
                     |> Map.filter (fun _ a -> a.Nonce.Value <> 0L || a.Balance.Value <> 0m)
                 Holdings =
                     holdings
-                    |> Map.ofDict
-                    |> Map.filter (fun key h -> h.Balance.Value <> 0m || getHoldingStateFromStorage key <> None)
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
+                    |> Map.ofSeq
                 Votes =
                     votes
                     |> Seq.ofDict
@@ -398,8 +398,8 @@ module Processing =
         | _, None ->
             Error TxErrorCode.DestinationAccountNotFound
         | Some fromAccountState, Some _ when fromAccountState.ControllerAddress = senderAddress ->
-            let fromState = state.GetHolding(action.FromAccountHash, action.AssetHash)
-            let toState = state.GetHolding(action.ToAccountHash, action.AssetHash)
+            let fromState = state.GetHoldingOrDefault(action.FromAccountHash, action.AssetHash)
+            let toState = state.GetHoldingOrDefault(action.ToAccountHash, action.AssetHash)
 
             let isPrimaryEligible, isSecondaryEligible =
                 match state.GetAsset(action.AssetHash) with
@@ -427,8 +427,8 @@ module Processing =
                     let newToState = { toState with Balance = toState.Balance + action.Amount }
                     state.SetHolding(action.ToAccountHash, action.AssetHash, newToState)
 
-                    let holdingFromAcccount = state.GetHolding(action.FromAccountHash, action.AssetHash)
-                    let holdingToAccount = state.GetHolding(action.ToAccountHash, action.AssetHash)
+                    let holdingFromAcccount = state.GetHoldingOrDefault(action.FromAccountHash, action.AssetHash)
+                    let holdingToAccount = state.GetHoldingOrDefault(action.ToAccountHash, action.AssetHash)
                     if holdingFromAcccount.Balance.Value > Utils.maxBlockchainNumeric
                         || holdingToAccount.Balance.Value > Utils.maxBlockchainNumeric
                     then
@@ -451,15 +451,15 @@ module Processing =
         | _, None ->
             Error TxErrorCode.AccountNotFound
         | Some assetState, Some _ when assetState.ControllerAddress = senderAddress ->
-            let holdingState = state.GetHolding(action.EmissionAccountHash, action.AssetHash)
+            let holdingState = state.GetHoldingOrDefault(action.EmissionAccountHash, action.AssetHash)
             state.SetHolding(
                 action.EmissionAccountHash,
                 action.AssetHash,
                 { holdingState with Balance = holdingState.Balance + action.Amount; IsEmission = true }
             )
 
-            if state.GetHolding(action.EmissionAccountHash, action.AssetHash).Balance.Value > Utils.maxBlockchainNumeric
-            then
+            let holdingState = state.GetHoldingOrDefault(action.EmissionAccountHash, action.AssetHash)
+            if holdingState.Balance.Value > Utils.maxBlockchainNumeric then
                 Error TxErrorCode.ValueTooBig
             else
                 Ok state
@@ -678,7 +678,7 @@ module Processing =
         | _, None ->
             Error TxErrorCode.AccountNotFound
         | Some _, Some accountState when accountState.ControllerAddress = senderAddress ->
-            let holding = state.GetHolding(action.VoteId.AccountHash, action.VoteId.AssetHash)
+            let holding = state.GetHoldingOrDefault(action.VoteId.AccountHash, action.VoteId.AssetHash)
             if holding.Balance.Value <= 0m then
                 Error TxErrorCode.HoldingNotFound
             else
