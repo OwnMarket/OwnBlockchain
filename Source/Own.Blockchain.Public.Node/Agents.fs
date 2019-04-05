@@ -166,7 +166,10 @@ module Agents =
             |> formatMessage
             |> Log.info
         | ConsensusStateRequestReceived (request, _) ->
-            sprintf "Validator %s" request.ValidatorAddress.Value
+            sprintf "%s / %i / %A"
+                request.ValidatorAddress.Value
+                request.ConsensusRound.Value
+                (request.TargetValidatorAddress |> Option.map (fun a -> a.Value))
             |> formatMessage
             |> Log.debug
         | ConsensusStateResponseReceived response ->

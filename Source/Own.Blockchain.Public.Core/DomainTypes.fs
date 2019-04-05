@@ -460,6 +460,7 @@ type ConsensusStateInfo = {
 type ConsensusStateRequest = {
     ValidatorAddress : BlockchainAddress
     ConsensusRound : ConsensusRound
+    TargetValidatorAddress : BlockchainAddress option
 }
 
 type ConsensusStateResponse = {

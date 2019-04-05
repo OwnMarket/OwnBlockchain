@@ -101,7 +101,7 @@ module ConsensusTestHelpers =
         let _scheduledTimeouts =
             new Dictionary<BlockchainAddress, Dictionary<BlockNumber * ConsensusRound * ConsensusStep, bool>>()
         let _messages = new List<BlockchainAddress * ConsensusMessageEnvelope>()
-        let _stateRequests = new List<BlockchainAddress * ConsensusRound>()
+        let _stateRequests = new List<BlockchainAddress * ConsensusRound * BlockchainAddress option>()
         let _events = new List<BlockchainAddress * AppEvent>()
 
         let _persistedState = new Dictionary<BlockchainAddress, ConsensusStateInfo>()
@@ -222,8 +222,8 @@ module ConsensusTestHelpers =
             let sendConsensusState =
                 __.SendConsensusState validatorAddress
 
-            let requestConsensusState r =
-                _stateRequests.Add (validatorAddress, r)
+            let requestConsensusState r t =
+                _stateRequests.Add (validatorAddress, r, t)
 
             let publishEvent event =
                 _events.Add (validatorAddress, event)
@@ -442,7 +442,7 @@ module ConsensusTestHelpers =
             if not (_scheduledTimeouts.Remove validatorAddress) then
                 failwithf "Didn't remove scheduled timeouts for crashed validator %s" validatorAddress.Value
             __.RemoveMessages (fun (sender, message) -> sender = validatorAddress)
-            _stateRequests.RemoveAll (fun (v, _) -> v = validatorAddress) |> ignore
+            _stateRequests.RemoveAll (fun (v, _, _) -> v = validatorAddress) |> ignore
 
         member __.RecoverValidator validatorAddress =
             __.InstantiateValidator validatorAddress
@@ -459,13 +459,14 @@ module ConsensusTestHelpers =
 
             _states.[validatorAddress].HandleConsensusCommand Synchronize
 
-            __.RequestConsensusState validatorAddress _states.[validatorAddress].Variables.ConsensusRound
+            __.RequestConsensusState(validatorAddress, _states.[validatorAddress].Variables.ConsensusRound, None)
 
-        member __.RequestConsensusState validatorAddress consensusRound =
+        member __.RequestConsensusState (validatorAddress, consensusRound, targetValidatorAddress) =
             let consensusStateRequest =
                 {
                     ConsensusStateRequest.ValidatorAddress = validatorAddress
                     ConsensusRound = consensusRound
+                    TargetValidatorAddress = targetValidatorAddress
                 }
 
             let peerId =
@@ -473,10 +474,13 @@ module ConsensusTestHelpers =
                 |> Hashing.decode
                 |> PeerNetworkIdentity
 
-            _stateRequests.RemoveAll (fun (v, r) -> v = validatorAddress && r = consensusRound) |> ignore
+            _stateRequests.RemoveAll (fun (v, r, _) -> v = validatorAddress && r = consensusRound) |> ignore
 
             for v in validators do
-                if v <> validatorAddress && _states.ContainsKey v then
+                if v <> validatorAddress
+                    && _states.ContainsKey v
+                    && (targetValidatorAddress.IsNone || targetValidatorAddress = Some v)
+                then
                     ConsensusCommand.StateRequested (consensusStateRequest, peerId)
                     |> _states.[v].HandleConsensusCommand
 

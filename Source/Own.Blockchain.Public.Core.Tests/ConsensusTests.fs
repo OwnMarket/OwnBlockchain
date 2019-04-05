@@ -777,7 +777,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.IsTimeoutScheduled(validators.[2], BlockNumber 1L, ConsensusRound 0, ConsensusStep.Vote) |> not @>
 
         // Stale round detected
-        net.RequestConsensusState validators.[2] (ConsensusRound 0)
+        net.RequestConsensusState(validators.[2], ConsensusRound 0, None)
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages.[0] |> isCommitForBlock @>
 
@@ -1120,7 +1120,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.States.[validators.[3]].Variables.ConsensusStep = ConsensusStep.Commit @>
 
         // Stale round detected
-        net.RequestConsensusState validators.[0] (ConsensusRound 0)
+        net.RequestConsensusState(validators.[0], ConsensusRound 0, None)
 
         test <@ net.Messages.Count = 1 @>
         test <@ net.Messages |> Seq.forall (fun (s, _) -> s = validators.[0]) @>
@@ -2163,8 +2163,8 @@ type ConsensusTests(output : ITestOutputHelper) =
 
         test <@ net.StateRequests.Count = 2 @>
         test <@ net.StateRequests.[0] = net.StateRequests.[1] @>
-        test <@ net.StateRequests.[0] |> fst = validators.[3] @>
-        net.StateRequests.[0] ||> net.RequestConsensusState
+        test <@ net.StateRequests.[0] |> fun (v, _, _) -> v = validators.[3] @>
+        net.RequestConsensusState net.StateRequests.[0]
         test <@ net.States.[validators.[3]].Variables.LockedRound.Value = -1 @>
         test <@ net.States.[validators.[3]].Variables.ValidRound.Value = -1 @>
         test <@ net.StateRequests.Count = 0 @>
@@ -2203,12 +2203,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.[0] |> isPropose @>
 
         net.DeliverMessages() // Deliver proposal
-        test <@ net.Messages.Count = 2 @>
-        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> fst = validators.[2] @>
+        test <@ net.Messages.[0] |> isVoteForBlock @>
 
-        test <@ net.StateRequests.Count = 1 @>
-        test <@ net.StateRequests.[0] |> fst = validators.[1] @>
-        net.StateRequests.[0] ||> net.RequestConsensusState
+        test <@ net.StateRequests.Count = 2 @>
+        test <@ net.StateRequests |> Seq.forall (fun (v, _, _) -> v = validators.[1] || v = validators.[3]) @>
+        net.RequestConsensusState net.StateRequests.[1]
+        net.RequestConsensusState net.StateRequests.[0]
 
         for i in [1 .. 3] do
             test <@ net.States.[validators.[i]].Variables.ConsensusStep = ConsensusStep.Vote @>
@@ -2281,9 +2283,9 @@ type ConsensusTests(output : ITestOutputHelper) =
                 net.DeliverMessages() // Deliver proposal
 
             if r.Value = 10 then // Mimic time-based stale height detection
-                net.RequestConsensusState validators.[1] r
-                net.RequestConsensusState validators.[2] r
-                net.RequestConsensusState validators.[3] r
+                net.RequestConsensusState(validators.[1], r, None)
+                net.RequestConsensusState(validators.[2], r, None)
+                net.RequestConsensusState(validators.[3], r, None)
                 net.DeliverMessages(
                     (fun (s, r, m) -> s = r),
                     (fun (s, r, m) -> s <> r)

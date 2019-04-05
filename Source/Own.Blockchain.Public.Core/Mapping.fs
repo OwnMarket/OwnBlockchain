@@ -841,12 +841,21 @@ module Mapping =
         {
             ConsensusStateRequest.ValidatorAddress = dto.ValidatorAddress |> BlockchainAddress
             ConsensusRound = dto.ConsensusRound |> ConsensusRound
+            TargetValidatorAddress =
+                if dto.TargetValidatorAddress.IsNullOrWhiteSpace() then
+                    None
+                else
+                    dto.TargetValidatorAddress |> BlockchainAddress |> Some
         }
 
     let consensusStateRequestToDto (request : ConsensusStateRequest) : ConsensusStateRequestDto =
         {
             ConsensusStateRequestDto.ValidatorAddress = request.ValidatorAddress.Value
             ConsensusRound = request.ConsensusRound.Value
+            TargetValidatorAddress =
+                request.TargetValidatorAddress
+                |> Option.map (fun a -> a.Value)
+                |> Option.toObj
         }
 
     let consensusStateResponseFromDto (dto : ConsensusStateResponseDto) : ConsensusStateResponse =

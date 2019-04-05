@@ -27,7 +27,7 @@ module Consensus =
             ConsensusMessageEnvelopeDto -> Result<BlockchainAddress * ConsensusMessageEnvelope, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusStateInfo -> ConsensusMessage -> unit,
         sendConsensusState : PeerNetworkIdentity -> ConsensusStateResponse -> unit,
-        requestConsensusState : ConsensusRound -> unit,
+        requestConsensusState : ConsensusRound -> BlockchainAddress option -> unit,
         publishEvent : AppEvent -> unit,
         scheduleMessage : int -> BlockchainAddress * ConsensusMessageEnvelope -> unit,
         scheduleStateResponse : int -> BlockNumber * ConsensusStateResponse -> unit,
@@ -222,13 +222,13 @@ module Consensus =
                     let roundDuration = currentTime - _roundStartTime
                     if roundDuration > maxRoundDuration _round then
                         Log.warning "Stale consensus round detected"
-                        requestConsensusState _round
+                        requestConsensusState _round None
                     elif emptyBlocksEnabled then
                         // Detect stale height (relies on empty block pace)
                         let heightDuration = currentTime - (getLastAppliedBlockTimestamp ()).Value
                         if heightDuration > maxHeightDuration then
                             Log.warning "Stale consensus height detected"
-                            requestConsensusState _round
+                            requestConsensusState _round None
 
                     return! loop ()
                 }
@@ -328,7 +328,7 @@ module Consensus =
             elif isValidatorBlacklisted (request.ValidatorAddress, _blockNumber, _blockNumber) then
                 Log.warningf "Validator %s is blacklisted - consensus state request ignored"
                     request.ValidatorAddress.Value
-            else
+            elif request.TargetValidatorAddress.IsNone || request.TargetValidatorAddress = Some validatorAddress then
                 let messages =
                     [
                         let key = _blockNumber, request.ConsensusRound, validatorAddress
@@ -531,7 +531,7 @@ module Consensus =
                                 vr.Value
                                 senderAddress.Value
 
-                            requestConsensusState vr
+                            requestConsensusState vr (Some senderAddress)
             )
 
             // VOTE RULES

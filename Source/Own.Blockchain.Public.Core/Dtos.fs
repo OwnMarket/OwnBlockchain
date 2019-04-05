@@ -296,6 +296,7 @@ type ConsensusStateInfoDto = {
 type ConsensusStateRequestDto = {
     [<Key(0)>] ValidatorAddress : string
     [<Key(1)>] ConsensusRound : int
+    [<Key(2)>] TargetValidatorAddress : string
 }
 
 [<MessagePackObject>]
