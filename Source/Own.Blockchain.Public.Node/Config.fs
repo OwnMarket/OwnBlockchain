@@ -189,9 +189,9 @@ type Config () =
     static member ConsensusMessageRetryingInterval = 1000 // Milliseconds
     static member ConsensusProposeRetryingInterval = 1000 // Milliseconds
 
-    static member ConsensusTimeoutPropose = 3000 // Milliseconds
-    static member ConsensusTimeoutVote = 3000 // Milliseconds
-    static member ConsensusTimeoutCommit = 3000 // Milliseconds
+    static member ConsensusTimeoutPropose = 5000 // Milliseconds
+    static member ConsensusTimeoutVote = 5000 // Milliseconds
+    static member ConsensusTimeoutCommit = 5000 // Milliseconds
     static member ConsensusTimeoutDelta = 1000 // Milliseconds
 
     static member StaleConsensusDetectionInterval = 10000 // Milliseconds
