@@ -49,12 +49,14 @@ module Composition =
     let getAllPendingTxHashes () = Db.getAllPendingTxHashes Config.DbEngineType Config.DbConnectionString
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
     let getTxPoolInfo () = Db.getTxPoolInfo Config.DbEngineType Config.DbConnectionString
+    let txExistsInDb = Db.txExists Config.DbEngineType Config.DbConnectionString
 
     let saveEquivocationProofToDb = Db.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
     let getEquivocationInfo = Db.getEquivocationProof Config.DbEngineType Config.DbConnectionString
     let getPendingEquivocationProofs = Db.getPendingEquivocationProofs Config.DbEngineType Config.DbConnectionString
     let getAllPendingEquivocationProofHashes () =
         Db.getAllPendingEquivocationProofHashes Config.DbEngineType Config.DbConnectionString
+    let equivocationProofExistsInDb = Db.equivocationProofExists Config.DbEngineType Config.DbConnectionString
 
     let saveBlockToDb = Db.saveBlock Config.DbEngineType Config.DbConnectionString
     let tryGetLastAppliedBlockNumber () = Db.getLastAppliedBlockNumber Config.DbEngineType Config.DbConnectionString
@@ -358,6 +360,8 @@ module Composition =
             blockExists
             txExists
             equivocationProofExists
+            txExistsInDb
+            equivocationProofExistsInDb
             Peers.requestBlockFromPeer
             Peers.requestTxFromPeer
             Peers.requestEquivocationProofFromPeer
@@ -371,6 +375,8 @@ module Composition =
             applyBlock
             txExists
             equivocationProofExists
+            txExistsInDb
+            equivocationProofExistsInDb
             removeOrphanTxResults
             removeOrphanEquivocationProofResults
             publishEvent

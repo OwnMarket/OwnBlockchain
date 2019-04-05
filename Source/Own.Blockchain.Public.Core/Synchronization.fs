@@ -73,6 +73,8 @@ module Synchronization =
         blockExists
         txExists
         equivocationProofExists
+        txExistsInDb
+        equivocationProofExistsInDb
         requestBlockFromPeer
         requestTxFromPeer
         requestEquivocationProofFromPeer
@@ -138,11 +140,19 @@ module Synchronization =
                         block.EquivocationProofs
                         |> List.filter (equivocationProofExists >> not)
 
-                    match missingTxs, missingEquivocationProofs with
-                    | [], [] ->
+                    if missingTxs.IsEmpty && missingEquivocationProofs.IsEmpty then
                         if block.Header.Number = lastAppliedBlockNumber + 1 then
-                            BlockReady block.Header.Number |> publishEvent
-                    | _ ->
+                            let missingTxs =
+                                block.TxSet
+                                |> List.filter (txExistsInDb >> not)
+
+                            let missingEquivocationProofs =
+                                block.EquivocationProofs
+                                |> List.filter (equivocationProofExistsInDb >> not)
+
+                            if missingTxs.IsEmpty && missingEquivocationProofs.IsEmpty then
+                                BlockReady block.Header.Number |> publishEvent
+                    else
                         missingTxs |> List.iter requestTxFromPeer
                         missingEquivocationProofs |> List.iter requestEquivocationProofFromPeer
                 )
@@ -155,6 +165,8 @@ module Synchronization =
         applyBlock
         txExists
         equivocationProofExists
+        txExistsInDb
+        equivocationProofExistsInDb
         removeOrphanTxResults
         removeOrphanEquivocationProofResults
         publishEvent
@@ -167,6 +179,8 @@ module Synchronization =
                 let block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
                 if block.TxSet |> List.forall txExists
                     && block.EquivocationProofs |> List.forall equivocationProofExists
+                    && block.TxSet |> List.forall txExistsInDb
+                    && block.EquivocationProofs |> List.forall equivocationProofExistsInDb
                 then
                     Log.noticef "Applying block %i" block.Header.Number.Value
                     do! applyBlock block.Header.Number

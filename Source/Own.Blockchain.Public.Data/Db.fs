@@ -187,6 +187,24 @@ module Db =
         | [info] -> info
         | _ -> failwithf "Couldn't get TX pool info from DB"
 
+    let txExists dbEngineType (dbConnectionString : string) (TxHash txHash) : bool =
+        let sql =
+            """
+            SELECT 1
+            FROM tx
+            WHERE tx_hash = @txHash
+            """
+
+        let sqlParams =
+            [
+                "@txHash", txHash |> box
+            ]
+
+        match DbTools.query<int> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> false
+        | [_] -> true
+        | _ -> failwithf "Multiple TXs found for hash %A" txHash
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquivocationProof
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -296,6 +314,30 @@ module Db =
         | [] -> None
         | [proof] -> Some proof
         | _ -> failwithf "Multiple equivocation proofs found for hash %A" equivocationProofHash
+
+    let equivocationProofExists
+        dbEngineType
+        (dbConnectionString : string)
+        (EquivocationProofHash equivocationProofHash)
+        : bool
+        =
+
+        let sql =
+            """
+            SELECT 1
+            FROM equivocation
+            WHERE equivocation_proof_hash = @equivocationProofHash
+            """
+
+        let sqlParams =
+            [
+                "@equivocationProofHash", equivocationProofHash |> box
+            ]
+
+        match DbTools.query<int> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> false
+        | [_] -> true
+        | _ -> failwithf "Multiple EquivocationProofs found for hash %A" equivocationProofHash
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Block
