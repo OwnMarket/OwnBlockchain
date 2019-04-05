@@ -74,7 +74,7 @@ type internal TransportCore
 
     let receiveMessageCallback (eventArgs : NetMQSocketEventArgs) =
         let mutable message = new NetMQMessage()
-        if eventArgs.Socket.TryReceiveMultipartMessage &message then
+        while eventArgs.Socket.TryReceiveMultipartMessage &message do
             extractMessageFromMultipart message
             |> Option.iter (fun msg ->
                 msg
@@ -88,8 +88,6 @@ type internal TransportCore
                     )
                     Log.error
             )
-        else
-            Log.warning "An error has occurred while trying to read the message"
 
     let createDealerSocket targetHost =
         let dealerSocket = new DealerSocket("tcp://" + targetHost)
@@ -97,8 +95,8 @@ type internal TransportCore
         dealerSocket.Options.Identity <- peerIdentity
         dealerSocket.ReceiveReady
         |> Observable.subscribe (fun e ->
-            let hasMore, _ = e.Socket.TryReceiveFrameString()
-            if hasMore then
+            let mutable emptyFrame = ""
+            while e.Socket.TryReceiveFrameString &emptyFrame do
                 let mutable msg = Array.empty<byte>
                 if e.Socket.TryReceiveFrameBytes &msg then
                     msg
@@ -111,8 +109,6 @@ type internal TransportCore
                                 receivePeerMessage peerMessageEnvelope
                         )
                         Log.error
-            else
-                Log.warning "Possible invalid multipart message format"
         )
         |> ignore
 
