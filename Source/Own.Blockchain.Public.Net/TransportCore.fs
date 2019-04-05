@@ -16,18 +16,39 @@ type internal TransportCore
     networkId,
     peerIdentity,
     networkSendoutRetryTimeout,
-    receivePeerMessage : PeerMessageEnvelopeDto -> unit
+    receivePeerMessage
     ) =
 
     let poller = new NetMQPoller()
     let mutable routerSocket : RouterSocket option = None
     let dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
     let dealerMessageQueue = new NetMQQueue<string * NetMQMessage>()
+    let multicastMessageQueue = new NetMQQueue<string * NetMQMessage>()
+    let discoveryMessageQueue = new NetMQQueue<string * NetMQMessage>()
+    let requestMessageQueue = new NetMQQueue<string * NetMQMessage>()
+    let gossipMessageQueue = new NetMQQueue<string * NetMQMessage>()
     let routerMessageQueue = new NetMQQueue<NetMQMessage>()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let mutable receivePeerMessageDispatcher : MailboxProcessor<PeerMessageEnvelopeDto> option = None
+    let invokeReceivePeerMessage m =
+        match receivePeerMessageDispatcher with
+        | Some h -> h.Post m
+        | None -> Log.error "ReceivePeerMessage agent is not started"
+
+    let startReceivePeerMessageDispatcher () =
+        if receivePeerMessageDispatcher <> None then
+            failwith "ReceivePeerMessage agent is already started"
+
+        receivePeerMessageDispatcher <-
+            Agent.start <| fun peerMessageEnvelopeDto ->
+                async {
+                    receivePeerMessage peerMessageEnvelopeDto
+                }
+            |> Some
 
     let composeMultipartMessage (msg : byte[]) (identity : byte[] option) =
         let multipartMessage = new NetMQMessage()
@@ -64,7 +85,7 @@ type internal TransportCore
                         if peerMessageEnvelope.NetworkId <> networkId then
                             Log.error "Peer message with invalid networkId ignored"
                         else
-                            receivePeerMessage peerMessageEnvelope
+                            invokeReceivePeerMessage peerMessageEnvelope
                     )
                     Log.error
             )
@@ -102,7 +123,7 @@ type internal TransportCore
     // Dealer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let dealerSendAsync (msg : NetMQMessage) targetAddress =
+    let dealerSendAsync (queue : NetMQQueue<string * NetMQMessage>) (msg : NetMQMessage) targetAddress =
         let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
             try
@@ -112,31 +133,47 @@ type internal TransportCore
             with
             | :? ObjectDisposedException ->
                 Log.error "Poller was disposed while adding socket"
-        dealerMessageQueue.Enqueue (targetAddress, msg)
+        queue.Enqueue (targetAddress, msg)
+
+    let sendMessageCallback (e : NetMQQueueEventArgs<string * NetMQMessage>) =
+        let mutable message = "", new NetMQMessage()
+
+        // Deduplicate messages.
+        let messagesSet = new HashSet<string * NetMQMessage>()
+        while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(100.)) do
+            messagesSet.Add message |> ignore
+
+        messagesSet |> Seq.iter (fun message ->
+            let targetAddress, payload = message
+            match dealerSockets.TryGetValue targetAddress with
+            | true, socket ->
+                let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
+                if not (socket.TrySendMultipartMessage(timeout, payload)) then
+                    Log.errorf "Could not send message to %s" targetAddress
+                    if not socket.IsDisposed then
+                        try
+                            socket.Disconnect("tcp://" + targetAddress)
+                            socket.Connect("tcp://" + targetAddress)
+                        with
+                        | _ -> Log.error "Could not reset socket state"
+            | _ ->
+                Log.errorf "Socket not found for target %s" targetAddress
+        )
 
     let wireDealerMessageQueueEvents () =
-        dealerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
-            let mutable message = "", new NetMQMessage()
-
-            // Deduplicate messages.
-            let messagesSet = new HashSet<string * NetMQMessage>()
-            while e.Queue.TryDequeue(&message, TimeSpan.FromMilliseconds(100.)) do
-                messagesSet.Add message |> ignore
-
-            messagesSet |> Seq.iter (fun message ->
-                let targetAddress, payload = message
-                match dealerSockets.TryGetValue targetAddress with
-                | true, socket ->
-                    let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
-                    if not (socket.TrySendMultipartMessage(timeout, payload)) then
-                        Log.errorf "Could not send message to %s" targetAddress
-                | _ ->
-                    Log.errorf "Socket not found for target %s" targetAddress
-            )
-        )
+        multicastMessageQueue.ReceiveReady |> Observable.subscribe sendMessageCallback
+        |> ignore
+        discoveryMessageQueue.ReceiveReady |> Observable.subscribe sendMessageCallback
+        |> ignore
+        requestMessageQueue.ReceiveReady |> Observable.subscribe sendMessageCallback
+        |> ignore
+        gossipMessageQueue.ReceiveReady |> Observable.subscribe sendMessageCallback
         |> ignore
 
-        poller.Add dealerMessageQueue
+        poller.Add multicastMessageQueue
+        poller.Add discoveryMessageQueue
+        poller.Add requestMessageQueue
+        poller.Add gossipMessageQueue
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Router
@@ -166,6 +203,7 @@ type internal TransportCore
         poller.Add routerMessageQueue
 
     member __.Init() =
+        startReceivePeerMessageDispatcher ()
         wireDealerMessageQueueEvents ()
         wireRouterMessageQueueEvents ()
 
@@ -192,15 +230,15 @@ type internal TransportCore
 
     member __.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
         let msg = packMessage gossipDiscoveryMessage None
-        dealerSendAsync msg targetAddress
+        dealerSendAsync discoveryMessageQueue msg targetAddress
 
     member __.SendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
         let msg = packMessage gossipMessage None
-        dealerSendAsync msg targetMember.NetworkAddress
+        dealerSendAsync gossipMessageQueue msg targetMember.NetworkAddress
 
     member __.SendRequestMessage requestMessage targetAddress =
         let msg = packMessage requestMessage None
-        dealerSendAsync msg targetAddress
+        dealerSendAsync requestMessageQueue msg targetAddress
 
     member __.SendResponseMessage responseMessage (targetIdentity : byte[]) =
         let msg = packMessage responseMessage (targetIdentity |> Some)
@@ -214,7 +252,7 @@ type internal TransportCore
             |> Seq.shuffle
             |> Seq.iter (fun networkAddress ->
                 let msg = packMessage multicastMessage None
-                dealerSendAsync msg networkAddress
+                dealerSendAsync multicastMessageQueue msg networkAddress
             )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -240,8 +278,17 @@ type internal TransportCore
         routerSocket |> Option.iter (fun socket -> poller.RemoveAndDispose socket)
         routerSocket <- None
 
-        if not dealerMessageQueue.IsDisposed then
-            poller.Remove dealerMessageQueue
+        if not multicastMessageQueue.IsDisposed then
+            poller.RemoveAndDispose multicastMessageQueue
+
+        if not discoveryMessageQueue.IsDisposed then
+            poller.RemoveAndDispose discoveryMessageQueue
+
+        if not requestMessageQueue.IsDisposed then
+            poller.RemoveAndDispose requestMessageQueue
+
+        if not gossipMessageQueue.IsDisposed then
+            poller.RemoveAndDispose gossipMessageQueue
 
         if poller.IsRunning then
             poller.Dispose()

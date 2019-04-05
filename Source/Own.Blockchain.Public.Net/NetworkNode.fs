@@ -422,7 +422,11 @@ type NetworkNode
     member private __.StartServer () =
         Log.infof "Listen on: %s" nodeConfig.ListeningAddress.Value
         nodeConfigPublicIPAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
-        receiveMessage nodeConfig.ListeningAddress.Value
+        let receiveMessageTask =
+            async {
+                receiveMessage nodeConfig.ListeningAddress.Value
+            }
+        Async.Start (receiveMessageTask, cts.Token)
 
     member private __.StartGossipDiscovery () =
         let rec loop () =
