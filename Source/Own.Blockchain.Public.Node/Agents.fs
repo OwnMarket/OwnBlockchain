@@ -181,7 +181,7 @@ module Agents =
             |> formatMessage
             |> Log.debug
         | BlockchainHeadReceived blockNr ->
-            sprintf "BlockchainHeadReceived: BlockNumber = %i" blockNr.Value
+            sprintf "BlockNumber %i" blockNr.Value
             |> formatMessage
             |> Log.debug
         | PeerListReceived peerList ->
