@@ -209,14 +209,14 @@ module Consensus =
                 |> int64
 
             let maxHeightDuration =
-                int64 minEmptyBlockTime
+                int64 (minEmptyBlockTime * 1000)
                 + maxRoundDuration (ConsensusRound 0) // Give one round time to commit an empty block.
 
             let rec loop () =
                 async {
                     do! Async.Sleep staleConsensusDetectionInterval
 
-                    let currentTime = Utils.getMachineTimestamp ()
+                    let currentTime = Utils.getNetworkTimestamp ()
 
                     // Detect stale round
                     let roundDuration = currentTime - _roundStartTime
@@ -495,7 +495,7 @@ module Consensus =
                     __.TryPropose()
 
         member private __.StartRound(r) =
-            _roundStartTime <- Utils.getMachineTimestamp ()
+            _roundStartTime <- Utils.getNetworkTimestamp ()
             _round <- r
             _step <- ConsensusStep.Propose
 
