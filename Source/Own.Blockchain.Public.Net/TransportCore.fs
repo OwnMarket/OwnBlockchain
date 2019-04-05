@@ -22,7 +22,6 @@ type internal TransportCore
     let poller = new NetMQPoller()
     let mutable routerSocket : RouterSocket option = None
     let dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
-    let dealerMessageQueue = new NetMQQueue<string * NetMQMessage>()
     let multicastMessageQueue = new NetMQQueue<string * NetMQMessage>()
     let discoveryMessageQueue = new NetMQQueue<string * NetMQMessage>()
     let requestMessageQueue = new NetMQQueue<string * NetMQMessage>()
