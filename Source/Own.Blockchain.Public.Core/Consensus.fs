@@ -638,13 +638,13 @@ module Consensus =
 
         member private __.MajorityVoted(consensusRound, ?blockHash : BlockHash option) : bool =
             (*
-            blockHash is optional parameter with nested Option<BlockHash> value, which is evaluated as follows (pseudo):
+            blockHash is optional parameter with nested Option<BlockHash> value, which is evaluated as follows:
 
             match blockHash with
             | None -> take all votes
             | Some v ->
                 match v with
-                | None -> take only votes for None (nil)
+                | None -> take only votes for None
                 | Some h -> take only votes for block hash h
             *)
 
@@ -662,13 +662,13 @@ module Consensus =
 
         member private __.MajorityCommitted(consensusRound, ?blockHash : BlockHash option) : bool =
             (*
-            blockHash is optional parameter with nested Option<BlockHash> value, which is evaluated as follows (pseudo):
+            blockHash is optional parameter with nested Option<BlockHash> value, which is evaluated as follows:
 
             match blockHash with
             | None -> take all commits
             | Some v ->
                 match v with
-                | None -> take only commits for None (nil)
+                | None -> take only commits for None
                 | Some h -> take only commits for block hash h
             *)
 
