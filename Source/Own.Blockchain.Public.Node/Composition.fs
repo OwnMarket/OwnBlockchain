@@ -453,7 +453,6 @@ module Composition =
             Config.ConsensusTimeoutVote
             Config.ConsensusTimeoutCommit
             Config.ConsensusTimeoutDelta
-            Config.ConsensusTimeoutIncrements
 
     let storeEquivocationProof =
         Workflows.storeEquivocationProof

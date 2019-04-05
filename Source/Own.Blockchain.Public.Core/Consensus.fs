@@ -994,7 +994,6 @@ module Consensus =
         timeoutVote
         timeoutCommit
         timeoutDelta
-        timeoutIncrements
         =
 
         let validatorAddress =
@@ -1198,7 +1197,7 @@ module Consensus =
                 | ConsensusStep.Vote -> timeoutVote
                 | ConsensusStep.Commit -> timeoutCommit
 
-            baseTimeout + timeoutDelta * min consensusRound timeoutIncrements
+            baseTimeout + timeoutDelta * consensusRound
 
         let scheduleTimeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
             if canParticipateInConsensus blockNumber = Some true then
