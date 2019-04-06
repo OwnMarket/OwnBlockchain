@@ -391,7 +391,7 @@ type ConsensusTests(output : ITestOutputHelper) =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    member __.``Consensus - Equivocation - Proof detected`` () =
+    member __.``Consensus - Equivocation - Proof detected for Vote`` () =
         // ARRANGE
         let validatorCount = 10
         let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
@@ -442,6 +442,62 @@ type ConsensusTests(output : ITestOutputHelper) =
             |> function EquivocationValue.BlockHash h -> h | v -> failwithf "Unexpected value %A" v
 
         test <@ Vote proofValue1 = equivocationMessage @>
+        test <@ equivocationProof.Signature1.EndsWith(byzantineValidator.Value + "_EQ") @>
+        test <@ detectedValidator = byzantineValidator @>
+
+    [<Fact>]
+    member __.``Consensus - Equivocation - Proof detected for Commit`` () =
+        // ARRANGE
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+
+        let byzantineValidator =
+            validators
+            |> List.except [proposer]
+            |> List.shuffle
+            |> List.head
+
+        let equivocationMessage = Commit Option<BlockHash>.None
+
+        let net = new ConsensusSimulationNetwork(validators)
+
+        net.StartConsensus()
+        net.DeliverMessages() // Deliver Propose message
+        net.DeliverMessages() // Deliver Vote messages
+
+        net.Messages
+        |> Seq.filter (fun (a, _) -> a = byzantineValidator)
+        |> Seq.exactlyOne
+        |> createEquivocationMessage equivocationMessage
+        |> fun m -> net.Messages.Add(byzantineValidator, m)
+
+        // ACT
+        net.DeliverMessages() // Deliver Commit messages
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Messages.Count = 1 @>
+        test <@ net.Messages.[0] |> isPropose @>
+
+        let equivocationProof, detectedValidator =
+            net.Events
+            |> Seq.map snd
+            |> Seq.filter (function EquivocationProofDetected _ -> true | _ -> false)
+            |> Seq.distinct
+            |> Seq.exactlyOne
+            |> function
+                | AppEvent.EquivocationProofDetected (proof, address) -> proof, address
+                | _ -> failwith "Unexpected event type"
+
+        let proofValue1 =
+            equivocationProof.EquivocationValue1
+            |> Mapping.equivocationValueFromString
+            |> function EquivocationValue.BlockHash h -> h | v -> failwithf "Unexpected value %A" v
+
+        test <@ Commit proofValue1 = equivocationMessage @>
         test <@ equivocationProof.Signature1.EndsWith(byzantineValidator.Value + "_EQ") @>
         test <@ detectedValidator = byzantineValidator @>
 
