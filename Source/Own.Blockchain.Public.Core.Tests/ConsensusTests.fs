@@ -391,6 +391,78 @@ type ConsensusTests(output : ITestOutputHelper) =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
+    member __.``Consensus - Equivocation - Proof detected for Propose`` () =
+        // ARRANGE
+        let validatorCount = 10
+        let validators = List.init validatorCount (fun _ -> (Signing.generateWallet ()).Address) |> List.sort
+        let proposer = validators |> Validators.getProposer (BlockNumber 1L) (ConsensusRound 0)
+        test <@ proposer = validators.[1] @>
+
+        let byzantineValidator = proposer
+
+        let block2 = ConsensusTestHelpers.proposeDummyBlock proposer (BlockNumber 1L)
+        let equivocationMessage = Propose (block2, ConsensusRound -1)
+        let equivocationValue = sprintf "%s,%i" block2.Header.Hash.Value -1
+
+        let net = new ConsensusSimulationNetwork(validators)
+
+        net.StartConsensus()
+
+        let block1 =
+            (net.Messages.[0] |> snd).ConsensusMessage
+            |> function Propose (b, _) -> b | _ -> failwith "Unexpected message type"
+
+        test <@ block1.Header.Hash <> block2.Header.Hash @>
+
+        net.Messages
+        |> Seq.filter (fun (a, _) -> a = byzantineValidator)
+        |> Seq.exactlyOne
+        |> createEquivocationMessage equivocationMessage
+        |> fun m -> net.Messages.Add(byzantineValidator, m)
+
+        // ACT
+        net.DeliverMessages() // Deliver Propose message
+
+        // ASSERT
+        net.PrintTheState(output.WriteLine)
+
+        test <@ net.Messages.Count = validatorCount @>
+        test <@ net.Messages |> Seq.forall isVoteForBlock @>
+        test <@ net.Events.Count = validatorCount @>
+
+        let equivocationProof, detectedValidator =
+            net.Events
+            |> Seq.map snd
+            |> Seq.distinct
+            |> Seq.exactlyOne
+            |> function
+                | AppEvent.EquivocationProofDetected (proof, address) -> proof, address
+                | _ -> failwith "Unexpected event type"
+
+        let proofValue1 =
+            equivocationProof.EquivocationValue1
+            |> Mapping.equivocationValueFromString
+            |> function
+                | EquivocationValue.BlockHashAndValidRound (h, vr) -> sprintf "%s,%i" h.Value vr.Value
+                | v -> failwithf "Unexpected value %A" v
+
+        let proofValue2 =
+            equivocationProof.EquivocationValue2
+            |> Mapping.equivocationValueFromString
+            |> function
+                | EquivocationValue.BlockHashAndValidRound (h, vr) -> sprintf "%s,%i" h.Value vr.Value
+                | v -> failwithf "Unexpected value %A" v
+
+        if proofValue1 = equivocationValue then
+            test <@ equivocationProof.Signature1.EndsWith(byzantineValidator.Value + "_EQ") @>
+        elif proofValue2 = equivocationValue then
+            test <@ equivocationProof.Signature2.EndsWith(byzantineValidator.Value + "_EQ") @>
+        else
+            failwith "None of the values is equivocation value"
+
+        test <@ detectedValidator = byzantineValidator @>
+
+    [<Fact>]
     member __.``Consensus - Equivocation - Proof detected for Vote`` () =
         // ARRANGE
         let validatorCount = 10
