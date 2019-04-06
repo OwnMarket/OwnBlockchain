@@ -24,6 +24,7 @@ module Cli =
         Composition.startNetworkAgents ()
         Composition.startGossip Agents.publishEvent
         Composition.discoverNetwork ()
+        Agents.startValidator ()
         Workers.startBlockchainHeadPoller ()
         Workers.startFetcher ()
         Api.start () // Blocks and waits for the exit signal.

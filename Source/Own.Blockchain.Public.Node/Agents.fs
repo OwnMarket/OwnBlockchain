@@ -340,7 +340,7 @@ module Agents =
                 }
             |> Some
 
-    let private startValidator () =
+    let startValidator () =
         if validator <> None then
             failwith "Validator agent is already started"
 
@@ -381,4 +381,3 @@ module Agents =
         startBlockchainHeadHandler ()
         startBlockVerifier ()
         startApplier ()
-        startValidator ()
