@@ -37,12 +37,12 @@ module Raw =
 
     let private saveData (dataDir : string) (dataType : RawDataType) (key : string) data : Result<unit, AppErrors> =
         let dataTypeName = unionCaseName dataType
+        let fileName = createFileName dataType key
+        let path = Path.Combine(dataDir, fileName)
+
         try
             if not (Directory.Exists(dataDir)) then
                 Directory.CreateDirectory(dataDir) |> ignore
-
-            let fileName = createFileName dataType key
-            let path = Path.Combine(dataDir, fileName)
 
             if File.Exists(path) then
                 Result.appError (sprintf "%s %s already exists" dataTypeName (extractHash key))
@@ -59,6 +59,10 @@ module Raw =
                 Log.debug ex.AllMessagesAndStackTraces
             else
                 Log.error ex.AllMessagesAndStackTraces
+
+            if (new FileInfo(path)).Length = 0L then
+                Log.warningf "Removing empty file: %s" path
+                File.Delete(path) // Remove empty file left after unsuccessful save.
 
             Result.appError (sprintf "Saving %s %s failed" dataTypeName (extractHash key))
 
