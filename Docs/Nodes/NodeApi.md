@@ -141,22 +141,91 @@ Response JSON payload:
 
 Request URL:
 ```
-/block/2
+/block/21
 ```
 
 Response JSON payload:
 ```json
 {
-    "number": 2,
-    "hash": "9VMtBESNLXWFRQXrd2HbXc2CGWUkdyPQjAKP5MciU59k",
-    "previousHash": "D8ViZH31RHBYrDfUhUC1DK49pY1dxCvgRMsbnS9Lbn3p",
-    "timestamp": 1549530022179,
-    "validator": "CHT72YWjChhv5xYeDono6Nn4Z5Qe5Q7aRyq",
-    "txSetRoot": "CRjqV3DLh7jyCKZqj2pCdfw3s3ynXxEf5JMVm1rCYjmp",
-    "txResultSetRoot": "5zZ72DnUkLd5LRMX6hxXuTrxd8trGrNTDasaP51RMWdX",
-    "stateRoot": "8R4JYdn24veRSUPmReL6A6fgUFHFmzWhX3fMSWfmTD9a",
+    "number": 21,
+    "hash": "6pYM6BBGyQttPCTVmpqNpH4i4jE5KjgmaXCWuDJcbiLp",
+    "previousHash": "EsEYC4f4xvNiSQLRX8P3GNzGeWm1smVvUD5U5oTnDw3b",
+    "configurationBlockNumber": 18,
+    "timestamp": 1554632225409,
+    "proposerAddress": "CHN5FmdEhjKHynhdbzXxsNB35oxL559gRLH",
+    "txSetRoot": "9U4jKtneZ5CJ2qA3qzmiCbekz6j5ZaXSjGAPqaADscG1",
+    "txResultSetRoot": "6Hb32QtPVJdRiubdGRb73WiExmk75rKP76jDfrBg6R9B",
+    "equivocationProofsRoot": "9Vc4dQKFpQ8XP36q5TFAnpChvFmTg8UH6rpu3FqVn268",
+    "equivocationProofResultsRoot": "Gtcbiey3WwiRHrYuGc5ytcttEpMq19uY4oA2FAaMXwLc",
+    "stateRoot": "C6MYZeTZUKZwikUpTEADCYANRZXvMJquCTMSE2ztz78C",
+    "stakingRewardsRoot": "Ey9qZK4J4G2PK68ZFzyteP8dcUWCjcBiMZ46D7nH11pY",
+    "configurationRoot": "8J9eC9A3jzmwCxg8VhjT84xAts8tVVm6RwzLKBhMd3D8",
     "txSet": [
-        "CRjqV3DLh7jyCKZqj2pCdfw3s3ynXxEf5JMVm1rCYjmp"
+        "6XTowWarMR1UjzAVfiMYs7hsKK9hPBagR7JtFn7nxgfK",
+        "8ZVF1R9vLkV2QGMJxGGffgPqMKv41kemFfVGTzmPfKyg",
+        "J2FsRZcPQKfhsSTamKp525AN2imsyVqU5gwVu1AohvHn",
+        "EJd9RbnVBq1yLG4W35FAwAY4Th3w9bhYDTdvJZuWH8TX",
+        "BnpoTcYcnm7mNeNF8fonS4GciZvWEEK9ZnRifkNNxWkQ"
+    ],
+    "equivocationProofs": [
+        "6rYDAZNZE5dhii3JNHvcpxk6uiuWfUHr7qwbwN9qYDx4",
+        "G9Fz3L8xn7zjyk1ZuHNNnvYeMJFqZpnaELQ95rUGcVNR"
+    ],
+    "stakingRewards": [
+        {
+            "stakerAddress": "CHGeQC23WjThKoDoSbKRuUKvq1EGkBaA5Gg",
+            "amount": 0.0128125
+        },
+        {
+            "stakerAddress": "CHJQ8noahag1Cwg6tUW6Y9ESdiCFFBwyQ5C",
+            "amount": 0.005125
+        },
+        {
+            "stakerAddress": "CHXSesNUw6PdUCY6u3N9B8orHYNQMWHREdZ",
+            "amount": 0.0025625
+        }
+    ],
+    "configuration": {
+        "configurationBlockDelta": 3,
+        "validators": [
+            {
+                "validatorAddress": "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSw42Q2",
+                "networkAddress": "localhost:25701",
+                "sharedRewardPercent": 50,
+                "totalStake": 800000
+            },
+            {
+                "validatorAddress": "CHN5FmdEhjKHynhdbzXxsNB35oxL559gRLH",
+                "networkAddress": "localhost:25703",
+                "sharedRewardPercent": 50,
+                "totalStake": 800000
+            },
+            {
+                "validatorAddress": "CHStDQ5ZFeFW9rbMhw83f7FXg19okxVVScM",
+                "networkAddress": "localhost:25704",
+                "sharedRewardPercent": 50,
+                "totalStake": 800000
+            },
+            {
+                "validatorAddress": "CHXr1u8DvLmRrnBpVmPcEH43qBhjez6dc4N",
+                "networkAddress": "localhost:25702",
+                "sharedRewardPercent": 50,
+                "totalStake": 800000
+            }
+        ],
+        "validatorsBlacklist": [
+            "CHMBuSD7ZxKzLvnBZR5ibnLBM7J8v5YvPmS",
+            "CHKtCFeZKE74px2EJS8Sg49j2sdQXpUuKJN"
+        ],
+        "validatorDepositLockTime": 2,
+        "validatorBlacklistTime": 5,
+        "maxTxCountPerBlock": 1000
+    },
+    "consensusRound": 0,
+    "signatures": [
+        "GBfbNB8xQUaLoZDFDGtpAH3EYks2uFdaBErPJKAzR37DBkKDL4HEFNRYLPapbQuZ5JgDzUSXgU7iGJqy4sSJx4775",
+        "64y6JNqpeDqS927rgbCKbdqysAkeEfLC4KS5pAeDpuPL2SR1gsqFFMr5YmrcrPhk75dXeihWovUqctYPrDHjCejiP",
+        "664ZaikasKTrtp9BMnoJgEtFuVAgdEq56D9FJKvF1jsq7pFAEXmJu7Nt4FmWjfT8ncXQTCxhakUGgFiDHPjnE4xLG"
     ]
 }
 ```
@@ -520,7 +589,7 @@ Response JSON payload:
         "127.0.0.1:25701",
         "127.0.0.1:25702",
         "127.0.0.1:25703",
-        "127.0.0.1:25704"                
+        "127.0.0.1:25704"
     ]
 }
 ```
