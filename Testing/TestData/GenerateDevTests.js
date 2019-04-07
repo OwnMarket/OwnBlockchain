@@ -18,7 +18,7 @@ const validatorAddresses =
     ]
 
 const validatorStake = 500000
-const validatorDeposit = 5000
+const validatorDeposit = 11000
 const initialBalance = 10000
 const walletCount = 100
 const txsPerWallet = 10
