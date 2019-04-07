@@ -79,7 +79,7 @@ function signTx(networkCode, privateKey, tx){
 }
 
 function txToCommand(tx) {
-    return `curl -H "Content-Type: application/json" -d @- http://localhost:10717/tx << JSON\n${tx}\nJSON\n`
+    return `curl -s -H "Content-Type: application/json" -d @- http://localhost:10717/tx << JSON\n${tx}\nJSON\n`
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
