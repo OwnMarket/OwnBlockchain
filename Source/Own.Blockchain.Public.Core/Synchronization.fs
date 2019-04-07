@@ -55,7 +55,7 @@ module Synchronization =
             requestBlockFromPeer blockNumber
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Blockchain State
+    // Rebuilding the chain
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let unverifiedBlocks = new ConcurrentDictionary<BlockNumber, BlockEnvelopeDto>()
@@ -159,6 +159,12 @@ module Synchronization =
                 Log.appErrors
         )
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Applying blocks to the state
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let appliedBlocks = new BlockingCollection<BlockNumber>()
+
     let tryApplyNextBlock
         (getLastAppliedBlockNumber : unit -> BlockNumber)
         getBlock
@@ -184,6 +190,7 @@ module Synchronization =
                 then
                     Log.noticef "Applying block %i" block.Header.Number.Value
                     do! applyBlock block.Header.Number
+                    appliedBlocks.Add block.Header.Number
                     return (block.Header.Number |> BlockApplied |> Some)
                 else
                     return None

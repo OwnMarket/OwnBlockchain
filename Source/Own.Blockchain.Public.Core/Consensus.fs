@@ -751,11 +751,8 @@ module Consensus =
             |> publishEvent
 
             // Wait for the state to get updated before proceeding.
-            async {
-                while getLastAppliedBlockNumber () < block.Header.Number do
-                    do! Async.Sleep 100
-            }
-            |> Async.RunSynchronously
+            while Synchronization.appliedBlocks.Take() < block.Header.Number do
+                () // Nothing to do - we rely on the blocking nature of the appliedBlocks queue.
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Equivocation

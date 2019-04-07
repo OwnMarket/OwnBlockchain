@@ -239,6 +239,8 @@ module ConsensusTestHelpers =
                     |> List.ofDict
                     |> List.filter (fun ((bn, _, _), _) -> bn <= blockNumber)
                     |> List.iter (fst >> _persistedMessages.[validatorAddress].Remove >> ignore)
+
+                    Synchronization.appliedBlocks.Add blockNumber
                 | _ -> ()
 
             let scheduleMessage _ _ = ()
