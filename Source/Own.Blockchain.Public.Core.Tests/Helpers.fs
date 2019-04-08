@@ -137,6 +137,7 @@ module Helpers =
             GetTx : TxHash -> Result<TxEnvelopeDto, AppErrors>
             GetEquivocationProof : EquivocationProofHash -> Result<EquivocationProofDto, AppErrors>
             VerifySignature : Signature -> string -> BlockchainAddress option
+            IsValidHash : string -> bool
             IsValidAddress : BlockchainAddress -> bool
             DeriveHash : BlockchainAddress -> Nonce -> TxActionNumber -> string
             DecodeHash : string -> byte[]
@@ -178,6 +179,7 @@ module Helpers =
             GetTx = fun _ -> unexpectedInvocation "GetTx"
             GetEquivocationProof = fun _ -> unexpectedInvocation "GetEquivocationProof"
             VerifySignature = verifySignature
+            IsValidHash = Hashing.isValidHash
             IsValidAddress = Hashing.isValidBlockchainAddress
             DeriveHash = Hashing.deriveHash
             DecodeHash = Hashing.decode
@@ -216,6 +218,7 @@ module Helpers =
             mockedDeps.GetTx
             mockedDeps.GetEquivocationProof
             mockedDeps.VerifySignature
+            mockedDeps.IsValidHash
             mockedDeps.IsValidAddress
             mockedDeps.DeriveHash
             mockedDeps.DecodeHash

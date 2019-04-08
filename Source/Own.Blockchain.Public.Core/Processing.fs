@@ -954,7 +954,7 @@ module Processing =
         |> orderSet []
         |> List.map (fun tx -> tx.TxHash)
 
-    let getTxBody getTx createHash verifySignature decodeHash isValidAddress maxActionCountPerTx txHash =
+    let getTxBody getTx createHash verifySignature isValidHash isValidAddress maxActionCountPerTx txHash =
         result {
             let! txEnvelopeDto = getTx txHash
             let! txEnvelope = Validation.validateTxEnvelope txEnvelopeDto
@@ -963,7 +963,7 @@ module Processing =
             let! tx =
                 txEnvelope.RawTx
                 |> Serialization.deserializeTx
-                >>= (Validation.validateTx decodeHash isValidAddress maxActionCountPerTx sender txHash)
+                >>= (Validation.validateTx isValidHash isValidAddress maxActionCountPerTx sender txHash)
 
             return tx
         }
@@ -1221,6 +1221,7 @@ module Processing =
         getTx
         getEquivocationProof
         verifySignature
+        isValidHash
         isValidAddress
         deriveHash
         decodeHash
@@ -1263,7 +1264,7 @@ module Processing =
                         getTx
                         createHash
                         verifySignature
-                        decodeHash
+                        isValidHash
                         isValidAddress
                         maxActionCountPerTx
                         txHash with

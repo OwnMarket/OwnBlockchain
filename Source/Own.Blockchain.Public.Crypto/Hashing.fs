@@ -55,6 +55,15 @@ module Hashing =
         |> Array.concat
         |> hash
 
+    let isValidHash (hash : string) =
+        if hash.IsNullOrWhiteSpace() then
+            false
+        else
+            try
+                (decode hash).Length = 32
+            with
+            | _ -> false
+
     let private addressPrefix = [| 6uy; 90uy |] // "CH"
 
     let blockchainAddress (publicKey : byte[]) =

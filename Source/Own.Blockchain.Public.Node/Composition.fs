@@ -219,6 +219,7 @@ module Composition =
             getTx
             getEquivocationProof
             verifySignature
+            Hashing.isValidHash
             Hashing.isValidBlockchainAddress
             getChxAddressState
             getHoldingState
@@ -276,7 +277,7 @@ module Composition =
 
     let storeReceivedBlock =
         Workflows.storeReceivedBlock
-            Hashing.decode
+            Hashing.isValidHash
             Hashing.isValidBlockchainAddress
             getBlock
             createConsensusMessageHash
@@ -433,6 +434,7 @@ module Composition =
             equivocationProofExists
             Peers.requestTxFromPeer
             Peers.requestEquivocationProofFromPeer
+            Hashing.isValidHash
             Hashing.isValidBlockchainAddress
             applyBlockToCurrentState
             Hashing.decode
@@ -475,7 +477,7 @@ module Composition =
     let submitTx =
         Workflows.submitTx
             verifySignature
-            Hashing.decode
+            Hashing.isValidHash
             Hashing.isValidBlockchainAddress
             Hashing.hash
             getAvailableChxBalance

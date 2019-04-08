@@ -8,21 +8,14 @@ open Own.Blockchain.Public.Core.Dtos
 
 module Validation =
 
-    let private validateHash decodeHash (hashValue : string) propertyName =
-        let tryDecodeHash hash =
-            try
-                hash |> decodeHash
-            with
-            | _ -> Array.empty<byte>
-
+    let private validateHash isValidHash (hashValue : string) propertyName =
         [
             if hashValue.IsNullOrWhiteSpace() then
                 yield AppError (sprintf "%s is not provided" propertyName)
             elif hashValue <> hashValue.Trim() then
                 yield AppError (sprintf "%s contains leading/trailing spaces" propertyName)
             else
-                let bytes = hashValue |> tryDecodeHash
-                if bytes.Length <> 32 then
+                if not (isValidHash hashValue) then
                     yield AppError (sprintf "%s is not a valid SHA256 hash" propertyName)
         ]
 
@@ -38,14 +31,14 @@ module Validation =
     // Block validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let validateBlock decodeHash isValidAddress (blockDto : BlockDto) =
+    let validateBlock isValidHash isValidAddress (blockDto : BlockDto) =
         [
             if blockDto.Header.Number < 0L then
                 yield AppError "Block.Header.Number cannot be negative"
 
-            yield! validateHash decodeHash blockDto.Header.Hash "Block.Header.Hash"
+            yield! validateHash isValidHash blockDto.Header.Hash "Block.Header.Hash"
 
-            yield! validateHash decodeHash blockDto.Header.PreviousHash "Block.Header.PreviousHash"
+            yield! validateHash isValidHash blockDto.Header.PreviousHash "Block.Header.PreviousHash"
 
             if blockDto.Header.ConfigurationBlockNumber < 0L then
                 yield AppError "Block.Header.ConfigurationBlockNumber cannot be negative"
@@ -63,14 +56,14 @@ module Validation =
         |> Errors.orElseWith (fun _ -> Mapping.blockFromDto blockDto)
 
     let validateBlockEnvelope
-        decodeHash
+        isValidHash
         isValidAddress
         (blockEnvelopeDto : BlockEnvelopeDto)
         : Result<BlockEnvelope, AppErrors>
         =
 
         [
-            match validateBlock decodeHash isValidAddress blockEnvelopeDto.Block with
+            match validateBlock isValidHash isValidAddress blockEnvelopeDto.Block with
             | Ok _ ->
                 if blockEnvelopeDto.Signatures.IsEmpty then
                     yield AppError "Signatures are missing from the block envelope"
@@ -99,16 +92,16 @@ module Validation =
                 yield AppError "CHX amount must have at most 7 decimals"
         ]
 
-    let private validateTransferAsset decodeHash (action : TransferAssetTxActionDto) =
+    let private validateTransferAsset isValidHash (action : TransferAssetTxActionDto) =
         [
-            yield! validateHash decodeHash action.FromAccountHash "FromAccountHash"
+            yield! validateHash isValidHash action.FromAccountHash "FromAccountHash"
 
-            yield! validateHash decodeHash action.ToAccountHash "ToAccountHash"
+            yield! validateHash isValidHash action.ToAccountHash "ToAccountHash"
 
             if action.ToAccountHash = action.FromAccountHash then
                 yield AppError "ToAccountHash cannot be the same as FromAccountHash"
 
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
 
             if action.Amount <= 0m then
                 yield AppError "Asset amount must be higher than zero"
@@ -120,11 +113,11 @@ module Validation =
                 yield AppError "Asset amount must have at most 7 decimals"
         ]
 
-    let private validateCreateAssetEmission decodeHash (action : CreateAssetEmissionTxActionDto) =
+    let private validateCreateAssetEmission isValidHash (action : CreateAssetEmissionTxActionDto) =
         [
-            yield! validateHash decodeHash action.EmissionAccountHash "EmissionAccountHash"
+            yield! validateHash isValidHash action.EmissionAccountHash "EmissionAccountHash"
 
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
 
             if action.Amount <= 0m then
                 yield AppError "Asset amount must be higher than zero"
@@ -136,9 +129,9 @@ module Validation =
                 yield AppError "Asset amount must have at most 7 decimals"
         ]
 
-    let private validateSetAccountController decodeHash isValidAddress (action : SetAccountControllerTxActionDto) =
+    let private validateSetAccountController isValidHash isValidAddress (action : SetAccountControllerTxActionDto) =
         [
-            yield! validateHash decodeHash action.AccountHash "AccountHash"
+            yield! validateHash isValidHash action.AccountHash "AccountHash"
 
             if action.ControllerAddress.IsNullOrWhiteSpace() then
                 yield AppError "ControllerAddress is not provided"
@@ -146,9 +139,9 @@ module Validation =
                 yield AppError "ControllerAddress is not valid"
         ]
 
-    let private validateSetAssetController decodeHash isValidAddress (action : SetAssetControllerTxActionDto) =
+    let private validateSetAssetController isValidHash isValidAddress (action : SetAssetControllerTxActionDto) =
         [
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
 
             if action.ControllerAddress.IsNullOrWhiteSpace() then
                 yield AppError "ControllerAddress is not provided"
@@ -156,9 +149,9 @@ module Validation =
                 yield AppError "ControllerAddress is not valid"
         ]
 
-    let private validateSetAssetCode decodeHash (action : SetAssetCodeTxActionDto) =
+    let private validateSetAssetCode isValidHash (action : SetAssetCodeTxActionDto) =
         [
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
 
             if action.AssetCode.IsNullOrWhiteSpace() then
                 yield AppError "AssetCode is not provided"
@@ -201,24 +194,24 @@ module Validation =
                 yield AppError "CHX amount must have at most 7 decimals"
         ]
 
-    let private validateSubmitVote decodeHash (action : SubmitVoteTxActionDto) =
+    let private validateSubmitVote isValidHash (action : SubmitVoteTxActionDto) =
         [
-            yield! validateHash decodeHash action.AccountHash "AccountHash"
+            yield! validateHash isValidHash action.AccountHash "AccountHash"
 
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
 
-            yield! validateHash decodeHash action.ResolutionHash "ResolutionHash"
+            yield! validateHash isValidHash action.ResolutionHash "ResolutionHash"
 
-            yield! validateHash decodeHash action.VoteHash "VoteHash"
+            yield! validateHash isValidHash action.VoteHash "VoteHash"
         ]
 
-    let private validateSubmitVoteWeight decodeHash (action : SubmitVoteWeightTxActionDto) =
+    let private validateSubmitVoteWeight isValidHash (action : SubmitVoteWeightTxActionDto) =
         [
-            yield! validateHash decodeHash action.AccountHash "AccountHash"
+            yield! validateHash isValidHash action.AccountHash "AccountHash"
 
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
 
-            yield! validateHash decodeHash action.ResolutionHash "ResolutionHash"
+            yield! validateHash isValidHash action.ResolutionHash "ResolutionHash"
 
             if action.VoteWeight < 0m then
                 yield AppError "Vote weight cannot be negative"
@@ -230,27 +223,27 @@ module Validation =
                 yield AppError "Vote weight must have at most 7 decimals"
         ]
 
-    let private validateSetAccountEligibility decodeHash (action : SetAccountEligibilityTxActionDto) =
+    let private validateSetAccountEligibility isValidHash (action : SetAccountEligibilityTxActionDto) =
         [
-            yield! validateHash decodeHash action.AccountHash "AccountHash"
+            yield! validateHash isValidHash action.AccountHash "AccountHash"
 
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
         ]
 
-    let private validateSetAssetEligibility decodeHash (action : SetAssetEligibilityTxActionDto) =
+    let private validateSetAssetEligibility isValidHash (action : SetAssetEligibilityTxActionDto) =
         [
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
         ]
 
     let private validateSetKycProvider
-        decodeHash
+        isValidHash
         isValidAddress
         (assetHash : string)
         (providerAddress : string)
         =
 
         [
-            yield! validateHash decodeHash assetHash "AssetHash"
+            yield! validateHash isValidHash assetHash "AssetHash"
 
             if providerAddress.IsNullOrWhiteSpace() then
                 yield AppError "KYC Provider Address is not provided"
@@ -259,15 +252,15 @@ module Validation =
         ]
 
     let private validateChangeKycControllerAddress
-        decodeHash
+        isValidHash
         isValidAddress
         (action : ChangeKycControllerAddressTxActionDto)
         =
 
         [
-            yield! validateHash decodeHash action.AccountHash "AccountHash"
+            yield! validateHash isValidHash action.AccountHash "AccountHash"
 
-            yield! validateHash decodeHash action.AssetHash "AssetHash"
+            yield! validateHash isValidHash action.AssetHash "AssetHash"
 
             if action.KycControllerAddress.IsNullOrWhiteSpace() then
                 yield AppError "ValidatorAddress is not provided"
@@ -275,11 +268,11 @@ module Validation =
                 yield AppError "ValidatorAddress is not valid"
         ]
 
-    let private validateAddKycProvider decodeHash isValidAddress (action : AddKycProviderTxActionDto) =
-        validateSetKycProvider decodeHash isValidAddress action.AssetHash action.ProviderAddress
+    let private validateAddKycProvider isValidHash isValidAddress (action : AddKycProviderTxActionDto) =
+        validateSetKycProvider isValidHash isValidAddress action.AssetHash action.ProviderAddress
 
-    let private validateRemoveKycProvider decodeHash isValidAddress (action : RemoveKycProviderTxActionDto) =
-        validateSetKycProvider decodeHash isValidAddress action.AssetHash action.ProviderAddress
+    let private validateRemoveKycProvider isValidHash isValidAddress (action : RemoveKycProviderTxActionDto) =
+        validateSetKycProvider isValidHash isValidAddress action.AssetHash action.ProviderAddress
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tx validation
@@ -311,25 +304,25 @@ module Validation =
                 yield AppError (sprintf "Max allowed number of actions per transaction is %i" maxActionCountPerTx)
         ]
 
-    let private validateTxActions decodeHash isValidAddress (actions : TxActionDto list) =
+    let private validateTxActions isValidHash isValidAddress (actions : TxActionDto list) =
         let validateTxAction (action : TxActionDto) =
             match action.ActionData with
             | :? TransferChxTxActionDto as a ->
                 validateTransferChx isValidAddress a
             | :? TransferAssetTxActionDto as a ->
-                validateTransferAsset decodeHash a
+                validateTransferAsset isValidHash a
             | :? CreateAssetEmissionTxActionDto as a ->
-                validateCreateAssetEmission decodeHash a
+                validateCreateAssetEmission isValidHash a
             | :? CreateAccountTxActionDto ->
                 [] // Nothing to validate.
             | :? CreateAssetTxActionDto ->
                 [] // Nothing to validate.
             | :? SetAccountControllerTxActionDto as a ->
-                validateSetAccountController decodeHash isValidAddress a
+                validateSetAccountController isValidHash isValidAddress a
             | :? SetAssetControllerTxActionDto as a ->
-                validateSetAssetController decodeHash isValidAddress a
+                validateSetAssetController isValidHash isValidAddress a
             | :? SetAssetCodeTxActionDto as a ->
-                validateSetAssetCode decodeHash a
+                validateSetAssetCode isValidHash a
             | :? ConfigureValidatorTxActionDto as a ->
                 validateConfigureValidator a
             | :? RemoveValidatorTxActionDto ->
@@ -337,19 +330,19 @@ module Validation =
             | :? DelegateStakeTxActionDto as a ->
                 validateDelegateStake isValidAddress a
             | :? SubmitVoteTxActionDto as a ->
-                validateSubmitVote decodeHash a
+                validateSubmitVote isValidHash a
             | :? SubmitVoteWeightTxActionDto as a ->
-                validateSubmitVoteWeight decodeHash a
+                validateSubmitVoteWeight isValidHash a
             | :? SetAccountEligibilityTxActionDto as a ->
-                validateSetAccountEligibility decodeHash a
+                validateSetAccountEligibility isValidHash a
             | :? SetAssetEligibilityTxActionDto as a ->
-                validateSetAssetEligibility decodeHash a
+                validateSetAssetEligibility isValidHash a
             | :? ChangeKycControllerAddressTxActionDto as a ->
-                validateChangeKycControllerAddress decodeHash isValidAddress a
+                validateChangeKycControllerAddress isValidHash isValidAddress a
             | :? AddKycProviderTxActionDto as a ->
-                validateAddKycProvider decodeHash isValidAddress a
+                validateAddKycProvider isValidHash isValidAddress a
             | :? RemoveKycProviderTxActionDto as a ->
-                validateRemoveKycProvider decodeHash isValidAddress a
+                validateRemoveKycProvider isValidHash isValidAddress a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]
@@ -357,9 +350,9 @@ module Validation =
         actions
         |> List.collect validateTxAction
 
-    let validateTx decodeHash isValidAddress maxActionCountPerTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
+    let validateTx isValidHash isValidAddress maxActionCountPerTx sender hash (txDto : TxDto) : Result<Tx, AppErrors> =
         validateTxFields maxActionCountPerTx sender txDto
-        @ validateTxActions decodeHash isValidAddress txDto.Actions
+        @ validateTxActions isValidHash isValidAddress txDto.Actions
         |> Errors.orElseWith (fun _ -> Mapping.txFromDto sender hash txDto)
 
     let checkIfBalanceCanCoverFees

@@ -965,6 +965,7 @@ module Consensus =
         equivocationProofExists
         requestTx
         requestEquivocationProof
+        isValidHash
         isValidAddress
         applyBlockToCurrentState
         decodeHash
@@ -1051,7 +1052,7 @@ module Consensus =
         let isValidBlock = memoizeBy (fun (b : Block) -> b.Header.Hash) <| fun block ->
             block
             |> Mapping.blockToDto
-            |> Validation.validateBlock decodeHash isValidAddress
+            |> Validation.validateBlock isValidHash isValidAddress
             >>= Blocks.validateEmptyBlockTimestamp minEmptyBlockTime (getLastAppliedBlockTimestamp ())
             >>= applyBlockToCurrentState
             |> Result.handle

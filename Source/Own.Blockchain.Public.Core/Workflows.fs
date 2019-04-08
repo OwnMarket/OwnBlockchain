@@ -230,6 +230,7 @@ module Workflows =
         getTx
         getEquivocationProof
         verifySignature
+        isValidHash
         isValidAddress
         getChxAddressStateFromStorage
         getHoldingStateFromStorage
@@ -303,6 +304,7 @@ module Workflows =
                 getTx
                 getEquivocationProof
                 verifySignature
+                isValidHash
                 isValidAddress
                 deriveHash
                 decodeHash
@@ -466,7 +468,7 @@ module Workflows =
                     block |> Ok |> Some
 
     let storeReceivedBlock
-        decodeHash
+        isValidHash
         isValidAddress
         getBlock
         createConsensusMessageHash
@@ -479,7 +481,7 @@ module Workflows =
         =
 
         result {
-            let! blockEnvelope = Validation.validateBlockEnvelope decodeHash isValidAddress blockEnvelopeDto
+            let! blockEnvelope = Validation.validateBlockEnvelope isValidHash isValidAddress blockEnvelopeDto
             let block = blockEnvelope.Block
 
             if not (blockExists block.Header.ConfigurationBlockNumber) then
@@ -1249,7 +1251,7 @@ module Workflows =
 
     let submitTx
         verifySignature
-        decodeHash
+        isValidHash
         isValidAddress
         createHash
         getAvailableChxBalance
@@ -1269,7 +1271,7 @@ module Workflows =
             let txHash = txEnvelope.RawTx |> createHash |> TxHash
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
-            let! tx = Validation.validateTx decodeHash isValidAddress maxActionCountPerTx senderAddress txHash txDto
+            let! tx = Validation.validateTx isValidHash isValidAddress maxActionCountPerTx senderAddress txHash txDto
 
             // TXs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
             if not isIncludedInBlock then

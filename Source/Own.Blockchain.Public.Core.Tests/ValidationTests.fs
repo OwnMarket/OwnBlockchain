@@ -64,7 +64,7 @@ module ValidationTests =
         let expMessage = AppError "Nonce must be positive"
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -110,7 +110,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -140,7 +140,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -175,7 +175,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -210,7 +210,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -244,7 +244,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -280,7 +280,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -316,7 +316,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -352,7 +352,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -388,7 +388,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -424,7 +424,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -460,7 +460,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -505,7 +505,7 @@ module ValidationTests =
 
         let result =
             Validation.validateTx
-                Hashing.decode
+                Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Helpers.maxActionCountPerTx
                 chAddress
@@ -537,8 +537,8 @@ module ValidationTests =
         let item = address.Value
         String.IsNullOrWhiteSpace(item) |> not
 
-    let private decodeMock (hash : string) =
-        Array.zeroCreate<byte> 32
+    let private isValidHashMock (hash : string) =
+        true
 
     [<Fact>]
     let ``Validation.validateTx CreateAssetEmission valid action`` () =
@@ -563,7 +563,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<CreateAssetEmissionTxAction> t.Actions.Head
             test <@ AccountHash expected.EmissionAccountHash = actual.EmissionAccountHash @>
@@ -594,7 +594,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 3 @>
@@ -622,7 +622,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
@@ -643,7 +643,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             test <@ t.Actions.Head = CreateAccount @>
         | Error e -> failwithf "%A" e
@@ -664,7 +664,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             test <@ t.Actions.Head = CreateAsset @>
         | Error e -> failwithf "%A" e
@@ -691,7 +691,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<SetAccountControllerTxAction> t.Actions.Head
             test <@ AccountHash expected.AccountHash = actual.AccountHash @>
@@ -720,7 +720,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 2 @>
@@ -747,7 +747,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<SetAssetControllerTxAction> t.Actions.Head
             test <@ AssetHash expected.AssetHash = actual.AssetHash @>
@@ -776,7 +776,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 2 @>
@@ -803,7 +803,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<SetAssetCodeTxAction> t.Actions.Head
             test <@ AssetHash expected.AssetHash = actual.AssetHash @>
@@ -832,7 +832,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
@@ -859,7 +859,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
@@ -886,7 +886,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
@@ -914,7 +914,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<ConfigureValidatorTxAction> t.Actions.Head
             test <@ expected.NetworkAddress = actual.NetworkAddress.Value @>
@@ -944,7 +944,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
@@ -972,7 +972,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 1 @>
@@ -999,7 +999,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t ->
             let actual = Helpers.extractActionData<DelegateStakeTxAction> t.Actions.Head
             test <@ BlockchainAddress expected.ValidatorAddress = actual.ValidatorAddress @>
@@ -1028,7 +1028,7 @@ module ValidationTests =
                 ]
         }
 
-        match Validation.validateTx decodeMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
+        match Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx with
         | Ok t -> failwith "This test should fail"
         | Error e ->
             test <@ e.Length = 2 @>
