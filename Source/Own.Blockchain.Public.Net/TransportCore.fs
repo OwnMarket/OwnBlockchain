@@ -152,7 +152,8 @@ type internal TransportCore
                         with
                         | _ -> Log.error "Could not reset socket state"
             | _ ->
-                Log.errorf "Socket not found for target %s" targetAddress
+                if not poller.IsRunning then
+                    Log.errorf "Socket not found for target %s" targetAddress
         )
 
     let wireDealerMessageQueueEvents () =
