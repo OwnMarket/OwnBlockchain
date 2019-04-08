@@ -151,10 +151,10 @@ module Raw =
         loop ()
         |> Async.Start
 
-    let private getTxCached maxTxCacheSize txHash (getTx : TxHash -> Result<TxEnvelopeDto, AppErrors>) =
+    let private getTxCached maxTxCacheSize txHash getTx =
         getCacheItem txCache maxTxCacheSize txHash getTx
 
-    let private getBlockCached maxBlockCacheSize blockNr (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>) =
+    let private getBlockCached maxBlockCacheSize blockNr getBlock =
         getCacheItem blockCache maxBlockCacheSize blockNr getBlock
 
     let private removeTxFromCache txHash =
