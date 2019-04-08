@@ -9,9 +9,9 @@ module Composition =
 
     let submitTx = NodeClient.submitTx Config.NodeApiUrl
 
-    let claimChx = Workflows.claimChx (ChxAmount Config.MaxClaimableChxAmount)
+    let claimChx = Workflows.claimChx Hashing.isValidBlockchainAddress (ChxAmount Config.MaxClaimableChxAmount)
 
-    let claimAsset = Workflows.claimAsset (AssetAmount Config.MaxClaimableAssetAmount)
+    let claimAsset = Workflows.claimAsset Hashing.isValidHash (AssetAmount Config.MaxClaimableAssetAmount)
 
     let getNetworkId () =
         Hashing.networkId Config.NetworkCode

@@ -14,7 +14,7 @@ module NodeClient =
         |> Request.createUrl Get
         |> Request.responseAsString
         |> run
-        |> JsonConvert.DeserializeObject<ChxAddressStateDto>
+        |> JsonConvert.DeserializeObject<GetAddressApiResponseDto>
         |> fun dto -> dto.Nonce |> Nonce
 
     let submitTx nodeApiUrl tx =
