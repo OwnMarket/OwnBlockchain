@@ -82,7 +82,11 @@ module Raw =
                 Result.appError (sprintf "%s %s not found in storage" dataTypeName (extractHash key))
         with
         | ex ->
-            Log.error ex.AllMessagesAndStackTraces
+            if ex.Message.EndsWith("used by another process.") then
+                Log.warning ex.AllMessages
+                Log.debug ex.AllMessagesAndStackTraces
+            else
+                Log.error ex.AllMessagesAndStackTraces
             Result.appError (sprintf "Loading %s %s failed" dataTypeName (extractHash key))
 
     let private deleteData (dataDir : string) (dataType : RawDataType) (key : string) : Result<unit, AppErrors> =
