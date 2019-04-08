@@ -15,6 +15,7 @@ module Composition =
 
     let createMixedHashKey = Raw.createMixedHashKey Hashing.decode Hashing.encodeHex
     let startTxCacheMonitor () = Raw.startTxCacheMonitor Config.TxCacheExpirationTime
+    let startBlockCacheMonitor () = Raw.startBlockCacheMonitor Config.BlockCacheExpirationTime
     let saveTx = Raw.saveTx Config.DataDir createMixedHashKey
     let getTx = Raw.getTx Config.DataDir Config.MaxTxCacheSize createMixedHashKey
     let txExists = Raw.txExists Config.DataDir createMixedHashKey
@@ -34,7 +35,7 @@ module Composition =
     let deleteEquivocationProofResult = Raw.deleteEquivocationProofResult Config.DataDir createMixedHashKey
 
     let saveBlock = Raw.saveBlock Config.DataDir
-    let getBlock = Raw.getBlock Config.DataDir
+    let getBlock = Raw.getBlock Config.DataDir Config.MaxTxCacheSize
     let blockExists = Raw.blockExists Config.DataDir
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

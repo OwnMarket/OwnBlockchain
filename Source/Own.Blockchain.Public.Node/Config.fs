@@ -233,6 +233,18 @@ type Config () =
             | true, cacheSize when cacheSize > 0 -> cacheSize
             | _ -> 10000
 
+    static member BlockCacheExpirationTime // Seconds
+        with get () =
+            match Int32.TryParse config.["BlockCacheExpirationTime"] with
+            | true, timeout when timeout > 0 -> timeout
+            | _ -> 10
+
+    static member MaxBlockCacheSize
+        with get () =
+            match Int32.TryParse config.["MaxBlockCacheSize"] with
+            | true, cacheSize when cacheSize > 0 -> cacheSize
+            | _ -> 20
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration (initial genesis values)
     ////////////////////////////////////////////////////////////////////////////////////////////////////

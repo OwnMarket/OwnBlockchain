@@ -106,43 +106,68 @@ module Raw =
             Result.appError (sprintf "Deleting %s %s failed" dataTypeName (extractHash key))
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // TxCache
+    // Caching
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let private txCache = new ConcurrentDictionary<TxHash, TxEnvelopeDto * DateTime>()
+    let private blockCache = new ConcurrentDictionary<BlockNumber, BlockEnvelopeDto * DateTime>()
 
-    let private getTxCached maxTxCacheSize txHash (getTx : TxHash -> Result<TxEnvelopeDto, AppErrors>) =
-        match txCache.TryGetValue txHash with
-        | true, (txEnvelopeDto, _) ->
-            Ok txEnvelopeDto
+    let private getCacheItem
+        (cache: ConcurrentDictionary<_, _ * DateTime>)
+        maxCacheSize
+        cacheItemKey
+        (getItemFromStorage: _ -> Result<_, AppErrors>)
+        =
+
+        match cache.TryGetValue cacheItemKey with
+        | true, (envelopeDto, _) ->
+            Ok envelopeDto
         | false, _ ->
-            txHash
-            |> getTx
+            cacheItemKey
+            |> getItemFromStorage
             |> tee (
-                Result.iter (fun txEnvelope ->
-                    if txCache.Keys.Count < maxTxCacheSize then
-                        let cacheValue = txEnvelope, DateTime.UtcNow
-                        txCache.AddOrUpdate(txHash, cacheValue, fun _ _ -> cacheValue) |> ignore
+                Result.iter (fun envelope ->
+                    if cache.Keys.Count < maxCacheSize then
+                        let cacheValue = envelope, DateTime.UtcNow
+                        cache.AddOrUpdate(cacheItemKey, cacheValue, fun _ _ -> cacheValue) |> ignore
                 )
             )
 
-    let private removeTxFromCache txHash =
-        txCache.TryRemove txHash |> ignore
+    let private removeCacheItem (cache: ConcurrentDictionary<_, _ * DateTime>) cacheItem =
+        cache.TryRemove cacheItem |> ignore
 
-    let startTxCacheMonitor txCacheExpirationTime =
+    let startCacheMonitor (cache: ConcurrentDictionary<_, _ * DateTime> ) cacheExpirationTime =
         let rec loop () =
             async {
-                let lastValidTime = DateTime.UtcNow.AddSeconds(-txCacheExpirationTime |> float)
-                txCache
+                let lastValidTime = DateTime.UtcNow.AddSeconds(-cacheExpirationTime |> float)
+                cache
                 |> List.ofDict
                 |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
-                |> List.iter (fun (txHash, _) -> removeTxFromCache txHash)
+                |> List.iter (fun (txHash, _) -> removeCacheItem cache txHash)
 
                 do! Async.Sleep(1000);
                 return! loop ()
             }
         loop ()
         |> Async.Start
+
+    let private getTxCached maxTxCacheSize txHash (getTx : TxHash -> Result<TxEnvelopeDto, AppErrors>) =
+        getCacheItem txCache maxTxCacheSize txHash getTx
+
+    let private getBlockCached maxBlockCacheSize blockNr (getBlock : BlockNumber -> Result<BlockEnvelopeDto, AppErrors>) =
+        getCacheItem blockCache maxBlockCacheSize blockNr getBlock
+
+    let private removeTxFromCache txHash =
+        removeCacheItem txCache txHash
+
+    let private removeBlockFromCache blockNr =
+        removeCacheItem blockCache blockNr
+
+    let startTxCacheMonitor txCacheExpirationTime =
+        startCacheMonitor txCache txCacheExpirationTime
+
+    let startBlockCacheMonitor blockCacheExpirationTime =
+        startCacheMonitor blockCache blockCacheExpirationTime
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Specific
@@ -315,8 +340,18 @@ module Raw =
 
         saveData dataDir Block (string blockNr) blockEnvelopeDto
 
-    let getBlock (dataDir : string) (BlockNumber blockNumber) : Result<BlockEnvelopeDto, AppErrors> =
-        loadData<BlockEnvelopeDto> dataDir Block (string blockNumber)
+    let getBlock
+        (dataDir : string)
+        maxBlockCacheSize
+        (BlockNumber blockNumber)
+        : Result<BlockEnvelopeDto, AppErrors>
+        =
+
+        getBlockCached
+            maxBlockCacheSize
+            (BlockNumber blockNumber)
+            (fun blockNr ->
+                loadData<BlockEnvelopeDto> dataDir Block (string blockNr.Value))
 
     let blockExists (dataDir : string) (BlockNumber blockNumber) =
         blockNumber
