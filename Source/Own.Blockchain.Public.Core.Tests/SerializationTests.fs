@@ -112,7 +112,7 @@ module SerializationTests =
             failwithf "%A" appErrors
 
     [<Fact>]
-    let ``Serialization.deserializeTx invalid json for known action`` () =
+    let ``Serialization.deserializeTx invalid JSON for known action`` () =
         let json =
             """
             {
@@ -150,26 +150,107 @@ module SerializationTests =
 
         match result with
         | Ok tx ->
-            test <@ tx.Actions.Length = 3 @>
-
-            let numOfActionsByType transType =
-                tx.Actions
-                |> List.filter (fun a -> a.ActionData.GetType() = transType)
-                |> List.length
-
-            let chxActions = numOfActionsByType typeof<TransferChxTxActionDto>
-            test <@ chxActions = 1 @>
-
-            let assetActions = numOfActionsByType typeof<TransferAssetTxActionDto>
-            test <@ assetActions = 1 @>
-
-            let invalidActions = numOfActionsByType typeof<string>
-            test <@ invalidActions = 1 @>
+            failwithf "Unexpected result: %A" tx
         | Error appErrors ->
-            failwithf "%A" appErrors
+            test <@ appErrors.Head.Message.Contains("Could not find member 'Recipient_Address'") @>
 
     [<Fact>]
-    let ``Serialization.deserializeTx invalid json`` () =
+    let ``Serialization.deserializeTx unknown property in JSON for known action`` () =
+        let json =
+            """
+            {
+                "Nonce": 120,
+                "ActionFee": 20,
+                "Actions": [
+                    {
+                        "ActionType": "TransferChx",
+                        "ActionData": {
+                            "RecipientAddress": "Recipient",
+                            "Foo": "Bar",
+                            "Amount": 20.0
+                        }
+                    }
+                ]
+            }
+            """
+
+        let result =
+            json
+            |> Conversion.stringToBytes
+            |> Serialization.deserializeTx
+
+        match result with
+        | Ok tx ->
+            failwithf "Unexpected result: %A" tx
+        | Error appErrors ->
+            test <@ appErrors.Head.Message.Contains("Could not find member 'Foo'") @>
+
+    [<Fact>]
+    let ``Serialization.deserializeTx unknown property in JSON for action array item`` () =
+        let json =
+            """
+            {
+                "Nonce": 120,
+                "ActionFee": 20,
+                "Actions": [
+                    {
+                        "ActionType": "TransferChx",
+                        "Foo1": "Bar1",
+                        "Foo2": "Bar2",
+                        "ActionData": {
+                            "RecipientAddress": "Recipient",
+                            "Amount": 20.0
+                        }
+                    }
+                ]
+            }
+            """
+
+        let result =
+            json
+            |> Conversion.stringToBytes
+            |> Serialization.deserializeTx
+
+
+        match result with
+        | Ok tx ->
+            failwithf "Unexpected result: %A" tx
+        | Error appErrors ->
+            test <@ appErrors.Head.Message.Contains("Unexpected TX action list item properties: Foo1, Foo2") @>
+
+    [<Fact>]
+    let ``Serialization.deserializeTx unknown property in JSON for TX`` () =
+        let json =
+            """
+            {
+                "Nonce": 120,
+                "Foo": "Bar",
+                "ActionFee": 20,
+                "Actions": [
+                    {
+                        "ActionType": "TransferChx",
+                        "ActionData": {
+                            "RecipientAddress": "Recipient",
+                            "Amount": 20.0
+                        }
+                    }
+                ]
+            }
+            """
+
+        let result =
+            json
+            |> Conversion.stringToBytes
+            |> Serialization.deserializeTx
+
+        match result with
+        | Ok tx ->
+            failwithf "Unexpected result: %A" tx
+        | Error appErrors ->
+            test <@ appErrors.Head.Message.Contains("Could not find member 'Foo'") @>
+
+    [<Fact>]
+    let ``Serialization.deserializeTx invalid JSON`` () =
         let json =
             """
             {
