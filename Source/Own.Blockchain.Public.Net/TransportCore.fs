@@ -22,7 +22,10 @@ type internal TransportCore
     let poller = new NetMQPoller()
     let mutable routerSocket : RouterSocket option = None
     let dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
-    let dealerMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
+    let multicastMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
+    let discoveryMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
+    let gossipMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
+    let requestsMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
     let routerMessageQueue = new NetMQQueue<byte[] * PeerMessageEnvelopeDto>()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +136,7 @@ type internal TransportCore
     // Dealer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let dealerEnqueueMessage msg targetAddress =
+    let dealerEnqueueMessage (queue: NetMQQueue<_>) msg targetAddress =
         let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
             try
@@ -143,7 +146,7 @@ type internal TransportCore
             with
             | :? ObjectDisposedException ->
                 Log.error "Poller was disposed while adding socket"
-        dealerMessageQueue.Enqueue (targetAddress, msg)
+        queue.Enqueue (targetAddress, msg)
 
     let dealerSendAsync (e : NetMQQueueEventArgs<_ * PeerMessageEnvelopeDto>) =
         e.Queue
@@ -169,10 +172,19 @@ type internal TransportCore
         )
 
     let wireDealerMessageQueueEvents () =
-        dealerMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        multicastMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        |> ignore
+        discoveryMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        |> ignore
+        requestsMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        |> ignore
+        gossipMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
         |> ignore
 
-        poller.Add dealerMessageQueue
+        poller.Add multicastMessageQueue
+        poller.Add discoveryMessageQueue
+        poller.Add requestsMessageQueue
+        poller.Add gossipMessageQueue
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Router
@@ -226,13 +238,13 @@ type internal TransportCore
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     member __.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
-        dealerEnqueueMessage gossipDiscoveryMessage targetAddress
+        dealerEnqueueMessage discoveryMessageQueue gossipDiscoveryMessage targetAddress
 
     member __.SendGossipMessage gossipMessage targetAddress =
-        dealerEnqueueMessage gossipMessage targetAddress
+        dealerEnqueueMessage gossipMessageQueue gossipMessage targetAddress
 
     member __.SendRequestMessage requestMessage targetAddress =
-        dealerEnqueueMessage requestMessage targetAddress
+        dealerEnqueueMessage requestsMessageQueue requestMessage targetAddress
 
     member __.SendResponseMessage responseMessage (targetIdentity : byte[]) =
         let msg = targetIdentity, responseMessage
@@ -245,7 +257,7 @@ type internal TransportCore
             multicastAddresses
             |> Seq.shuffle
             |> Seq.iter (fun networkAddress ->
-                dealerEnqueueMessage multicastMessage networkAddress
+                dealerEnqueueMessage multicastMessageQueue multicastMessage networkAddress
             )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,8 +283,17 @@ type internal TransportCore
         routerSocket |> Option.iter (fun socket -> poller.RemoveAndDispose socket)
         routerSocket <- None
 
-        if not dealerMessageQueue.IsDisposed then
-            poller.RemoveAndDispose dealerMessageQueue
+        if not multicastMessageQueue.IsDisposed then
+            poller.RemoveAndDispose multicastMessageQueue
+
+        if not discoveryMessageQueue.IsDisposed then
+            poller.RemoveAndDispose discoveryMessageQueue
+
+        if not requestsMessageQueue.IsDisposed then
+            poller.RemoveAndDispose requestsMessageQueue
+
+        if not gossipMessageQueue.IsDisposed then
+            poller.RemoveAndDispose gossipMessageQueue
 
         if poller.IsRunning then
             poller.Dispose()
