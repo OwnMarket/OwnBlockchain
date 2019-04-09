@@ -57,16 +57,16 @@ module Serialization =
     let private actionsConverter = {
         new CustomCreationConverter<TxActionDto>() with
 
-        override __.Create objectType =
+        override __.Create _ =
             raise (NotImplementedException())
 
-        override __.ReadJson(reader : JsonReader, objectType : Type, x, serializer : JsonSerializer) =
+        override __.ReadJson(reader : JsonReader, _, _, serializer : JsonSerializer) =
             let jObject = JObject.Load(reader)
 
             let unexpectedProperties =
                 jObject
                 |> Seq.map (fun j -> j.Path)
-                |> Seq.filter (fun p -> p <> "ActionType" && p.ToLowerInvariant() <> "actiondata")
+                |> Seq.filter (fun p -> p.ToLowerInvariant() <> "actiontype" && p.ToLowerInvariant() <> "actiondata")
                 |> Seq.toList
             if not unexpectedProperties.IsEmpty then
                 String.Join(", ", unexpectedProperties)
