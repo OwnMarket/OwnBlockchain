@@ -28,9 +28,9 @@ module TransportMock =
         | Some transport -> transport.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress
         | None -> failwith "Please initialize transport first"
 
-    let sendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
+    let sendGossipMessage gossipMessage targetAddress =
         match transportCoreMock with
-        | Some transport -> transport.SendGossipMessage gossipMessage targetMember
+        | Some transport -> transport.SendGossipMessage gossipMessage targetAddress
         | None -> failwith "Please initialize transport first"
 
     let sendRequestMessage requestMessage targetAddress =

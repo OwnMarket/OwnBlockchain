@@ -564,7 +564,7 @@ type NetworkNode
             let peerMessageEnvelopeDto =
                 Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
             let recipientMemberDto = recipientMember |> Mapping.gossipMemberToDto
-            sendGossipMessage peerMessageEnvelopeDto recipientMemberDto
+            sendGossipMessage peerMessageEnvelopeDto recipientMemberDto.NetworkAddress
         | _ -> ()
 
     member private __.ProcessGossipMessage (gossipMessage : GossipMessage) recipientAddresses =

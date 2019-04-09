@@ -41,9 +41,9 @@ type internal TransportCoreMock
         let msg = packMessage gossipDiscoveryMessage
         send msg targetAddress
 
-    member __.SendGossipMessage gossipMessage (targetMember: GossipMemberDto) =
+    member __.SendGossipMessage gossipMessage targetAddress =
         let msg = packMessage gossipMessage
-        send msg targetMember.NetworkAddress
+        send msg targetAddress
 
     member __.SendRequestMessage requestMessage targetAddress =
         let msg = packMessage requestMessage
@@ -74,8 +74,10 @@ type internal TransportCoreMock
                     let mutable message = Array.empty
                     while queue.TryDequeue &message do
                         match unpackMessage message with
-                        | Ok peerMessage ->
-                            callback peerMessage
+                        | Ok peerMessageList ->
+                            peerMessageList |> List.iter (fun peerMessage ->
+                                callback peerMessage
+                            )
                         | Error error -> Log.error error
                 | _ -> ()
                 do! Async.Sleep(25)

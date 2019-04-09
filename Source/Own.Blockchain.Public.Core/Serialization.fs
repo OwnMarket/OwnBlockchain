@@ -144,16 +144,19 @@ module Serialization =
     let serializeBinary dto =
         LZ4MessagePackSerializer.Serialize dto
 
-    let deserializePeerMessage (message : byte[]) : Result<PeerMessageEnvelopeDto, AppErrors> =
+    let deserializePeerMessage (message : byte[]) : Result<PeerMessageEnvelopeDto list, AppErrors> =
         try
-            let peerMessageEnvelopeDto = LZ4MessagePackSerializer.Deserialize<PeerMessageEnvelopeDto> message
-            let deserialize = peerMessageTypeToObjectMapping.[peerMessageEnvelopeDto.PeerMessage.MessageType]
-            { peerMessageEnvelopeDto with
-                PeerMessage =
-                    { peerMessageEnvelopeDto.PeerMessage with
-                        MessageData = peerMessageEnvelopeDto.PeerMessage.MessageData :?> byte[] |> deserialize
-                    }
-            }
+            let peerMessageEnvelopeListDto = LZ4MessagePackSerializer.Deserialize<PeerMessageEnvelopeDto list> message
+            peerMessageEnvelopeListDto
+            |> List.map (fun peerMessageEnvelopeDto ->
+                let deserialize = peerMessageTypeToObjectMapping.[peerMessageEnvelopeDto.PeerMessage.MessageType]
+                { peerMessageEnvelopeDto with
+                    PeerMessage =
+                        { peerMessageEnvelopeDto.PeerMessage with
+                            MessageData = peerMessageEnvelopeDto.PeerMessage.MessageData :?> byte[] |> deserialize
+                        }
+                }
+            )
             |> Ok
         with
         | ex ->

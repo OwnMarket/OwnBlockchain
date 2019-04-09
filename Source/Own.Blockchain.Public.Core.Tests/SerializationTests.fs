@@ -218,7 +218,6 @@ module SerializationTests =
             |> Conversion.stringToBytes
             |> Serialization.deserializeTx
 
-
         match result with
         | Ok tx ->
             failwithf "Unexpected result: %A" tx
