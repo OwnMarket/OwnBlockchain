@@ -194,6 +194,13 @@ module SerializationTests =
                 "ActionFee": 20,
                 "Actions": [
                     {
+                        "actionType": "TransferChx",
+                        "Actiondata": {
+                            "RecipientAddress": "Recipient",
+                            "Amount": 20.0
+                        }
+                    },
+                    {
                         "ActionType": "TransferChx",
                         "Foo1": "Bar1",
                         "Foo2": "Bar2",
@@ -216,6 +223,7 @@ module SerializationTests =
         | Ok tx ->
             failwithf "Unexpected result: %A" tx
         | Error appErrors ->
+            test <@ appErrors.Length = 1 @>
             test <@ appErrors.Head.Message.Contains("Unexpected TX action list item properties: Foo1, Foo2") @>
 
     [<Fact>]
