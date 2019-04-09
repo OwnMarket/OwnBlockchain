@@ -66,7 +66,7 @@ module Serialization =
             let unexpectedProperties =
                 jObject
                 |> Seq.map (fun j -> j.Path)
-                |> Seq.filter (fun p -> p <> "ActionType" && p <> "ActionData")
+                |> Seq.filter (fun p -> p <> "ActionType" && p.ToLowerInvariant() <> "actiondata")
                 |> Seq.toList
             if not unexpectedProperties.IsEmpty then
                 String.Join(", ", unexpectedProperties)
