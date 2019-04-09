@@ -13,21 +13,18 @@ open MessagePack
 module Serialization =
 
     let private tokenValue tokenName (jObject : JObject) =
-        let token = ref (JValue("") :> JToken)
-        let isValid = jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase, token)
-        if isValid then
-            Some token.Value
-        else
-            None
+        match jObject.TryGetValue(tokenName, StringComparison.OrdinalIgnoreCase) with
+        | true, value -> Some value
+        | _ -> None
 
-    let private tokenToAction<'T> actionType (token : JToken option) =
+    let private tokenToAction<'T> actionType (serializer : JsonSerializer) (token : JToken option) =
         match token with
         | Some _ ->
             {
                 ActionType = actionType
                 ActionData =
                     match token with
-                    | Some value -> value.ToObject<'T>()
+                    | Some value -> value.ToObject<'T>(serializer)
                     | None -> failwith "ActionData is missing"
             }
             |> box
@@ -54,7 +51,8 @@ module Serialization =
             "ChangeKycControllerAddress", tokenToAction<ChangeKycControllerAddressTxActionDto>
             "AddKycProvider", tokenToAction<AddKycProviderTxActionDto>
             "RemoveKycProvider", tokenToAction<RemoveKycProviderTxActionDto>
-        ] |> Map.ofList
+        ]
+        |> Map.ofList
 
     let private actionsConverter = {
         new CustomCreationConverter<TxActionDto>() with
@@ -62,22 +60,27 @@ module Serialization =
         override __.Create objectType =
             raise (NotImplementedException())
 
-        override __.ReadJson
-            (reader : JsonReader, objectType : Type, existingValue : obj, serializer : JsonSerializer)
-            =
-
+        override __.ReadJson(reader : JsonReader, objectType : Type, x, serializer : JsonSerializer) =
             let jObject = JObject.Load(reader)
 
-            let actionData = tokenValue "ActionData"
+            let unexpectedProperties =
+                jObject
+                |> Seq.map (fun j -> j.Path)
+                |> Seq.filter (fun p -> p <> "ActionType" && p <> "ActionData")
+                |> Seq.toList
+            if not unexpectedProperties.IsEmpty then
+                String.Join(", ", unexpectedProperties)
+                |> failwithf "Unexpected TX action list item properties: %s"
 
-            match (tokenValue "ActionType" jObject) with
+            match tokenValue "ActionType" jObject with
             | None -> jObject |> box
             | Some actionType ->
                 let txType = actionType.Value<string>()
-                match txType |> actionTypeToObjectMapping.TryFind with
+                let actionData = tokenValue "ActionData"
+                match actionTypeToObjectMapping.TryFind txType with
                 | Some create ->
                     actionData jObject
-                    |> create txType
+                    |> create txType serializer
                 | None ->
                     {
                         ActionType = txType
@@ -99,14 +102,19 @@ module Serialization =
             Result.appError ex.AllMessagesAndStackTraces
 
     let deserialize<'T> (rawData : byte[]) : Result<'T, AppErrors> =
+        let settings = new JsonSerializerSettings()
+        settings.MissingMemberHandling <- MissingMemberHandling.Error
+        settings.Converters.Add actionsConverter
+
         try
             rawData
             |> bytesToString
-            |> fun str -> JsonConvert.DeserializeObject<'T>(str, actionsConverter)
+            |> fun str -> JsonConvert.DeserializeObject<'T>(str, settings)
             |> Ok
         with
         | ex ->
-            Result.appError ex.AllMessagesAndStackTraces
+            Log.debug ex.AllMessagesAndStackTraces
+            Result.appError ex.AllMessages
 
     let serializeTx (txDto : TxDto) =
         serialize<TxDto> txDto
