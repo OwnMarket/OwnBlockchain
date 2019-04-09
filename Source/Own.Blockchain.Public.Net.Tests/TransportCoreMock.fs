@@ -38,19 +38,19 @@ type internal TransportCoreMock
         messageQueue.AddOrUpdate (targetAddress, set, fun _ _ -> set) |> ignore
 
     member __.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
-        let msg = packMessage gossipDiscoveryMessage
+        let msg = packMessage [gossipDiscoveryMessage]
         send msg targetAddress
 
     member __.SendGossipMessage gossipMessage targetAddress =
-        let msg = packMessage gossipMessage
+        let msg = packMessage [gossipMessage]
         send msg targetAddress
 
     member __.SendRequestMessage requestMessage targetAddress =
-        let msg = packMessage requestMessage
+        let msg = packMessage [requestMessage]
         send msg targetAddress
 
-    member __.SendResponseMessage requestMessage (targetIdentity : byte[]) =
-        let msg = packMessage requestMessage
+    member __.SendResponseMessage responseMessage (targetIdentity : byte[]) =
+        let msg = packMessage [responseMessage]
         let targetAddress = Conversion.bytesToString targetIdentity
         send msg targetAddress
 
@@ -62,7 +62,7 @@ type internal TransportCoreMock
             |> Seq.shuffle
             |> Seq.toList
             |> List.iter (fun networkAddress ->
-                let msg = packMessage multicastMessage
+                let msg = packMessage [multicastMessage]
                 send msg networkAddress
             )
 
@@ -71,13 +71,10 @@ type internal TransportCoreMock
             async {
                 match messageQueue.TryGetValue address with
                 | true, queue ->
-                    let mutable message = Array.empty
+                    let mutable message = Array.empty<byte>
                     while queue.TryDequeue &message do
                         match unpackMessage message with
-                        | Ok peerMessageList ->
-                            peerMessageList |> List.iter (fun peerMessage ->
-                                callback peerMessage
-                            )
+                        | Ok peerMessageList -> peerMessageList |> List.iter callback
                         | Error error -> Log.error error
                 | _ -> ()
                 do! Async.Sleep(25)
