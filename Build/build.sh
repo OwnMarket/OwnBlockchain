@@ -26,11 +26,12 @@ rm "$TEMP_DIR/Node/Genesis.json"
 rm "$TEMP_DIR/Node/Config.json"
 
 cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native "$TEMP_DIR/Node"
-cp -r ../Docs/Deployment/setup_public_node.sh "$TEMP_DIR/Node"
-cp -r ../Docs/Deployment/setup_public_node_instance.sh "$TEMP_DIR/Node"
+cp -r ./Include/Firebird/* "$TEMP_DIR/Node"
+cp -r ./Include/Configs/* "$TEMP_DIR/Node"
+cp -r ./Include/Scripts/* "$TEMP_DIR/Node"
 
 pushd "$TEMP_DIR/Node"
-chmod +x *.sh
+find . -type f -iname "*.sh" -exec chmod +x {} \;
 git rev-parse HEAD > Version
 tar czf "$OUTPUT_DIR/Node.tar.gz" *
 popd

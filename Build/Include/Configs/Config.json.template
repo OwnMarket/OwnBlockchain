@@ -1,0 +1,9 @@
+{
+    "DbEngineType": "Postgres",
+    "DbConnectionString": "server=localhost;database=own_public_blockchain;user id=XXXXXXXXXX;password=XXXXXXXXXX;searchpath=own",
+    "NetworkBootstrapNodes": [
+        "boot1.mainnet.weown.com:25718",
+        "boot2.mainnet.weown.com:25718",
+        "boot3.mainnet.weown.com:25718"
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    "NetworkBootstrapNodes": [
+        "boot1.mainnet.weown.com:25718",
+        "boot2.mainnet.weown.com:25718",
+        "boot3.mainnet.weown.com:25718"
+    ]
+}

@@ -15,10 +15,7 @@
         <Compile Include="Cli.fs" />
         <Compile Include="Program.fs" />
         <None Include="Config.json" CopyToOutputDirectory="Always" />
-        <None Include="Config.json.sample" CopyToOutputDirectory="Always" />
         <None Include="Genesis.json" CopyToOutputDirectory="Always" />
-        <None Include="Genesis.json.mainnet" CopyToOutputDirectory="Always" />
-        <None Include="Genesis.json.testnet" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
     <ItemGroup>
