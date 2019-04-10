@@ -60,6 +60,7 @@ echo '//////////////////////////////////////////////////////////////////////////
 echo '// Data directory and configuration'
 echo '////////////////////////////////////////////////////////////////////////////////'
 sudo mkdir -p "$INSTANCE_DIR"
+sudo cp Networks/Main/Genesis.json "$INSTANCE_DIR/Genesis.json"
 sudo cp Config.json.template "$INSTANCE_DIR/Config.json"
 
 sudo sed -i -- 's/"DbEngineType".*$/"DbEngineType": "Postgres",/g' "$INSTANCE_DIR/Config.json"

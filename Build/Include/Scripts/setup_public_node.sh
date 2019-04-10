@@ -13,15 +13,6 @@ sudo apt install -y postgresql-10 postgresql-contrib-10
 sudo -u postgres psql -c 'CREATE EXTENSION adminpack'
 
 echo '////////////////////////////////////////////////////////////////////////////////'
-echo '// .NET Core'
-echo '////////////////////////////////////////////////////////////////////////////////'
-wget -q -O /tmp/packages-microsoft-prod.deb https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-sudo dpkg -i /tmp/packages-microsoft-prod.deb
-sudo apt install -y apt-transport-https
-sudo apt update -y
-sudo apt install -y dotnet-runtime-2.1
-
-echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Node binaries'
 echo '////////////////////////////////////////////////////////////////////////////////'
 NODE_DIR=/opt/own/blockchain/public/node
@@ -41,7 +32,7 @@ After=network.target postgresql.service
 [Service]
 Environment=DOTNET_CLI_HOME=/tmp
 WorkingDirectory=$DATA_DIR/%i
-ExecStart=/usr/bin/dotnet "$NODE_DIR/Own.Blockchain.Public.Node.dll"
+ExecStart="$NODE_DIR/Own.Blockchain.Public.Node"
 Restart=always
 RestartSec=10
 
