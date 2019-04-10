@@ -14,7 +14,7 @@ module Stats =
         member __.CaseName =
             match __ with
             | PeerRequests -> "PeerRequests"
-            | PeerResponses -> "PeerRequests"
+            | PeerResponses -> "PeerResponses"
 
     type StatsSummaryEntry = {
         Counter : string
