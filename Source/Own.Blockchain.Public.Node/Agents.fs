@@ -76,13 +76,13 @@ module Agents =
         | Some v -> v.Post c
         | None -> Log.error "Validator agent not started"
 
-    let private logEvent event =
+    let private logEvent (event : AppEvent) =
         let formatMessage =
-            sprintf "EVENT: %s: %s" (unionCaseName event)
+            sprintf "EVENT: %s: %s" event.CaseName
 
         match event with
         | PeerMessageReceived m ->
-            unionCaseName m.PeerMessage
+            m.PeerMessage.CaseName
             |> formatMessage
             |> Log.debug
         | TxSubmitted h ->
@@ -158,7 +158,7 @@ module Agents =
                 sprintf "Timeout %i / %i / %s"
                     blockNumber.Value
                     consensusRound.Value
-                    (unionCaseName consensusStep)
+                    consensusStep.CaseName
             | StateRequested (request, _) ->
                 sprintf "StateRequested %s" request.ValidatorAddress.Value
             | StateReceived response ->
@@ -176,7 +176,7 @@ module Agents =
             sprintf "%i messages / valid round: %i / valid value: %s / %i signatures"
                 response.Messages.Length
                 response.ValidRound.Value
-                (unionCaseName response.ValidProposal)
+                (if response.ValidProposal.IsSome then "Some" else "None")
                 response.ValidVoteSignatures.Length
             |> formatMessage
             |> Log.debug

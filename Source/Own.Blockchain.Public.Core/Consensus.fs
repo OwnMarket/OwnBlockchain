@@ -102,8 +102,7 @@ module Consensus =
 
         member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope, updateState) =
             if isValidatorBlacklisted (senderAddress, _blockNumber, envelope.BlockNumber) then
-                envelope.ConsensusMessage
-                |> unionCaseName
+                envelope.ConsensusMessage.CaseName
                 |> Log.warningf "Validator %s is blacklisted - %s consensus message ignored" senderAddress.Value
             elif envelope.BlockNumber >= _blockNumber then
                 let key = envelope.BlockNumber, envelope.Round, senderAddress
@@ -791,7 +790,7 @@ module Consensus =
             | Some (ev1, ev2, _) ->
                 Log.warningf
                     "EQUIVOCATION: This node is trying to %s %A in round %i on hight %i (it already did that for %A)"
-                    (unionCaseName consensusMessage)
+                    consensusMessage.CaseName
                     ev2
                     consensusRound.Value
                     _blockNumber.Value
@@ -920,7 +919,7 @@ module Consensus =
             blockHash
             |> Option.map (fun (BlockHash h) -> h)
             |> sprintf "%A"
-        |> sprintf "%s: %s" (unionCaseName consensusMessage)
+        |> sprintf "%s: %s" consensusMessage.CaseName
 
     let createConsensusMessageHash
         decodeHash
@@ -1197,20 +1196,23 @@ module Consensus =
 
             baseTimeout + timeoutDelta * consensusRound
 
-        let scheduleTimeout (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep) =
+        let scheduleTimeout
+            (blockNumber : BlockNumber, consensusRound : ConsensusRound, consensusStep : ConsensusStep)
+            =
+
             if canParticipateInConsensus blockNumber = Some true then
                 async {
                     Log.debugf "Timeout scheduled: %i / %i / %s"
                         blockNumber.Value
                         consensusRound.Value
-                        (unionCaseName consensusStep)
+                        consensusStep.CaseName
 
                     do! Async.Sleep (timeoutForRound consensusStep consensusRound)
 
                     Log.debugf "Timeout elapsed: %i / %i / %s"
                         blockNumber.Value
                         consensusRound.Value
-                        (unionCaseName consensusStep)
+                        consensusStep.CaseName
 
                     ConsensusCommand.Timeout (blockNumber, consensusRound, consensusStep)
                     |> ConsensusCommandInvoked

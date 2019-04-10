@@ -24,8 +24,7 @@ module DbInit =
                 Log.notice "Creating database..."
                 FbConnection.CreateDatabase(csb.ConnectionString, false)
         else
-            dbEngineType
-            |> unionCaseName
+            dbEngineType.CaseName
             |> invalidOp "DB creation is not supported for DbEngineType: %s"
 
     let private getDbVersion dbEngineType connectionString =

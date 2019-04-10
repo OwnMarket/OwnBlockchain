@@ -765,3 +765,32 @@ type Tx with
 
 type PendingTxInfo with
     member __.TotalFee = __.ActionFee * decimal __.ActionCount
+
+type ConsensusStep with
+    member __.CaseName =
+        match __ with
+        | Propose -> "Propose"
+        | Vote -> "Vote"
+        | Commit -> "Commit"
+
+type ConsensusMessage with
+    member __.CaseName =
+        match __ with
+        | Propose _ -> "Propose"
+        | Vote _ -> "Vote"
+        | Commit _ -> "Commit"
+
+type PeerMessage with
+    member __.CaseName =
+        match __ with
+        | GossipDiscoveryMessage _ -> "GossipDiscoveryMessage"
+        | GossipMessage _ -> "GossipMessage"
+        | MulticastMessage _ -> "MulticastMessage"
+        | RequestDataMessage _ -> "RequestDataMessage"
+        | ResponseDataMessage _ -> "ResponseDataMessage"
+
+type DbEngineType with
+    member __.CaseName =
+        match __ with
+        | Firebird -> "Firebird"
+        | Postgres -> "Postgres"

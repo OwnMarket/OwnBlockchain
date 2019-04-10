@@ -753,7 +753,7 @@ module Mapping =
             ValidatorAddress = validatorAddress
             BlockNumber = equivocationProofDto.BlockNumber
             ConsensusRound = equivocationProofDto.ConsensusRound
-            ConsensusStep = equivocationProofDto.ConsensusStep |> consensusStepFromCode |> unionCaseName
+            ConsensusStep = (consensusStepFromCode equivocationProofDto.ConsensusStep).CaseName
             EquivocationValue1 = equivocationProofDto.EquivocationValue1
             EquivocationValue2 = equivocationProofDto.EquivocationValue2
             Signature1 = equivocationProofDto.Signature1
@@ -775,13 +775,13 @@ module Mapping =
             let validRound = dto.ValidRound.Value |> ConsensusRound
             Propose (block, validRound)
         | "Vote" ->
-            if dto.BlockHash = (None |> unionCaseName) then
+            if dto.BlockHash = "None" then
                 None
             else
                 dto.BlockHash |> BlockHash |> Some
             |> Vote
         | "Commit" ->
-            if dto.BlockHash = (None |> unionCaseName) then
+            if dto.BlockHash = "None" then
                 None
             else
                 dto.BlockHash |> BlockHash |> Some
@@ -802,7 +802,7 @@ module Mapping =
             let blockHash =
                 match blockHash with
                 | Some (BlockHash h) -> h
-                | None -> None |> unionCaseName
+                | None -> "None"
             {
                 ConsensusMessageType = "Vote"
                 Block = Unchecked.defaultof<_>
@@ -813,7 +813,7 @@ module Mapping =
             let blockHash =
                 match blockHash with
                 | Some (BlockHash h) -> h
-                | None -> None |> unionCaseName
+                | None -> "None"
             {
                 ConsensusMessageType = "Commit"
                 Block = Unchecked.defaultof<_>

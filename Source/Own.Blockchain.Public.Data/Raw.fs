@@ -22,8 +22,17 @@ module Raw =
         | EquivocationProofResult
         | Block
 
+    type RawDataType with
+        member __.CaseName =
+            match __ with
+            | Tx -> "Tx"
+            | TxResult -> "TxResult"
+            | EquivocationProof -> "EquivocationProof"
+            | EquivocationProofResult -> "EquivocationProofResult"
+            | Block -> "Block"
+
     let private createFileName (dataType : RawDataType) (key : string) =
-        sprintf "%s_%s" (unionCaseName dataType) key
+        sprintf "%s_%s" dataType.CaseName key
 
     let private extractHash (key : string) =
         let index = key.LastIndexOf "_"
@@ -36,7 +45,7 @@ module Raw =
         sprintf "%s_%s" key (key |> decode |> encodeHex)
 
     let private saveData (dataDir : string) (dataType : RawDataType) (key : string) data : Result<unit, AppErrors> =
-        let dataTypeName = unionCaseName dataType
+        let dataTypeName = dataType.CaseName
         let fileName = createFileName dataType key
         let path = Path.Combine(dataDir, fileName)
 
@@ -67,7 +76,7 @@ module Raw =
             Result.appError (sprintf "Saving %s %s failed" dataTypeName (extractHash key))
 
     let private loadData<'T> (dataDir : string) (dataType : RawDataType) (key : string) : Result<'T, AppErrors> =
-        let dataTypeName = unionCaseName dataType
+        let dataTypeName = dataType.CaseName
         try
             let fileName = createFileName dataType key
             let path = Path.Combine(dataDir, fileName)
@@ -90,7 +99,7 @@ module Raw =
             Result.appError (sprintf "Loading %s %s failed" dataTypeName (extractHash key))
 
     let private deleteData (dataDir : string) (dataType : RawDataType) (key : string) : Result<unit, AppErrors> =
-        let dataTypeName = unionCaseName dataType
+        let dataTypeName = dataType.CaseName
         try
             let fileName = createFileName dataType key
             let path = Path.Combine(dataDir, fileName)

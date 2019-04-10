@@ -10,6 +10,12 @@ module Stats =
         | PeerRequests
         | PeerResponses
 
+    type Counter with
+        member __.CaseName =
+            match __ with
+            | PeerRequests -> "PeerRequests"
+            | PeerResponses -> "PeerRequests"
+
     type StatsSummaryEntry = {
         Counter : string
         Value : int64
@@ -45,5 +51,5 @@ module Stats =
             Counters =
                 counters
                 |> List.ofDict
-                |> List.map (fun (k, v) -> {Counter = unionCaseName k; Value = v})
+                |> List.map (fun (k, v) -> {Counter = k.CaseName; Value = v})
         }

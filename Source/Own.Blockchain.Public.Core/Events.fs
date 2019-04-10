@@ -25,3 +25,28 @@ type AppEvent =
     | EquivocationProofStored of EquivocationProofHash * isFetched : bool
     | BlockchainHeadReceived of BlockNumber
     | PeerListReceived of GossipMember list
+
+type AppEvent with
+    member __.CaseName =
+        match __ with
+        | PeerMessageReceived _ -> "PeerMessageReceived"
+        | TxSubmitted _ -> "TxSubmitted"
+        | TxReceived _ -> "TxReceived"
+        | TxFetched _ -> "TxFetched"
+        | TxStored _ -> "TxStored"
+        | BlockCommitted _ -> "BlockCommitted"
+        | BlockReceived _ -> "BlockReceived"
+        | BlockFetched _ -> "BlockFetched"
+        | BlockStored _ -> "BlockStored"
+        | BlockReady _ -> "BlockReady"
+        | BlockApplied _ -> "BlockApplied"
+        | ConsensusMessageReceived _ -> "ConsensusMessageReceived"
+        | ConsensusCommandInvoked _ -> "ConsensusCommandInvoked"
+        | ConsensusStateRequestReceived _ -> "ConsensusStateRequestReceived"
+        | ConsensusStateResponseReceived _ -> "ConsensusStateResponseReceived"
+        | EquivocationProofDetected _ -> "EquivocationProofDetected"
+        | EquivocationProofReceived _ -> "EquivocationProofReceived"
+        | EquivocationProofFetched _ -> "EquivocationProofFetched"
+        | EquivocationProofStored _ -> "EquivocationProofStored"
+        | BlockchainHeadReceived _ -> "BlockchainHeadReceived"
+        | PeerListReceived _ -> "PeerListReceived"
