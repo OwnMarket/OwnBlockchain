@@ -172,13 +172,17 @@ type internal TransportCore
         )
 
     let wireDealerMessageQueueEvents () =
-        multicastMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        multicastMessageQueue.ReceiveReady
+        |> Observable.subscribe dealerSendAsync
         |> ignore
-        discoveryMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        discoveryMessageQueue.ReceiveReady
+        |> Observable.subscribe dealerSendAsync
         |> ignore
-        requestsMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        requestsMessageQueue.ReceiveReady
+        |> Observable.subscribe dealerSendAsync
         |> ignore
-        gossipMessageQueue.ReceiveReady |> Observable.subscribe dealerSendAsync
+        gossipMessageQueue.ReceiveReady
+        |> Observable.subscribe dealerSendAsync
         |> ignore
 
         poller.Add multicastMessageQueue
