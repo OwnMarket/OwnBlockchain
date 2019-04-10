@@ -11,4 +11,4 @@ SCRIPT_DIR="$(pwd)"
 
 cd "$WORKING_DIR"
 export FIREBIRD="$SCRIPT_DIR"
-dotnet "$SCRIPT_DIR/Own.Blockchain.Public.Node.dll"
+"$SCRIPT_DIR/Own.Blockchain.Public.Node"
