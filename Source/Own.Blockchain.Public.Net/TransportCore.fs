@@ -52,7 +52,7 @@ type internal TransportCore
     let netMQQueueToDict (queue : NetMQQueue<'T1 *'T2>) =
         let mutable queueItem = Unchecked.defaultof<'T1>, Unchecked.defaultof<'T2>
         let dict = new ConcurrentDictionary<'T1, HashSet<'T2>>()
-        while queue.TryDequeue(&queueItem, TimeSpan.FromMilliseconds(100.)) do
+        while queue.TryDequeue(&queueItem, TimeSpan.Zero) do
             let key, value = queueItem
             match dict.TryGetValue key with
             | true, itemSet ->
@@ -157,7 +157,7 @@ type internal TransportCore
             | true, socket ->
                 let msg = payload |> List.ofSeq
                 let multipartMessage = packMessage None msg
-                let timeout = TimeSpan.FromMilliseconds(msg.Length * networkSendoutRetryTimeout |> float)
+                let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
                 if not (socket.TrySendMultipartMessage(timeout, multipartMessage)) then
                     Log.errorf "Could not send message to %s" targetAddress
                     if not socket.IsDisposed then
@@ -202,7 +202,7 @@ type internal TransportCore
                 let msg = payload |> List.ofSeq
                 let multipartMessage = packMessage (Some targetIdentity) msg
                 routerSocket |> Option.iter (fun socket ->
-                    let timeout = TimeSpan.FromMilliseconds(msg.Length * networkSendoutRetryTimeout |> float)
+                    let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
                     socket.TrySendMultipartMessage(timeout, multipartMessage) |> ignore
                 )
             )
