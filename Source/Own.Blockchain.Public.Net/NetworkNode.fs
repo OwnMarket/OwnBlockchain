@@ -97,6 +97,11 @@ type NetworkNode
         | Some a -> memoizedConvertToIpAddress a.Value
         | None -> None
 
+    let gossipMemberWithIpAddress m =
+        m.NetworkAddress.Value
+        |> memoizedConvertToIpAddress
+        |> Option.map (fun ip -> {m with NetworkAddress = ip})
+
     let isSelf networkAddress =
         nodeConfigPublicIPAddress = Some networkAddress
 
@@ -170,12 +175,12 @@ type NetworkNode
         Async.Start ((setPendingDeadMember address), cts.Token)
         memberStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
 
-    let updateActiveMember mem =
-        activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
+    let updateActiveMember m =
+        activeMembers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
 
-    let saveActiveMember mem =
-        activeMembers.AddOrUpdate (mem.NetworkAddress, mem, fun _ _ -> mem) |> ignore
-        savePeerNode mem.NetworkAddress
+    let saveActiveMember m =
+        activeMembers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
+        savePeerNode m.NetworkAddress
 
     let startRequestsMonitor (requestsMap : ConcurrentDictionary<_, DateTime>) =
         let rec loop () =
@@ -258,7 +263,7 @@ type NetworkNode
             __.BootstrapNode ()
         | _ -> ()
 
-        result
+        result |> List.choose gossipMemberWithIpAddress
 
     member __.ReceiveMembers msg =
         // Keep max allowed peers.
@@ -266,13 +271,7 @@ type NetworkNode
             msg.ActiveMembers
             |> List.shuffle
             |> List.truncate nodeConfig.MaxConnectedPeers
-            |> List.choose (fun m ->
-                m.NetworkAddress.Value
-                |> memoizedConvertToIpAddress
-                |> Option.map (fun ip ->
-                    {GossipMember.NetworkAddress = ip; Heartbeat = m.Heartbeat}
-                )
-            )
+            |> List.choose gossipMemberWithIpAddress
 
         // Filter the existing peers, if any, (used to refresh connection, i.e increase heartbeat).
         let existingMembers =
