@@ -699,6 +699,7 @@ module Workflows =
             if block <> createdBlock then
                 Log.debugf "RECEIVED BLOCK:\n%A" block
                 Log.debugf "CREATED BLOCK:\n%A" createdBlock
+                Log.debugf "STATE CHANGES:\n%A" output
                 return!
                     sprintf "Applying of block %i didn't result in expected blockchain state" block.Header.Number.Value
                     |> Result.appError
