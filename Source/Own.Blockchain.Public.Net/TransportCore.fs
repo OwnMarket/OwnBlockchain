@@ -144,6 +144,7 @@ type internal TransportCore
             | true, socket ->
                 let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
                 if not (socket.TrySendMultipartMessage(timeout, payload)) then
+                    Stats.increment Stats.Counter.FailedMessageSendouts
                     Log.errorf "Could not send message to %s" targetAddress
                     if not socket.IsDisposed then
                         try
@@ -189,7 +190,9 @@ type internal TransportCore
             messagesSet |> Seq.iter (fun message ->
                 routerSocket |> Option.iter (fun socket ->
                     let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
-                    socket.TrySendMultipartMessage(timeout, message) |> ignore
+                    if not (socket.TrySendMultipartMessage(timeout, message)) then
+                        Stats.increment Stats.Counter.FailedMessageSendouts
+                        Log.errorf "Could not send response message"
                 )
             )
         )

@@ -9,6 +9,7 @@ module Stats =
     type Counter =
         | PeerRequests
         | PeerResponses
+        | FailedMessageSendouts
 
     type StatsSummaryEntry = {
         Counter : string

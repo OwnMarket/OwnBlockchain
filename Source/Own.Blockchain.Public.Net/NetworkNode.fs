@@ -232,6 +232,7 @@ type NetworkNode
         startRequestsMonitor receivedRequests
 
     member __.StartGossip publishEvent =
+        Log.debugf "Node identity is %s" (nodeConfig.Identity.Value |> Conversion.bytesToString)
         let networkId = getNetworkId ()
         initTransport
             networkId.Value
@@ -341,7 +342,7 @@ type NetworkNode
     member __.SendRequestDataMessage requestId =
         __.Throttle sentRequests requestId (fun _ ->
             Stats.increment Stats.Counter.PeerRequests
-
+            Log.debugf "Sending request for %A" requestId
             let rec loop messageId =
                 async {
                     let usedAddresses =
@@ -399,6 +400,13 @@ type NetworkNode
 
     member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
         Stats.increment Stats.Counter.PeerResponses
+        match peerMessageEnvelope.PeerMessage with
+        | ResponseDataMessage responseMessage ->
+            Log.debugf "Sending response (to %A request) to %s"
+                responseMessage.MessageId
+                (targetIdentity.Value |> Conversion.bytesToString)
+        | _ -> ()
+
         let unicastMessageTask =
             async {
                 let peerMessageEnvelopeDto =
@@ -688,6 +696,9 @@ type NetworkNode
 
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
         __.Throttle receivedRequests requestDataMessage (fun _ ->
+            Log.debugf "Received request for %A from %s"
+                requestDataMessage.MessageId
+                (requestDataMessage.SenderIdentity.Value |> Conversion.bytesToString)
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage = requestDataMessage |> RequestDataMessage
@@ -697,6 +708,7 @@ type NetworkNode
         )
 
     member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) =
+        Log.debugf "Received response to %A request" responseDataMessage.MessageId
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = responseDataMessage |> ResponseDataMessage
