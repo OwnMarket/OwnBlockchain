@@ -9,12 +9,14 @@ module Stats =
     type Counter =
         | PeerRequests
         | PeerResponses
+        | FailedMessageSendouts
 
     type Counter with
         member __.CaseName =
             match __ with
             | PeerRequests -> "PeerRequests"
             | PeerResponses -> "PeerResponses"
+            | FailedMessageSendouts -> "FailedMessageSendouts"
 
     type StatsSummaryEntry = {
         Counter : string

@@ -159,6 +159,7 @@ type internal TransportCore
                 let multipartMessage = packMessage None msg
                 let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
                 if not (socket.TrySendMultipartMessage(timeout, multipartMessage)) then
+                    Stats.increment Stats.Counter.FailedMessageSendouts
                     Log.errorf "Could not send message to %s" targetAddress
                     if not socket.IsDisposed then
                         try
@@ -204,6 +205,7 @@ type internal TransportCore
                 routerSocket |> Option.iter (fun socket ->
                     let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
                     if not (socket.TrySendMultipartMessage(timeout, multipartMessage)) then
+                        Stats.increment Stats.Counter.FailedMessageSendouts
                         Log.errorf "Could not send response message"
                 )
             )
