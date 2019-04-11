@@ -1,7 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Net.Tests
 
 open System.Collections.Concurrent
-open Own.Blockchain.Public.Core.Dtos
 
 module TransportMock =
 

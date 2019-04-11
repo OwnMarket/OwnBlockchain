@@ -1,7 +1,5 @@
 ﻿namespace Own.Blockchain.Public.Net
 
-open Own.Blockchain.Public.Core.Dtos
-
 module Transport =
 
     let mutable private transportCore : TransportCore option = None
