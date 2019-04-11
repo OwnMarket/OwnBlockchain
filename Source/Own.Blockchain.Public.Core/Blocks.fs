@@ -134,11 +134,9 @@ module Blocks =
         (AccountHash accountHash, state : AccountState)
         =
 
-        let addressBytes = decodeHash state.ControllerAddress.Value
-
         [
             accountHash |> decodeHash
-            addressBytes
+            state.ControllerAddress.Value |> decodeHash
         ]
         |> Array.concat
         |> createHash
@@ -149,7 +147,6 @@ module Blocks =
         (AssetHash assetHash, state : AssetState)
         =
 
-        let addressBytes = decodeHash state.ControllerAddress.Value
         let assetCodeBytes =
             match state.AssetCode with
             | Some (AssetCode code) -> code |> stringToBytes |> createHash |> decodeHash
@@ -158,7 +155,7 @@ module Blocks =
         [
             assetHash |> decodeHash
             assetCodeBytes
-            addressBytes
+            state.ControllerAddress.Value |> decodeHash
             state.IsEligibilityRequired |> boolToBytes
         ]
         |> Array.concat
