@@ -31,7 +31,7 @@ module Conversion =
 
     let decimalToBytes (x : decimal) =
         if x = 0m then
-            0m
+            0m // Because Decimal.GetBits(1.0000000m - 1m) = [|0; 0; 0; -2147024896|] and we want [|0; 0; 0; 0|]
         else
             x / 1.0000000000000000000000000000m // Remove trailing zeroes by changing the scaling factor.
         |> Decimal.GetBits
