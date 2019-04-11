@@ -1,3 +1,5 @@
 #!/bin/bash
 
-cd ./Networks/Test && ../../start_node.sh
+cd "${0%/*}" # Go to script directory
+cd Networks/Test
+../../start_node.sh
