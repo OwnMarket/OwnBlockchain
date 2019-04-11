@@ -81,7 +81,7 @@ module DbTools =
         if csb.UserID.IsNullOrWhiteSpace() then
             csb.UserID <- "SYSDBA"
 
-        if csb.Charset.IsNullOrWhiteSpace() then
+        if not (connectionString.ToLowerInvariant().Contains("charset")) then
             csb.Charset <- "UTF8"
 
         csb
