@@ -287,6 +287,7 @@ module BlockTests =
     let ``Blocks.createBlockHash`` () =
         let blockNumber = BlockNumber 1L
         let previousBlockHash = BlockHash "B"
+        let configurationBlockNumber = BlockNumber 0L
         let timestamp = Timestamp 3L
         let validatorAddress = BlockchainAddress "D"
         let txSetRoot = MerkleTreeRoot "E"
@@ -304,6 +305,7 @@ module BlockTests =
                 DummyHash.create
                 blockNumber
                 previousBlockHash
+                configurationBlockNumber
                 timestamp
                 validatorAddress
                 txSetRoot
@@ -315,7 +317,7 @@ module BlockTests =
                 configurationRoot
 
         // ASSERT
-        test <@ blockHash = ".......AB.......CDEFGHIAB" @>
+        test <@ blockHash = ".......AB...............CDEFGHIAB" @>
 
     [<Fact>]
     let ``Blocks.assembleBlock`` () =
@@ -688,6 +690,7 @@ module BlockTests =
             [
                 ".......A" // blockNumber
                 "B" // previousBlockHash
+                "........" // configurationBlockNumber
                 ".......C" // timestamp
                 "D" // validator
                 txSetRoot

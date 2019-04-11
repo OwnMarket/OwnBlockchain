@@ -258,6 +258,7 @@ module Blocks =
         createHash
         (BlockNumber blockNumber)
         (BlockHash previousBlockHash)
+        (BlockNumber configurationBlockNumber)
         (Timestamp timestamp)
         (BlockchainAddress proposerAddress)
         (MerkleTreeRoot txSetRoot)
@@ -272,6 +273,7 @@ module Blocks =
         [
             blockNumber |> int64ToBytes
             previousBlockHash |> decodeHash
+            configurationBlockNumber |> int64ToBytes
             timestamp |> int64ToBytes
             proposerAddress |> decodeHash
             txSetRoot |> decodeHash
@@ -443,6 +445,7 @@ module Blocks =
                 createHash
                 blockNumber
                 previousBlockHash
+                configurationBlockNumber
                 timestamp
                 proposerAddress
                 txSetRoot
@@ -641,6 +644,7 @@ module Blocks =
                 createHash
                 block.Header.Number
                 previousBlockHash
+                block.Header.ConfigurationBlockNumber
                 block.Header.Timestamp
                 block.Header.ProposerAddress
                 txSetRoot
