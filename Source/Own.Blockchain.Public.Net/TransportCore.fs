@@ -172,23 +172,19 @@ type internal TransportCore
         )
 
     let wireDealerMessageQueueEvents () =
-        multicastMessageQueue.ReceiveReady
-        |> Observable.subscribe dealerSendAsync
-        |> ignore
-        discoveryMessageQueue.ReceiveReady
-        |> Observable.subscribe dealerSendAsync
-        |> ignore
-        requestsMessageQueue.ReceiveReady
-        |> Observable.subscribe dealerSendAsync
-        |> ignore
-        gossipMessageQueue.ReceiveReady
-        |> Observable.subscribe dealerSendAsync
-        |> ignore
+        [
+            multicastMessageQueue
+            discoveryMessageQueue
+            requestsMessageQueue
+            gossipMessageQueue
+        ]
+        |> List.iter(fun queue ->
+            queue.ReceiveReady
+            |> Observable.subscribe dealerSendAsync
+            |> ignore
 
-        poller.Add multicastMessageQueue
-        poller.Add discoveryMessageQueue
-        poller.Add requestsMessageQueue
-        poller.Add gossipMessageQueue
+            poller.Add queue
+        )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Router
@@ -287,17 +283,16 @@ type internal TransportCore
         routerSocket |> Option.iter (fun socket -> poller.RemoveAndDispose socket)
         routerSocket <- None
 
-        if not multicastMessageQueue.IsDisposed then
-            poller.RemoveAndDispose multicastMessageQueue
-
-        if not discoveryMessageQueue.IsDisposed then
-            poller.RemoveAndDispose discoveryMessageQueue
-
-        if not requestsMessageQueue.IsDisposed then
-            poller.RemoveAndDispose requestsMessageQueue
-
-        if not gossipMessageQueue.IsDisposed then
-            poller.RemoveAndDispose gossipMessageQueue
+        [
+            multicastMessageQueue
+            discoveryMessageQueue
+            requestsMessageQueue
+            gossipMessageQueue
+        ]
+        |> List.iter(fun queue ->
+            if not queue.IsDisposed then
+                poller.RemoveAndDispose queue
+        )
 
         if poller.IsRunning then
             poller.Dispose()
