@@ -178,7 +178,7 @@ type internal TransportCore
             requestsMessageQueue
             gossipMessageQueue
         ]
-        |> List.iter(fun queue ->
+        |> List.iter (fun queue ->
             queue.ReceiveReady
             |> Observable.subscribe dealerSendAsync
             |> ignore
@@ -203,7 +203,8 @@ type internal TransportCore
                 let multipartMessage = packMessage (Some targetIdentity) msg
                 routerSocket |> Option.iter (fun socket ->
                     let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
-                    socket.TrySendMultipartMessage(timeout, multipartMessage) |> ignore
+                    if not (socket.TrySendMultipartMessage(timeout, multipartMessage)) then
+                        Log.errorf "Could not send response message"
                 )
             )
         )
@@ -289,7 +290,7 @@ type internal TransportCore
             requestsMessageQueue
             gossipMessageQueue
         ]
-        |> List.iter(fun queue ->
+        |> List.iter (fun queue ->
             if not queue.IsDisposed then
                 poller.RemoveAndDispose queue
         )
