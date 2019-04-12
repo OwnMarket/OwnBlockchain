@@ -26,7 +26,7 @@ for PLATFORM_ID in linux-x64 osx-x64 win-x64; do
     rm "$TEMP_DIR/Node/Config.json"
 
     cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native "$TEMP_DIR/Node"
-    cp -r ./Include/Firebird/* "$TEMP_DIR/Node"
+    cp -r ./Include/Firebird/$PLATFORM_ID/* "$TEMP_DIR/Node"
     cp -r ./Include/Configs/* "$TEMP_DIR/Node"
     cp -r ./Include/Scripts/* "$TEMP_DIR/Node"
 
