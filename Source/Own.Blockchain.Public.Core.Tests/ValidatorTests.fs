@@ -20,7 +20,9 @@ module ValidatorTests =
     [<InlineData(9, 7)>]
     [<InlineData(10, 7)>]
     [<InlineData(20, 14)>]
+    [<InlineData(25, 17)>]
     [<InlineData(31, 21)>]
+    [<InlineData(50, 34)>]
     [<InlineData(100, 67)>]
     let ``Validators.calculateQualifiedMajority`` (validatorCount, expectedQualifiedMajority) =
         // ACT
@@ -38,7 +40,9 @@ module ValidatorTests =
     [<InlineData(9, 4)>]
     [<InlineData(10, 4)>]
     [<InlineData(20, 7)>]
+    [<InlineData(25, 9)>]
     [<InlineData(31, 11)>]
+    [<InlineData(50, 17)>]
     [<InlineData(100, 34)>]
     let ``Validators.calculateValidQuorum`` (validatorCount, expectedValidQuorum) =
         // ACT
