@@ -66,14 +66,13 @@ type internal TransportCore
     let composeMultipartMessage (msg : byte[]) (identity : byte[] option) =
         let multipartMessage = new NetMQMessage()
         identity |> Option.iter (fun id -> multipartMessage.Append(id))
-        multipartMessage.AppendEmptyFrame()
         multipartMessage.Append(msg)
         multipartMessage
 
     let extractMessageFromMultipart (multipartMessage : NetMQMessage) =
-        if multipartMessage.FrameCount = 3 then
+        if multipartMessage.FrameCount = 2 then
             let originatorIdentity = multipartMessage.[0] // TODO: use this instead of SenderIdentity
-            let msg = multipartMessage.[2].ToByteArray()
+            let msg = multipartMessage.[1].ToByteArray()
             msg |> Some
         else
             Log.errorf "Invalid message frame count (Expected 3, received %i)" multipartMessage.FrameCount
@@ -111,22 +110,19 @@ type internal TransportCore
         dealerSocket.Options.Identity <- peerIdentity
         dealerSocket.ReceiveReady
         |> Observable.subscribe (fun e ->
-            let mutable emptyFrame = ""
-            while e.Socket.TryReceiveFrameString &emptyFrame do
-                let mutable msg = Array.empty<byte>
-                if e.Socket.TryReceiveFrameBytes &msg then
-                    msg
-                    |> unpackMessage
-                    |> Result.handle
-                        (fun peerMessageEnvelopeList ->
-                            peerMessageEnvelopeList |> List.iter (fun peerMessageEnvelope ->
-                                if peerMessageEnvelope.NetworkId <> networkId then
-                                    Log.error "Peer message with invalid networkId ignored"
-                                else
-                                    receivePeerMessage peerMessageEnvelope
-                            )
+            let mutable msg = Array.empty<byte>
+            while e.Socket.TryReceiveFrameBytes &msg do
+                msg
+                |> unpackMessage
+                |> Result.handle
+                    (List.iter (fun envelope ->
+                        if envelope.NetworkId <> networkId then
+                            Log.error "Peer message with invalid networkId ignored"
+                        else
+                            receivePeerMessage envelope
                         )
-                        Log.error
+                    )
+                    Log.error
         )
         |> ignore
 
