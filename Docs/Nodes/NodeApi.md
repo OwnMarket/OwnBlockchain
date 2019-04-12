@@ -15,6 +15,7 @@ Endpoint | Verb | Description
 `/account/{accountHash}?asset={assetHash}` | `GET` | Account info with asset balances, optionally filtered for a single asset specified in `asset` query string parameter.
 `/account/{accountHash}/votes?asset={assetHash}` | `GET` | List of votes for the account, optionally filtered for a single asset specified in `asset` query string parameter.
 `/account/{accountHash}/eligibilities` | `GET` | List of eligibilities for the account.
+`/account/{accountHash}/kyc-providers` | `GET` | List of kyc-providers that are controllers for the account.
 `/asset/{assetHash}` | `GET` | Asset info
 `/asset/{assetHash}/kyc-providers` | `GET` | List of KYC providers for the asset
 `/validators?activeOnly={true/false}` | `GET` | List of validators, optionally filtering the active only ones
@@ -449,6 +450,24 @@ Response JSON payload:
             "isSecondaryEligible": true,
             "kycControllerAddress": "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ"
         }
+    ]
+}
+```
+
+
+## `GET /account/{accountHash}/kyc-providers`
+
+Request URL:
+```
+/account/4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9/kyc-providers
+```
+
+Response JSON payload:
+```json
+{
+    "accountHash": "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9",
+    "kycProviders": [
+        "CHVegEXVwUhK2gbrqnMsYyNSVC7CLTM7qmQ"
     ]
 }
 ```
