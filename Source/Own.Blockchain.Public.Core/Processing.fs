@@ -1259,19 +1259,19 @@ module Processing =
 
         let processTx (state : ProcessingState) (txHash : TxHash) =
             let tx =
-                match
-                    getTxBody
-                        getTx
-                        createHash
-                        verifySignature
-                        isValidHash
-                        isValidAddress
-                        maxActionCountPerTx
-                        txHash with
-                | Ok tx -> tx
-                | Error err ->
-                    Log.appErrors err
-                    failwithf "Cannot load tx %s" txHash.Value // TODO: Remove invalid tx from the pool?
+                getTxBody
+                    getTx
+                    createHash
+                    verifySignature
+                    isValidHash
+                    isValidAddress
+                    maxActionCountPerTx
+                    txHash
+                |> function
+                    | Ok tx -> tx
+                    | Error err ->
+                        Log.appErrors err
+                        failwithf "Cannot load tx %s" txHash.Value // TODO: Remove invalid tx from the pool?
 
             match processValidatorReward validatorDeposit tx validatorAddress state with
             | Error e ->
