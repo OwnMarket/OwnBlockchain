@@ -331,34 +331,41 @@ module Consensus =
             elif request.TargetValidatorAddress.IsNone || request.TargetValidatorAddress = Some validatorAddress then
                 let messages =
                     [
-                        let key = _blockNumber, request.ConsensusRound, validatorAddress
+                        // Send messages from requested round, as well as from current round.
+                        let keys =
+                            [
+                                _blockNumber, request.ConsensusRound, validatorAddress
+                                _blockNumber, _round, validatorAddress
+                            ]
+                            |> List.distinct
 
-                        if _proposals.ContainsKey(key) then
-                            let (b, vr, s) = _proposals.[key]
-                            yield {
-                                ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                Round = request.ConsensusRound
-                                ConsensusMessage = Propose (b, vr)
-                                Signature = s
-                            }
+                        for key in keys do
+                            if _proposals.ContainsKey(key) then
+                                let (b, vr, s) = _proposals.[key]
+                                yield {
+                                    ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                                    Round = request.ConsensusRound
+                                    ConsensusMessage = Propose (b, vr)
+                                    Signature = s
+                                }
 
-                        if _votes.ContainsKey(key) then
-                            let (bh, s) = _votes.[key]
-                            yield {
-                                ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                Round = request.ConsensusRound
-                                ConsensusMessage = Vote bh
-                                Signature = s
-                            }
+                            if _votes.ContainsKey(key) then
+                                let (bh, s) = _votes.[key]
+                                yield {
+                                    ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                                    Round = request.ConsensusRound
+                                    ConsensusMessage = Vote bh
+                                    Signature = s
+                                }
 
-                        if _commits.ContainsKey(key) then
-                            let (bh, s) = _commits.[key]
-                            yield {
-                                ConsensusMessageEnvelope.BlockNumber = _blockNumber
-                                Round = request.ConsensusRound
-                                ConsensusMessage = Commit bh
-                                Signature = s
-                            }
+                            if _commits.ContainsKey(key) then
+                                let (bh, s) = _commits.[key]
+                                yield {
+                                    ConsensusMessageEnvelope.BlockNumber = _blockNumber
+                                    Round = request.ConsensusRound
+                                    ConsensusMessage = Commit bh
+                                    Signature = s
+                                }
                     ]
 
                 let validProposal =
