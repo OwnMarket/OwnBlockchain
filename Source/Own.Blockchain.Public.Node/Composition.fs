@@ -215,6 +215,17 @@ module Composition =
             getLastStoredBlockNumber
             getBlock
             saveBlockToDb
+            getTx
+            saveTxToDb
+            getEquivocationProof
+            saveEquivocationProofToDb
+            Consensus.createConsensusMessageHash
+            Hashing.decode
+            Hashing.hash
+            verifySignature
+            Hashing.isValidHash
+            Hashing.isValidBlockchainAddress
+            Config.MaxActionCountPerTx
 
     let createBlock =
         Workflows.createBlock

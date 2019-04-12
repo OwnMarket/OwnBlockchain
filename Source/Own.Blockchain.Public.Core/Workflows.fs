@@ -199,6 +199,17 @@ module Workflows =
         (getLastStoredBlockNumber : unit -> BlockNumber option)
         getBlock
         saveBlockToDb
+        getTx
+        saveTxToDb
+        getEquivocationProof
+        saveEquivocationProofToDb
+        createConsensusMessageHash
+        decodeHash
+        createHash
+        verifySignature
+        isValidHash
+        isValidAddress
+        maxActionCountPerTx
         =
 
         let logOnce = memoize Log.info
@@ -216,13 +227,57 @@ module Workflows =
                 | _ ->
                     None
         )
-        |> Seq.iter (fun b ->
-            b.Header
-            |> Mapping.blockHeaderToBlockInfoDto b.Configuration.IsSome
-            |> saveBlockToDb
+        |> Seq.iter (fun block ->
+            block.Header
+            |> Mapping.blockHeaderToBlockInfoDto block.Configuration.IsSome
+            |> (fun blockInfo ->
+                Log.infof "Restoring info for block %i" block.Header.Number.Value
+                saveBlockToDb blockInfo
+                >>= (fun _ ->
+                    result {
+                        for txHash in block.TxSet do
+                            Log.debugf "Loading info for TX %s" txHash.Value
+                            Processing.getTxBody
+                                getTx
+                                createHash
+                                verifySignature
+                                isValidHash
+                                isValidAddress
+                                maxActionCountPerTx
+                                txHash
+                            >>= (fun tx ->
+                                Log.debugf "Saving info for TX %s" txHash.Value
+                                tx |> Mapping.txToTxInfoDto |> saveTxToDb
+                            )
+                            |> Result.iterError (fun e ->
+                                Log.appErrors e
+                                failwithf "Failed rebuilding the state - cannot restore info for TX %s"
+                                    txHash.Value
+                            )
+
+                        for eqHash in block.EquivocationProofs do
+                            Log.debugf "Loading info for equivocation proof %s" eqHash.Value
+                            getEquivocationProof eqHash
+                            >>= Validation.validateEquivocationProof
+                                verifySignature
+                                createConsensusMessageHash
+                                decodeHash
+                                createHash
+                            >>= (fun proof ->
+                                Log.debugf "Saving info for equivocation proof %s" eqHash.Value
+                                proof |> Mapping.equivocationProofToEquivocationInfoDto |> saveEquivocationProofToDb
+                            )
+                            |> Result.iterError (fun e ->
+                                Log.appErrors e
+                                failwithf "Failed rebuilding the state - cannot restore info for equivocation proof %s"
+                                    eqHash.Value
+                            )
+                    }
+                )
+            )
             |> Result.iterError (fun e ->
                 Log.appErrors e
-                failwith "Failed rebuilding the state"
+                failwithf "Failed rebuilding the state - cannot restore info for block %i" block.Header.Number.Value
             )
         )
 
