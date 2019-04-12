@@ -138,7 +138,11 @@ module Raw =
                 Result.iter (fun envelope ->
                     if cache.Keys.Count < maxCacheSize then
                         let cacheValue = envelope, DateTime.UtcNow
-                        cache.AddOrUpdate(cacheItemKey, cacheValue, fun _ _ -> cacheValue) |> ignore
+                        try
+                            cache.AddOrUpdate(cacheItemKey, cacheValue, fun _ _ -> cacheValue) |> ignore
+                        with
+                        | _ ->
+                            Log.warningf "%A cannot be cached" cacheItemKey
                 )
             )
 
