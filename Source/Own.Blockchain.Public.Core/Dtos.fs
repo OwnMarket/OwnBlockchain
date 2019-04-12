@@ -706,6 +706,11 @@ type GetAccountApiEligibilitiesDto = {
     Eligibilities : AccountEligibilityInfoDto list
 }
 
+type GetAccountApiKycProvidersDto = {
+    AccountHash : string
+    KycProviders : string list
+}
+
 type GetAssetApiKycProvidersDto = {
     AssetHash : string
     KycProviders : string list

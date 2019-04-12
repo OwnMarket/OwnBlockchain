@@ -81,10 +81,11 @@ module Composition =
 
     let getAccountVotes = Db.getAccountVotes Config.DbEngineType Config.DbConnectionString
     let getAccountEligibilities = Db.getAccountEligibilities Config.DbEngineType Config.DbConnectionString
+    let getAccountKycProviders = Db.getAccountKycProviders Config.DbEngineType Config.DbConnectionString
     let getVoteState = Db.getVoteState Config.DbEngineType Config.DbConnectionString
 
     let getEligibilityState = Db.getEligibilityState Config.DbEngineType Config.DbConnectionString
-    let getKycProvidersState = Db.getKycProvidersState Config.DbEngineType Config.DbConnectionString
+    let getAssetKycProviders = Db.getAssetKycProviders Config.DbEngineType Config.DbConnectionString
 
     let getAssetState = Db.getAssetState Config.DbEngineType Config.DbConnectionString
     let getAssetHashByCode = Db.getAssetHashByCode Config.DbEngineType Config.DbConnectionString
@@ -226,7 +227,7 @@ module Composition =
             getHoldingState
             getVoteState
             getEligibilityState
-            getKycProvidersState
+            getAssetKycProviders
             getAccountState
             getAssetState
             getAssetHashByCode
@@ -515,9 +516,11 @@ module Composition =
 
     let getAccountEligibilitiesApi = Workflows.getAccountEligibilitiesApi getAccountState getAccountEligibilities
 
+    let getAccountKycProvidersApi = Workflows.getAccountKycProvidersApi getAccountState getAccountKycProviders
+
     let getAssetApi = Workflows.getAssetApi getAssetState
 
-    let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getKycProvidersState
+    let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getAssetKycProviders
 
     let getValidatorsApi = Workflows.getValidatorsApi getCurrentValidators getAllValidators
 

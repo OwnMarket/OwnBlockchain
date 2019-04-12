@@ -932,7 +932,7 @@ module Db =
                 accountHash
                 assetHash
 
-    let getKycProvidersState
+    let getAssetKycProviders
         dbEngineType
         (dbConnectionString : string)
         (AssetHash assetHash)
@@ -949,6 +949,26 @@ module Db =
 
         [
             "@assetHash", assetHash |> box
+        ]
+        |> DbTools.query<string> dbEngineType dbConnectionString sql
+        |> List.map BlockchainAddress
+
+    let getAccountKycProviders
+        dbEngineType
+        (dbConnectionString : string)
+        (AccountHash accountHash)
+        : BlockchainAddress list
+        =
+
+        let sql =
+            """
+            SELECT provider_address
+            FROM kyc_provider
+            WHERE provider_address = (SELECT controller_address from account where account_Hash = @accountHash)
+            """
+
+        [
+            "@accountHash", accountHash |> box
         ]
         |> DbTools.query<string> dbEngineType dbConnectionString sql
         |> List.map BlockchainAddress

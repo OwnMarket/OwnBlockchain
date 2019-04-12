@@ -236,7 +236,7 @@ module Workflows =
         getHoldingStateFromStorage
         getVoteStateFromStorage
         getEligibilityStateFromStorage
-        getKycProvidersStateFromStorage
+        getAssetKycProvidersFromStorage
         getAccountStateFromStorage
         getAssetStateFromStorage
         getAssetHashByCodeFromStorage
@@ -270,7 +270,7 @@ module Workflows =
         let getHoldingState = memoize (getHoldingStateFromStorage >> Option.map Mapping.holdingStateFromDto)
         let getVoteState = memoize (getVoteStateFromStorage >> Option.map Mapping.voteStateFromDto)
         let getEligibilityState = memoize (getEligibilityStateFromStorage >> Option.map Mapping.eligibilityStateFromDto)
-        let getKycProvidersState = memoize getKycProvidersStateFromStorage
+        let getKycProviders = memoize getAssetKycProvidersFromStorage
         let getAccountState = memoize (getAccountStateFromStorage >> Option.map Mapping.accountStateFromDto)
         let getAssetHashByCode = memoize getAssetHashByCodeFromStorage
         let getAssetState = memoize (getAssetStateFromStorage >> Option.map Mapping.assetStateFromDto)
@@ -314,7 +314,7 @@ module Workflows =
                 getHoldingState
                 getVoteState
                 getEligibilityState
-                getKycProvidersState
+                getKycProviders
                 getAccountState
                 getAssetState
                 getAssetHashByCode
@@ -1494,6 +1494,27 @@ module Workflows =
             }
             |> Ok
 
+    let getAccountKycProvidersApi
+        (getAccountState : AccountHash -> AccountStateDto option)
+        (getAccountKycProviders : AccountHash -> BlockchainAddress list)
+        (accountHash : AccountHash)
+        : Result<GetAccountApiKycProvidersDto, AppErrors>
+        =
+
+        match getAccountState accountHash with
+        | None ->
+            sprintf "Account %s does not exist" accountHash.Value
+            |> Result.appError
+        | Some _ ->
+            let kycProviders =
+                getAccountKycProviders accountHash
+                |> List.map (fun address -> address.Value)
+            {
+                AccountHash = accountHash.Value
+                KycProviders = kycProviders
+            }
+            |> Ok
+
     let getAssetApi
         (getAssetState : AssetHash -> AssetStateDto option)
         (assetHash : AssetHash)
@@ -1515,7 +1536,7 @@ module Workflows =
 
     let getAssetKycProvidersApi
         (getAssetState : AssetHash -> AssetStateDto option)
-        (getKycProvidersState : AssetHash -> BlockchainAddress list)
+        (getAssetKycProviders : AssetHash -> BlockchainAddress list)
         (assetHash : AssetHash)
         : Result<GetAssetApiKycProvidersDto, AppErrors>
         =
@@ -1526,8 +1547,8 @@ module Workflows =
             |> Result.appError
         | Some _ ->
             let kycProviders =
-                getKycProvidersState assetHash
-                |> List.map (fun provider -> provider.Value)
+                getAssetKycProviders assetHash
+                |> List.map (fun address -> address.Value)
             {
                 AssetHash = assetHash.Value
                 KycProviders = kycProviders
