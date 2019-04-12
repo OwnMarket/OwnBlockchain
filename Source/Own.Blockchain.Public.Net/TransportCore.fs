@@ -148,7 +148,7 @@ type internal TransportCore
                 Log.error "Poller was disposed while adding socket"
         queue.Enqueue (targetAddress, msg)
 
-    let dealerSendAsync (e : NetMQQueueEventArgs<_ * PeerMessageEnvelopeDto>) =
+    let dealerSendAsync (e : NetMQQueueEventArgs<_>) =
         e.Queue
         |> netMQQueueToDict
         |> Seq.ofDict
