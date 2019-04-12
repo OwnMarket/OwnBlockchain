@@ -201,8 +201,12 @@ module Workflows =
         saveBlockToDb
         getTx
         saveTxToDb
+        txResultExists
+        deleteTxResult
         getEquivocationProof
         saveEquivocationProofToDb
+        equivocationProofResultExists
+        deleteEquivocationProofResult
         createConsensusMessageHash
         decodeHash
         createHash
@@ -249,6 +253,13 @@ module Workflows =
                                 Log.debugf "Saving info for TX %s" txHash.Value
                                 tx |> Mapping.txToTxInfoDto |> saveTxToDb
                             )
+                            >>= (fun _ ->
+                                if txResultExists txHash then
+                                    Log.debugf "Deleting TX result %s" txHash.Value
+                                    deleteTxResult txHash
+                                else
+                                    Ok ()
+                            )
                             |> Result.iterError (fun e ->
                                 Log.appErrors e
                                 failwithf "Failed rebuilding the state - cannot restore info for TX %s"
@@ -266,6 +277,13 @@ module Workflows =
                             >>= (fun proof ->
                                 Log.debugf "Saving info for equivocation proof %s" eqHash.Value
                                 proof |> Mapping.equivocationProofToEquivocationInfoDto |> saveEquivocationProofToDb
+                            )
+                            >>= (fun proof ->
+                                if equivocationProofResultExists eqHash then
+                                    Log.debugf "Deleting equivocation proof result %s" eqHash.Value
+                                    deleteEquivocationProofResult eqHash
+                                else
+                                    Ok ()
                             )
                             |> Result.iterError (fun e ->
                                 Log.appErrors e

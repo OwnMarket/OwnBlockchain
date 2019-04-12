@@ -217,8 +217,12 @@ module Composition =
             saveBlockToDb
             getTx
             saveTxToDb
+            txResultExists
+            deleteTxResult
             getEquivocationProof
             saveEquivocationProofToDb
+            equivocationProofResultExists
+            deleteEquivocationProofResult
             Consensus.createConsensusMessageHash
             Hashing.decode
             Hashing.hash
