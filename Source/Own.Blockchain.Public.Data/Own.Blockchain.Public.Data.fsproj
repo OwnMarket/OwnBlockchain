@@ -20,10 +20,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dapper" Version="1.50.4" />
-        <PackageReference Include="FirebirdSql.Data.FirebirdClient" Version="6.4.0" />
+        <PackageReference Include="Dapper" Version="1.60.6" />
+        <PackageReference Include="FirebirdSql.Data.FirebirdClient" Version="6.6.0" />
         <PackageReference Include="MessagePack" Version="1.7.3.4" />
-        <PackageReference Include="Npgsql" Version="4.0.0" />
+        <PackageReference Include="Npgsql" Version="4.0.6" />
     </ItemGroup>
 
 </Project>
