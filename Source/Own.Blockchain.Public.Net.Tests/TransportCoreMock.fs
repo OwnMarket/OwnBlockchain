@@ -73,9 +73,11 @@ type internal TransportCoreMock
                 | true, queue ->
                     let mutable message = Array.empty<byte>
                     while queue.TryDequeue &message do
-                        match unpackMessage message with
-                        | Ok peerMessageList -> peerMessageList |> List.iter callback
-                        | Error error -> Log.error error
+                        message
+                        |> unpackMessage
+                        |> Result.handle
+                            (List.iter callback)
+                            Log.error
                 | _ -> ()
                 do! Async.Sleep(25)
                 return! loop address callback

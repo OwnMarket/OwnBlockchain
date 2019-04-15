@@ -43,9 +43,9 @@ type internal TransportCore
             failwith "ReceivePeerMessage agent is already started"
 
         receivePeerMessageDispatcher <-
-            Agent.start <| fun peerMessageEnvelopeDto ->
+            Agent.start <| fun envelope ->
                 async {
-                    receivePeerMessage peerMessageEnvelopeDto
+                    receivePeerMessage envelope
                 }
             |> Some
 
@@ -93,12 +93,11 @@ type internal TransportCore
                 msg
                 |> unpackMessage
                 |> Result.handle
-                    (fun peerMessageEnvelopeList ->
-                        peerMessageEnvelopeList |> List.iter (fun peerMessageEnvelope ->
-                            if peerMessageEnvelope.NetworkId <> networkId then
-                                Log.error "Peer message with invalid networkId ignored"
-                            else
-                                invokeReceivePeerMessage peerMessageEnvelope
+                    (List.iter (fun envelope ->
+                        if envelope.NetworkId <> networkId then
+                            Log.error "Peer message with invalid networkId ignored"
+                        else
+                            invokeReceivePeerMessage envelope
                         )
                     )
                     Log.error
