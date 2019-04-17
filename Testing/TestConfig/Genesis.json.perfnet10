@@ -1,0 +1,32 @@
+{
+    "NetworkCode": "OWN_PUBLIC_BLOCKCHAIN_PERFNET",
+    "GenesisAddress": "CHMEgFB4BEyQ5fEv5Ru42yZfQ5egnr776ih",
+    "GenesisValidators": [
+        "CHfN8DuKmMxUUwX7EtqAe6kfURzb9c5ieXu@val001.perfnet.weown.com:25718",
+        "CHbC3Y147ukTMgLfKYDDReUXXHQxwcekbJL@val002.perfnet.weown.com:25718",
+        "CHHpyhutk2sEPNtNgfQ43WwHueyTPseS3sc@val003.perfnet.weown.com:25718",
+        "CHbiXgyWuDdx2U8gdpAwcW64ZwW83gvG8o4@val004.perfnet.weown.com:25718",
+        "CHKKGJgEnzDH6EQHE668cvJHfmpTLRcBmot@val005.perfnet.weown.com:25718",
+        "CHdMZTCD2CBTqAwjZsGnkxaGchubr7CxrZb@val006.perfnet.weown.com:25718",
+        "CHL82C9BjjSB95cji7TTSCgKRdJg83qwoWR@val007.perfnet.weown.com:25718",
+        "CHMDN5Jeo8g6WmhPLKwEVxmUKoEUhNQX2fH@val008.perfnet.weown.com:25718",
+        "CHM6KKdhNiuo7zs2ujisWMeppNUsh6DLSxh@val009.perfnet.weown.com:25718",
+        "CHeum3dRUCv9R7NWaM8XCSsDhnYoAf8KDhQ@val010.perfnet.weown.com:25718"
+    ],
+    "GenesisSignatures": [
+        "9Yt9kks7K7WJDnh2fLwpnxbKSLre35tYkWf2YqQUuWRmL1YRdhEonKg7AJvHLBWfx8jzueMnDbuEeqQDg4jqcH3mH",
+        "LTSBaVMdnJXK5LEn24UfeEjYMacWvSixFzAZytuRBV2X6yGHpjFihvhGneULE26GnvrBi5zMgR7tqntpTuie7HFHi",
+        "J7FpXeq8tBFCRYcQGyAWE87DCgAvb8ZM6cbW4KpkPMDxA2G93cjqCnAgHzab2LjcW5o24tCWTkrATBHNqeRjQbCgX",
+        "NDPmyhGWD4Vq2nbQRRnSDJxUYs9pTkFcyQHQsdVpkK9NviARHYgUvqZMLpHR9izsqMwrBZ5Zk7NuisscDizEfRFgs",
+        "Lr4bdB8fFGxswbogGqa44HSxZu1tfoKRFSvBg5fTkGgJz5B2bNa8FWiQ4xFuqmZDk4YVRjsbZqW9sFxj5uJMwJZ4B",
+        "C4jjCdzk4pqk4MUnRH1ijPkFuBrHN3UMYn3fMBpb2JmXXPJXv5TvQmYV2oSoW1o38nAQi2prg95GweLi3ST1NWxic",
+        "35oSdLraMHTvCR3zGxn35XJDfJjZmoyPJHLMuxkRGCWEAVATLLZPnP7ZJvi6Fbb4LZRH9m7F4JyWkCj4pedM17UQF",
+        "Ljqe9ajRHBck3CrxdAtr4zhrDbSqnWSKeReLQg4FXRhNQS82Zh2rDYwxG6ehUkLduP1eofQ5nMKvwtdEZNW6eJd1R",
+        "Kofsh8mYrn8mBXJRHuaSbKGwRuLFiqDE2BLJdA6D72oBVsPFUbCarji2uMaeED12v2tR4eb3revpDVs682mZAAfvp",
+        "CWX5vdU5Kfu1kVG9yrRMKMtTuqE69XYtEngCqCBj9Kdq32ds8Z6Y5CBaRkKXtc6WhbyURRNZHtY2XxDLvt4Wv56cG"
+    ],
+    "ConfigurationBlockDelta": 20000,
+    "ValidatorDepositLockTime": 5,
+    "ValidatorBlacklistTime": 50,
+    "MaxTxCountPerBlock": 1000
+}
