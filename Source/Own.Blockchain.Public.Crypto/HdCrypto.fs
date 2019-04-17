@@ -10,7 +10,7 @@ module HdCrypto =
     // BIP39
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let private getMnemonicFromString (mnemonicPhrase : string) =
+    let getMnemonicFromString (mnemonicPhrase : string) =
         try
             new Mnemonic(mnemonicPhrase, Wordlist.English)
             |> Some
@@ -46,7 +46,7 @@ module HdCrypto =
         generateMasterExtKeyFromMnemonic mnemonic passphrase
 
     let generateMasterExtKey passphrase =
-        generateMasterExtKeyWithWordcount WordCount.Eighteen passphrase
+        generateMasterExtKeyWithWordcount WordCount.TwentyFour passphrase
 
     let toPrivateKey (extKey : ExtKey) =
         extKey.PrivateKey.ToBytes()
