@@ -84,7 +84,8 @@ module HdCryptoTests =
                 "genre joy nest captain emerge again spatial jungle image toss fox next fork \
                 ball kit pioneer captain slice clump spot agree borrow mistake start"
                 "erosion bubble today note draw ensure dance warfare vessel coral lyrics height bless \
-                knife romance chuckle pigeon brass flush script warm reform tilt antenna"            ]
+                knife romance chuckle pigeon brass flush script warm reform tilt antenna"
+            ]
 
         let expectedSeeds =
             [
@@ -172,5 +173,3 @@ module HdCryptoTests =
 
         // ASSERT
         test <@ wallets = expectedWallets @>
-
-
