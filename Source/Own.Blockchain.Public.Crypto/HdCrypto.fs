@@ -57,7 +57,7 @@ module HdCrypto =
     // BIP44
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let bip44RegistrationIndex = 1234567
+    let bip44RegistrationIndex = 25718
 
     let generateWallet bip39Seed (walletIndex : uint32) =
         let privateKey =
