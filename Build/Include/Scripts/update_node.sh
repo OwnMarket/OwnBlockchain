@@ -4,23 +4,13 @@ set -e
 cd "${0%/*}"
 
 echo '////////////////////////////////////////////////////////////////////////////////'
-echo '// Postgres'
-echo '////////////////////////////////////////////////////////////////////////////////'
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
-wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt update -y
-sudo apt install -y postgresql-10 postgresql-contrib-10
-sudo -u postgres psql -c 'CREATE EXTENSION adminpack'
-
-echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Node binaries'
 echo '////////////////////////////////////////////////////////////////////////////////'
 NODE_DIR=/opt/own/blockchain/public/node
-sudo mkdir -p -m +r "$NODE_DIR"
+sudo rm -rf "$NODE_DIR/*"
 sudo cp -r ./* "$NODE_DIR"
 
 DATA_DIR=/var/lib/own/blockchain/public/node
-sudo mkdir -p "$DATA_DIR"
 
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Systemd service unit'
@@ -42,8 +32,3 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-
-echo '////////////////////////////////////////////////////////////////////////////////'
-echo '// Instance 1'
-echo '////////////////////////////////////////////////////////////////////////////////'
-./setup_node_instance.sh ins1
