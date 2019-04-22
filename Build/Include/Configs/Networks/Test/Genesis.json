@@ -8,10 +8,10 @@
         "CHLiuMCrGG1nEX32m8uc99khZhwKiYoMUzV@val04.testnet.weown.com:25719"
     ],
     "GenesisSignatures": [
-        "LXH3Gq2yrmxKVHTD79HLNZmAT1CFiG1oWAe8fFCPeiYGvgGdFoPQZFFhQMsLzXR4YSaJCJsfTp444iCjXbAcMN2hd",
-        "H5opuVyj4j9NNJqfiZNKdf9FPWhtnQYZ4kYBBeG1pUnZ9RkAWuSZhRv4Y9hxq5hpnUZ96RkPyCpb1rrKbbynbfkbH",
-        "JTjVa8PTM1B7zVtyQtFyWtwFEFHjjYviJPzJHLHNNyuVky2JptxkJy5CAPUgLsVB3v4yZiD7XZUkXBTTASxD3VaYQ",
-        "3jdq9gA5kNkDGFYbdkx8Z8JwJVtptbEiVGCXyRjagdroD2dwssD5fLUhAPXvhksuuMtp8vZMNUY1fXoYAbw5Mfgs1"
+        "LBp1t5bYmD8qE2x1BMEJ2YFjB6UR6TP5TqCB5xkrHLiY2CUA6qsWjh7CKCAfoXRzRywd31v16cUwVTPSnYKETuZxj",
+        "5PmA3m5TbbGgHb8ekd4jrDAB6yXPaeG3fjX4G5FX4Kj2b3wLcsDCiWyfJJmRKxyucCwHw14CsfTsqZr3s8s52hr6j",
+        "DY26hN33GZxp6UUMvCYhAGNfRzywJNAoSt3MhXPddZGwhJ7Dohf35GxrRSfaruFKH7fcxFiLoadhcPFRzDPZKfo9h",
+        "CxhrFohdy5QSCxrJq2vg3Fnid5foqq2ikC7mXZv3NYSj1C4GSDMMLjcmLn9nzayuVcSGu1djbeQ8bvvjWpZTygoUL"
     ],
     "ConfigurationBlockDelta": 100,
     "ValidatorDepositLockTime": 2,

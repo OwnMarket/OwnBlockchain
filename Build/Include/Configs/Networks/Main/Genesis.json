@@ -8,10 +8,10 @@
         "CHXV4vyfhtXjwP9navSG5NVk2mvCZqhnMZa@val04.mainnet.weown.com:25718"
     ],
     "GenesisSignatures": [
-        "DuAc7hwiDQN9gmzaYNZU2CFENJ3JS3Z1Cxh1vkX8SspxgCwKqwr3q5cP43U3mm4w9RW94ASA7G9sJBQuK4AL2ZMRJ",
-        "AW5T6uTQH5ZZKzNkpWAV7LCc5XgZGAAt3BA1DYsLLQn5tus7MP7wAyJbJeNZgj71smvWaeqBfGuYnYgKSRVJ3QmRA",
-        "7ELsVBR3kSxKWAYD1MH7yBGetcNk5a3W3hTvi5WtxMTAYXg2Qmn3PTJVpmXFcEdK3JDbCY7cR1tbv5xpHDPHvv9yS",
-        "4b6xMYFhL5PAycT6BW5fxLh4Hpk2Mo86qoyzuBt8M7GAFGALuASUg6YxmCTdDFvE6FZ6dHhnQWjzgNk5BCpBWMjap"
+        "AWCEFyWYcCTFwwPgUa2DPqAmVyWKEfakx5gDUAQPLnLZUZP7MEgCHte86YhxDAddCiC56biqfUkFXKSSB76GkX2g7",
+        "ASvA8F7cuDTVeds5thBJ3uoxXML6E2YEn8xWi8NgGjXCrqnejenrWKbp6M9gGJu1ZPDk8RUD77sCD5p16SbBa1oUT",
+        "FWPgPte7dwSGvNdHnRWHFzKZ85JD3AK2MvS2iYJVhJCLXB6y6EmfZCKpJYTep7titkuSHY3j9Uv14jVWJeF66AywE",
+        "46ftZ9cFsVm9Lm3qittWE83xzzMGanw9cJ2U2twve4Q3Wz25BmtjTC9qQQPAMPLVrsZqFC6JzMsDTyN96536pH85E"
     ],
     "ConfigurationBlockDelta": 10000,
     "ValidatorDepositLockTime": 10,
