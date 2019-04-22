@@ -76,6 +76,15 @@ module Api =
             return! response next ctx
         }
 
+    let getRawTxHandler txHash : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTx (TxHash txHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getEquivocationProofHandler equivocationProofHash : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -218,6 +227,7 @@ module Api =
                 route "/" >=> text "TODO: Show link to the help page"
                 route "/stats" >=> getStatsHandler
                 route "/pool" >=> getTxPoolInfoHandler
+                routef "/tx/%s/raw" getRawTxHandler
                 routef "/tx/%s" getTxHandler
                 routef "/equivocation/%s" getEquivocationProofHandler
                 routef "/block/%d" getBlockHandler
