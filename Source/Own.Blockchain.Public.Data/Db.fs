@@ -1598,18 +1598,16 @@ module Db =
     let private updateVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            WITH cte_holding AS (
+            UPDATE vote
+            SET vote_hash = @voteHash,
+                vote_weight = @voteWeight
+            WHERE holding_id = (
                 SELECT holding_id
                 FROM holding
                 JOIN account USING (account_id)
                 WHERE asset_hash = @assetHash
                 AND account_hash = @accountHash
             )
-            UPDATE vote
-            SET vote_hash = @voteHash,
-                vote_weight = @voteWeight
-            FROM cte_holding
-            WHERE vote.holding_id = cte_holding.holding_id
             AND resolution_hash = @resolutionHash
             """
 
