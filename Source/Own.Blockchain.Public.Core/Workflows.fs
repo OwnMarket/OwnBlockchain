@@ -697,6 +697,7 @@ module Workflows =
         isValidSuccessorBlock
         txResultExists
         equivocationProofResultExists
+        createNewBlockchainConfiguration
         createBlock
         minValidatorCount
         (block : Block)
@@ -754,6 +755,27 @@ module Workflows =
                             sprintf "Config block %i must have at least %i validators in the configuration"
                                 block.Header.Number.Value
                                 minValidatorCount
+                            |> Result.appError
+
+                    let newConfiguration : BlockchainConfiguration =
+                        createNewBlockchainConfiguration
+                            currentConfiguration.ConfigurationBlockDelta
+                            currentConfiguration.ValidatorDepositLockTime
+                            currentConfiguration.ValidatorBlacklistTime
+                            currentConfiguration.MaxTxCountPerBlock
+
+                    let expectedConfiguration =
+                        if newConfiguration.Validators.Length < minValidatorCount then
+                            currentConfiguration
+                        else
+                            newConfiguration
+
+                    if c <> expectedConfiguration then
+                        Log.debugf "RECEIVED CONFIGURATION:\n%A" c
+                        Log.debugf "EXPECTED CONFIGURATION:\n%A" expectedConfiguration
+                        return!
+                            sprintf "Configuration in block %i is different than expected"
+                                block.Header.Number.Value
                             |> Result.appError
 
             let createdBlock, output =
