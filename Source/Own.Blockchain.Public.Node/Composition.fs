@@ -336,6 +336,7 @@ module Composition =
             isValidSuccessorBlock
             txResultExists
             equivocationProofResultExists
+            createNewBlockchainConfiguration
             createBlock
             Config.MinValidatorCount
 
