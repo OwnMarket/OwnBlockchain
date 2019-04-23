@@ -7,7 +7,9 @@ echo '//////////////////////////////////////////////////////////////////////////
 echo '// Node binaries'
 echo '////////////////////////////////////////////////////////////////////////////////'
 NODE_DIR=/opt/own/blockchain/public/node
-sudo rm -rf "$NODE_DIR/*"
+pushd "$NODE_DIR"
+sudo rm -rf *
+popd
 sudo cp -r ./* "$NODE_DIR"
 
 DATA_DIR=/var/lib/own/blockchain/public/node
