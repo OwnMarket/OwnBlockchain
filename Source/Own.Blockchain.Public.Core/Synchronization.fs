@@ -79,7 +79,7 @@ module Synchronization =
         requestTxFromPeer
         requestEquivocationProofFromPeer
         publishEvent
-        maxNumberOfBlocksToFetchInParallel
+        maxBlockFetchQueue
         =
 
         let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -120,7 +120,7 @@ module Synchronization =
             [lastAppliedBlockNumber + 1 .. lastVerifiableBlockNumber]
             |> Seq.except [nextConfigBlockNumber] // Config block is already requested above.
             |> Seq.filter (blockExists >> not)
-            |> Seq.truncate maxNumberOfBlocksToFetchInParallel
+            |> Seq.truncate maxBlockFetchQueue
             |> Seq.iter (requestBlock requestBlockFromPeer publishEvent)
         )
 

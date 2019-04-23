@@ -385,7 +385,7 @@ module Composition =
             Peers.requestTxFromPeer
             Peers.requestEquivocationProofFromPeer
             publishEvent
-            Config.MaxNumberOfBlocksToFetchInParallel
+            Config.MaxBlockFetchQueue
 
     let tryApplyNextBlock publishEvent =
         Synchronization.tryApplyNextBlock

@@ -173,7 +173,11 @@ type Config () =
 
     static member BlockchainHeadPollInterval = 60 // Seconds
 
-    static member MaxNumberOfBlocksToFetchInParallel = 20
+    static member MaxBlockFetchQueue
+        with get () =
+            match Int32.TryParse config.["MaxBlockFetchQueue"] with
+            | true, value when value > 0 -> value
+            | _ -> 20
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
