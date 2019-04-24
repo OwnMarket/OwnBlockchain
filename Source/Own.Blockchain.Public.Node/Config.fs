@@ -177,7 +177,7 @@ type Config () =
         with get () =
             match Int32.TryParse config.["MaxBlockFetchQueue"] with
             | true, value when value > 0 -> value
-            | _ -> 100
+            | _ -> 20
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
