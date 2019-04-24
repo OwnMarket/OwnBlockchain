@@ -27,8 +27,8 @@ for PLATFORM_ID in linux-x64 win-x64; do
 
     cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native "$TEMP_DIR/Node"
     cp -r ./Include/Firebird/$PLATFORM_ID/* "$TEMP_DIR/Node"
+    cp -r ./Include/Scripts/$PLATFORM_ID/* "$TEMP_DIR/Node"
     cp -r ./Include/Configs/* "$TEMP_DIR/Node"
-    cp -r ./Include/Scripts/* "$TEMP_DIR/Node"
 
     pushd "$TEMP_DIR/Node"
     find . -type f -iname "*.sh" -exec chmod +x {} \;
