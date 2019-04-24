@@ -5,6 +5,7 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.DependencyInjection
+open FSharp.Control.Tasks
 open Giraffe
 open Own.Common.FSharp
 open Own.Blockchain.Common
