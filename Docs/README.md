@@ -14,6 +14,7 @@
 - [Nodes](Nodes/Nodes.md)
     - [Node API](Nodes/NodeApi.md)
     - [Node Setup](Nodes/NodeSetup.md)
+    - [Node Environment and Configuration](Nodes/NodeEnvironment.md)
 - Concepts
     - [Asset Management Protocol](Concepts/AssetManagementProtocol.md)
     - [External System Integration](Concepts/Integration.md)

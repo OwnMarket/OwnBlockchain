@@ -1,6 +1,6 @@
 # Own Public Blockchain Nodes
 
-Own public blockchain network recognizes two type of nodes:
+Own public blockchain network recognizes two types of nodes:
 
 - Client nodes
 - Validators
