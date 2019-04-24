@@ -4,7 +4,12 @@
 
 CREATE USER own_blockchain_node WITH PASSWORD 'testpass1';
 
-CREATE DATABASE own_public_blockchain;
+CREATE DATABASE own_public_blockchain
+    WITH ENCODING 'UTF8'
+    LC_COLLATE = 'C'
+    LC_CTYPE = 'C'
+    TEMPLATE template0;
+
 \c own_public_blockchain
 
 SET search_path TO public;
