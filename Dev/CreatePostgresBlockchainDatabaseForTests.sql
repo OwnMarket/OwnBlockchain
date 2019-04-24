@@ -4,7 +4,12 @@
 
 CREATE USER own_blockchain_tests WITH PASSWORD 'testpass1';
 
-CREATE DATABASE own_public_blockchain_tests;
+CREATE DATABASE own_public_blockchain_tests
+    WITH ENCODING 'UTF8'
+    LC_COLLATE = 'C'
+    LC_CTYPE = 'C'
+    TEMPLATE template0;
+
 \c own_public_blockchain_tests
 
 SET search_path TO public;
