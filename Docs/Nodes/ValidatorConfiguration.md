@@ -29,7 +29,7 @@ For the node to be able to act as a validator, it must have `ValidatorPrivateKey
 
 **WARNING:** If your node is not accessible from public network, it won't be able to participate in the validation process and won't receive any rewards!
 
-At this point your node is configured and ready to start participating in the consensus as soon as it is elected (included in the config block).
+At this point your node is configured and ready to start participating in the consensus as soon as it gets included in the list of active validators (not before next config block).
 
 
 ## Configuring validator parameters and funding the validator address
