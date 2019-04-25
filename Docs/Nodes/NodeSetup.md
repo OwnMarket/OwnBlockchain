@@ -13,6 +13,7 @@ Please refer to the corresponding section below, depending on your use case.
 
 - Go to [GitHub releases](https://github.com/OwnMarket/OwnBlockchain/releases) (e.g. [the latest one](https://github.com/OwnMarket/OwnBlockchain/releases/latest)) and download the package for your operating system (from "Assets" section):
     - [Package for Linux](https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_linux-x64.tar.gz)
+    - [Package for macOS](https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_osx-x64.tar.gz)
     - [Package for Windows](https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_win-x64.zip)
 - Extract the package to the desired location (e.g. create a directory in your _home_ directory and extract it there)
 - Open terminal (command prompt on Windows) and navigate to the directory in which you have extracted the package (e.g. `OwnBlockchainNode` in user's home directory):
