@@ -4,10 +4,36 @@ This document describes the process of setting up an instance of the Own public 
 
 Node can be deployed in two ways:
 
-- _Scripted deployment_: Deploying on a dedicated machine using provided setup scripts (available only for Linux and requires admin permissions). This deployment approach is highly recommended for validator nodes and for mission-critical client nodes in production scenarios.
 - _Simple deployment_: Deploying using "xcopy approach" (available for for all three OSs and does not require admin permissions). This deployment approach is recommended for non-public nodes running on personal computers.
+- _Scripted deployment_: Deploying on a dedicated machine using provided setup scripts (available only for Linux and requires admin permissions). This deployment approach is highly recommended for validator nodes and for mission-critical client nodes in production scenarios.
 
 Please refer to the corresponding section below, depending on your use case.
+
+## Simple deployment
+
+- Go to [GitHub releases](https://github.com/OwnMarket/OwnBlockchain/releases) (e.g. [the latest one](https://github.com/OwnMarket/OwnBlockchain/releases/latest)) and download the package for your operating system (from "Assets" section):
+    - [Package for Linux](https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_linux-x64.tar.gz)
+    - [Package for Windows](https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_win-x64.zip)
+- Extract the package to the desired location (e.g. create a directory in your _home_ directory and extract it there)
+- Open terminal (command prompt on Windows) and navigate to the directory in which you have extracted the package (e.g. `OwnBlockchainNode` in user's home directory):
+    - on Linux and macOS
+        ```
+        cd ~/OwnBlockchainNode
+        ```
+    - on Windows
+        ```
+        cd /d %USERPROFILE%\OwnBlockchainNode
+        ```
+- Start the node by running one of the two provided scripts (`start_mainnet_node` or `start_testnet_node`), depending on if you want to connect to MainNet or TestNet:
+    - on Linux and macOS
+        ```
+        ./start_mainnet_node.sh
+        ```
+    - on Windows
+        ```
+        start_mainnet_node.bat
+        ```
+- To stop the node, press `Ctrl+C` keyboard combination.
 
 ## Scripted deployment (using setup scripts on Linux server)
 
@@ -55,29 +81,3 @@ To stop the node, use following command
 ```bash
 sudo systemctl stop own-blockchain-public-node@ins1
 ```
-
-## Simple deployment
-
-- Go to [GitHub releases](https://github.com/OwnMarket/OwnBlockchain/releases) (e.g. [the latest one](https://github.com/OwnMarket/OwnBlockchain/releases/latest)) and download the package for your operating system (from "Assets" section):
-    - [Package for Linux](https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_linux-x64.tar.gz)
-    - [Package for Windows](https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_win-x64.zip)
-- Extract the package to the desired location (e.g. create a directory in your _home_ directory and extract it there)
-- Open terminal (command prompt on Windows) and navigate to the directory in which you have extracted the package (e.g. `OwnBlockchainNode` in user's home directory):
-    - on Linux and macOS
-        ```
-        cd ~/OwnBlockchainNode
-        ```
-    - on Windows
-        ```
-        cd /d %USERPROFILE%\OwnBlockchainNode
-        ```
-- Start the node by running one of the two provided scripts (`start_mainnet_node` or `start_testnet_node`), depending on if you want to connect to MainNet or TestNet:
-    - on Linux and macOS
-        ```
-        ./start_mainnet_node.sh
-        ```
-    - on Windows
-        ```
-        start_mainnet_node.bat
-        ```
-- To stop the node, press `Ctrl+C` keyboard combination.
