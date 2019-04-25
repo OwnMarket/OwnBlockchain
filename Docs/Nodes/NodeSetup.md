@@ -49,7 +49,7 @@ Some commands in the setup scripts are executed in `sudo` mode and will require 
 
 After installation is done, one instance of the node will be registered as a [systemd](https://en.wikipedia.org/wiki/Systemd) service. Setup script will provide instructions at the end of the execution on how to manage the node service and take a look at its logs. Those are standard systemd commands.
 
-**NOTICE:** By default, node is configured to connect to MainNet. If, however, you would like to configure the node to connect to TestNet, make sure to do that **before** starting the node for the first time. Otherwise node instance state reset will be needed, because one instance cannot work with both networks at the same time.
+**NOTE:** By default, node is configured to connect to MainNet. If, however, you would like to configure the node to connect to TestNet, make sure to do that **before** starting the node for the first time. Otherwise node instance state reset will be needed, because one instance cannot work with both networks at the same time.
 
 To configure the node to connect to TestNet instead of the MainNet, execute following commands:
 
@@ -87,3 +87,4 @@ sudo systemctl stop own-blockchain-public-node@ins1
 - By default, node runs in "poll" mode, which means it is fetching new blocks from peers periodically (by default every minute). If you want the node to participate in node gossip and receive blocks and transactions as soon as they're propagated throughout the network, you need to:
     - configure `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details)
     - ensure node is reachable from public network through configured `PublicAddress` (depending on your environment, this might involve configuring DNS and firewall ports)
+- To configure the node as validator, please refer to the [validator configuration document](ValidatorConfiguration.md).
