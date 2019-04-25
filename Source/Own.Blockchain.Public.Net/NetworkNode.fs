@@ -2,6 +2,7 @@
 
 open System
 open System.Net
+open System.Collections.Generic
 open System.Collections.Concurrent
 open System.Threading
 open Own.Common.FSharp
@@ -31,6 +32,7 @@ type NetworkNode
     ) =
 
     let activePeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
+    let cacheValidators = new HashSet<NetworkAddress>()
     let deadPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let peersStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
@@ -285,7 +287,6 @@ type NetworkNode
                             peerMessageEnvelopeDto
                             m.NetworkAddress.Value
                     )
-
                 | MulticastMessage _ ->
                     let peerMessageEnvelopeDto =
                         Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary message
@@ -298,7 +299,6 @@ type NetworkNode
                     sendMulticastMessage
                         peerMessageEnvelopeDto
                         multicastAddresses
-
                 | GossipMessage m -> __.SendGossipMessage m
                 | _ -> ()
             }
@@ -329,10 +329,24 @@ type NetworkNode
             }
         Async.Start (loop (), cts.Token)
 
+    member private __.StartValidatorsCache () =
+        let rec loop () =
+            async {
+                cacheValidators.Clear()
+                getCurrentValidators ()
+                |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
+                |> List.iter (fun a -> cacheValidators.Add a |> ignore)
+
+                do! Async.Sleep(TimeSpan.FromSeconds(30.).Milliseconds)
+                return! loop ()
+            }
+        Async.Start (loop (), cts.Token)
+
     member private __.StartNode () =
         Log.debug "Start node..."
         __.InitializePeerList ()
         __.StartDnsResolver ()
+        __.StartValidatorsCache ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
         __.StartServer ()
