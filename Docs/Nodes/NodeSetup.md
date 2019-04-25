@@ -80,3 +80,4 @@ sudo systemctl stop own-blockchain-public-node@ins1
         ```
         start_mainnet_node.bat
         ```
+- To stop the node, press `Ctrl+C` keyboard combination.
