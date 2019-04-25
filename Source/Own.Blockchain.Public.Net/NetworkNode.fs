@@ -539,8 +539,8 @@ type NetworkNode
                 let remainingRecipientAddresses =
                     __.GetActivePeers()
                     |> List.map (fun m -> m.NetworkAddress)
-                    |> List.filter (isSelf >> not)
                     |> List.except processedAddresses
+                    |> List.filter (isSelf >> not)
 
                 __.ProcessGossipMessage msg remainingRecipientAddresses
 
@@ -650,8 +650,8 @@ type NetworkNode
 
                     __.GetActivePeers()
                     |> List.map (fun m -> m.NetworkAddress)
-                    |> List.filter (isSelf >> not)
                     |> List.except usedAddresses
+                    |> List.filter (isSelf >> not)
                     |> __.PickRandomPeer
                     |> tee (function
                         | Some networkAddress ->
