@@ -117,10 +117,10 @@ module internal PeerMessageHandler =
 
     let getPeerList () =
         match node with
-        | Some n -> n.GetActiveMembers ()
+        | Some n -> n.GetActivePeers ()
         | None -> failwith "Please start gossip first"
 
     let updatePeerList activeMembers =
         match node with
-        | Some n -> n.ReceiveMembers {ActiveMembers = activeMembers}
+        | Some n -> n.ReceivePeers {ActivePeers = activeMembers}
         | None -> failwith "Please start gossip first"

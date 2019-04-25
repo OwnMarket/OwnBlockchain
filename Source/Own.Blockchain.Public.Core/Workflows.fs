@@ -1224,7 +1224,7 @@ module Workflows =
             |> Serialization.deserializeBinary<GossipDiscoveryMessageDto>
             |> fun m ->
                 m.ActiveMembers
-                |> List.map Mapping.gossipMemberFromDto
+                |> List.map Mapping.gossipPeerFromDto
                 |> PeerListReceived
                 |> Some
                 |> Ok
@@ -1325,7 +1325,7 @@ module Workflows =
                                 {
                                     GossipDiscoveryMessageDto.ActiveMembers =
                                         getPeerList ()
-                                        |> List.map Mapping.gossipMemberToDto
+                                        |> List.map Mapping.gossipPeerToDto
                                 }
                                 |> Serialization.serializeBinary
                         }
@@ -1704,7 +1704,7 @@ module Workflows =
             |> Ok
 
     let getPeerListApi
-        (getPeerList : unit -> GossipMember list)
+        (getPeerList : unit -> GossipPeer list)
         : Result<GetPeerListApiDto, AppErrors>
         =
 

@@ -34,7 +34,7 @@ module Agents =
         | Some h -> h.Post m
         | None -> Log.error "PeerMessageHandler agent not started"
 
-    let mutable private updatePeerListHandler : MailboxProcessor<GossipMember list> option = None
+    let mutable private updatePeerListHandler : MailboxProcessor<GossipPeer list> option = None
     let private invokeUpdatePeerListHandler peerList =
         match updatePeerListHandler with
         | Some h -> h.Post peerList
@@ -188,7 +188,7 @@ module Agents =
             Log.verbose "PeerListReceived"
             Log.verbose "============================================================"
             peerList
-            |> List.map Mapping.gossipMemberToDto
+            |> List.map Mapping.gossipPeerToDto
             |> List.iter (fun m -> Log.verbosef "%s Heartbeat: %i" m.NetworkAddress m.Heartbeat)
             Log.verbose "============================================================"
 

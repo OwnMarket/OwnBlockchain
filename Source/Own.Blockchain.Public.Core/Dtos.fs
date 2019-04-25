@@ -522,7 +522,7 @@ type AccountVoteDto = {
 
 [<CLIMutable>]
 [<MessagePackObject>]
-type GossipMemberDto = {
+type GossipPeerDto = {
     [<Key(0)>] NetworkAddress : string
     [<Key(1)>] Heartbeat : int64
 }
@@ -530,7 +530,7 @@ type GossipMemberDto = {
 [<CLIMutable>]
 [<MessagePackObject>]
 type GossipDiscoveryMessageDto = {
-    [<Key(0)>] ActiveMembers : GossipMemberDto list
+    [<Key(0)>] ActiveMembers : GossipPeerDto list
 }
 
 [<CLIMutable>]

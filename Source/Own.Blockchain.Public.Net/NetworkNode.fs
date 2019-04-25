@@ -30,9 +30,9 @@ type NetworkNode
     gossipConfig
     ) =
 
-    let activeMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
-    let deadMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
-    let memberStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
+    let activePeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
+    let deadPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
+    let peersStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
     let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let peerSelectionSentRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
@@ -43,10 +43,10 @@ type NetworkNode
 
     let cts = new CancellationTokenSource()
 
-    let printActiveMembers () =
+    let printActivePeers () =
         #if DEBUG
             Log.verbose "==================== ACTIVE CONNECTIONS ===================="
-            activeMembers
+            activePeers
             |> Seq.ofDict
             |> Seq.iter (fun (a, m) -> Log.verbosef "%s Heartbeat:%i" a.Value m.Heartbeat)
             Log.verbose "============================================================"
@@ -97,7 +97,7 @@ type NetworkNode
         | Some a -> memoizedConvertToIpAddress a.Value
         | None -> None
 
-    let gossipMemberWithIpAddress m =
+    let gossipPeerWithIpAddress m =
         m.NetworkAddress.Value
         |> memoizedConvertToIpAddress
         |> Option.map (fun ip -> {m with NetworkAddress = ip})
@@ -108,78 +108,78 @@ type NetworkNode
     let optionToList = function | Some x -> [x] | None -> []
 
     (*
-        A member is dead if it's in the list of dead-members and
+        A peer is dead if it's in the list of dead-peers and
         the heartbeat the local node is bigger than the one passed by argument.
     *)
-    let isDead inputMember =
-        match deadMembers.TryGetValue inputMember.NetworkAddress with
-        | true, deadMember ->
-            Log.verbosef "Received a node with heartbeat %i - in dead-members it has heartbeat %i"
-                inputMember.Heartbeat
-                deadMember.Heartbeat
-            deadMember.Heartbeat >= inputMember.Heartbeat
+    let isDead peer =
+        match deadPeers.TryGetValue peer.NetworkAddress with
+        | true, deadPeer ->
+            Log.verbosef "Received a node with heartbeat %i - in dead-peers it has heartbeat %i"
+                peer.Heartbeat
+                deadPeer.Heartbeat
+            deadPeer.Heartbeat >= peer.Heartbeat
         | _ -> false
 
     (*
-        Once a member has been declared dead and it hasn't recovered in
-        2xTFail time is removed from the dead-members list.
+        Once a peer has been declared dead and it hasn't recovered in
+        2xTFail time is removed from the dead-peers list.
         So if node has been down for a while and come back it can be added again.
         Here this will be scheduled right after a node is declared, so total time
         elapsed is 2xTFail
     *)
-    let setFinalDeadMember networkAddress =
+    let setFinalDeadPeer networkAddress =
         async {
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
-            let found, _ = activeMembers.TryGetValue networkAddress
+            let found, _ = activePeers.TryGetValue networkAddress
             if not found then
-                Log.warningf "Member marked as DEAD %s" networkAddress.Value
+                Log.warningf "Peer marked as DEAD %s" networkAddress.Value
 
-                deadMembers.TryRemove networkAddress |> ignore
-                memberStateMonitor.TryRemove networkAddress |> ignore
+                deadPeers.TryRemove networkAddress |> ignore
+                peersStateMonitor.TryRemove networkAddress |> ignore
                 networkAddress.Value |> closeConnection
 
                 removePeerNode networkAddress
-                |> Result.iterError (fun _ -> Log.errorf "Error removing member %A" networkAddress)
+                |> Result.iterError (fun _ -> Log.errorf "Error removing peer %A" networkAddress)
         }
 
-    let monitorPendingDeadMember networkAddress =
+    let monitorPendingDeadPeer networkAddress =
         let cts = new CancellationTokenSource()
-        Async.Start ((setFinalDeadMember networkAddress), cts.Token)
-        memberStateMonitor.AddOrUpdate (networkAddress, cts, fun _ _ -> cts) |> ignore
+        Async.Start ((setFinalDeadPeer networkAddress), cts.Token)
+        peersStateMonitor.AddOrUpdate (networkAddress, cts, fun _ _ -> cts) |> ignore
 
     (*
-        It declares a member as dead.
+        It declares a peer as dead.
         - remove it from active nodes
         - add it to dead nodes
         - remove its timers
         - set to be removed from the dead-nodes. so that if it recovers can be added
     *)
-    let setPendingDeadMember (networkAddress : NetworkAddress) =
+    let setPendingDeadPeer (networkAddress : NetworkAddress) =
         async {
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
-            Log.verbosef "Member potentially DEAD: %s" networkAddress.Value
-            match activeMembers.TryGetValue networkAddress with
-            | true, activeMember ->
-                activeMembers.TryRemove networkAddress |> ignore
-                deadMembers.AddOrUpdate (networkAddress, activeMember, fun _ _ -> activeMember) |> ignore
-                monitorPendingDeadMember networkAddress
+            Log.verbosef "Peer potentially DEAD: %s" networkAddress.Value
+            match activePeers.TryGetValue networkAddress with
+            | true, activePeer ->
+                activePeers.TryRemove networkAddress |> ignore
+                deadPeers.AddOrUpdate (networkAddress, activePeer, fun _ _ -> activePeer) |> ignore
+                monitorPendingDeadPeer networkAddress
             | _ -> ()
         }
 
-    let monitorActiveMember address =
-        match memberStateMonitor.TryGetValue address with
+    let monitorActivePeer address =
+        match peersStateMonitor.TryGetValue address with
         | true, cts -> cts.Cancel()
         | _ -> ()
 
         let cts = new CancellationTokenSource()
-        Async.Start ((setPendingDeadMember address), cts.Token)
-        memberStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
+        Async.Start ((setPendingDeadPeer address), cts.Token)
+        peersStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
 
-    let updateActiveMember m =
-        activeMembers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
+    let updateActivePeer m =
+        activePeers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
 
-    let saveActiveMember m =
-        activeMembers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
+    let saveActivePeer m =
+        activePeers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
         savePeerNode m.NetworkAddress
 
     let startRequestsMonitor (requestsMap : ConcurrentDictionary<_, DateTime>) =
@@ -212,24 +212,6 @@ type NetworkNode
     member __.Identity =
         nodeConfig.Identity
 
-    member __.StartDnsResolver () =
-        let rec loop () =
-            async {
-                let lastValidTime = DateTime.UtcNow.AddMinutes(-nodeConfig.DnsResolverCacheExpirationTime |> float)
-                dnsResolverCache
-                |> List.ofDict
-                |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
-                |> List.iter (fun (dns, (ip, _)) ->
-                    let newIp = convertToIpAddress dns
-                    if newIp <> ip then
-                        let cacheValue = newIp, DateTime.UtcNow
-                        dnsResolverCache.AddOrUpdate(dns, cacheValue, fun _ _ -> cacheValue) |> ignore
-                )
-                do! Async.Sleep(gossipConfig.GossipDiscoveryIntervalMillis)
-                return! loop ()
-            }
-        Async.Start (loop (), cts.Token)
-
     member __.StartSentRequestsMonitor () =
         startRequestsMonitor sentRequests
 
@@ -252,9 +234,9 @@ type NetworkNode
         cts.Cancel()
         closeAllConnections ()
 
-    member __.GetActiveMembers () =
+    member __.GetActivePeers () =
         let result =
-            activeMembers
+            activePeers
             |> List.ofDict
             |> List.map (fun (_, m) -> m)
 
@@ -264,39 +246,39 @@ type NetworkNode
             __.BootstrapNode ()
         | _ -> ()
 
-        result |> List.choose gossipMemberWithIpAddress
+        result |> List.choose gossipPeerWithIpAddress
 
-    member __.ReceiveMembers msg =
+    member __.ReceivePeers msg =
         // Keep max allowed peers.
-        let receivedMembers =
-            msg.ActiveMembers
+        let receivedPeers =
+            msg.ActivePeers
             |> List.shuffle
             |> List.truncate nodeConfig.MaxConnectedPeers
-            |> List.choose gossipMemberWithIpAddress
+            |> List.choose gossipPeerWithIpAddress
 
         // Filter the existing peers, if any, (used to refresh connection, i.e increase heartbeat).
-        let existingMembers =
-            receivedMembers
-            |> List.filter (fun m -> m.NetworkAddress |> __.GetActiveMember |> Option.isSome)
+        let existingPeers =
+            receivedPeers
+            |> List.filter (fun m -> m.NetworkAddress |> __.GetActivePeer |> Option.isSome)
 
-        let activeMembersCount = __.GetActiveMembers() |> List.length
-        let take = nodeConfig.MaxConnectedPeers - activeMembersCount
+        let activePeersCount = __.GetActivePeers() |> List.length
+        let take = nodeConfig.MaxConnectedPeers - activePeersCount
 
-        receivedMembers
-        |> List.except existingMembers
+        receivedPeers
+        |> List.except existingPeers
         |> List.shuffle
         |> List.truncate take
-        |> List.append existingMembers
-        |> __.MergeMemberList
+        |> List.append existingPeers
+        |> __.MergePeerList
 
     member __.SendMessage message =
         let sendMessageTask =
             async {
                 match message.PeerMessage with
                 | GossipDiscoveryMessage _ ->
-                    __.SelectRandomMembers()
+                    __.SelectRandomPeers()
                     |> List.iter (fun m ->
-                        Log.verbosef "Sending memberlist to: %s" m.NetworkAddress.Value
+                        Log.verbosef "Sending peerlist to: %s" m.NetworkAddress.Value
                         let peerMessageEnvelopeDto =
                             Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary message
                         sendGossipDiscoveryMessage
@@ -325,102 +307,31 @@ type NetworkNode
     member __.IsRequestPending requestId =
         peerSelectionSentRequests.ContainsKey requestId
 
-    member private __.Throttle (requestsMap : ConcurrentDictionary<_, DateTime>) requestItem func =
-        match requestsMap.TryGetValue requestItem with
-            | true, timestamp
-                when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
-                () // Throttle the request
-            | _ ->
-                if gossipConfig.PeerResponseThrottlingTime > 0 then
-                    let timestamp = DateTime.UtcNow
-                    requestsMap.AddOrUpdate(requestItem, timestamp, fun _ _ -> timestamp)
-                    |> ignore
-
-                func requestItem
-
-    member __.SendRequestDataMessage requestId =
-        __.Throttle sentRequests requestId (fun _ ->
-            Stats.increment Stats.Counter.PeerRequests
-            Log.debugf "Sending request for %A" requestId
-            let rec loop messageId =
-                async {
-                    let usedAddresses =
-                        match peerSelectionSentRequests.TryGetValue messageId with
-                        | true, addresses -> addresses
-                        | _ -> []
-
-                    __.GetActiveMembers()
-                    |> List.map (fun m -> m.NetworkAddress)
-                    |> List.filter (isSelf >> not)
-                    |> List.except usedAddresses
-                    |> __.PickRandomPeer
-                    |> tee (function
-                        | Some networkAddress ->
-                            peerSelectionSentRequests.AddOrUpdate(
-                                messageId,
-                                networkAddress :: usedAddresses,
-                                fun _ _ -> networkAddress :: usedAddresses)
-                            |> ignore
-                        | None ->
-                            Log.errorf "Cannot retrieve data from peers for %A" messageId
-                            peerSelectionSentRequests.TryRemove messageId |> ignore
-                    )
-                    |> Option.iter (fun address ->
-                        let peerMessageEnvelope =
-                            {
-                                PeerMessageEnvelope.NetworkId = getNetworkId ()
-                                PeerMessage =
-                                    {
-                                        MessageId = messageId
-                                        SenderIdentity = nodeConfig.Identity
-                                    }
-                                    |> RequestDataMessage
-                            }
-                        let peerMessageEnvelopeDto =
-                            Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
-                        sendRequestMessage peerMessageEnvelopeDto address.Value
-                    )
-
-                    do! Async.Sleep(4 * gossipConfig.GossipIntervalMillis)
-
-                    (*
-                        If no answer is received within 2 cycles (request - response i.e 4xtCycle),
-                        repeat (i.e choose another peer).
-                    *)
-                    match (peerSelectionSentRequests.TryGetValue messageId) with
-                    | true, addresses ->
-                        if not (addresses.IsEmpty) then
-                            return! loop messageId
-                    | _ -> ()
-                }
-
-            Async.Start (loop requestId, cts.Token)
-        )
-
-    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
-        Stats.increment Stats.Counter.PeerResponses
-        match peerMessageEnvelope.PeerMessage with
-        | ResponseDataMessage responseMessage ->
-            Log.debugf "Sending response (to %A request) to %s"
-                responseMessage.MessageId
-                (targetIdentity.Value |> Conversion.bytesToString)
-        | _ -> ()
-
-        let unicastMessageTask =
-            async {
-                let peerMessageEnvelopeDto =
-                    Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
-                sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
-            }
-        Async.Start (unicastMessageTask, cts.Token)
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Discovery
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    member private __.StartDnsResolver () =
+        let rec loop () =
+            async {
+                let lastValidTime = DateTime.UtcNow.AddSeconds(-nodeConfig.DnsResolverCacheExpirationTime |> float)
+                dnsResolverCache
+                |> List.ofDict
+                |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
+                |> List.iter (fun (dns, (ip, _)) ->
+                    let newIp = convertToIpAddress dns
+                    if newIp <> ip then
+                        let cacheValue = newIp, DateTime.UtcNow
+                        dnsResolverCache.AddOrUpdate(dns, cacheValue, fun _ _ -> cacheValue) |> ignore
+                )
+                do! Async.Sleep(gossipConfig.GossipDiscoveryIntervalMillis)
+                return! loop ()
+            }
+        Async.Start (loop (), cts.Token)
+
     member private __.StartNode () =
         Log.debug "Start node..."
-        __.InitializeMemberList ()
+        __.InitializePeerList ()
         __.StartDnsResolver ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
@@ -445,18 +356,18 @@ type NetworkNode
         match nodeConfig.PublicAddress with
         | Some address -> // Propagate discovery message.
             // Propagate public address along (used to handle peer ip change).
-            let self = { GossipMember.NetworkAddress = address; Heartbeat = 0L }
+            let self = { GossipPeer.NetworkAddress = address; Heartbeat = 0L }
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
-                PeerMessage = { ActiveMembers = self :: __.GetActiveMembers() } |> GossipDiscoveryMessage
+                PeerMessage = { ActivePeers = self :: __.GetActivePeers() } |> GossipDiscoveryMessage
             }
             |> __.SendMessage
         | None -> // Request peer list.
             __.SendRequestDataMessage NetworkMessageId.PeerList
 
-        printActiveMembers ()
+        printActivePeers ()
 
-    member private __.InitializeMemberList () =
+    member private __.InitializePeerList () =
         let publicAddress = nodeConfigPublicIPAddress |> optionToList
         getAllPeerNodes () @ nodeConfig.BootstrapNodes @ publicAddress
         |> Set.ofList
@@ -465,7 +376,7 @@ type NetworkNode
             |> memoizedConvertToIpAddress
             |> Option.iter (fun ip ->
                 let heartbeat = if isSelf ip then -2L else 0L
-                __.AddMember { NetworkAddress = ip; Heartbeat = heartbeat }
+                __.AddPeer { NetworkAddress = ip; Heartbeat = heartbeat }
             )
         )
 
@@ -477,69 +388,69 @@ type NetworkNode
             a.Value
             |> memoizedConvertToIpAddress
             |> Option.iter (fun ip ->
-                let found, _ = activeMembers.TryGetValue ip
+                let found, _ = activePeers.TryGetValue ip
                 if not found then
-                    __.AddMember { NetworkAddress = ip; Heartbeat = 0L }
+                    __.AddPeer { NetworkAddress = ip; Heartbeat = 0L }
             )
         )
 
-    member private __.AddMember inputMember =
-        Log.verbosef "Adding new member: %s" inputMember.NetworkAddress.Value
-        saveActiveMember inputMember |> Result.iterError Log.appErrors
-        if not (isSelf inputMember.NetworkAddress) then
-            monitorActiveMember inputMember.NetworkAddress
+    member private __.AddPeer peer =
+        Log.verbosef "Adding new peer: %s" peer.NetworkAddress.Value
+        saveActivePeer peer |> Result.iterError Log.appErrors
+        if not (isSelf peer.NetworkAddress) then
+            monitorActivePeer peer.NetworkAddress
 
-    member private __.UpdateMember inputMember =
-        __.GetActiveMember inputMember.NetworkAddress
+    member private __.UpdatePeer peer =
+        __.GetActivePeer peer.NetworkAddress
         |> Option.iter (fun _ ->
-            saveActiveMember inputMember |> Result.iterError Log.appErrors
-            monitorActiveMember inputMember.NetworkAddress
+            saveActivePeer peer |> Result.iterError Log.appErrors
+            monitorActivePeer peer.NetworkAddress
         )
 
-    member private __.ResetLocalMember localMember =
-        __.UpdateMember {localMember with Heartbeat = 0L}
+    member private __.ResetLocalPeer localPeer =
+        __.UpdatePeer {localPeer with Heartbeat = 0L}
 
-    member private __.MergeMemberList members =
-        members |> List.iter __.MergeMember
+    member private __.MergePeerList peers =
+        peers |> List.iter __.MergePeer
 
-    member private __.MergeMember inputMember =
-        if not (isSelf inputMember.NetworkAddress) then
-            Log.verbosef "Received member %s with heartbeat %i"
-                inputMember.NetworkAddress.Value
-                inputMember.Heartbeat
-            if inputMember.Heartbeat = -1L then
+    member private __.MergePeer peer =
+        if not (isSelf peer.NetworkAddress) then
+            Log.verbosef "Received peer %s with heartbeat %i"
+                peer.NetworkAddress.Value
+                peer.Heartbeat
+            if peer.Heartbeat = -1L then
                 Log.verbosef "Peer %s has been restarted, reset its heartbeat to 0"
-                    inputMember.NetworkAddress.Value
-            match __.GetActiveMember inputMember.NetworkAddress with
-            | Some localMember ->
-                if inputMember.Heartbeat = -1L then
-                    __.ResetLocalMember localMember
-                else if localMember.Heartbeat < inputMember.Heartbeat then
-                    __.UpdateMember inputMember
+                    peer.NetworkAddress.Value
+            match __.GetActivePeer peer.NetworkAddress with
+            | Some localPeer ->
+                if peer.Heartbeat = -1L then
+                    __.ResetLocalPeer localPeer
+                else if localPeer.Heartbeat < peer.Heartbeat then
+                    __.UpdatePeer peer
             | None ->
-                if inputMember.Heartbeat = -1L || not (isDead inputMember) then
-                    let heartbeat = max inputMember.Heartbeat 0L
-                    __.AddMember { inputMember with Heartbeat = heartbeat }
-                    deadMembers.TryRemove inputMember.NetworkAddress |> ignore
+                if peer.Heartbeat = -1L || not (isDead peer) then
+                    let heartbeat = max peer.Heartbeat 0L
+                    __.AddPeer { peer with Heartbeat = heartbeat }
+                    deadPeers.TryRemove peer.NetworkAddress |> ignore
 
-    member private __.GetActiveMember networkAddress =
-        __.GetActiveMembers() |> List.tryFind (fun m -> m.NetworkAddress = networkAddress)
+    member private __.GetActivePeer networkAddress =
+        __.GetActivePeers() |> List.tryFind (fun m -> m.NetworkAddress = networkAddress)
 
     member private __.IncreaseHeartbeat () =
         nodeConfigPublicIPAddress
         |> Option.iter (fun ipAddress ->
-            __.GetActiveMember ipAddress
+            __.GetActivePeer ipAddress
             |> Option.iter (fun m ->
-                let localMember = {
+                let localPeer = {
                     NetworkAddress = m.NetworkAddress
                     Heartbeat = m.Heartbeat + 1L
                 }
-                updateActiveMember localMember
+                updateActivePeer localPeer
             )
         )
 
-    member private __.SelectRandomMembers () =
-        __.GetActiveMembers()
+    member private __.SelectRandomPeers () =
+        __.GetActivePeers()
         |> List.filter (fun m -> not (isSelf m.NetworkAddress))
         |> List.shuffle
         |> List.truncate gossipConfig.Fanout
@@ -558,20 +469,20 @@ type NetworkNode
             fun _ _ -> newProcessedAddresses) |> ignore
 
     member private __.SendGossipMessageToRecipient recipientAddress (gossipMessage : GossipMessage) =
-        match activeMembers.TryGetValue recipientAddress with
-        | true, recipientMember ->
+        match activePeers.TryGetValue recipientAddress with
+        | true, targetPeer ->
             Log.verbosef "Sending gossip message %A to %s"
                 gossipMessage.MessageId
                 recipientAddress.Value
 
-            let peerMessageEnvelope = {
-                PeerMessageEnvelope.NetworkId = getNetworkId ()
-                PeerMessage = gossipMessage |> GossipMessage
-            }
             let peerMessageEnvelopeDto =
-                Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
-            let recipientMemberDto = recipientMember |> Mapping.gossipMemberToDto
-            sendGossipMessage peerMessageEnvelopeDto recipientMemberDto.NetworkAddress
+                {
+                    PeerMessageEnvelope.NetworkId = getNetworkId ()
+                    PeerMessage = gossipMessage |> GossipMessage
+                }
+                |> Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary
+
+            sendGossipMessage peerMessageEnvelopeDto targetPeer.NetworkAddress.Value
         | _ -> ()
 
     member private __.ProcessGossipMessage (gossipMessage : GossipMessage) recipientAddresses =
@@ -600,7 +511,7 @@ type NetworkNode
         let rec loop (msg : GossipMessage) =
             async {
                 let recipientAddresses =
-                    __.GetActiveMembers()
+                    __.GetActivePeers()
                     |> List.map (fun m -> m.NetworkAddress)
 
                 let senderAddress = msg.SenderAddress |> optionToList
@@ -671,7 +582,7 @@ type NetworkNode
     member private __.ReceivePeerMessage publishEvent dto =
         let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto dto
         match peerMessageEnvelope.PeerMessage with
-        | GossipDiscoveryMessage m -> __.ReceiveMembers m
+        | GossipDiscoveryMessage m -> __.ReceivePeers m
         | GossipMessage m -> __.ReceiveGossipMessage publishEvent m
         | MulticastMessage m -> __.ReceiveMulticastMessage publishEvent m
         | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m
@@ -692,6 +603,95 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Request/Response
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    member private __.Throttle (requestsMap : ConcurrentDictionary<_, DateTime>) requestItem func =
+        match requestsMap.TryGetValue requestItem with
+            | true, timestamp
+                when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
+                () // Throttle the request
+            | _ ->
+                if gossipConfig.PeerResponseThrottlingTime > 0 then
+                    let timestamp = DateTime.UtcNow
+                    requestsMap.AddOrUpdate(requestItem, timestamp, fun _ _ -> timestamp)
+                    |> ignore
+
+                func requestItem
+
+    member __.SendRequestDataMessage requestId =
+        __.Throttle sentRequests requestId (fun _ ->
+            Stats.increment Stats.Counter.PeerRequests
+            Log.debugf "Sending request for %A" requestId
+            let rec loop messageId =
+                async {
+                    let usedAddresses =
+                        match peerSelectionSentRequests.TryGetValue messageId with
+                        | true, addresses -> addresses
+                        | _ -> []
+
+                    __.GetActivePeers()
+                    |> List.map (fun m -> m.NetworkAddress)
+                    |> List.filter (isSelf >> not)
+                    |> List.except usedAddresses
+                    |> __.PickRandomPeer
+                    |> tee (function
+                        | Some networkAddress ->
+                            peerSelectionSentRequests.AddOrUpdate(
+                                messageId,
+                                networkAddress :: usedAddresses,
+                                fun _ _ -> networkAddress :: usedAddresses)
+                            |> ignore
+                        | None ->
+                            Log.errorf "Cannot retrieve data from peers for %A" messageId
+                            peerSelectionSentRequests.TryRemove messageId |> ignore
+                    )
+                    |> Option.iter (fun address ->
+                        let peerMessageEnvelope =
+                            {
+                                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                                PeerMessage =
+                                    {
+                                        MessageId = messageId
+                                        SenderIdentity = nodeConfig.Identity
+                                    }
+                                    |> RequestDataMessage
+                            }
+                        let peerMessageEnvelopeDto =
+                            Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
+                        sendRequestMessage peerMessageEnvelopeDto address.Value
+                    )
+
+                    do! Async.Sleep(4 * gossipConfig.GossipIntervalMillis)
+
+                    (*
+                        If no answer is received within 2 cycles (request - response i.e 4xtCycle),
+                        repeat (i.e choose another peer).
+                    *)
+                    match (peerSelectionSentRequests.TryGetValue messageId) with
+                    | true, addresses ->
+                        if not (addresses.IsEmpty) then
+                            return! loop messageId
+                    | _ -> ()
+                }
+
+            Async.Start (loop requestId, cts.Token)
+        )
+
+    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
+        Stats.increment Stats.Counter.PeerResponses
+        match peerMessageEnvelope.PeerMessage with
+        | ResponseDataMessage responseMessage ->
+            Log.debugf "Sending response (to %A request) to %s"
+                responseMessage.MessageId
+                (targetIdentity.Value |> Conversion.bytesToString)
+        | _ -> ()
+
+        let unicastMessageTask =
+            async {
+                let peerMessageEnvelopeDto =
+                    Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
+                sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
+            }
+        Async.Start (unicastMessageTask, cts.Token)
 
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
         __.Throttle receivedRequests requestDataMessage (fun _ ->

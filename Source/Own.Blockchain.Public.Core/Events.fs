@@ -24,7 +24,7 @@ type AppEvent =
     | EquivocationProofFetched of EquivocationProofDto
     | EquivocationProofStored of EquivocationProofHash * isFetched : bool
     | BlockchainHeadReceived of BlockNumber
-    | PeerListReceived of GossipMember list
+    | PeerListReceived of GossipPeer list
 
 type AppEvent with
     member __.CaseName =

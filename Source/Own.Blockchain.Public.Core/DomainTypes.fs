@@ -529,13 +529,13 @@ type GossipNetworkConfig = {
     PeerResponseThrottlingTime : int
 }
 
-type GossipMember = {
+type GossipPeer = {
     NetworkAddress : NetworkAddress
     Heartbeat : int64
 }
 
 type GossipDiscoveryMessage = {
-    ActiveMembers : GossipMember list
+    ActivePeers : GossipPeer list
 }
 
 type GossipMessage = {

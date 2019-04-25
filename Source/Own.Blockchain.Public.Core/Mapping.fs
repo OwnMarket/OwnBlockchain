@@ -914,13 +914,13 @@ module Mapping =
         | "PeerList" -> PeerList
         | _ -> failwithf "Invalid network message type %s" messageType
 
-    let gossipMemberFromDto (dto: GossipMemberDto) : GossipMember =
+    let gossipPeerFromDto (dto: GossipPeerDto) : GossipPeer =
         {
             NetworkAddress = NetworkAddress dto.NetworkAddress
             Heartbeat = dto.Heartbeat
         }
 
-    let gossipMemberToDto (gossipMember : GossipMember) : GossipMemberDto =
+    let gossipPeerToDto (gossipMember : GossipPeer) : GossipPeerDto =
         {
             NetworkAddress = gossipMember.NetworkAddress.Value
             Heartbeat = gossipMember.Heartbeat
@@ -928,12 +928,12 @@ module Mapping =
 
     let gossipDiscoveryMessageFromDto (dto : GossipDiscoveryMessageDto) : GossipDiscoveryMessage =
         {
-            ActiveMembers = dto.ActiveMembers |> List.map gossipMemberFromDto
+            ActivePeers = dto.ActiveMembers |> List.map gossipPeerFromDto
         }
 
     let gossipDiscoveryMessageToDto (gossipDiscoveryMessage: GossipDiscoveryMessage) =
         {
-            ActiveMembers = gossipDiscoveryMessage.ActiveMembers |> List.map gossipMemberToDto
+            ActiveMembers = gossipDiscoveryMessage.ActivePeers |> List.map gossipPeerToDto
         }
 
     let gossipMessageFromDto (dto : GossipMessageDto) =

@@ -195,7 +195,7 @@ module PeerTests =
         nodeList
         |> List.iter (fun n ->
             let nodePeerList =
-                n.GetActiveMembers()
+                n.GetActivePeers()
                 |> List.map (fun m -> m.NetworkAddress)
                 |> List.sort
 
