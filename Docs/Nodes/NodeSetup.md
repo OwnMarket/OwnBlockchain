@@ -4,7 +4,7 @@ This document describes the process of setting up an instance of the Own public 
 
 Node can be deployed in two ways:
 
-- _Simple deployment_: Deploying using "xcopy approach" (available for for all three OSs and does not require admin permissions). This deployment approach is recommended for non-public nodes running on personal computers.
+- _Simple deployment_: Deploying using "xcopy deployment" approach (available for for all three OSs and does not require admin permissions). This deployment approach is recommended for non-public nodes running on personal computers.
 - _Scripted deployment_: Deploying on a dedicated machine using provided setup scripts (available only for Linux and requires admin permissions). This deployment approach is highly recommended for validator nodes and for mission-critical client nodes in production scenarios.
 
 Please refer to the corresponding section below, depending on your use case.
@@ -35,7 +35,7 @@ Please refer to the corresponding section below, depending on your use case.
         ```
 - To stop the node, press `Ctrl+C` keyboard combination.
 
-## Scripted deployment (using setup scripts on Linux server)
+## Scripted deployment
 
 We recommend installing the node on `Ubuntu Server 18.04 LTS` operating system.
 
@@ -81,3 +81,9 @@ To stop the node, use following command
 ```bash
 sudo systemctl stop own-blockchain-public-node@ins1
 ```
+
+### Optional configuration steps
+
+- By default, node runs in "poll" mode, which means it is fetching new blocks from peers periodically (by default every minute). If you want the node to participate in node gossip and receive blocks and transactions as soon as they're propagated throughout the network, you need to:
+    - configure `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md) for more details)
+    - ensure node is reachable from public network through configured `PublicAddress` (depending on your environment, this might involve configuring DNS and firewall ports)
