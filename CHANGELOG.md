@@ -10,4 +10,4 @@
 
 ## 1.2.1 (2019-04-24)
 
-- First stable release
+- First stable release.
