@@ -32,7 +32,7 @@ type NetworkNode
     ) =
 
     let activePeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
-    let cacheValidators = new HashSet<NetworkAddress>()
+    let cacheValidators = new ConcurrentBag<NetworkAddress>()
     let deadPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let peersStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
@@ -508,33 +508,39 @@ type NetworkNode
         // If gossip message was processed before, append the selected recipients to the processed recipients list.
         // If not, add the gossip message (and the corresponding recipient) to the processing queue.
         | _ ->
+            let validatorRecipients =
+                cacheValidators
+                |> Seq.toList
+
             let fanoutRecipientAddresses =
                 recipientAddresses
+                |> List.except validatorRecipients
                 |> List.shuffle
                 |> List.truncate gossipConfig.Fanout
 
-            fanoutRecipientAddresses |> List.iter (fun recipientAddress ->
+            validatorRecipients @ fanoutRecipientAddresses
+            |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
 
             let senderAddress = gossipMessage.SenderAddress |> optionToList
             __.UpdateGossipMessagesProcessingQueue
-                (fanoutRecipientAddresses @ senderAddress)
+                (fanoutRecipientAddresses @ senderAddress @ validatorRecipients)
                 gossipMessage.MessageId
 
     member private __.SendGossipMessage message =
         let rec loop (msg : GossipMessage) =
             async {
-                let recipientAddresses =
+                let senderAddress = msg.SenderAddress |> optionToList
+                let processedAddresses =
+                    match gossipMessages.TryGetValue msg.MessageId with
+                    | true, processedAddresses -> processedAddresses @ senderAddress
+                    | _ -> senderAddress
+
+                let remainingRecipientAddresses =
                     __.GetActivePeers()
                     |> List.map (fun m -> m.NetworkAddress)
-
-                let senderAddress = msg.SenderAddress |> optionToList
-                let remainingRecipientAddresses =
-                    match gossipMessages.TryGetValue msg.MessageId with
-                    | true, processedAddresses ->
-                        List.except (processedAddresses @ senderAddress) recipientAddresses
-                    | _ ->
-                        List.except senderAddress recipientAddresses
+                    |> List.filter (isSelf >> not)
+                    |> List.except processedAddresses
 
                 __.ProcessGossipMessage msg remainingRecipientAddresses
 
