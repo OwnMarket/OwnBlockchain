@@ -37,7 +37,7 @@ Please refer to the corresponding section below, depending on your use case.
 
 ## Scripted deployment
 
-We recommend installing the node on `Ubuntu Server 18.04 LTS` operating system.
+This deployment approach assumes installing the node on a clean machine with `Ubuntu Server 18.04 LTS` operating system installed.
 
 Login into your Linux machine and execute following command in terminal:
 
