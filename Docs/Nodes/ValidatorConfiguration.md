@@ -37,26 +37,29 @@ At this point your node is configured and ready to start participating in the co
 For the node to be able to participate in the consensus and propose blocks, it needs to have:
 
 - 10000 CHX in available balance on validator address (this is for validator deposit).
-    - To fund the validator address, send it 10000 CHX, plus a bit more (e.g. 1 CHX) so it can submit the transactions itself.
 
-        ![example transaction](ExampleTxWithTransferCxhAction.png)
+    To fund the validator address, send it 10000 CHX, plus a bit more (e.g. 1 CHX) so it can submit the transactions itself.
+
+    ![example transaction](ExampleTxWithTransferCxhAction.png)
 - Operational parameters configured in the blockchain.
-    - To configure this, send a transaction **from validator address** with `ConfigureValidator` action, specifying:
+
+    To configure this, send a transaction **from validator address** with `ConfigureValidator` action, specifying:
         - validator's network address (same as `PublicAddress` configured in its configuration file)
         - percent of the reward shared with stakers
         - flag saying that the node is enabled - willing to participate in consensus
-    - Example transaction created using [online wallet](https://wallet.weown.com/wallet):
+    Example transaction created using [online wallet](https://wallet.weown.com/wallet):
 
-        ![example transaction](ExampleTxWithConfigureValidatorAction.png)
-- at least 500000 CHX at stake (delegated by itself or by others).
-    - This can be achieved by sending a transaction with `DelegateStake` action, specifying:
+    ![example transaction](ExampleTxWithConfigureValidatorAction.png)
+- At least 500000 CHX at stake (delegated by itself or by others).
+    This can be achieved by sending a transaction with `DelegateStake` action, specifying:
         - validator address (CHX address of your validator)
         - CHX amount delegated
-    - Example transaction created using [online wallet](https://wallet.weown.com/wallet):
 
-        ![example transaction](ExampleTxWithDelegateStakeAction.png)
+    Example transaction created using [online wallet](https://wallet.weown.com/wallet):
 
-        In this example whole stake is delegated by one staker. This might not always be the case, of course, and it might take more time until the validator gets enough stakes delegated by other addresses.
+    ![example transaction](ExampleTxWithDelegateStakeAction.png)
+
+    In this example whole stake is delegated by one staker. This might not always be the case, of course, and it might take more time until the validator gets enough stakes delegated by other addresses.
 
 If all above listed steps are executed and required conditions have been met, validator is eligible to be included in the list of active validators at next config block. However, if there are more than 100 validators with 500000 CHX at stake, your validator might not make it into the top 100.
 
