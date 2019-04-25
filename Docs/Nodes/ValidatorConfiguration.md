@@ -41,19 +41,25 @@ For the node to be able to participate in the consensus and propose blocks, it n
     To fund the validator address, send it 10000 CHX, plus a bit more (e.g. 1 CHX) so it can submit the transactions itself.
 
     ![example transaction](ExampleTxWithTransferCxhAction.png)
+
 - Operational parameters configured in the blockchain.
 
     To configure this, send a transaction **from validator address** with `ConfigureValidator` action, specifying:
-        - validator's network address (same as `PublicAddress` configured in its configuration file)
-        - percent of the reward shared with stakers
-        - flag saying that the node is enabled - willing to participate in consensus
+
+    - validator's network address (same as `PublicAddress` configured in its configuration file)
+    - percent of the reward shared with stakers
+    - flag saying that the node is enabled - willing to participate in consensus
+
     Example transaction created using [online wallet](https://wallet.weown.com/wallet):
 
     ![example transaction](ExampleTxWithConfigureValidatorAction.png)
+
 - At least 500000 CHX at stake (delegated by itself or by others).
+
     This can be achieved by sending a transaction with `DelegateStake` action, specifying:
-        - validator address (CHX address of your validator)
-        - CHX amount delegated
+
+    - validator address (CHX address of your validator)
+    - CHX amount delegated
 
     Example transaction created using [online wallet](https://wallet.weown.com/wallet):
 
