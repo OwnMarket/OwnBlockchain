@@ -37,9 +37,11 @@ At this point your node is configured and ready to start participating in the co
 For the node to be able to participate in the consensus and propose blocks, it needs to have:
 
 - 10000 CHX in available balance on validator address (this is for validator deposit).
-    - To fund the validator address, just send it 10000 CHX, plus a bit more (e.g. 1 CHX) so it can submit the transactions itself.
+    - To fund the validator address, send it 10000 CHX, plus a bit more (e.g. 1 CHX) so it can submit the transactions itself.
+
+        ![example transaction](ExampleTxWithTransferCxhAction.png)
 - Operational parameters configured in the blockchain.
-    - To configure this, send a transaction from validator address with `ConfigureValidator` action, specifying:
+    - To configure this, send a transaction **from validator address** with `ConfigureValidator` action, specifying:
         - validator's network address (same as `PublicAddress` configured in its configuration file)
         - percent of the reward shared with stakers
         - flag saying that the node is enabled - willing to participate in consensus
