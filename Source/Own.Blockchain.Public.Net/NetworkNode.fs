@@ -337,7 +337,7 @@ type NetworkNode
                 |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
                 |> List.iter (fun a -> cacheValidators.Add a |> ignore)
 
-                do! Async.Sleep(TimeSpan.FromSeconds(30.).Milliseconds)
+                do! Async.Sleep(30000)
                 return! loop ()
             }
         Async.Start (loop (), cts.Token)
