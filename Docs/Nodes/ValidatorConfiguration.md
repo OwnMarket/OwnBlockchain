@@ -67,6 +67,9 @@ For the node to be able to participate in the consensus and propose blocks, it n
 
     In this example whole stake is delegated by one staker. This might not always be the case, of course, and it might take more time until the validator gets enough stakes delegated by other addresses.
 
+
+## Waiting for inclusion in the list of active validators
+
 If all above listed steps are executed and required conditions have been met, validator is eligible to be included in the list of active validators at next config block. However, if there are more than 100 validators with 500000 CHX at stake, your validator might not make it into the top 100.
 
 Once validator is included in the active list, it will start participating in consensus and proposing blocks.
