@@ -20,7 +20,10 @@ For the node to be able to act as a validator, it must have `ValidatorPrivateKey
     ```bash
     sudo nano /var/lib/own/blockchain/public/node/ins1/Config.json
     ```
-- Add `"ValidatorPrivateKey": "XXXXXXXXXX"` entry with the private key you generated as described in the _Prerequisites_ section above.
+- Add the entry with the private key you generated as described in the _Prerequisites_ section above.
+    ```json
+    "ValidatorPrivateKey": "XXXXXXXXXX"
+    ```
 - Save the file.
 - Start the node.
 
