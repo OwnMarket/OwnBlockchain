@@ -85,5 +85,5 @@ sudo systemctl stop own-blockchain-public-node@ins1
 ### Optional configuration steps
 
 - By default, node runs in "poll" mode, which means it is fetching new blocks from peers periodically (by default every minute). If you want the node to participate in node gossip and receive blocks and transactions as soon as they're propagated throughout the network, you need to:
-    - configure `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md) for more details)
+    - configure `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details)
     - ensure node is reachable from public network through configured `PublicAddress` (depending on your environment, this might involve configuring DNS and firewall ports)

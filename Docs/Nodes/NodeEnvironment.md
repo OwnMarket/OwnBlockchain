@@ -85,9 +85,9 @@ Node installation consists of following steps:
     - Configuring the node to run as a service on the host machine (node setup script takes care of this).
 
 
-## Configuration File (Config.json)
+## Configuration File
 
-Configuration file provides the execution parameters and environment configuration for the node (e.g. network and database info). Some of the settings that can be configured using the configuration file are listed below:
+Configuration file (`Config.json`) provides the execution parameters and environment configuration for the node (e.g. network and database info). Some of the settings that can be configured using the configuration file are listed below:
 
 Setting Name | Description
 ---  | ---
@@ -123,9 +123,9 @@ Setting Name | Description
 }
 ```
 
-## Genesis File (Genesis.json)
+## Genesis File
 
-Genesis file contains the information about genesis address, genesis validators and the initial blockchain configuration
+Genesis file (`Genesis.json`) contains the information about genesis address, genesis validators and the initial blockchain configuration
 used to create the first block, also called "genesis block".
 
 Setting Name | Description
