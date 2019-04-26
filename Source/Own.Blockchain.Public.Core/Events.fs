@@ -7,8 +7,8 @@ type AppEvent =
     | PeerMessageReceived of PeerMessageEnvelope
     | TxSubmitted of TxHash
     | TxReceived of TxHash * TxEnvelopeDto
-    | TxVerified of TxHash
     | TxFetched of TxHash * TxEnvelopeDto
+    | TxVerified of TxHash
     | TxStored of TxHash * isFetched : bool
     | BlockCommitted of BlockNumber * BlockEnvelopeDto
     | BlockReceived of BlockNumber * BlockEnvelopeDto
@@ -33,8 +33,8 @@ type AppEvent with
         | PeerMessageReceived _ -> "PeerMessageReceived"
         | TxSubmitted _ -> "TxSubmitted"
         | TxReceived _ -> "TxReceived"
-        | TxVerified _ -> "TxVerified"
         | TxFetched _ -> "TxFetched"
+        | TxVerified _ -> "TxVerified"
         | TxStored _ -> "TxStored"
         | BlockCommitted _ -> "BlockCommitted"
         | BlockReceived _ -> "BlockReceived"
