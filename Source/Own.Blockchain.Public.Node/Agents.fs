@@ -89,15 +89,15 @@ module Agents =
             h.Value
             |> formatMessage
             |> Log.info
-        | TxVerified h ->
-            h.Value
-            |> formatMessage
-            |> Log.debug
         | TxReceived (h, _)
         | TxFetched (h, _) ->
             h.Value
             |> formatMessage
             |> Log.info
+        | TxVerified h ->
+            h.Value
+            |> formatMessage
+            |> Log.debug
         | TxStored (h, _) ->
             h.Value
             |> formatMessage
@@ -207,10 +207,10 @@ module Agents =
             txPropagator.Post txHash
         | TxReceived (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, false)
-        | TxVerified txHash ->
-            txPropagator.Post txHash
         | TxFetched (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, true)
+        | TxVerified txHash ->
+            txPropagator.Post txHash
         | TxStored (txHash, isFetched) ->
             invokeApplier ()
         | EquivocationProofDetected (proof, validatorAddress) ->
