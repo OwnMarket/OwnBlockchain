@@ -89,8 +89,11 @@ module Agents =
             h.Value
             |> formatMessage
             |> Log.info
+        | TxVerified h ->
+            h.Value
+            |> formatMessage
+            |> Log.debug
         | TxReceived (h, _)
-        | TxVerified h
         | TxFetched (h, _) ->
             h.Value
             |> formatMessage
