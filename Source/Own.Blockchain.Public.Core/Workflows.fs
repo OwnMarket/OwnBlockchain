@@ -1352,6 +1352,7 @@ module Workflows =
         createHash
         getAvailableChxBalance
         getTotalFeeForPendingTxs
+        publishEvent
         saveTx
         saveTxToDb
         maxActionCountPerTx
@@ -1380,6 +1381,8 @@ module Workflows =
                         getTotalFeeForPendingTxs
                         senderAddress
                         tx.TotalFee
+
+                txHash |> TxVerified |> publishEvent
 
             do! saveTx txHash txEnvelopeDto
             do! tx

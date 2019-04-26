@@ -61,6 +61,9 @@ module SubmissionTests =
         let getTotalFeeForPendingTxs _ =
             totalPendingTxsFee
 
+        let publishEvent _ =
+            ()
+
         let saveTx _ =
             failwith "saveTx shouldn't be called"
 
@@ -76,6 +79,7 @@ module SubmissionTests =
                 Hashing.hash
                 getAvailableChxBalance
                 getTotalFeeForPendingTxs
+                publishEvent
                 saveTx
                 saveTxToDb
                 Helpers.maxActionCountPerTx
@@ -132,6 +136,9 @@ module SubmissionTests =
         let getTotalFeeForPendingTxs _ =
             ChxAmount 0m
 
+        let publishEvent _ =
+            ()
+
         let saveTx _ =
             failwith "saveTx shouldn't be called"
 
@@ -147,6 +154,7 @@ module SubmissionTests =
                 Hashing.hash
                 getAvailableChxBalance
                 getTotalFeeForPendingTxs
+                publishEvent
                 saveTx
                 saveTxToDb
                 maxActionCountPerTx

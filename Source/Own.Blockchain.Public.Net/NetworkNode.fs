@@ -655,19 +655,6 @@ type NetworkNode
             |> PeerMessageReceived
             |> publishEvent
 
-            // Once a node is infected, propagate the message further.
-            {
-                PeerMessageEnvelope.NetworkId = getNetworkId ()
-                PeerMessage =
-                    {
-                        MessageId = gossipMessage.MessageId
-                        SenderAddress = nodeConfigPublicIPAddress
-                        Data = gossipMessage.Data
-                    }
-                    |> GossipMessage
-            }
-            |> __.SendMessage
-
     member private __.ReceivePeerMessage publishEvent dto =
         let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto dto
         match peerMessageEnvelope.PeerMessage with

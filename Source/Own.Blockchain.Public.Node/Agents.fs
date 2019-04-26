@@ -90,6 +90,7 @@ module Agents =
             |> formatMessage
             |> Log.info
         | TxReceived (h, _)
+        | TxVerified h
         | TxFetched (h, _) ->
             h.Value
             |> formatMessage
@@ -203,12 +204,12 @@ module Agents =
             txPropagator.Post txHash
         | TxReceived (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, false)
+        | TxVerified txHash ->
+            txPropagator.Post txHash
         | TxFetched (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, true)
         | TxStored (txHash, isFetched) ->
             invokeApplier ()
-            if not isFetched then
-                txPropagator.Post txHash
         | EquivocationProofDetected (proof, validatorAddress) ->
             invokeEquivocationProofVerifier (proof, false)
         | EquivocationProofReceived proof ->
@@ -281,7 +282,7 @@ module Agents =
         txVerifier <-
             Agent.start <| fun (txEnvelopeDto, isFetched) ->
                 async {
-                    Composition.submitTx isFetched txEnvelopeDto
+                    Composition.submitTx publishEvent isFetched txEnvelopeDto
                     |> Result.handle
                         (fun txHash -> (txHash, isFetched) |> TxStored |> publishEvent)
                         Log.appErrors

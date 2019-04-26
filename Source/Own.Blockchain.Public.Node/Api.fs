@@ -57,7 +57,7 @@ module Api =
                         |> Async.AwaitTask
                         |> Async.RunSynchronously
 
-                    Composition.submitTx false requestDto
+                    Composition.submitTx Agents.publishEvent false requestDto
                     |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
                     |> Result.map (fun txHash -> { SubmitTxResponseDto.TxHash = txHash.Value })
                 with
