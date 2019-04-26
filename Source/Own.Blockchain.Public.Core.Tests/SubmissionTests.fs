@@ -79,11 +79,11 @@ module SubmissionTests =
                 Hashing.hash
                 getAvailableChxBalance
                 getTotalFeeForPendingTxs
-                publishEvent
                 saveTx
                 saveTxToDb
                 Helpers.maxActionCountPerTx
                 Helpers.minTxActionFee
+                publishEvent
                 false
                 txEnvelopeDto
 
@@ -154,11 +154,11 @@ module SubmissionTests =
                 Hashing.hash
                 getAvailableChxBalance
                 getTotalFeeForPendingTxs
-                publishEvent
                 saveTx
                 saveTxToDb
                 maxActionCountPerTx
                 Helpers.minTxActionFee
+                publishEvent
                 false
                 txEnvelopeDto
 

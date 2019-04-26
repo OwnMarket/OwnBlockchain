@@ -492,7 +492,7 @@ module Composition =
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let submitTx publishEvent =
+    let submitTx =
         Workflows.submitTx
             verifySignature
             Hashing.isValidHash
@@ -500,7 +500,6 @@ module Composition =
             Hashing.hash
             getAvailableChxBalance
             getTotalFeeForPendingTxs
-            publishEvent
             saveTx
             saveTxToDb
             Config.MaxActionCountPerTx
@@ -582,7 +581,7 @@ module Composition =
             getNetworkId
             peerMessage
 
-    let startGossip publishEvent =
+    let startGossip =
         Peers.startGossip
             Config.ListeningAddress
             Config.PublicAddress
@@ -610,7 +609,6 @@ module Composition =
             Transport.closeConnection
             Transport.closeAllConnections
             getCurrentValidators
-            publishEvent
 
     let stopGossip () = Peers.stopGossip ()
 
