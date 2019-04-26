@@ -1352,11 +1352,11 @@ module Workflows =
         createHash
         getAvailableChxBalance
         getTotalFeeForPendingTxs
-        publishEvent
         saveTx
         saveTxToDb
         maxActionCountPerTx
         minTxActionFee
+        publishEvent
         isIncludedInBlock
         txEnvelopeDto
         : Result<TxHash, AppErrors>
