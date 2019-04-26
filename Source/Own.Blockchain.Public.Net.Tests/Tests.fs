@@ -118,8 +118,10 @@ module PeerTests =
             invokePeerMessageHandler node message
         | TxSubmitted txHash ->
             txPropagator node txHash
-        | TxReceived (txHash, txEnvelopeDto)
-        | TxFetched (txHash, txEnvelopeDto) ->
+        | TxVerified txHash ->
+            txPropagator node txHash
+        | TxReceived (txHash, _)
+        | TxFetched (txHash, _) ->
             ()
         | TxStored (txHash, isFetched) ->
             if not isFetched then

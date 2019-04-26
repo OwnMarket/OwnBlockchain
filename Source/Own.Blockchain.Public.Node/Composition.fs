@@ -492,7 +492,7 @@ module Composition =
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let submitTx =
+    let submitTx publishEvent =
         Workflows.submitTx
             verifySignature
             Hashing.isValidHash
@@ -500,6 +500,7 @@ module Composition =
             Hashing.hash
             getAvailableChxBalance
             getTotalFeeForPendingTxs
+            publishEvent
             saveTx
             saveTxToDb
             Config.MaxActionCountPerTx
