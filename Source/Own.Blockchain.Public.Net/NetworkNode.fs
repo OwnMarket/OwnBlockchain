@@ -32,7 +32,6 @@ type NetworkNode
     ) =
 
     let activePeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
-    let cacheValidators = new ConcurrentBag<NetworkAddress>()
     let deadPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let peersStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
@@ -329,24 +328,10 @@ type NetworkNode
             }
         Async.Start (loop (), cts.Token)
 
-    member private __.StartValidatorsCache () =
-        let rec loop () =
-            async {
-                cacheValidators.Clear()
-                getCurrentValidators ()
-                |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
-                |> List.iter (fun a -> cacheValidators.Add a |> ignore)
-
-                do! Async.Sleep(30000)
-                return! loop ()
-            }
-        Async.Start (loop (), cts.Token)
-
     member private __.StartNode () =
         Log.debug "Start node..."
         __.InitializePeerList ()
         __.StartDnsResolver ()
-        __.StartValidatorsCache ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
         __.StartServer ()
@@ -508,23 +493,18 @@ type NetworkNode
         // If gossip message was processed before, append the selected recipients to the processed recipients list.
         // If not, add the gossip message (and the corresponding recipient) to the processing queue.
         | _ ->
-            let validatorRecipients =
-                cacheValidators
-                |> Seq.toList
-
             let fanoutRecipientAddresses =
                 recipientAddresses
-                |> List.except validatorRecipients
                 |> List.shuffle
                 |> List.truncate gossipConfig.Fanout
 
-            validatorRecipients @ fanoutRecipientAddresses
+            fanoutRecipientAddresses
             |> List.iter (fun recipientAddress ->
                 __.SendGossipMessageToRecipient recipientAddress gossipMessage)
 
             let senderAddress = gossipMessage.SenderAddress |> optionToList
             __.UpdateGossipMessagesProcessingQueue
-                (fanoutRecipientAddresses @ senderAddress @ validatorRecipients)
+                (fanoutRecipientAddresses @ senderAddress)
                 gossipMessage.MessageId
 
     member private __.SendGossipMessage message =
