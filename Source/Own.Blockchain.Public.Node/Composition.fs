@@ -387,7 +387,7 @@ module Composition =
             publishEvent
             Config.MaxBlockFetchQueue
 
-    let tryApplyNextBlock publishEvent =
+    let tryApplyNextBlock =
         Synchronization.tryApplyNextBlock
             getLastAppliedBlockNumber
             getBlock
@@ -398,7 +398,6 @@ module Composition =
             equivocationProofExistsInDb
             removeOrphanTxResults
             removeOrphanEquivocationProofResults
-            publishEvent
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus
@@ -554,6 +553,15 @@ module Composition =
             Peers.sendMessage
             getTx
             getNetworkId
+
+    let repropagatePendingTx publishEvent =
+        Workflows.repropagatePendingTx
+            getPendingTxs
+            getChxAddressState
+            getAvailableChxBalance
+            publishEvent
+            (ChxAmount Config.MinTxActionFee)
+            Config.TxRepropagationCount
 
     let propagateEquivocationProof =
         Workflows.propagateEquivocationProof

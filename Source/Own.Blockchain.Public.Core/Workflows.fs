@@ -1030,6 +1030,27 @@ module Workflows =
             |> sendMessageToPeers
         | _ -> Log.errorf "Tx %s does not exist" txHash.Value
 
+    let repropagatePendingTx
+        getPendingTxs
+        getChxAddressStateFromStorage
+        getAvailableChxBalanceFromStorage
+        publishEvent
+        minTxActionFee
+        maxTxCountPerBlock
+        =
+
+        let getChxAddressState = memoize (getChxAddressStateFromStorage >> Option.map Mapping.chxAddressStateFromDto)
+        let getAvailableChxBalance = memoize getAvailableChxBalanceFromStorage
+
+        Processing.getTxSetForNewBlock
+            getPendingTxs
+            getChxAddressState
+            getAvailableChxBalance
+            minTxActionFee
+            maxTxCountPerBlock
+        |> Processing.orderTxSet
+        |> List.iter (TxVerified >> publishEvent)
+
     let propagateEquivocationProof
         publicAddress
         sendMessageToPeers

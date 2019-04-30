@@ -37,7 +37,7 @@ module PeerTests =
         node.SendMessage peerMessage
 
     let requestFromPeer requestId (node : NetworkNode) =
-        node.SendRequestDataMessage requestId
+        node.SendRequestDataMessage requestId None
 
     let respondToPeer (node : NetworkNode) targetAddress peerMessageEnvelope =
         node.SendResponseDataMessage targetAddress peerMessageEnvelope

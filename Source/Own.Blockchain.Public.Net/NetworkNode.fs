@@ -338,11 +338,11 @@ type NetworkNode
 
                 func requestItem
 
-    member __.SendRequestDataMessage requestId =
+    member __.SendRequestDataMessage requestId (preferredPeer : NetworkAddress option) =
         __.Throttle sentRequests requestId (fun _ ->
             Stats.increment Stats.Counter.PeerRequests
             Log.debugf "Sending request for %A" requestId
-            let rec loop messageId =
+            let rec loop messageId peer =
                 async {
                     let usedAddresses =
                         match peerSelectionSentRequests.TryGetValue messageId with
@@ -351,9 +351,9 @@ type NetworkNode
 
                     __.GetActiveMembers()
                     |> List.map (fun m -> m.NetworkAddress)
-                    |> List.filter (isSelf >> not)
                     |> List.except usedAddresses
-                    |> __.PickRandomPeer
+                    |> List.filter (isSelf >> not)
+                    |> __.SelectPeer peer
                     |> tee (function
                         | Some networkAddress ->
                             peerSelectionSentRequests.AddOrUpdate(
@@ -390,29 +390,12 @@ type NetworkNode
                     match (peerSelectionSentRequests.TryGetValue messageId) with
                     | true, addresses ->
                         if not (addresses.IsEmpty) then
-                            return! loop messageId
+                            return! loop messageId None
                     | _ -> ()
                 }
 
-            Async.Start (loop requestId, cts.Token)
+            Async.Start (loop requestId preferredPeer, cts.Token)
         )
-
-    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
-        Stats.increment Stats.Counter.PeerResponses
-        match peerMessageEnvelope.PeerMessage with
-        | ResponseDataMessage responseMessage ->
-            Log.debugf "Sending response (to %A request) to %s"
-                responseMessage.MessageId
-                (targetIdentity.Value |> Conversion.bytesToString)
-        | _ -> ()
-
-        let unicastMessageTask =
-            async {
-                let peerMessageEnvelopeDto =
-                    Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
-                sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
-            }
-        Async.Start (unicastMessageTask, cts.Token)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Discovery
@@ -452,7 +435,7 @@ type NetworkNode
             }
             |> __.SendMessage
         | None -> // Request peer list.
-            __.SendRequestDataMessage NetworkMessageId.PeerList
+            __.SendRequestDataMessage NetworkMessageId.PeerList None
 
         printActiveMembers ()
 
@@ -680,6 +663,23 @@ type NetworkNode
     // Request/Response
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
+        Stats.increment Stats.Counter.PeerResponses
+        match peerMessageEnvelope.PeerMessage with
+        | ResponseDataMessage responseMessage ->
+            Log.debugf "Sending response (to %A request) to %s"
+                responseMessage.MessageId
+                (targetIdentity.Value |> Conversion.bytesToString)
+        | _ -> ()
+
+        let unicastMessageTask =
+            async {
+                let peerMessageEnvelopeDto =
+                    Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
+                sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
+            }
+        Async.Start (unicastMessageTask, cts.Token)
+
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
         __.Throttle receivedRequests requestDataMessage (fun _ ->
             Log.debugf "Received request for %A from %s"
@@ -704,7 +704,10 @@ type NetworkNode
 
         peerSelectionSentRequests.TryRemove responseDataMessage.MessageId |> ignore
 
-    member private __.PickRandomPeer networkAddresses =
-        networkAddresses
-        |> List.shuffle
-        |> List.tryHead
+    member private __.SelectPeer preferredPeer peerList =
+        match preferredPeer with
+        | Some _ -> preferredPeer
+        | None ->
+            peerList
+            |> List.shuffle
+            |> List.tryHead

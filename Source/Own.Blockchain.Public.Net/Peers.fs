@@ -11,7 +11,7 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "SendPeerMessage agent is not started"
 
-    let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId> option = None
+    let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId * NetworkAddress option> option = None
     let invokeRequestFromPeer m =
         match requestFromPeerDispatcher with
         | Some h -> h.Post m
@@ -39,9 +39,9 @@ module Peers =
             failwith "RequestFromPeer agent is already started"
 
         requestFromPeerDispatcher <-
-            Agent.start <| fun messageId ->
+            Agent.start <| fun (messageId, preferredPeer) ->
                 async {
-                    PeerMessageHandler.requestFromPeer messageId
+                    PeerMessageHandler.requestFromPeer messageId preferredPeer
                 }
             |> Some
 
@@ -65,23 +65,26 @@ module Peers =
     let sendMessage peerMessageEnvelope =
         invokeSendPeerMessage peerMessageEnvelope
 
-    let requestFromPeer messageId =
-        invokeRequestFromPeer messageId
+    let private requestFromPeer messageId preferredPeer =
+        invokeRequestFromPeer (messageId, preferredPeer)
 
     let requestBlockFromPeer blockNumber =
-        requestFromPeer (NetworkMessageId.Block blockNumber)
+        requestFromPeer (NetworkMessageId.Block blockNumber) None
 
     let requestLastBlockFromPeer () =
         requestBlockFromPeer (BlockNumber -1L)
 
     let requestBlockchainHeadFromPeer () =
-        requestFromPeer NetworkMessageId.BlockchainHead
+        requestFromPeer NetworkMessageId.BlockchainHead None
 
     let requestTxFromPeer txHash =
-        requestFromPeer (NetworkMessageId.Tx txHash)
+        requestFromPeer (NetworkMessageId.Tx txHash) None
+
+    let requestTxFromPreferredPeer txHash preferredPeer =
+        requestFromPeer (NetworkMessageId.Tx txHash) preferredPeer
 
     let requestEquivocationProofFromPeer equivocationProofHash =
-        requestFromPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
+        requestFromPeer (NetworkMessageId.EquivocationProof equivocationProofHash) None
 
     let respondToPeer targetIdentity peerMessage =
         invokeRespondToPeer (targetIdentity, peerMessage)
