@@ -10,10 +10,10 @@ open Own.Blockchain.Public.Crypto
 
 module Agents =
 
-    let private txPropagator = Agent.start <| fun (txHash : TxHash) ->
+    let private txPropagator = Agent.start <| fun (txHash : TxHash, txEnvelopeDto : TxEnvelopeDto option) ->
         async {
             Log.debugf "Propagating Tx %s" txHash.Value
-            Composition.propagateTx txHash
+            Composition.propagateTx txHash txEnvelopeDto
         }
 
     let private equivocationProofPropagator = Agent.start <| fun (equivocationProofHash : EquivocationProofHash) ->
@@ -94,7 +94,7 @@ module Agents =
             h.Value
             |> formatMessage
             |> Log.info
-        | TxVerified h ->
+        | TxVerified (h, _) ->
             h.Value
             |> formatMessage
             |> Log.debug
@@ -204,13 +204,13 @@ module Agents =
             invokePeerMessageHandler message
         | TxSubmitted txHash ->
             invokeApplier ()
-            txPropagator.Post txHash
+            txPropagator.Post (txHash, None)
         | TxReceived (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, false)
         | TxFetched (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, true)
-        | TxVerified txHash ->
-            txPropagator.Post txHash
+        | TxVerified (txHash, txEnvelopeDto) ->
+            txPropagator.Post (txHash, txEnvelopeDto)
         | TxStored (txHash, isFetched) ->
             invokeApplier ()
         | EquivocationProofDetected (proof, validatorAddress) ->

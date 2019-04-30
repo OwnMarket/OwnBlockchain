@@ -1014,21 +1014,36 @@ module Workflows =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let propagateTx publicAddress sendMessageToPeers getTx getNetworkId (txHash : TxHash) =
-        match getTx txHash with
-        | Ok (txEnvelopeDto : TxEnvelopeDto) ->
+    let propagateTx
+        publicAddress
+        sendMessageToPeers
+        getTx
+        getNetworkId
+        (txHash : TxHash)
+        (txEnvelopeDto : TxEnvelopeDto option)
+        =
+
+        match txEnvelopeDto with
+        | Some txEnvelope -> txEnvelope |> Some
+        | None ->
+            match getTx txHash with
+            | Ok txEnvelope -> txEnvelope |> Some
+            | _ ->
+                Log.errorf "Tx %s does not exist" txHash.Value
+                None
+        |> Option.iter (fun txEnvelope ->
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage =
                     {
                         MessageId = Tx txHash
                         SenderAddress = publicAddress |> Option.map NetworkAddress
-                        Data = Serialization.serializeBinary txEnvelopeDto
+                        Data = Serialization.serializeBinary txEnvelope
                     }
                     |> GossipMessage
-                }
+            }
             |> sendMessageToPeers
-        | _ -> Log.errorf "Tx %s does not exist" txHash.Value
+        )
 
     let repropagatePendingTx
         getPendingTxs
@@ -1049,7 +1064,7 @@ module Workflows =
             minTxActionFee
             maxTxCountPerBlock
         |> Processing.orderTxSet
-        |> List.iter (TxVerified >> publishEvent)
+        |> List.iter (fun txHash -> (txHash, None) |> TxVerified |> publishEvent)
 
     let propagateEquivocationProof
         publicAddress
@@ -1403,7 +1418,7 @@ module Workflows =
                         senderAddress
                         tx.TotalFee
 
-                txHash |> TxVerified |> publishEvent
+                (txHash, Some txEnvelopeDto) |> TxVerified |> publishEvent
 
             do! saveTx txHash txEnvelopeDto
             do! tx

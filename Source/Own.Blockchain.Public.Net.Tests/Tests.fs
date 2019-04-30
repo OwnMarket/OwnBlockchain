@@ -121,7 +121,7 @@ module PeerTests =
         | TxReceived (txHash, _)
         | TxFetched (txHash, _) ->
             ()
-        | TxVerified txHash ->
+        | TxVerified (txHash, _) ->
             txPropagator node txHash
         | TxStored (txHash, isFetched) ->
             if not isFetched then
