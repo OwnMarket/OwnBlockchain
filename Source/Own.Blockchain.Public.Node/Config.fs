@@ -229,7 +229,7 @@ type Config () =
         with get () =
             match Int32.TryParse config.["TxCacheExpirationTime"] with
             | true, timeout when timeout > 0 -> timeout
-            | _ -> 10
+            | _ -> 30
 
     static member MaxTxCacheSize
         with get () =
