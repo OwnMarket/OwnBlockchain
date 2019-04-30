@@ -157,7 +157,7 @@ type Config () =
     static member PeerResponseThrottlingTime // Milliseconds
         with get () =
             match Int32.TryParse config.["PeerResponseThrottlingTime"] with
-            | true, cycles when cycles >= 0 -> cycles
+            | true, value when value >= 0 -> value
             | _ -> 3000
 
     static member NetworkSendoutRetryTimeout // Milliseconds
@@ -252,7 +252,7 @@ type Config () =
     static member TxRepropagationCount
         with get () =
             match Int32.TryParse config.["TxRepropagationCount"] with
-            | true, fanout when fanout > 0 -> fanout
+            | true, value when value > 0 -> value
             | _ -> 10
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
