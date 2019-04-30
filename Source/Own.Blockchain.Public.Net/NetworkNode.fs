@@ -608,8 +608,7 @@ type NetworkNode
         __.Throttle sentRequests requestId (fun _ ->
             Stats.increment Stats.Counter.PeerRequests
             Log.debugf "Sending request for %A" requestId
-            let mutable preferredPeer = preferredPeer
-            let rec loop messageId =
+            let rec loop messageId preferredPeer =
                 async {
                     let usedAddresses =
                         match peerSelectionSentRequests.TryGetValue messageId with
@@ -648,7 +647,6 @@ type NetworkNode
                         sendRequestMessage peerMessageEnvelopeDto address.Value
                     )
 
-                    preferredPeer <- None
                     do! Async.Sleep(4 * gossipConfig.GossipIntervalMillis)
 
                     (*
@@ -658,11 +656,11 @@ type NetworkNode
                     match (peerSelectionSentRequests.TryGetValue messageId) with
                     | true, addresses ->
                         if not (addresses.IsEmpty) then
-                            return! loop messageId
+                            return! loop messageId None
                     | _ -> ()
                 }
 
-            Async.Start (loop requestId, cts.Token)
+            Async.Start (loop requestId preferredPeer, cts.Token)
         )
 
     member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
