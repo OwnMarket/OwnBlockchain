@@ -61,3 +61,22 @@ module Workers =
 
         loop ()
         |> Async.Start
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Tx propagation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let startPendingTxMonitor () =
+        let fetchPendingTxInterval = 60 * 1000 // 60 seconds
+        let rec loop () =
+            async {
+                do! Async.Sleep fetchPendingTxInterval
+                try
+                    Composition.repropagatePendingTx Agents.publishEvent
+                with
+                | ex -> Log.error ex.AllMessagesAndStackTraces
+                return! loop ()
+            }
+
+        loop ()
+        |> Async.Start

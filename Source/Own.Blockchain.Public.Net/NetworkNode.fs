@@ -362,7 +362,7 @@ type NetworkNode
             }
             |> __.SendMessage
         | None -> // Request peer list.
-            __.SendRequestDataMessage NetworkMessageId.PeerList
+            __.SendRequestDataMessage NetworkMessageId.PeerList None
 
         printActivePeers ()
 
@@ -604,10 +604,11 @@ type NetworkNode
 
                 func requestItem
 
-    member __.SendRequestDataMessage requestId =
+    member __.SendRequestDataMessage requestId (preferredPeer : NetworkAddress option) =
         __.Throttle sentRequests requestId (fun _ ->
             Stats.increment Stats.Counter.PeerRequests
             Log.debugf "Sending request for %A" requestId
+            let mutable preferredPeer = preferredPeer
             let rec loop messageId =
                 async {
                     let usedAddresses =
@@ -619,7 +620,7 @@ type NetworkNode
                     |> List.map (fun m -> m.NetworkAddress)
                     |> List.except usedAddresses
                     |> List.filter (isSelf >> not)
-                    |> __.PickRandomPeer
+                    |> __.SelectPeer preferredPeer
                     |> tee (function
                         | Some networkAddress ->
                             peerSelectionSentRequests.AddOrUpdate(
@@ -647,6 +648,7 @@ type NetworkNode
                         sendRequestMessage peerMessageEnvelopeDto address.Value
                     )
 
+                    preferredPeer <- None
                     do! Async.Sleep(4 * gossipConfig.GossipIntervalMillis)
 
                     (*
@@ -704,7 +706,10 @@ type NetworkNode
 
         peerSelectionSentRequests.TryRemove responseDataMessage.MessageId |> ignore
 
-    member private __.PickRandomPeer networkAddresses =
-        networkAddresses
-        |> List.shuffle
-        |> List.tryHead
+    member private __.SelectPeer preferredPeer peerList =
+        match preferredPeer with
+        | Some _ -> preferredPeer
+        | None ->
+            peerList
+            |> List.shuffle
+            |> List.tryHead

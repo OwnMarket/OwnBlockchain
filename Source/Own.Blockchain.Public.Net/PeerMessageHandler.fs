@@ -98,11 +98,11 @@ module internal PeerMessageHandler =
         | Some n -> n.SendMessage message
         | None -> failwith "Please start gossip first"
 
-    let requestFromPeer requestId =
+    let requestFromPeer requestId preferredPeer =
         match node with
         | Some n ->
             if not (n.IsRequestPending requestId) then
-                n.SendRequestDataMessage requestId
+                n.SendRequestDataMessage requestId preferredPeer
         | None -> failwith "Please start gossip first"
 
     let respondToPeer targetIdentity peerMessageEnvelope =

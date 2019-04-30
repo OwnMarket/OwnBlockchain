@@ -27,6 +27,7 @@ module Cli =
         Agents.startValidator ()
         Workers.startBlockchainHeadPoller ()
         Workers.startFetcher ()
+        Workers.startPendingTxMonitor ()
         Api.start () // Blocks and waits for the exit signal.
 
         // Cleanup

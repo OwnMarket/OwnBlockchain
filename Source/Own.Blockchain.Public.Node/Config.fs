@@ -249,6 +249,12 @@ type Config () =
             | true, cacheSize when cacheSize > 0 -> cacheSize
             | _ -> 20
 
+    static member TxRepropagationCount
+        with get () =
+            match Int32.TryParse config.["TxRepropagationCount"] with
+            | true, fanout when fanout > 0 -> fanout
+            | _ -> 10
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain Configuration (initial genesis values)
     ////////////////////////////////////////////////////////////////////////////////////////////////////
