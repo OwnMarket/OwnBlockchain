@@ -8,7 +8,7 @@ type AppEvent =
     | TxSubmitted of TxHash
     | TxReceived of TxHash * TxEnvelopeDto
     | TxFetched of TxHash * TxEnvelopeDto
-    | TxVerified of TxHash
+    | TxVerified of TxHash * TxEnvelopeDto option
     | TxStored of TxHash * isFetched : bool
     | BlockCommitted of BlockNumber * BlockEnvelopeDto
     | BlockReceived of BlockNumber * BlockEnvelopeDto
