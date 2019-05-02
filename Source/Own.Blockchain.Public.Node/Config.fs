@@ -166,6 +166,12 @@ type Config () =
             | true, timeout when timeout >= 0 -> timeout
             | _ -> 20
 
+    static member PeerMessageMaxSize // Bytes
+        with get () =
+            match Int32.TryParse config.["PeerMessageMaxSize"] with
+            | true, size when size >= 0 -> size
+            | _ -> 1_000_000
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////

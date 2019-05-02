@@ -603,6 +603,7 @@ module Composition =
             Config.GossipMaxMissedHeartbeats
             Config.PeerResponseThrottlingTime
             Config.NetworkSendoutRetryTimeout
+            Config.PeerMessageMaxSize
             getNetworkId
             getAllPeerNodes
             savePeerNode

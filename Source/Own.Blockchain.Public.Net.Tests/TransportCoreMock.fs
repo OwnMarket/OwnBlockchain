@@ -12,6 +12,7 @@ type internal TransportCoreMock
     networkId,
     peerIdentity,
     networkSendoutRetryTimeout,
+    peerMessageMaxSize,
     messageQueue : ConcurrentDictionary<string, ConcurrentQueue<byte[]>>,
     receiveCallback : PeerMessageEnvelopeDto -> unit
     ) =

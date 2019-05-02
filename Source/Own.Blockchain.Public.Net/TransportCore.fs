@@ -16,6 +16,7 @@ type internal TransportCore
     networkId,
     peerIdentity,
     networkSendoutRetryTimeout,
+    peerMessageMaxSize,
     receivePeerMessage
     ) =
 
@@ -49,18 +50,21 @@ type internal TransportCore
                 }
             |> Some
 
-    let netMQQueueToDict (queue : NetMQQueue<'T1 *'T2>) =
-        let mutable queueItem = Unchecked.defaultof<'T1>, Unchecked.defaultof<'T2>
-        let dict = new ConcurrentDictionary<'T1, HashSet<'T2>>()
-        while queue.TryDequeue(&queueItem, TimeSpan.Zero) do
-            let key, value = queueItem
-            match dict.TryGetValue key with
-            | true, itemSet ->
-                itemSet.Add value |> ignore
+    let netMQQueueToDict (queue : NetMQQueue<'T1 * PeerMessageEnvelopeDto>) =
+        let mutable queueItem = Unchecked.defaultof<'T1>, Unchecked.defaultof<PeerMessageEnvelopeDto>
+        let dict = new ConcurrentDictionary<'T1, HashSet<PeerMessageEnvelopeDto>>()
+        let mutable peerMessageSize = 0
+        while queue.TryDequeue(&queueItem, TimeSpan.Zero)
+            && (peerMessageMaxSize = 0 || peerMessageSize <= peerMessageMaxSize) do
+            let target, peerMessageEnvelope = queueItem
+            peerMessageSize <- peerMessageSize + peerMessageEnvelope.PeerMessage.MessageData.Length
+            match dict.TryGetValue target with
+            | true, peerMessages ->
+                peerMessages.Add peerMessageEnvelope |> ignore
             | _ ->
-                let itemSet = new HashSet<'T2>()
-                itemSet.Add value |> ignore
-                dict.AddOrUpdate (key, itemSet, fun _ _ -> itemSet) |> ignore
+                let peerMessages = new HashSet<PeerMessageEnvelopeDto>()
+                peerMessages.Add peerMessageEnvelope |> ignore
+                dict.AddOrUpdate (target, peerMessages, fun _ _ -> peerMessages) |> ignore
         dict
 
     let composeMultipartMessage (msg : byte[]) (identity : byte[] option) =

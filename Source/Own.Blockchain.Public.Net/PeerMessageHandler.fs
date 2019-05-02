@@ -22,6 +22,7 @@ module internal PeerMessageHandler =
         gossipMaxMissedHeartbeats
         peerResponseThrottingTime
         networkSendoutRetryTimeout
+        peerMessageMaxSize
         getNetworkId
         getAllPeerNodes
         (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
@@ -49,6 +50,7 @@ module internal PeerMessageHandler =
                 MaxConnectedPeers = maxConnectedPeers
                 DnsResolverCacheExpirationTime = dnsResolverCacheExpirationTime
                 NetworkSendoutRetryTimeout = networkSendoutRetryTimeout
+                PeerMessageMaxSize = peerMessageMaxSize
             }
 
         let gossipConfig = {

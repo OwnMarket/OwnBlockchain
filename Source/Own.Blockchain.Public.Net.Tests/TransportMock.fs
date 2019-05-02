@@ -6,12 +6,13 @@ module TransportMock =
 
     let mutable private transportCoreMock : TransportCoreMock option = None
     let messageQueue = new ConcurrentDictionary<string, ConcurrentQueue<byte[]>>()
-    let init networkId identity networkSendoutRetryTimeout receivePeerMessage =
+    let init networkId identity networkSendoutRetryTimeout peerMessageMaxSize receivePeerMessage =
         let transport =
             TransportCoreMock (
                 networkId,
                 identity,
                 networkSendoutRetryTimeout,
+                peerMessageMaxSize,
                 messageQueue,
                 receivePeerMessage
             )

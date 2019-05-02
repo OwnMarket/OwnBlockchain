@@ -236,6 +236,7 @@ type NetworkNode
             networkId.Value
             nodeConfig.Identity.Value
             nodeConfig.NetworkSendoutRetryTimeout
+            nodeConfig.PeerMessageMaxSize
             (__.ReceivePeerMessage publishEvent)
         __.StartNode ()
         __.StartGossipDiscovery ()
