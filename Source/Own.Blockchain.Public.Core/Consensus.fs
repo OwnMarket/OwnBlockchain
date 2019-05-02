@@ -1056,7 +1056,7 @@ module Consensus =
                     |> List.find (fun v -> v.ValidatorAddress = block.Header.ProposerAddress)
 
                 missingTxs |> List.iter (requestTx proposer.NetworkAddress)
-                missingEquivocationProofs |> List.iter requestEquivocationProof
+                missingEquivocationProofs |> List.iter (requestEquivocationProof proposer.NetworkAddress)
                 false
 
         let isValidBlock = memoizeBy (fun (b : Block) -> b.Header.Hash) <| fun block ->

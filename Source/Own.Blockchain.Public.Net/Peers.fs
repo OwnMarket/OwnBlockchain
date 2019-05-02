@@ -89,6 +89,9 @@ module Peers =
     let requestEquivocationProofFromPeer equivocationProofHash =
         requestFromRandomPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
 
+    let requestEquivocationProofFromPreferredPeer preferredPeer equivocationProofHash =
+        requestFromPreferredPeer preferredPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
+
     let respondToPeer targetIdentity peerMessage =
         invokeRespondToPeer (targetIdentity, peerMessage)
 
