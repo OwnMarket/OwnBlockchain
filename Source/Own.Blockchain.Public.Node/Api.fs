@@ -49,6 +49,15 @@ module Api =
             return! response next ctx
         }
 
+    let getPeersHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getPeersApi ()
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getTxPoolInfoHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -228,15 +237,6 @@ module Api =
             return! response next ctx
         }
 
-    let getPeersHandler : HttpHandler = fun next ctx ->
-        task {
-            let response =
-                Composition.getPeersApi ()
-                |> toApiResponse
-
-            return! response next ctx
-        }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -247,6 +247,7 @@ module Api =
                 route "/" >=> text "TODO: Show link to the help page"
                 route "/stats" >=> getStatsHandler
                 route "/network" >=> getNetworkStatsHandler
+                route "/peers" >=> getPeersHandler
                 route "/pool" >=> getTxPoolInfoHandler
                 routef "/tx/%s/raw" getRawTxHandler
                 routef "/tx/%s" getTxHandler
@@ -264,7 +265,6 @@ module Api =
                 routef "/asset/%s" getAssetHandler
                 route "/validators" >=> getValidatorsHandler
                 routef "/validator/%s/stakes" getValidatorStakesHandler
-                route "/peers" >=> getPeersHandler
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler
