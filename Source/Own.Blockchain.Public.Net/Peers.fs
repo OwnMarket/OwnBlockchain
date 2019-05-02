@@ -95,6 +95,8 @@ module Peers =
 
     let updatePeerList = PeerMessageHandler.updatePeerList
 
+    let getNetworkStats () = PeerMessageHandler.getNetworkStats ()
+
     let startNetworkAgents () =
         startSendPeerMessageDispatcher ()
         startRequestFromPeerDispatcher ()

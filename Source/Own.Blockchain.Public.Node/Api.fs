@@ -39,6 +39,16 @@ module Api =
             return! response next ctx
         }
 
+    let getNetworkStatsHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getNetworkStatsApi ()
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getTxPoolInfoHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -236,6 +246,7 @@ module Api =
             GET >=> choose [
                 route "/" >=> text "TODO: Show link to the help page"
                 route "/stats" >=> getStatsHandler
+                route "/network" >=> getNetworkStatsHandler
                 route "/pool" >=> getTxPoolInfoHandler
                 routef "/tx/%s/raw" getRawTxHandler
                 routef "/tx/%s" getTxHandler

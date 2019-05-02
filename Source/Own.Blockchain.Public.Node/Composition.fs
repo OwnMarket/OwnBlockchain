@@ -625,3 +625,5 @@ module Composition =
     let discoverNetwork () = Peers.discoverNetwork Config.NetworkDiscoveryTime
 
     let updatePeerList = Peers.updatePeerList
+
+    let getNetworkStatsApi () = Peers.getNetworkStats ()

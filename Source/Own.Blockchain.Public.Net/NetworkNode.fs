@@ -2,7 +2,6 @@
 
 open System
 open System.Net
-open System.Collections.Generic
 open System.Collections.Concurrent
 open System.Threading
 open Own.Common.FSharp
@@ -10,6 +9,10 @@ open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Events
+
+type NetworkStats = {
+    ReceivesGossip : bool
+}
 
 type NetworkNode
     (
@@ -37,6 +40,7 @@ type NetworkNode
 
     let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let peerSelectionSentRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
+    let mutable lastMessageReceivedTimestamp = DateTime.UtcNow
     let sentRequests = new ConcurrentDictionary<NetworkMessageId, DateTime>()
     let receivedRequests = new ConcurrentDictionary<RequestDataMessage, DateTime>()
 
@@ -212,6 +216,12 @@ type NetworkNode
 
     member __.Identity =
         nodeConfig.Identity
+
+    member __.GetNetworkStats () =
+        let receivesGossip = lastMessageReceivedTimestamp.AddSeconds(30.) >= DateTime.UtcNow
+        {
+            ReceivesGossip = receivesGossip
+        }
 
     member __.StartSentRequestsMonitor () =
         startRequestsMonitor sentRequests
@@ -569,9 +579,15 @@ type NetworkNode
     member private __.ReceivePeerMessage publishEvent dto =
         let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto dto
         match peerMessageEnvelope.PeerMessage with
-        | GossipDiscoveryMessage m -> __.ReceivePeers m
-        | GossipMessage m -> __.ReceiveGossipMessage publishEvent m
-        | MulticastMessage m -> __.ReceiveMulticastMessage publishEvent m
+        | GossipDiscoveryMessage m ->
+            lastMessageReceivedTimestamp <- DateTime.UtcNow
+            __.ReceivePeers m
+        | GossipMessage m ->
+            lastMessageReceivedTimestamp <- DateTime.UtcNow
+            __.ReceiveGossipMessage publishEvent m
+        | MulticastMessage m ->
+            lastMessageReceivedTimestamp <- DateTime.UtcNow
+            __.ReceiveMulticastMessage publishEvent m
         | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m
         | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m
 
