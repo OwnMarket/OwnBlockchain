@@ -124,3 +124,8 @@ module internal PeerMessageHandler =
         match node with
         | Some n -> n.ReceiveMembers {ActiveMembers = activeMembers}
         | None -> failwith "Please start gossip first"
+
+    let getNetworkStats () =
+        match node with
+        | Some n -> n.GetNetworkStats ()
+        | None -> failwith "Please start gossip first"
