@@ -79,7 +79,7 @@ module Api =
 
                     Composition.submitTx Agents.publishEvent false requestDto
                     |> tee (Result.iter (TxSubmitted >> Agents.publishEvent))
-                    |> Result.map (fun txHash -> { SubmitTxResponseDto.TxHash = txHash.Value })
+                    |> Result.map (fun (txHash, _) -> { SubmitTxResponseDto.TxHash = txHash.Value })
                 with
                 | _ -> Result.appError "Invalid JSON format"
                 |> toApiResponse

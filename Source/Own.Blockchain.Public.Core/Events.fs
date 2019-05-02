@@ -5,10 +5,10 @@ open Own.Blockchain.Public.Core.Dtos
 
 type AppEvent =
     | PeerMessageReceived of PeerMessageEnvelope
-    | TxSubmitted of TxHash
+    | TxSubmitted of TxHash * TxEnvelopeDto
     | TxReceived of TxHash * TxEnvelopeDto
     | TxFetched of TxHash * TxEnvelopeDto
-    | TxVerified of TxHash * TxEnvelopeDto option
+    | TxVerified of TxHash * TxEnvelopeDto
     | TxStored of TxHash * isFetched : bool
     | BlockCommitted of BlockNumber * BlockEnvelopeDto
     | BlockReceived of BlockNumber * BlockEnvelopeDto

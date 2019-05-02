@@ -10,7 +10,7 @@ open Own.Blockchain.Public.Crypto
 
 module Agents =
 
-    let private txPropagator = Agent.start <| fun (txHash : TxHash, txEnvelopeDto : TxEnvelopeDto option) ->
+    let private txPropagator = Agent.start <| fun (txHash : TxHash, txEnvelopeDto : TxEnvelopeDto) ->
         async {
             Log.debugf "Propagating Tx %s" txHash.Value
             Composition.propagateTx txHash txEnvelopeDto
@@ -85,7 +85,7 @@ module Agents =
             m.PeerMessage.CaseName
             |> formatMessage
             |> Log.debug
-        | TxSubmitted h ->
+        | TxSubmitted (h, _) ->
             h.Value
             |> formatMessage
             |> Log.info
@@ -202,9 +202,9 @@ module Agents =
         match event with
         | PeerMessageReceived message ->
             invokePeerMessageHandler message
-        | TxSubmitted txHash ->
+        | TxSubmitted (txHash, txEnvelopeDto) ->
             invokeApplier ()
-            txPropagator.Post (txHash, None)
+            txPropagator.Post (txHash, txEnvelopeDto)
         | TxReceived (txHash, txEnvelopeDto) ->
             invokeTxVerifier (txEnvelopeDto, false)
         | TxFetched (txHash, txEnvelopeDto) ->
@@ -287,7 +287,7 @@ module Agents =
                 async {
                     Composition.submitTx publishEvent isFetched txEnvelopeDto
                     |> Result.handle
-                        (fun txHash -> (txHash, isFetched) |> TxStored |> publishEvent)
+                        (fun (txHash, _) -> (txHash, isFetched) |> TxStored |> publishEvent)
                         Log.appErrors
                 }
             |> Some

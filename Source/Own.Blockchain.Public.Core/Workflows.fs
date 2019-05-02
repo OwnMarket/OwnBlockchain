@@ -1020,32 +1020,23 @@ module Workflows =
         getTx
         getNetworkId
         (txHash : TxHash)
-        (txEnvelopeDto : TxEnvelopeDto option)
+        (txEnvelopeDto : TxEnvelopeDto)
         =
 
-        match txEnvelopeDto with
-        | Some txEnvelope -> txEnvelope |> Some
-        | None ->
-            match getTx txHash with
-            | Ok txEnvelope -> txEnvelope |> Some
-            | _ ->
-                Log.errorf "Tx %s does not exist" txHash.Value
-                None
-        |> Option.iter (fun txEnvelope ->
-            {
-                PeerMessageEnvelope.NetworkId = getNetworkId ()
-                PeerMessage =
-                    {
-                        MessageId = Tx txHash
-                        SenderAddress = publicAddress |> Option.map NetworkAddress
-                        Data = Serialization.serializeBinary txEnvelope
-                    }
-                    |> GossipMessage
-            }
-            |> sendMessageToPeers
-        )
+        {
+            PeerMessageEnvelope.NetworkId = getNetworkId ()
+            PeerMessage =
+                {
+                    MessageId = Tx txHash
+                    SenderAddress = publicAddress |> Option.map NetworkAddress
+                    Data = Serialization.serializeBinary txEnvelopeDto
+                }
+                |> GossipMessage
+        }
+        |> sendMessageToPeers
 
     let repropagatePendingTx
+        getTx
         getPendingTxs
         getChxAddressStateFromStorage
         getAvailableChxBalanceFromStorage
@@ -1064,7 +1055,12 @@ module Workflows =
             minTxActionFee
             maxTxCountPerBlock
         |> Processing.orderTxSet
-        |> List.iter (fun txHash -> (txHash, None) |> TxVerified |> publishEvent)
+        |> List.iter (fun txHash ->
+            match getTx txHash with
+            | Ok txEnvelopeDto -> (txHash, txEnvelopeDto) |> TxVerified |> publishEvent
+            | _ ->
+                Log.errorf "Tx %s does not exist" txHash.Value
+            )
 
     let propagateEquivocationProof
         publicAddress
@@ -1395,7 +1391,7 @@ module Workflows =
         publishEvent
         isIncludedInBlock
         txEnvelopeDto
-        : Result<TxHash, AppErrors>
+        : Result<TxHash * TxEnvelopeDto, AppErrors>
         =
 
         result {
@@ -1418,14 +1414,14 @@ module Workflows =
                         senderAddress
                         tx.TotalFee
 
-                (txHash, Some txEnvelopeDto) |> TxVerified |> publishEvent
+                (txHash, txEnvelopeDto) |> TxVerified |> publishEvent
 
             do! saveTx txHash txEnvelopeDto
             do! tx
                 |> Mapping.txToTxInfoDto
                 |> saveTxToDb
 
-            return txHash
+            return (txHash, txEnvelopeDto)
         }
 
     let getTxApi

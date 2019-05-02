@@ -45,7 +45,7 @@ module SubmissionTests =
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
-        let expectedResult : Result<TxHash, AppErrors> = Error [AppError error]
+        let expectedResult : Result<TxHash * TxEnvelopeDto, AppErrors> = Error [AppError error]
 
         // COMPOSE
         let getAvailableChxBalance =
@@ -127,7 +127,7 @@ module SubmissionTests =
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
         let expectedError = sprintf "Max allowed number of actions per transaction is %i" maxActionCountPerTx
-        let expectedResult : Result<TxHash, AppErrors> = Error [AppError expectedError]
+        let expectedResult : Result<TxHash * TxEnvelopeDto, AppErrors> = Error [AppError expectedError]
 
         // COMPOSE
         let getAvailableChxBalance _ =
