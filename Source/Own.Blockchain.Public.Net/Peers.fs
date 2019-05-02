@@ -65,26 +65,29 @@ module Peers =
     let sendMessage peerMessageEnvelope =
         invokeSendPeerMessage peerMessageEnvelope
 
-    let private requestFromPeer messageId preferredPeer =
-        invokeRequestFromPeer (messageId, preferredPeer)
+    let private requestFromRandomPeer messageId =
+        invokeRequestFromPeer (messageId, None)
+
+    let private requestFromPreferredPeer preferredPeer messageId =
+        invokeRequestFromPeer (messageId, Some preferredPeer)
 
     let requestBlockFromPeer blockNumber =
-        requestFromPeer (NetworkMessageId.Block blockNumber) None
+        requestFromRandomPeer (NetworkMessageId.Block blockNumber)
 
     let requestLastBlockFromPeer () =
         requestBlockFromPeer (BlockNumber -1L)
 
     let requestBlockchainHeadFromPeer () =
-        requestFromPeer NetworkMessageId.BlockchainHead None
+        requestFromRandomPeer NetworkMessageId.BlockchainHead
 
     let requestTxFromPeer txHash =
-        requestFromPeer (NetworkMessageId.Tx txHash) None
+        requestFromRandomPeer (NetworkMessageId.Tx txHash)
 
-    let requestTxFromPreferredPeer txHash preferredPeer =
-        requestFromPeer (NetworkMessageId.Tx txHash) preferredPeer
+    let requestTxFromPreferredPeer preferredPeer txHash =
+        requestFromPreferredPeer preferredPeer (NetworkMessageId.Tx txHash)
 
     let requestEquivocationProofFromPeer equivocationProofHash =
-        requestFromPeer (NetworkMessageId.EquivocationProof equivocationProofHash) None
+        requestFromRandomPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
 
     let respondToPeer targetIdentity peerMessage =
         invokeRespondToPeer (targetIdentity, peerMessage)

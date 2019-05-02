@@ -449,7 +449,7 @@ module Composition =
             proposeBlock
             txExists
             equivocationProofExists
-            Peers.requestTxFromPeer
+            Peers.requestTxFromPreferredPeer
             Peers.requestEquivocationProofFromPeer
             Hashing.isValidHash
             Hashing.isValidBlockchainAddress

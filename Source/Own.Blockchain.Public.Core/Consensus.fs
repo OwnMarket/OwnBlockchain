@@ -1051,7 +1051,11 @@ module Consensus =
             | [], [] ->
                 true
             | _ ->
-                missingTxs |> List.iter requestTx
+                let proposer =
+                    getValidatorsAtHeight (block.Header.Number - 1)
+                    |> List.find (fun v -> v.ValidatorAddress = block.Header.ProposerAddress)
+
+                missingTxs |> List.iter (requestTx proposer.NetworkAddress)
                 missingEquivocationProofs |> List.iter requestEquivocationProof
                 false
 
