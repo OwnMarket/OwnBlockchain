@@ -571,7 +571,7 @@ type ResponseDataMessageDto = {
 [<MessagePackObject>]
 type PeerMessageDto = {
     [<Key(0)>] MessageType : string
-    [<Key(1)>] MessageData : obj
+    [<Key(1)>] MessageData : byte[]
 }
 
 [<CLIMutable>]

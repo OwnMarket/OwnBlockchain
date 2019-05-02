@@ -22,7 +22,7 @@ type internal TransportCoreMock
         message |> Serialization.serializeBinary
 
     let unpackMessage message =
-        message |> Serialization.deserializePeerMessage
+        message |> Serialization.deserializePeerMessageEnvelope
 
     let send (msg : byte[]) targetAddress =
         let set =

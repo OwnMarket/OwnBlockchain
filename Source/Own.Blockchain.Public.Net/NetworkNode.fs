@@ -577,7 +577,7 @@ type NetworkNode
             |> publishEvent
 
     member private __.ReceivePeerMessage publishEvent dto =
-        let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto dto
+        let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto Serialization.deserializePeerMessage dto
         match peerMessageEnvelope.PeerMessage with
         | GossipDiscoveryMessage m ->
             lastMessageReceivedTimestamp <- DateTime.UtcNow

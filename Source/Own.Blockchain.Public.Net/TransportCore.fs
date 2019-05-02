@@ -83,7 +83,7 @@ type internal TransportCore
         composeMultipartMessage bytes identity
 
     let unpackMessage message =
-        message |> Serialization.deserializePeerMessage
+        message |> Serialization.deserializePeerMessageEnvelope
 
     let receiveMessageCallback (eventArgs : NetMQSocketEventArgs) =
         let mutable message = new NetMQMessage()

@@ -1022,8 +1022,9 @@ module Mapping =
             Data = responseDataMessage.Data
         }
 
-    let private peerMessageFromDto (dto : PeerMessageDto) =
-        match dto.MessageData with
+    let private peerMessageFromDto (deserialize : PeerMessageDto -> obj) (dto : PeerMessageDto) =
+        let messageData = deserialize dto
+        match messageData with
         | :? GossipDiscoveryMessageDto as m ->
             gossipDiscoveryMessageFromDto m |> GossipDiscoveryMessage
         | :? GossipMessageDto as m ->
@@ -1050,10 +1051,10 @@ module Mapping =
             MessageData = data
         }
 
-    let peerMessageEnvelopeFromDto (dto : PeerMessageEnvelopeDto) =
+    let peerMessageEnvelopeFromDto (deserialize : PeerMessageDto -> obj) (dto : PeerMessageEnvelopeDto) =
         {
             PeerMessageEnvelope.NetworkId = NetworkId dto.NetworkId
-            PeerMessage = peerMessageFromDto dto.PeerMessage
+            PeerMessage = peerMessageFromDto deserialize dto.PeerMessage
         }
 
     let peerMessageEnvelopeToDto (serialize : obj -> byte[]) (peerMessageEnvelope : PeerMessageEnvelope) =
