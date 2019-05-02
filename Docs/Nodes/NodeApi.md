@@ -21,6 +21,9 @@ Endpoint | Verb | Description
 `/validators?activeOnly={true/false}` | `GET` | List of validators, optionally filtering the active only ones
 `/validator/{validatorAddress}/stakes` | `GET` | List of stakes for a validator
 `/peers` | `GET` | List of peers
+`/stats` | `GET` | Various node statistics
+`/network` | `GET` | Various network statistics
+`/pool` | `GET` | Pending Tx count in the pool
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
 
@@ -610,5 +613,62 @@ Response JSON payload:
         "127.0.0.1:25703",
         "127.0.0.1:25704"
     ]
+}
+```
+
+
+## `GET /stats`
+
+Request URL:
+```
+/stats
+```
+
+Response JSON payload:
+```json
+{
+    "nodeStartTime": "2019-05-02 09:35:16Z",
+    "nodeUpTime": "0.00:00:33",
+    "nodeCurrentTime": "2019-05-02 09:35:50Z",
+    "counters": [
+        {
+            "counter": "PeerRequests",
+            "value": 1
+        },
+        {
+            "counter": "PeerResponses",
+            "value": 4
+        }
+    ]
+}
+```
+
+
+## `GET /network`
+
+Request URL:
+```
+/network
+```
+
+Response JSON payload:
+```json
+{
+    "receivesGossip": true
+}
+```
+
+
+## `GET /pool`
+
+Request URL:
+```
+/pool
+```
+
+Response JSON payload:
+```json
+{
+    "pendingTxs": 0
 }
 ```
