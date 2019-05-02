@@ -116,7 +116,7 @@ module PeerTests =
         match appEvent with
         | PeerMessageReceived message ->
             invokePeerMessageHandler node message
-        | TxSubmitted txHash ->
+        | TxSubmitted (txHash, _) ->
             txPropagator node txHash
         | TxReceived (txHash, _)
         | TxFetched (txHash, _) ->

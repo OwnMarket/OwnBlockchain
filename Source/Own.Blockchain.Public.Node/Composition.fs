@@ -556,6 +556,7 @@ module Composition =
 
     let repropagatePendingTx publishEvent =
         Workflows.repropagatePendingTx
+            getTx
             getPendingTxs
             getChxAddressState
             getAvailableChxBalance
