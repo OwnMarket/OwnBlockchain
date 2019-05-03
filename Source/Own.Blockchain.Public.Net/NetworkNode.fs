@@ -43,6 +43,7 @@ type NetworkNode
     let mutable lastMessageReceivedTimestamp = DateTime.UtcNow
     let sentRequests = new ConcurrentDictionary<NetworkMessageId, DateTime>()
     let receivedRequests = new ConcurrentDictionary<RequestDataMessage, DateTime>()
+    let receivedGossipMessages = new ConcurrentDictionary<NetworkMessageId, DateTime>()
 
     let dnsResolverCache = new ConcurrentDictionary<string, NetworkAddress option * DateTime>()
 
@@ -187,15 +188,15 @@ type NetworkNode
         activePeers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
         savePeerNode m.NetworkAddress
 
-    let startRequestsMonitor (requestsMap : ConcurrentDictionary<_, DateTime>) =
+    let startCachedDataMonitor (map : ConcurrentDictionary<_, DateTime>) =
         let rec loop () =
             async {
                 let lastValidTime = DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float)
-                requestsMap
+                map
                 |> List.ofDict
                 |> List.filter (fun (_, fetchedAt) -> fetchedAt < lastValidTime)
-                |> List.iter (fun (requestItem, _) ->
-                    requestsMap.TryRemove requestItem |> ignore
+                |> List.iter (fun (item, _) ->
+                    map.TryRemove item |> ignore
                 )
                 do! Async.Sleep(gossipConfig.GossipIntervalMillis)
                 return! loop ()
@@ -223,11 +224,14 @@ type NetworkNode
             ReceivesGossip = receivesGossip
         }
 
-    member __.StartSentRequestsMonitor () =
-        startRequestsMonitor sentRequests
+    member private __.StartSentRequestsMonitor () =
+        startCachedDataMonitor sentRequests
 
-    member __.StartReceivedRequestsMonitor () =
-        startRequestsMonitor receivedRequests
+    member private __.StartReceivedRequestsMonitor () =
+        startCachedDataMonitor receivedRequests
+
+    member private __.StartReceivedGossipMessagesMonitor () =
+        startCachedDataMonitor receivedGossipMessages
 
     member __.StartGossip publishEvent =
         Log.debugf "Node identity is %s" (nodeConfig.Identity.Value |> Conversion.bytesToString)
@@ -345,6 +349,7 @@ type NetworkNode
         __.StartDnsResolver ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
+        __.StartReceivedGossipMessagesMonitor ()
         __.StartServer ()
 
     member private __.StartServer () =
@@ -469,6 +474,19 @@ type NetworkNode
     // Gossip Message Passing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    member private __.Throttle (map : ConcurrentDictionary<_, DateTime>) item func =
+        match map.TryGetValue item with
+            | true, timestamp
+                when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
+                () // Throttle the request
+            | _ ->
+                if gossipConfig.PeerResponseThrottlingTime > 0 then
+                    let timestamp = DateTime.UtcNow
+                    map.AddOrUpdate(item, timestamp, fun _ _ -> timestamp)
+                    |> ignore
+
+                func item
+
     member private __.UpdateGossipMessagesProcessingQueue networkAddresses gossipMessageId =
         let found, processedAddresses = gossipMessages.TryGetValue gossipMessageId
         let newProcessedAddresses = if found then networkAddresses @ processedAddresses else networkAddresses
@@ -570,12 +588,17 @@ type NetworkNode
                 [],
                 fun _ _ -> []) |> ignore
 
-            {
-                PeerMessageEnvelope.NetworkId = getNetworkId ()
-                PeerMessage = gossipMessage |> GossipMessage
-            }
-            |> PeerMessageReceived
-            |> publishEvent
+            let peerMessageReceivedEvent =
+                {
+                    PeerMessageEnvelope.NetworkId = getNetworkId ()
+                    PeerMessage = gossipMessage |> GossipMessage
+                }
+                |> PeerMessageReceived
+
+            // Throttle received gossip messages.
+            __.Throttle receivedGossipMessages gossipMessage.MessageId (fun _ ->
+                publishEvent peerMessageReceivedEvent
+            )
 
     member private __.ReceivePeerMessage publishEvent dto =
         let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto Serialization.deserializePeerMessage dto
@@ -607,19 +630,6 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Request/Response
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    member private __.Throttle (requestsMap : ConcurrentDictionary<_, DateTime>) requestItem func =
-        match requestsMap.TryGetValue requestItem with
-            | true, timestamp
-                when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
-                () // Throttle the request
-            | _ ->
-                if gossipConfig.PeerResponseThrottlingTime > 0 then
-                    let timestamp = DateTime.UtcNow
-                    requestsMap.AddOrUpdate(requestItem, timestamp, fun _ _ -> timestamp)
-                    |> ignore
-
-                func requestItem
 
     member __.SendRequestDataMessage requestId (preferredPeer : NetworkAddress option) =
         __.Throttle sentRequests requestId (fun _ ->
