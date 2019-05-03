@@ -213,13 +213,13 @@ module Raw =
                 let key = createMixedHashKey hash.Value
                 loadData<TxEnvelopeDto> dataDir Tx key)
 
-    let txExists (dataDir : string) createMixedHashKey (TxHash txHash) =
-        txHash
+    let txExists (dataDir : string) createMixedHashKey (txHash : TxHash) =
+        txHash.Value
         |> string
         |> createMixedHashKey
         |> createFileName Tx
         |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> File.Exists
+        |> fun key -> txCache.ContainsKey txHash || File.Exists key
 
     // TxResult
     let saveTxResult
@@ -366,9 +366,9 @@ module Raw =
             (fun blockNr ->
                 loadData<BlockEnvelopeDto> dataDir Block (string blockNr.Value))
 
-    let blockExists (dataDir : string) (BlockNumber blockNumber) =
-        blockNumber
+    let blockExists (dataDir : string) (blockNumber : BlockNumber) =
+        blockNumber.Value
         |> string
         |> createFileName Block
         |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> File.Exists
+        |> fun key -> blockCache.ContainsKey blockNumber || File.Exists key
