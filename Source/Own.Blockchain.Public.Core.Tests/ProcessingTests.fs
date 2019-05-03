@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.Core.Tests
 
+open System
 open Xunit
 open Swensen.Unquote
 open Own.Common.FSharp
@@ -496,6 +497,85 @@ module ProcessingTests =
         test <@ output.TxResults.Count = 1 @>
         test <@ output.TxResults.[txHash].Status = Success @>
         test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+    [<Fact>]
+    let ``Processing.processChanges TransferChx 100k times`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000000m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 0m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 10000m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let actionFee = ChxAmount 0.001m
+        let amountPerAction = ChxAmount 1m
+
+        let txs =
+            [
+                for nonce in [1L .. 10L] ->
+                    [
+                        for _ in [1 .. 10000] ->
+                            {
+                                ActionType = "TransferChx"
+                                ActionData =
+                                    {
+                                        RecipientAddress = recipientWallet.Address.Value
+                                        Amount = amountPerAction.Value
+                                    }
+                            } :> obj
+                    ]
+                    |> Helpers.newTx senderWallet (Nonce nonce) (Timestamp 0L) actionFee
+            ]
+
+        let txSet = txs |> List.map fst
+
+        // COMPOSE
+        let getTx txHash =
+            txs |> Map.ofList |> Map.find txHash |> Ok
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        // ACT
+        let sw = System.Diagnostics.Stopwatch()
+        sw.Start()
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                MaxActionCountPerTx = 10000
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+        sw.Stop()
+
+        // ASSERT
+        Decimal.Round(100000m / decimal sw.ElapsedMilliseconds * 1000m).ToString()
+        |> Log.successf "Processing speed: %s transfers per second"
+
+        let totalAmountToTransfer = ChxAmount 100000m
+        let totalFee = ChxAmount (actionFee.Value * 100000m)
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - totalAmountToTransfer - totalFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance + totalAmountToTransfer
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + totalFee
+
+        test <@ output.TxResults.Count = 10 @>
+        for txHash in txSet do
+            test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = Nonce 10L @>
         test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
         test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
