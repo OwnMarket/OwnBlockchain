@@ -474,18 +474,18 @@ type NetworkNode
     // Gossip Message Passing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    member private __.Throttle (map : ConcurrentDictionary<_, DateTime>) item func =
-        match map.TryGetValue item with
+    member private __.Throttle (entries : ConcurrentDictionary<_, DateTime>) entry func =
+        match entries.TryGetValue entry with
             | true, timestamp
                 when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
                 () // Throttle the request
             | _ ->
                 if gossipConfig.PeerResponseThrottlingTime > 0 then
                     let timestamp = DateTime.UtcNow
-                    map.AddOrUpdate(item, timestamp, fun _ _ -> timestamp)
+                    entries.AddOrUpdate(entry, timestamp, fun _ _ -> timestamp)
                     |> ignore
 
-                func item
+                func entry
 
     member private __.UpdateGossipMessagesProcessingQueue networkAddresses gossipMessageId =
         let found, processedAddresses = gossipMessages.TryGetValue gossipMessageId
