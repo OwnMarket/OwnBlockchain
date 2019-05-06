@@ -15,7 +15,7 @@ Before configuring a validator node, make sure to:
 
 For the node to be able to act as a validator, it must have `ValidatorPrivateKey` configured in the `Config.json` file. Please refer to [node environment configuration document](NodeEnvironment.md#configuration-file) for more info.
 
->**DANGER:** DO NOT CONFIGURE MULTIPLE NODES TO USE SAME PRIVATE KEY! THIS WILL EVENTUALLY RESULT IN CONFLICTING MESSAGES AND LEAD TO DEPOSIT SLASHING, AS WELL AS BLACKLISTING OF THE VALIDATOR ADDRESS!
+**DANGER: DO NOT CONFIGURE MULTIPLE NODES TO USE SAME PRIVATE KEY! THIS WILL EVENTUALLY RESULT IN CONFLICTING MESSAGES AND LEAD TO DEPOSIT SLASHING, AS WELL AS BLACKLISTING OF THE VALIDATOR ADDRESS!**
 
 - Stop the node.
 - Open configuration file in text editor (e.g. `nano` or `vim`).
