@@ -188,15 +188,15 @@ type NetworkNode
         activePeers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
         savePeerNode m.NetworkAddress
 
-    let startCachedDataMonitor (map : ConcurrentDictionary<_, DateTime>) =
+    let startCachedDataMonitor (entries : ConcurrentDictionary<_, DateTime>) =
         let rec loop () =
             async {
                 let lastValidTime = DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float)
-                map
+                entries
                 |> List.ofDict
                 |> List.filter (fun (_, fetchedAt) -> fetchedAt < lastValidTime)
-                |> List.iter (fun (item, _) ->
-                    map.TryRemove item |> ignore
+                |> List.iter (fun (entry, _) ->
+                    entries.TryRemove entry |> ignore
                 )
                 do! Async.Sleep(gossipConfig.GossipIntervalMillis)
                 return! loop ()
