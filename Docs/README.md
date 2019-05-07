@@ -14,6 +14,7 @@
 - [Nodes](Nodes/Nodes.md)
     - [Node API](Nodes/NodeApi.md)
     - [Node Setup](Nodes/NodeSetup.md)
+    - [Node Update](Nodes/NodeUpdate.md)
     - [Node Environment and Configuration](Nodes/NodeEnvironment.md)
     - [Validator Configuration](Nodes/ValidatorConfiguration.md)
 - Concepts
