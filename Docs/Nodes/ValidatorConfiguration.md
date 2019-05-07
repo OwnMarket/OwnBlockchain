@@ -7,7 +7,11 @@ This document describes the configuration of the validator node.
 
 Before configuring a validator node, make sure to:
 
-- have the node installed and accessible from public network (`PublicAddress` configured). Please refer to the [node setup document](NodeSetup.md) for more information.
+- have the node installed (please refer to the [node setup document](NodeSetup.md) for more information)
+- have the node accessible from public network, which assumes
+    - having (and being in control of) a DNS name for your validator
+    - configuring DNS name as an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types) pointing to the static IP address of the machine on which the node is running
+    - `PublicAddress` configured in configuration file (please refer to the [node environment document](NodeEnvironment.md#configuration-file) for more information)
 - have a dedicated CHX address ready (you can generate new private key and address using [online wallet](https://wallet.weown.com/wallet)). Keep private key secure and do not share it with anyone!
 
 
