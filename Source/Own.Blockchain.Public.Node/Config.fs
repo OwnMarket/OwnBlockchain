@@ -196,8 +196,16 @@ type Config () =
     static member ValidatorThreshold = 500_000m
     static member ValidatorDeposit = 10_000m
 
-    static member ConsensusMessageRetryingInterval = 1000 // Milliseconds
-    static member ConsensusProposeRetryingInterval = 1000 // Milliseconds
+    static member ConsensusMessageRetryingInterval // Milliseconds
+        with get () =
+            match Int32.TryParse config.["ConsensusMessageRetryingInterval"] with
+            | true, value when value > 0 -> value
+            | _ -> 1000
+    static member ConsensusProposeRetryingInterval // Milliseconds
+        with get () =
+            match Int32.TryParse config.["ConsensusProposeRetryingInterval"] with
+            | true, value when value > 0 -> value
+            | _ -> 1000
 
     static member ConsensusTimeoutPropose = 5000 // Milliseconds
     static member ConsensusTimeoutVote = 5000 // Milliseconds
