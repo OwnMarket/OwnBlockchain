@@ -55,7 +55,7 @@ type internal TransportCore
         let dict = new ConcurrentDictionary<'T1, HashSet<PeerMessageEnvelopeDto>>()
         let mutable peerMessageSize = 0
         while (peerMessageMaxSize = 0 || peerMessageSize <= peerMessageMaxSize)
-            && queue.TryDequeue(&queueItem, TimeSpan.FromMilliseconds(10.)) do
+            && queue.TryDequeue(&queueItem, TimeSpan.Zero) do
             let target, peerMessageEnvelope = queueItem
             peerMessageSize <- peerMessageSize + peerMessageEnvelope.PeerMessage.MessageData.Length
             match dict.TryGetValue target with
