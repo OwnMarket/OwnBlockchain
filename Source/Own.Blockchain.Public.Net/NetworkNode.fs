@@ -436,7 +436,7 @@ type NetworkNode
     member private __.UpdatePeer peer =
         __.GetActivePeer peer.NetworkAddress
         |> Option.iter (fun _ ->
-            saveActivePeer peer |> Result.iterError Log.appErrors
+            updateActivePeer peer
             monitorActivePeer peer.NetworkAddress
         )
 
