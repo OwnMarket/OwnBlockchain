@@ -15,7 +15,7 @@ Before configuring a validator node, make sure to:
 - have a dedicated CHX address ready (you can generate new private key and address using [online wallet](https://wallet.weown.com/wallet)). Keep private key secure and do not share it with anyone!
 
 
-## Configuring node software
+## Software Configuration
 
 For the node to be able to act as a validator, it must have `ValidatorPrivateKey` configured in the `Config.json` file. Please refer to [node environment configuration document](NodeEnvironment.md#configuration-file) for more info.
 
@@ -38,7 +38,7 @@ For the node to be able to act as a validator, it must have `ValidatorPrivateKey
 At this point your node is configured and ready to start participating in the consensus as soon as it gets included in the list of active validators (not before next config block).
 
 
-## Configuring validator parameters and funding the validator address
+## Validator Funding, Registration and Activation
 
 For the node to be able to participate in the consensus and propose blocks, it needs to have:
 
