@@ -43,6 +43,7 @@ type NetworkNode
     let mutable lastMessageReceivedTimestamp = DateTime.UtcNow
     let sentRequests = new ConcurrentDictionary<NetworkMessageId, DateTime>()
     let receivedRequests = new ConcurrentDictionary<RequestDataMessage, DateTime>()
+    let sentGossipMessages = new ConcurrentDictionary<NetworkMessageId, DateTime>()
     let receivedGossipMessages = new ConcurrentDictionary<NetworkMessageId, DateTime>()
 
     let dnsResolverCache = new ConcurrentDictionary<string, NetworkAddress option * DateTime>()
@@ -224,11 +225,27 @@ type NetworkNode
             ReceivesGossip = receivesGossip
         }
 
+    member private __.Throttle (entries : ConcurrentDictionary<_, DateTime>) entry func =
+        match entries.TryGetValue entry with
+            | true, timestamp
+                when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
+                () // Throttle the request
+            | _ ->
+                if gossipConfig.PeerResponseThrottlingTime > 0 then
+                    let timestamp = DateTime.UtcNow
+                    entries.AddOrUpdate(entry, timestamp, fun _ _ -> timestamp)
+                    |> ignore
+
+                func entry
+
     member private __.StartSentRequestsMonitor () =
         startCachedDataMonitor sentRequests
 
     member private __.StartReceivedRequestsMonitor () =
         startCachedDataMonitor receivedRequests
+
+    member private __.StartSentGossipMessagesMonitor () =
+        startCachedDataMonitor sentGossipMessages
 
     member private __.StartReceivedGossipMessagesMonitor () =
         startCachedDataMonitor receivedGossipMessages
@@ -313,7 +330,7 @@ type NetworkNode
                     sendMulticastMessage
                         peerMessageEnvelopeDto
                         multicastAddresses
-                | GossipMessage m -> __.SendGossipMessage m
+                | GossipMessage m -> __.Throttle sentGossipMessages m.MessageId (fun _ -> __.SendGossipMessage m)
                 | _ -> ()
             }
         Async.Start (sendMessageTask, cts.Token)
@@ -349,6 +366,7 @@ type NetworkNode
         __.StartDnsResolver ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
+        __.StartSentGossipMessagesMonitor ()
         __.StartReceivedGossipMessagesMonitor ()
         __.StartServer ()
 
@@ -473,19 +491,6 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Message Passing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    member private __.Throttle (entries : ConcurrentDictionary<_, DateTime>) entry func =
-        match entries.TryGetValue entry with
-            | true, timestamp
-                when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
-                () // Throttle the request
-            | _ ->
-                if gossipConfig.PeerResponseThrottlingTime > 0 then
-                    let timestamp = DateTime.UtcNow
-                    entries.AddOrUpdate(entry, timestamp, fun _ _ -> timestamp)
-                    |> ignore
-
-                func entry
 
     member private __.UpdateGossipMessagesProcessingQueue networkAddresses gossipMessageId =
         let found, processedAddresses = gossipMessages.TryGetValue gossipMessageId
