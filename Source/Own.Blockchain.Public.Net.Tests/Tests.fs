@@ -179,9 +179,11 @@ module PeerTests =
                             getNetworkId
                             peerMessage
                         |> Option.iter (
-                            Result.handle
-                                (Option.iter (publishEvent node))
-                                Log.appErrors
+                            List.iter (
+                                Result.handle
+                                    (Option.iter (publishEvent node))
+                                    Log.appErrors
+                            )
                         )
                     }
                 |> Some
@@ -629,7 +631,7 @@ module PeerTests =
                 }
             )
 
-        testGossipDiscovery (nodeConfig1 :: nodeConfigList) 40
+        testGossipDiscovery (nodeConfig1 :: nodeConfigList) 80
 
     [<Fact>]
     let ``Network - GossipMessagePassing 3 nodes single message`` () =

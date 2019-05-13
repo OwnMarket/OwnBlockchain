@@ -260,9 +260,11 @@ module Agents =
                 async {
                     Composition.processPeerMessage peerMessageEnvelope
                     |> Option.iter (
-                        Result.handle
-                            (Option.iter publishEvent)
-                            Log.appErrors
+                        List.iter (
+                            Result.handle
+                                (Option.iter publishEvent)
+                                Log.appErrors
+                        )
                     )
                 }
             |> Some

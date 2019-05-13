@@ -552,13 +552,17 @@ type MulticastMessage = {
 }
 
 type RequestDataMessage = {
-    MessageId : NetworkMessageId
+    Items : NetworkMessageId list
     SenderIdentity : PeerNetworkIdentity
 }
 
-type ResponseDataMessage = {
+type ResponseItemMessage = {
     MessageId : NetworkMessageId
     Data : byte[]
+}
+
+type ResponseDataMessage = {
+    Items : ResponseItemMessage list
 }
 
 type PeerMessage =

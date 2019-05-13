@@ -11,60 +11,80 @@ module WorkflowsMock =
         respondToPeer
         getNetworkId
         peerMessageEnvelope
-        : Result<AppEvent option, AppError list> option
+        : Result<AppEvent option, AppError list> list option
         =
 
-        let processRequest address messageId targetAddress =
-            match messageId with
-            | Tx txHash ->
-                if RawMock.hasData address messageId then
-                    {
-                        PeerMessageEnvelope.NetworkId = getNetworkId ()
-                        PeerMessage =
+        let processRequest address messageIds targetAddress =
+            let responseResult =
+                messageIds
+                |> List.map (fun messageId ->
+                    match messageId with
+                    | Tx txHash ->
+                        if RawMock.hasData address messageId then
                             {
                                 MessageId = messageId
                                 Data = "txEnvelope" |> Conversion.stringToBytes
                             }
-                            |> ResponseDataMessage
-                    }
-                    |> respondToPeer targetAddress
-                    None
-                else
-                    Result.appError (sprintf "Error Tx %A not found" txHash) |> Some
-            | EquivocationProof equivocationProofHash ->
-                if RawMock.hasData address messageId then
-                    {
-                        PeerMessageEnvelope.NetworkId = getNetworkId ()
-                        PeerMessage =
+                            |> Ok
+                        else
+                            Result.appError (sprintf "Error Tx %A not found" txHash)
+                    | EquivocationProof equivocationProofHash ->
+                        if RawMock.hasData address messageId then
                             {
                                 MessageId = messageId
                                 Data = "equivocationProof" |> Conversion.stringToBytes
                             }
-                            |> ResponseDataMessage
-                    }
-                    |> respondToPeer targetAddress
-                    None
-                else
-                    Result.appError (sprintf "Error EquivocationProof %A not found" equivocationProofHash) |> Some
-            | Block blockNr ->
-                if RawMock.hasData address messageId then
-                    {
-                        PeerMessageEnvelope.NetworkId = getNetworkId ()
-                        PeerMessage =
+                            |> Ok
+                        else
+                            Result.appError (sprintf "Error EquivocationProof %A not found" equivocationProofHash)
+                    | Block blockNr ->
+                        if RawMock.hasData address messageId then
                             {
                                 MessageId = messageId
                                 Data = "blockEnvelope" |> Conversion.stringToBytes
                             }
-                            |> ResponseDataMessage
-                    }
-                    |> respondToPeer targetAddress
-                    None
-                else
-                    Result.appError (sprintf "Error Block %A not found" blockNr) |> Some
-            | Consensus _ -> Result.appError "Cannot request consensus message from Peer" |> Some
-            | ConsensusState _ -> Result.appError "Cannot request consensus state from Peer" |> Some
-            | BlockchainHead -> None
-            | PeerList -> None
+                            |> Ok
+                        else
+                            Result.appError (sprintf "Error Block %A not found" blockNr)
+                    | Consensus _ -> Result.appError "Cannot request consensus message from Peer"
+                    | ConsensusState _ -> Result.appError "Cannot request consensus state from Peer"
+                    | BlockchainHead ->
+                        {
+                            MessageId = messageId
+                            Data = "blockNr" |> Conversion.stringToBytes
+                        }
+                        |> Ok
+                    | PeerList ->
+                        {
+                            MessageId = messageId
+                            Data = "peerList" |> Conversion.stringToBytes
+                        }
+                        |> Ok
+                )
+
+            let responseItems =
+                responseResult
+                |> List.choose (function
+                    | Ok responseItem -> Some responseItem
+                    | _ -> None
+                )
+
+            let errors =
+                responseResult
+                |> List.choose (function
+                    | Ok _ -> None
+                    | Error e -> Some e.Head.Message
+                )
+
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = responseItems}
+            }
+            |> respondToPeer targetAddress
+
+            match errors with
+            | [] -> Ok None
+            | _ -> Result.appErrors errors
 
         match peerMessageEnvelope.PeerMessage with
         | GossipMessage m ->
@@ -73,9 +93,10 @@ module WorkflowsMock =
         | MulticastMessage m ->
             RawMock.savePeerData address m.MessageId
             None
-        | RequestDataMessage m -> processRequest address m.MessageId m.SenderIdentity
+        | RequestDataMessage m -> [ processRequest address m.Items m.SenderIdentity ] |> Some
         | ResponseDataMessage m ->
-            RawMock.savePeerData address m.MessageId
+            m.Items
+            |> List.iter(fun response -> RawMock.savePeerData address response.MessageId)
             None
         | _ ->
             None

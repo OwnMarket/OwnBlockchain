@@ -553,18 +553,30 @@ type MulticastMessageDto = {
 
 [<CLIMutable>]
 [<MessagePackObject>]
-type RequestDataMessageDto = {
+type NetworkMessageItemDto = {
     [<Key(0)>] MessageType : string
     [<Key(1)>] MessageId : string
-    [<Key(2)>] SenderIdentity : byte[]
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type RequestDataMessageDto = {
+    [<Key(0)>] Items : NetworkMessageItemDto list
+    [<Key(1)>] SenderIdentity : byte[]
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type ResponseItemMessageDto = {
+    [<Key(0)>] MessageType : string
+    [<Key(1)>] MessageId : string
+    [<Key(2)>] Data : byte[]
 }
 
 [<CLIMutable>]
 [<MessagePackObject>]
 type ResponseDataMessageDto = {
-    [<Key(0)>] MessageType : string
-    [<Key(1)>] MessageId : string
-    [<Key(2)>] Data : byte[]
+    [<Key(0)>] Items : ResponseItemMessageDto list
 }
 
 [<CLIMutable>]

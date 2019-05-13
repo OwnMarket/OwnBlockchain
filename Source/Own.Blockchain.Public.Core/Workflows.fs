@@ -1153,17 +1153,18 @@ module Workflows =
         consensusStateResponse
         =
 
+        let responseItem =
+            {
+                ResponseItemMessage.MessageId = NetworkMessageId.ConsensusState
+                Data =
+                    consensusStateResponse
+                    |> Mapping.consensusStateResponseToDto
+                    |> Serialization.serializeBinary
+            }
+
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
-            PeerMessage =
-                {
-                    ResponseDataMessage.MessageId = NetworkMessageId.ConsensusState
-                    Data =
-                        consensusStateResponse
-                        |> Mapping.consensusStateResponseToDto
-                        |> Serialization.serializeBinary
-                }
-                |> ResponseDataMessage
+            PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = [ responseItem ]}
         }
         |> respondToPeer targetIdentity
 
@@ -1271,68 +1272,47 @@ module Workflows =
             | BlockchainHead -> processBlockchainHeadMessageFromPeer data
             | PeerList -> processPeerListMessageFromPeer data
 
-        let processRequestMessage messageId senderIdentity =
-            match messageId with
-            | Tx txHash ->
-                match getTx txHash with
-                | Ok txEvenvelopeDto ->
-                    {
-                        PeerMessageEnvelope.NetworkId = getNetworkId ()
-                        PeerMessage =
+        let processRequestMessage messageIds senderIdentity =
+            let responseResult =
+                messageIds
+                |> List.map (fun messageId ->
+                    match messageId with
+                    | Tx txHash ->
+                        match getTx txHash with
+                        | Ok txEvenvelopeDto ->
                             {
                                 MessageId = messageId
                                 Data = txEvenvelopeDto |> Serialization.serializeBinary
                             }
-                            |> ResponseDataMessage
-                    }
-                    |> respondToPeer senderIdentity
-                    Ok None
-                | _ -> Result.appError (sprintf "Requested tx %s not found" txHash.Value)
-
-            | EquivocationProof equivocationProofHash ->
-                match getEquivocationProof equivocationProofHash with
-                | Ok equivocationProofDto ->
-                    {
-                        PeerMessageEnvelope.NetworkId = getNetworkId ()
-                        PeerMessage =
+                            |> Ok
+                        | _ -> Result.appError (sprintf "Requested tx %s not found" txHash.Value)
+                    | EquivocationProof equivocationProofHash ->
+                        match getEquivocationProof equivocationProofHash with
+                        | Ok equivocationProofDto ->
                             {
                                 MessageId = messageId
                                 Data = equivocationProofDto |> Serialization.serializeBinary
                             }
-                            |> ResponseDataMessage
-                    }
-                    |> respondToPeer senderIdentity
-                    Ok None
-                | _ -> Result.appError (sprintf "Requested equivocation proof %s not found" equivocationProofHash.Value)
+                            |> Ok
+                        | _ -> Result.appError (sprintf "Requested equivocation proof %s not found" equivocationProofHash.Value)
+                    | Block blockNr ->
+                        let blockNr =
+                            if blockNr = BlockNumber -1L then
+                                getLastAppliedBlockNumber ()
+                            else
+                                blockNr
 
-            | Block blockNr ->
-                let blockNr =
-                    if blockNr = BlockNumber -1L then
-                        getLastAppliedBlockNumber ()
-                    else
-                        blockNr
-
-                match getBlock blockNr with
-                | Ok blockEnvelopeDto ->
-                    {
-                        PeerMessageEnvelope.NetworkId = getNetworkId ()
-                        PeerMessage =
+                        match getBlock blockNr with
+                        | Ok blockEnvelopeDto ->
                             {
                                 MessageId = messageId
                                 Data = blockEnvelopeDto |> Serialization.serializeBinary
                             }
-                            |> ResponseDataMessage
-                    }
-                    |> respondToPeer senderIdentity
-                    Ok None
-                | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
-
-            | Consensus _ -> Result.appError "Cannot request consensus message from Peer"
-            | ConsensusState -> Result.appError "Cannot request consensus state from Peer"
-            | BlockchainHead ->
-                {
-                    PeerMessageEnvelope.NetworkId = getNetworkId ()
-                    PeerMessage =
+                            |> Ok
+                        | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
+                    | Consensus _ -> Result.appError "Cannot request consensus message from Peer"
+                    | ConsensusState -> Result.appError "Cannot request consensus state from Peer"
+                    | BlockchainHead ->
                         {
                             MessageId = messageId
                             Data =
@@ -1343,14 +1323,8 @@ module Workflows =
                                 }
                                 |> Serialization.serializeBinary
                         }
-                        |> ResponseDataMessage
-                }
-                |> respondToPeer senderIdentity
-                Ok None
-            | PeerList ->
-                {
-                    PeerMessageEnvelope.NetworkId = getNetworkId ()
-                    PeerMessage =
+                        |> Ok
+                    | PeerList ->
                         {
                             MessageId = messageId
                             Data =
@@ -1361,17 +1335,43 @@ module Workflows =
                                 }
                                 |> Serialization.serializeBinary
                         }
-                        |> ResponseDataMessage
-                }
-                |> respondToPeer senderIdentity
-                Ok None
+                        |> Ok
+                )
+
+            let responseItems =
+                responseResult
+                |> List.choose (function
+                    | Ok responseItem -> Some responseItem
+                    | _ -> None
+                )
+
+            let errors =
+                responseResult
+                |> List.choose (function
+                    | Ok _ -> None
+                    | Error e -> Some e.Head.Message
+                )
+
+            {
+                PeerMessageEnvelope.NetworkId = getNetworkId ()
+                PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = responseItems}
+            }
+            |> respondToPeer senderIdentity
+
+            match errors with
+            | [] -> Ok None
+            | _ -> Result.appErrors errors
+
+        let processResponseMessage (responseItems : ResponseItemMessage list) =
+            responseItems
+            |> List.map(fun response -> processDataMessage true response.MessageId None response.Data)
 
         match peerMessageEnvelope.PeerMessage with
         | GossipDiscoveryMessage _ -> None
-        | GossipMessage m -> processDataMessage false m.MessageId None m.Data |> Some
-        | MulticastMessage m -> processDataMessage false m.MessageId m.SenderIdentity m.Data |> Some
-        | RequestDataMessage m -> processRequestMessage m.MessageId m.SenderIdentity |> Some
-        | ResponseDataMessage m -> processDataMessage true m.MessageId None m.Data |> Some
+        | GossipMessage m -> [ processDataMessage false m.MessageId None m.Data ] |> Some
+        | MulticastMessage m -> [ processDataMessage false m.MessageId m.SenderIdentity m.Data ] |> Some
+        | RequestDataMessage m -> [ processRequestMessage m.Items m.SenderIdentity ] |> Some
+        | ResponseDataMessage m -> processResponseMessage m.Items |> Some
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // API

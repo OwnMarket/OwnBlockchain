@@ -977,7 +977,6 @@ module Mapping =
 
     let multicastMessageToDto (multicastMessage : MulticastMessage) =
         let messageType, messageId = networkMessageIdToIdTypeTuple multicastMessage.MessageId
-
         {
             MessageId = messageId
             MessageType = messageType
@@ -989,38 +988,57 @@ module Mapping =
         }
 
     let requestDataMessageFromDto (dto : RequestDataMessageDto) : RequestDataMessage =
-        let requestDataMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId
-
+        let requestItems =
+            dto.Items
+            |> List.map (fun request ->
+                messageTypeToNetworkMessageId request.MessageType request.MessageId
+            )
         {
-            MessageId = requestDataMessageId
+            Items = requestItems
             SenderIdentity = PeerNetworkIdentity dto.SenderIdentity
         }
 
     let requestDataMessageToDto (requestDataMessage : RequestDataMessage) =
-        let messageType, messageId = networkMessageIdToIdTypeTuple requestDataMessage.MessageId
+        let requestItems =
+            requestDataMessage.Items
+            |> List.map (fun request ->
+                let messageType, messageId = networkMessageIdToIdTypeTuple request
+                {NetworkMessageItemDto.MessageType = messageType ; MessageId = messageId}
+            )
 
         {
-            MessageId = messageId
-            MessageType = messageType
+            Items = requestItems
             SenderIdentity = requestDataMessage.SenderIdentity.Value
         }
 
     let responseDataMessageFromDto (dto : ResponseDataMessageDto) : ResponseDataMessage =
-        let responseDataMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId
+        let responseItems =
+            dto.Items
+            |> List.map (fun response ->
+                 let messageId = messageTypeToNetworkMessageId response.MessageType response.MessageId
+                 {ResponseItemMessage.MessageId = messageId ; Data = response.Data}
+
+            )
 
         {
-            MessageId = responseDataMessageId
-            Data = dto.Data
+            Items = responseItems
         }
 
     let responseDataMessageToDto (responseDataMessage : ResponseDataMessage) =
-        let messageType, messageId = networkMessageIdToIdTypeTuple responseDataMessage.MessageId
-
+        let responseItems =
+            responseDataMessage.Items
+            |> List.map (fun response ->
+                let messageType, messageId = networkMessageIdToIdTypeTuple response.MessageId
+                {
+                    MessageId = messageId
+                    MessageType = messageType
+                    Data = response.Data
+                }
+            )
         {
-            MessageId = messageId
-            MessageType = messageType
-            Data = responseDataMessage.Data
+            Items = responseItems
         }
+
 
     let private peerMessageFromDto (deserialize : PeerMessageDto -> obj) (dto : PeerMessageDto) =
         let messageData = deserialize dto

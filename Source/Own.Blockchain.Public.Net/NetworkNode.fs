@@ -669,7 +669,7 @@ type NetworkNode
                                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                                 PeerMessage =
                                     {
-                                        MessageId = messageId
+                                        Items = [ messageId ]
                                         SenderIdentity = nodeConfig.Identity
                                     }
                                     |> RequestDataMessage
@@ -700,7 +700,7 @@ type NetworkNode
         match peerMessageEnvelope.PeerMessage with
         | ResponseDataMessage responseMessage ->
             Log.debugf "Sending response (to %A request) to %s"
-                responseMessage.MessageId
+                responseMessage.Items
                 (targetIdentity.Value |> Conversion.bytesToString)
         | _ -> ()
 
@@ -715,7 +715,7 @@ type NetworkNode
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
         __.Throttle receivedRequests requestDataMessage (fun _ ->
             Log.debugf "Received request for %A from %s"
-                requestDataMessage.MessageId
+                requestDataMessage.Items
                 (requestDataMessage.SenderIdentity.Value |> Conversion.bytesToString)
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
@@ -726,7 +726,7 @@ type NetworkNode
         )
 
     member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) =
-        Log.debugf "Received response to %A request" responseDataMessage.MessageId
+        Log.debugf "Received response to %A request" responseDataMessage.Items
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = responseDataMessage |> ResponseDataMessage
@@ -734,7 +734,8 @@ type NetworkNode
         |> PeerMessageReceived
         |> publishEvent
 
-        peerSelectionSentRequests.TryRemove responseDataMessage.MessageId |> ignore
+        responseDataMessage.Items
+        |> List.iter (fun response -> peerSelectionSentRequests.TryRemove response.MessageId |> ignore)
 
     member private __.SelectPeer preferredPeer peerList =
         match preferredPeer with
