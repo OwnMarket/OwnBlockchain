@@ -969,8 +969,8 @@ module Consensus =
         proposeBlock
         txExists
         equivocationProofExists
-        requestTx
-        requestEquivocationProof
+        requestTxs
+        requestEquivocationProofs
         isValidHash
         isValidAddress
         applyBlockToCurrentState
@@ -1055,8 +1055,8 @@ module Consensus =
                     getValidatorsAtHeight (block.Header.Number - 1)
                     |> List.find (fun v -> v.ValidatorAddress = block.Header.ProposerAddress)
 
-                missingTxs |> List.iter (requestTx proposer.NetworkAddress)
-                missingEquivocationProofs |> List.iter (requestEquivocationProof proposer.NetworkAddress)
+                requestTxs proposer.NetworkAddress missingTxs
+                requestEquivocationProofs proposer.NetworkAddress missingEquivocationProofs
                 false
 
         let isValidBlock = memoizeBy (fun (b : Block) -> b.Header.Hash) <| fun block ->

@@ -368,7 +368,7 @@ module Composition =
         Synchronization.handleReceivedBlockchainHead
             blockExists
             getLastAppliedBlockNumber
-            Peers.requestBlockFromPeer
+            Peers.requestBlocksFromPeer
 
     let fetchMissingBlocks publishEvent =
         Synchronization.fetchMissingBlocks
@@ -381,9 +381,9 @@ module Composition =
             equivocationProofExists
             txExistsInDb
             equivocationProofExistsInDb
-            Peers.requestBlockFromPeer
-            Peers.requestTxFromPeer
-            Peers.requestEquivocationProofFromPeer
+            Peers.requestBlocksFromPeer
+            Peers.requestTxsFromPeer
+            Peers.requestEquivocationProofsFromPeer
             publishEvent
             Config.MaxBlockFetchQueue
 
@@ -449,8 +449,8 @@ module Composition =
             proposeBlock
             txExists
             equivocationProofExists
-            Peers.requestTxFromPreferredPeer
-            Peers.requestEquivocationProofFromPreferredPeer
+            Peers.requestTxsFromPreferredPeer
+            Peers.requestEquivocationProofsFromPreferredPeer
             Hashing.isValidHash
             Hashing.isValidBlockchainAddress
             applyBlockToCurrentState

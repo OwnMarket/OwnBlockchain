@@ -11,7 +11,7 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "SendPeerMessage agent is not started"
 
-    let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId * NetworkAddress option> option = None
+    let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId list * NetworkAddress option> option = None
     let invokeRequestFromPeer m =
         match requestFromPeerDispatcher with
         | Some h -> h.Post m
@@ -39,9 +39,9 @@ module Peers =
             failwith "RequestFromPeer agent is already started"
 
         requestFromPeerDispatcher <-
-            Agent.start <| fun (messageId, preferredPeer) ->
+            Agent.start <| fun (messageIds, preferredPeer) ->
                 async {
-                    PeerMessageHandler.requestFromPeer messageId preferredPeer
+                    PeerMessageHandler.requestFromPeer messageIds preferredPeer
                 }
             |> Some
 
@@ -65,32 +65,42 @@ module Peers =
     let sendMessage peerMessageEnvelope =
         invokeSendPeerMessage peerMessageEnvelope
 
-    let private requestFromRandomPeer messageId =
-        invokeRequestFromPeer (messageId, None)
+    let private requestFromRandomPeer messageIds =
+        invokeRequestFromPeer (messageIds, None)
 
-    let private requestFromPreferredPeer preferredPeer messageId =
-        invokeRequestFromPeer (messageId, Some preferredPeer)
+    let private requestFromPreferredPeer preferredPeer messageIds =
+        invokeRequestFromPeer (messageIds, Some preferredPeer)
 
-    let requestBlockFromPeer blockNumber =
-        requestFromRandomPeer (NetworkMessageId.Block blockNumber)
+    let requestBlocksFromPeer blockNumbers =
+        blockNumbers
+        |> List.map NetworkMessageId.Block
+        |> requestFromRandomPeer
 
     let requestLastBlockFromPeer () =
-        requestBlockFromPeer (BlockNumber -1L)
+        requestBlocksFromPeer [ BlockNumber -1L ]
 
     let requestBlockchainHeadFromPeer () =
-        requestFromRandomPeer NetworkMessageId.BlockchainHead
+        requestFromRandomPeer [ NetworkMessageId.BlockchainHead ]
 
-    let requestTxFromPeer txHash =
-        requestFromRandomPeer (NetworkMessageId.Tx txHash)
+    let requestTxsFromPeer txHashes =
+        txHashes
+        |> List.map NetworkMessageId.Tx
+        |> requestFromRandomPeer
 
-    let requestTxFromPreferredPeer preferredPeer txHash =
-        requestFromPreferredPeer preferredPeer (NetworkMessageId.Tx txHash)
+    let requestTxsFromPreferredPeer preferredPeer txHashes =
+        txHashes
+        |> List.map NetworkMessageId.Tx
+        |> requestFromPreferredPeer preferredPeer
 
-    let requestEquivocationProofFromPeer equivocationProofHash =
-        requestFromRandomPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
+    let requestEquivocationProofsFromPeer equivocationProofHashes =
+        equivocationProofHashes
+        |> List.map NetworkMessageId.EquivocationProof
+        |> requestFromRandomPeer
 
-    let requestEquivocationProofFromPreferredPeer preferredPeer equivocationProofHash =
-        requestFromPreferredPeer preferredPeer (NetworkMessageId.EquivocationProof equivocationProofHash)
+    let requestEquivocationProofsFromPreferredPeer preferredPeer equivocationProofHashes =
+        equivocationProofHashes
+        |> List.map NetworkMessageId.EquivocationProof
+        |> requestFromPreferredPeer preferredPeer
 
     let respondToPeer targetIdentity peerMessage =
         invokeRespondToPeer (targetIdentity, peerMessage)

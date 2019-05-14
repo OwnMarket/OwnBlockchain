@@ -44,7 +44,7 @@ module Synchronization =
     let handleReceivedBlockchainHead
         blockExists
         getLastAppliedBlockNumber
-        requestBlockFromPeer
+        requestBlocksFromPeer
         (blockNumber : BlockNumber)
         =
 
@@ -52,7 +52,7 @@ module Synchronization =
             if getLastAppliedBlockNumber () = blockNumber then
                 Log.info "Node is synchronized"
         else
-            requestBlockFromPeer blockNumber
+            requestBlocksFromPeer [ blockNumber ]
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Rebuilding the chain
@@ -63,7 +63,7 @@ module Synchronization =
     let private requestBlock requestFromPeer publishEvent blockNumber =
         match unverifiedBlocks.TryRemove(blockNumber) with
         | true, blockEnvelopeDto -> (blockNumber, blockEnvelopeDto) |> BlockFetched |> publishEvent
-        | _ -> requestFromPeer blockNumber
+        | _ -> requestFromPeer [ blockNumber ]
 
     let fetchMissingBlocks
         (getLastAppliedBlockNumber : unit -> BlockNumber)
@@ -75,9 +75,9 @@ module Synchronization =
         equivocationProofExists
         txExistsInDb
         equivocationProofExistsInDb
-        requestBlockFromPeer
-        requestTxFromPeer
-        requestEquivocationProofFromPeer
+        requestBlocksFromPeer
+        requestTxsFromPeer
+        requestEquivocationProofsFromPeer
         publishEvent
         maxBlockFetchQueue
         =
@@ -114,14 +114,14 @@ module Synchronization =
         |> Option.iter (fun lastVerifiableBlockNumber ->
             // Fetch next config block to build config chain in advance.
             if nextConfigBlockNumber <= lastVerifiableBlockNumber then
-                requestBlock requestBlockFromPeer publishEvent nextConfigBlockNumber
+                requestBlock requestBlocksFromPeer publishEvent  nextConfigBlockNumber
 
             // Fetch verifiable blocks
             [lastAppliedBlockNumber + 1 .. lastVerifiableBlockNumber]
             |> Seq.except [nextConfigBlockNumber] // Config block is already requested above.
             |> Seq.filter (blockExists >> not)
             |> Seq.truncate maxBlockFetchQueue
-            |> Seq.iter (requestBlock requestBlockFromPeer publishEvent)
+            |> Seq.iter (requestBlock requestBlocksFromPeer publishEvent)
         )
 
         // Fetch TXs and EquivocationProofs for verified blocks
@@ -153,8 +153,8 @@ module Synchronization =
                             if missingTxs.IsEmpty && missingEquivocationProofs.IsEmpty then
                                 BlockReady block.Header.Number |> publishEvent
                     else
-                        missingTxs |> List.iter requestTxFromPeer
-                        missingEquivocationProofs |> List.iter requestEquivocationProofFromPeer
+                        requestTxsFromPeer missingTxs
+                        requestEquivocationProofsFromPeer missingEquivocationProofs
                 )
                 Log.appErrors
         )

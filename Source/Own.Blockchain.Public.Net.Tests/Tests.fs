@@ -48,8 +48,8 @@ module PeerTests =
     let sendMessage peerMessage (node : NetworkNode) =
         node.SendMessage peerMessage
 
-    let requestFromPeer requestId (node : NetworkNode) =
-        node.SendRequestDataMessage requestId None
+    let requestFromPeer requestIds (node : NetworkNode) =
+        node.SendRequestDataMessage requestIds None
 
     let respondToPeer (node : NetworkNode) targetAddress peerMessageEnvelope =
         node.SendResponseDataMessage targetAddress peerMessageEnvelope
@@ -79,7 +79,7 @@ module PeerTests =
         node |> sendMessage peerMessageEnvelope
 
     let requestTx (node : NetworkNode) txHash =
-        node |> requestFromPeer (Tx txHash)
+        node |> requestFromPeer [ (Tx txHash) ]
 
     let gossipBlock (node : NetworkNode) blockNr =
         let gossipMessage = GossipMessage {
@@ -106,7 +106,7 @@ module PeerTests =
         node |> sendMessage peerMessageEnvelope
 
     let requestBlock (node : NetworkNode) blockNr =
-        node |> requestFromPeer (Block blockNr)
+        node |> requestFromPeer [ (Block blockNr) ]
 
     let private txPropagator node txHash =
         gossipTx node txHash

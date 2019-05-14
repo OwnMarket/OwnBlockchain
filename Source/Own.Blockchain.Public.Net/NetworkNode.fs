@@ -3,6 +3,7 @@
 open System
 open System.Net
 open System.Collections.Concurrent
+open System.Collections.Generic
 open System.Threading
 open Own.Common.FSharp
 open Own.Blockchain.Common
@@ -225,8 +226,11 @@ type NetworkNode
             ReceivesGossip = receivesGossip
         }
 
-    member private __.Throttle (entries : ConcurrentDictionary<_, DateTime>) entry func =
-        match entries.TryGetValue entry with
+    member private __.Throttle (entries : ConcurrentDictionary<_, DateTime>) (entryBatch : _ list) func =
+        let validEntries = new HashSet<_>()
+        entryBatch
+        |> List.iter(fun entry ->
+            match entries.TryGetValue entry with
             | true, timestamp
                 when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
                 () // Throttle the request
@@ -235,8 +239,12 @@ type NetworkNode
                     let timestamp = DateTime.UtcNow
                     entries.AddOrUpdate(entry, timestamp, fun _ _ -> timestamp)
                     |> ignore
+                    validEntries.Add entry |> ignore
+        )
 
-                func entry
+        validEntries
+        |> Seq.toList
+        |> func
 
     member private __.StartSentRequestsMonitor () =
         startCachedDataMonitor sentRequests
@@ -330,7 +338,7 @@ type NetworkNode
                     sendMulticastMessage
                         peerMessageEnvelopeDto
                         multicastAddresses
-                | GossipMessage m -> __.Throttle sentGossipMessages m.MessageId (fun _ -> __.SendGossipMessage m)
+                | GossipMessage m -> __.Throttle sentGossipMessages [ m.MessageId ] (fun _ -> __.SendGossipMessage m)
                 | _ -> ()
             }
         Async.Start (sendMessageTask, cts.Token)
@@ -396,7 +404,7 @@ type NetworkNode
             }
             |> __.SendMessage
         | None -> // Request peer list.
-            __.SendRequestDataMessage NetworkMessageId.PeerList None
+            __.SendRequestDataMessage [ NetworkMessageId.PeerList ] None
 
         printActivePeers ()
 
@@ -601,7 +609,7 @@ type NetworkNode
                 |> PeerMessageReceived
 
             // Throttle received gossip messages.
-            __.Throttle receivedGossipMessages gossipMessage.MessageId (fun _ ->
+            __.Throttle receivedGossipMessages [ gossipMessage.MessageId ] (fun _ ->
                 publishEvent peerMessageReceivedEvent
             )
 
@@ -636,32 +644,42 @@ type NetworkNode
     // Request/Response
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    member __.SendRequestDataMessage requestId (preferredPeer : NetworkAddress option) =
-        __.Throttle sentRequests requestId (fun _ ->
+    member __.SendRequestDataMessage requestIds (preferredPeer : NetworkAddress option) =
+        __.Throttle sentRequests requestIds (fun validRequestIds ->
             Stats.increment Stats.Counter.PeerRequests
-            Log.debugf "Sending request for %A" requestId
-            let rec loop messageId preferredPeer =
+            Log.debugf "Sending request for %A" requestIds
+            let rec loop messageIds preferredPeer =
                 async {
-                    let usedAddresses =
+
+                    let usedAddresses = new HashSet<NetworkAddress>()
+                    messageIds
+                    |> List.iter (fun messageId ->
                         match peerSelectionSentRequests.TryGetValue messageId with
-                        | true, addresses -> addresses
-                        | _ -> []
+                        | true, addresses -> usedAddresses.UnionWith(addresses)
+                        | _ -> ()
+                    )
+
+                    let targetedAddresses = usedAddresses |> Seq.toList
 
                     __.GetActivePeers()
                     |> List.map (fun m -> m.NetworkAddress)
-                    |> List.except usedAddresses
+                    |> List.except targetedAddresses
                     |> List.filter (isSelf >> not)
                     |> __.SelectPeer preferredPeer
-                    |> tee (function
-                        | Some networkAddress ->
-                            peerSelectionSentRequests.AddOrUpdate(
-                                messageId,
-                                networkAddress :: usedAddresses,
-                                fun _ _ -> networkAddress :: usedAddresses)
-                            |> ignore
-                        | None ->
-                            Log.errorf "Cannot retrieve data from peers for %A" messageId
-                            peerSelectionSentRequests.TryRemove messageId |> ignore
+                    |> tee (fun address ->
+                        messageIds
+                        |> List.iter (fun messageId ->
+                            match address with
+                            | Some networkAddress ->
+                                peerSelectionSentRequests.AddOrUpdate(
+                                    messageId,
+                                    networkAddress :: targetedAddresses,
+                                    fun _ _ -> networkAddress :: targetedAddresses)
+                                |> ignore
+                            | None ->
+                                Log.errorf "Cannot retrieve data from peers for %A" messageId
+                                peerSelectionSentRequests.TryRemove messageId |> ignore
+                            )
                     )
                     |> Option.iter (fun address ->
                         let peerMessageEnvelope =
@@ -669,7 +687,7 @@ type NetworkNode
                                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                                 PeerMessage =
                                     {
-                                        Items = [ messageId ]
+                                        Items = validRequestIds
                                         SenderIdentity = nodeConfig.Identity
                                     }
                                     |> RequestDataMessage
@@ -685,14 +703,20 @@ type NetworkNode
                         If no answer is received within 2 cycles (request - response i.e 4xtCycle),
                         repeat (i.e choose another peer).
                     *)
-                    match (peerSelectionSentRequests.TryGetValue messageId) with
-                    | true, addresses ->
-                        if not (addresses.IsEmpty) then
-                            return! loop messageId None
-                    | _ -> ()
+
+                    let requestsWithNoReplies =
+                        messageIds
+                        |> List.choose (fun messageId ->
+                            match (peerSelectionSentRequests.TryGetValue messageId) with
+                            | true, addresses when not (addresses.IsEmpty) -> Some messageId
+                            | _ -> None
+                        )
+
+                    return! loop requestsWithNoReplies None
+
                 }
 
-            Async.Start (loop requestId preferredPeer, cts.Token)
+            Async.Start (loop validRequestIds preferredPeer, cts.Token)
         )
 
     member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
@@ -713,7 +737,7 @@ type NetworkNode
         Async.Start (unicastMessageTask, cts.Token)
 
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
-        __.Throttle receivedRequests requestDataMessage (fun _ ->
+        __.Throttle receivedRequests [ requestDataMessage ] (fun _ ->
             Log.debugf "Received request for %A from %s"
                 requestDataMessage.Items
                 (requestDataMessage.SenderIdentity.Value |> Conversion.bytesToString)
