@@ -232,7 +232,7 @@ type NetworkNode
     member private __.Throttle (entries : ConcurrentDictionary<_, DateTime>) (entryBatch : _ list) func =
         let validEntries = new HashSet<_>()
         entryBatch
-        |> List.iter(fun entry ->
+        |> List.iter (fun entry ->
             match entries.TryGetValue entry with
             | true, timestamp
                 when timestamp > DateTime.UtcNow.AddMilliseconds(-gossipConfig.PeerResponseThrottlingTime |> float) ->
@@ -722,7 +722,7 @@ type NetworkNode
                                 | _ -> None
                             )
 
-                        if not requestsWithNoReplies.IsEmpty  then
+                        if not requestsWithNoReplies.IsEmpty then
                             return! loop requestsWithNoReplies None
                     | None -> ()
                 }
@@ -752,7 +752,8 @@ type NetworkNode
                     validResponseMessage.Items
                     (targetIdentity.Value |> Conversion.bytesToString)
 
-                let validPeerMessageEnvelope = {peerMessageEnvelope with PeerMessage = ResponseDataMessage validResponseMessage}
+                let validPeerMessageEnvelope =
+                    {peerMessageEnvelope with PeerMessage = ResponseDataMessage validResponseMessage}
                 let unicastMessageTask =
                     async {
                         let peerMessageEnvelopeDto =

@@ -114,7 +114,7 @@ module Synchronization =
         |> Option.iter (fun lastVerifiableBlockNumber ->
             // Fetch next config block to build config chain in advance.
             if nextConfigBlockNumber <= lastVerifiableBlockNumber then
-                requestBlock requestBlocksFromPeer publishEvent  nextConfigBlockNumber
+                requestBlock requestBlocksFromPeer publishEvent nextConfigBlockNumber
 
             // Fetch verifiable blocks
             [lastAppliedBlockNumber + 1 .. lastVerifiableBlockNumber]

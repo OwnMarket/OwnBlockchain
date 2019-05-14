@@ -11,7 +11,8 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "SendPeerMessage agent is not started"
 
-    let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId list * NetworkAddress option> option = None
+    let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId list * NetworkAddress option> option =
+        None
     let invokeRequestFromPeer m =
         match requestFromPeerDispatcher with
         | Some h -> h.Post m

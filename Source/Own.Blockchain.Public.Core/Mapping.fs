@@ -1003,7 +1003,7 @@ module Mapping =
             requestDataMessage.Items
             |> List.map (fun request ->
                 let messageType, messageId = networkMessageIdToIdTypeTuple request
-                {NetworkMessageItemDto.MessageType = messageType ; MessageId = messageId}
+                {NetworkMessageItemDto.MessageType = messageType; MessageId = messageId}
             )
 
         {
@@ -1015,9 +1015,8 @@ module Mapping =
         let responseItems =
             dto.Items
             |> List.map (fun response ->
-                 let messageId = messageTypeToNetworkMessageId response.MessageType response.MessageId
-                 {ResponseItemMessage.MessageId = messageId ; Data = response.Data}
-
+                let messageId = messageTypeToNetworkMessageId response.MessageType response.MessageId
+                {ResponseItemMessage.MessageId = messageId; Data = response.Data}
             )
 
         {
@@ -1038,7 +1037,6 @@ module Mapping =
         {
             Items = responseItems
         }
-
 
     let private peerMessageFromDto (deserialize : PeerMessageDto -> obj) (dto : PeerMessageDto) =
         let messageData = deserialize dto

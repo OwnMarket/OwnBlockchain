@@ -96,7 +96,7 @@ module WorkflowsMock =
         | RequestDataMessage m -> [ processRequest address m.Items m.SenderIdentity ] |> Some
         | ResponseDataMessage m ->
             m.Items
-            |> List.iter(fun response -> RawMock.savePeerData address response.MessageId)
+            |> List.iter (fun response -> RawMock.savePeerData address response.MessageId)
             None
         | _ ->
             None

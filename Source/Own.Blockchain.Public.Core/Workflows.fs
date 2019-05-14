@@ -1294,7 +1294,10 @@ module Workflows =
                                 Data = equivocationProofDto |> Serialization.serializeBinary
                             }
                             |> Ok
-                        | _ -> Result.appError (sprintf "Requested equivocation proof %s not found" equivocationProofHash.Value)
+                        | _ ->
+                            Result.appError (
+                                sprintf "Requested equivocation proof %s not found" equivocationProofHash.Value
+                            )
                     | Block blockNr ->
                         let blockNr =
                             if blockNr = BlockNumber -1L then
@@ -1364,7 +1367,7 @@ module Workflows =
 
         let processResponseMessage (responseItems : ResponseItemMessage list) =
             responseItems
-            |> List.map(fun response -> processDataMessage true response.MessageId None response.Data)
+            |> List.map (fun response -> processDataMessage true response.MessageId None response.Data)
 
         match peerMessageEnvelope.PeerMessage with
         | GossipDiscoveryMessage _ -> None
