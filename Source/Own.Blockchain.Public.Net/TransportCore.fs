@@ -79,7 +79,7 @@ type internal TransportCore
             let msg = multipartMessage.[1].ToByteArray()
             msg |> Some
         else
-            Log.errorf "Invalid message frame count (Expected 3, received %i)" multipartMessage.FrameCount
+            Log.errorf "Invalid message frame count (Expected 2, received %i)" multipartMessage.FrameCount
             None
 
     let packMessage (identity : byte[] option) message =
