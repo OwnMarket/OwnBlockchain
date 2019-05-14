@@ -39,16 +39,13 @@ module Cli =
         |> Composition.signGenesisBlock
         |> fun (Signature signature) -> printfn "Signature: %s" signature
 
-    let handleHelpCommand args =
-        printfn "TODO: Print short command reference"
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let handleCommand args =
         match args with
+        | [] -> handleStartNodeCommand () // Default command
         | ["--version"] -> handleShowVersionCommand ()
-        | ["--node"] | [] -> handleStartNodeCommand () // Default command
         | ["--sign-genesis"; privateKey] -> handleSignGenesisBlockCommand privateKey
-        | ["--help"] | _ -> handleHelpCommand args
+        | _ -> printfn "Invalid arguments"
