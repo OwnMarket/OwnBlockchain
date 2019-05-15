@@ -2,6 +2,7 @@ namespace Own.Blockchain.Public.Wallet
 
 open System
 open System.Reflection
+open System.Text.RegularExpressions
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Crypto
 
@@ -16,8 +17,20 @@ module Cli =
         assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
         |> printfn "%s"
 
-    let handleGenerateWalletCommand () =
-        let wallet = Signing.generateWallet ()
+    let handleGenerateWalletCommand pattern =
+        let wallet =
+            match pattern with
+            | None -> Signing.generateWallet ()
+            | Some p ->
+                let pattern = new Regex(p, RegexOptions.Compiled)
+                let rec generateWithPattern () =
+                    let wallet = Signing.generateWallet ()
+                    if pattern.IsMatch(wallet.Address.Value) then
+                        wallet
+                    else
+                        generateWithPattern ()
+                generateWithPattern ()
+
         printfn "Private Key: %s\nAddress: %s" wallet.PrivateKey.Value wallet.Address.Value
 
     let handleDeriveAddressCommand privateKey =
@@ -47,7 +60,8 @@ module Cli =
     let handleCommand args =
         match args with
         | ["--version"] -> handleShowVersionCommand ()
-        | ["--generate"] -> handleGenerateWalletCommand ()
+        | ["--generate"] -> handleGenerateWalletCommand None
+        | ["--generate"; pattern] -> handleGenerateWalletCommand (Some pattern)
         | ["--address"; privateKey] -> handleDeriveAddressCommand privateKey
         | ["--sign"; networkCode; privateKey; message] -> handleSignMessageCommand networkCode privateKey message
         | ["--help"] | _ -> handleHelpCommand args
