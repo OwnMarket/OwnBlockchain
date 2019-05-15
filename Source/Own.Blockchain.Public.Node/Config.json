@@ -8,5 +8,6 @@
     "NetworkDiscoveryTime": 3,
     "AllowPrivateNetworkPeers": true,
     "ValidatorPrivateKey": "6ZeUHCHEBpfryH9DDH5YhfaGabToseTnvH9Q8TGRhBio",
-    "MinLogLevel": "Info"
+    "MinLogLevel": "Info",
+    "WalletFrontendFile": "../../Build/Include/Wallet/index.html"
 }

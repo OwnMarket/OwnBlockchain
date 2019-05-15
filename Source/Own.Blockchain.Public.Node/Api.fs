@@ -237,6 +237,18 @@ module Api =
             return! response next ctx
         }
 
+    let getWalletHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                System.IO.File.ReadAllText(Config.WalletFrontendFile)
+                    .Replace("""<base href="/">""", """<base href="/wallet">""")
+                    .Replace("<<NODE_API_URL>>", "")
+                    .Replace("<<NETWORK_CODE>>", Config.NetworkCode)
+                |> setBodyFromString
+
+            return! response next ctx
+        }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Configuration
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -265,6 +277,7 @@ module Api =
                 routef "/asset/%s" getAssetHandler
                 route "/validators" >=> getValidatorsHandler
                 routef "/validator/%s/stakes" getValidatorStakesHandler
+                routeStartsWith "/wallet" >=> getWalletHandler
             ]
             POST >=> choose [
                 route "/tx" >=> submitTxHandler
