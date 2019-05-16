@@ -9,6 +9,7 @@ Node can be deployed in two ways:
 
 Please refer to the corresponding section below, depending on your use case.
 
+
 ## Simple deployment
 
 - Go to [GitHub releases](https://github.com/OwnMarket/OwnBlockchain/releases) (e.g. [the latest one](https://github.com/OwnMarket/OwnBlockchain/releases/latest)) and download the package for your operating system (from "Assets" section):
@@ -35,6 +36,7 @@ Please refer to the corresponding section below, depending on your use case.
         start_mainnet_node.bat
         ```
 - To stop the node, press `Ctrl+C` keyboard combination.
+
 
 ## Scripted deployment
 
@@ -87,24 +89,33 @@ sudo systemctl stop own-blockchain-public-node@ins1
 
 Once the node is synchronized, you can proceed with optional steps listed below, if they apply to your use-case.
 
+
 ### Optional configuration steps
 
-- By default, node runs in "poll" mode, which means it is fetching new blocks from peers periodically (by default every minute). If you want the node to participate in node gossip and receive blocks and transactions as soon as they're propagated throughout the network, you need to:
-    - Have a DNS name, as an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types), pointing to the IP of the server on which your node is running.
+#### Expose node to public network
 
-    - Configure DNS name and port (default is `25718`) as `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details).
-        - Stop the node.
-        - Open configuration file in text editor (e.g. `nano` or `vim`).
-            ```bash
-            sudo nano /var/lib/own/blockchain/public/node/ins1/Config.json
-            ```
-        - Add an entry with the public DNS name and port pointing to your node.
-            ```json
-            "PublicAddress": "my-node-name.my-domain.com:25718"
-            ```
-        - Save the file.
-        - Start the node.
+By default, node runs in "pull" mode, which means it is fetching new blocks from peers periodically (by default every minute). If you want the node to participate in node communication (which is a prerequisite for validators as well) and receive blocks and transactions as soon as they're propagated throughout the network, you need to:
 
-    - Ensure node is reachable from public network through configured `PublicAddress` (depending on your environment, this might involve configuring DNS entries and firewall ports).
+- Have a DNS name, as an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types), pointing to the IP of the server on which your node is running.
 
-- To configure the node as validator, please refer to the [validator configuration document](ValidatorConfiguration.md).
+- Configure DNS name and port (default is `25718`) as `PublicAddress` in node configuration file (`Config.json` - refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details).
+    - Stop the node.
+    - Open configuration file in text editor (e.g. `nano` or `vim`).
+        ```bash
+        sudo nano /var/lib/own/blockchain/public/node/ins1/Config.json
+        ```
+    - Add an entry with the public DNS name and port pointing to your node.
+        ```json
+        "PublicAddress": "my-node-name.my-domain.com:25718"
+        ```
+    - Save the file.
+    - Start the node.
+
+- Ensure node is reachable from public network through configured `PublicAddress` (depending on your environment, this might involve configuring DNS entries and firewall ports).
+    - Default port node is using to communicate with peers is `25718`.
+    - Default port for node API is `10717`.
+    - Easiest way to check if your node is accessible from public network is to try to access its API (e.g. http://my-node-name.my-domain.com:10717/stats).
+
+#### Configure node as validator
+
+To configure the node as validator, please refer to the [validator configuration document](ValidatorConfiguration.md).
