@@ -71,21 +71,40 @@ At this point the node can be started
 sudo systemctl start own-blockchain-public-node@ins1
 ```
 
+Once node is started, it is expected to start synchronizing with other nodes. Depending on the number of blocks node has to download, this process can take significant time to complete.
+
 To view node's logs, use following command
 
 ```bash
 journalctl -fu own-blockchain-public-node@ins1
 ```
 
-To stop the node, use following command
+If you need to stop the node, use following command
 
 ```bash
 sudo systemctl stop own-blockchain-public-node@ins1
 ```
 
+Once the node is synchronized, you can proceed with optional steps listed below, if they apply to your use-case.
+
 ### Optional configuration steps
 
 - By default, node runs in "poll" mode, which means it is fetching new blocks from peers periodically (by default every minute). If you want the node to participate in node gossip and receive blocks and transactions as soon as they're propagated throughout the network, you need to:
-    - configure `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details)
-    - ensure node is reachable from public network through configured `PublicAddress` (depending on your environment, this might involve configuring DNS and firewall ports)
+    - Have a DNS name pointing to the IP of the server on which your node is running.
+
+    - Configure DNS name and port (default is `25718`) as `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details).
+        - Stop the node.
+        - Open configuration file in text editor (e.g. `nano` or `vim`).
+            ```bash
+            sudo nano /var/lib/own/blockchain/public/node/ins1/Config.json
+            ```
+        - Add an entry with the public DNS name and port pointing to your node.
+            ```json
+            "PublicAddress": "my-node-name.my-domain.com:25718"
+            ```
+        - Save the file.
+        - Start the node.
+
+    - Ensure node is reachable from public network through configured `PublicAddress` (depending on your environment, this might involve configuring DNS entries and firewall ports).
+
 - To configure the node as validator, please refer to the [validator configuration document](ValidatorConfiguration.md).
