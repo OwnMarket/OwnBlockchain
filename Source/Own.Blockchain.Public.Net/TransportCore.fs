@@ -13,6 +13,7 @@ open Own.Blockchain.Public.Core.Dtos
 
 type internal TransportCore
     (
+    cancellationToken,
     networkId,
     peerIdentity,
     networkSendoutRetryTimeout,
@@ -147,8 +148,8 @@ type internal TransportCore
                 Log.error "Poller was disposed while adding socket"
         queue.Enqueue (targetAddress, msg)
 
-    let dealerSendAsync (e : NetMQQueueEventArgs<_>) =
-        e.Queue
+    let dealerSendAsync (queue : NetMQQueue<_>) =
+        queue
         |> netMQQueueToDict
         |> Seq.ofDict
         |> Seq.iter (fun (targetAddress, payload) ->
@@ -175,16 +176,28 @@ type internal TransportCore
         [
             multicastMessageQueue
             discoveryMessageQueue
-            requestsMessageQueue
-            gossipMessageQueue
         ]
         |> List.iter (fun queue ->
             queue.ReceiveReady
-            |> Observable.subscribe dealerSendAsync
+            |> Observable.subscribe (fun e -> dealerSendAsync e.Queue)
             |> ignore
 
             poller.Add queue
         )
+
+        let rec loop () =
+            async {
+                [
+                    gossipMessageQueue
+                    requestsMessageQueue
+                ]
+                |> List.iter dealerSendAsync
+
+                do! Async.Sleep 100
+                return! loop ()
+            }
+
+        Async.Start (loop (), cancellationToken)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Router
@@ -288,13 +301,17 @@ type internal TransportCore
         [
             multicastMessageQueue
             discoveryMessageQueue
-            requestsMessageQueue
-            gossipMessageQueue
         ]
         |> List.iter (fun queue ->
             if not queue.IsDisposed then
                 poller.RemoveAndDispose queue
         )
+
+        [
+            gossipMessageQueue
+            requestsMessageQueue
+        ]
+        |> List.iter (fun q -> if not q.IsDisposed then q.Dispose())
 
         if poller.IsRunning then
             poller.Dispose()
