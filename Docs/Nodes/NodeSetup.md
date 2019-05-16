@@ -90,7 +90,7 @@ Once the node is synchronized, you can proceed with optional steps listed below,
 ### Optional configuration steps
 
 - By default, node runs in "poll" mode, which means it is fetching new blocks from peers periodically (by default every minute). If you want the node to participate in node gossip and receive blocks and transactions as soon as they're propagated throughout the network, you need to:
-    - Have a DNS name pointing to the IP of the server on which your node is running.
+    - Have a DNS name, as an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types), pointing to the IP of the server on which your node is running.
 
     - Configure DNS name and port (default is `25718`) as `PublicAddress` in node configuration file (refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details).
         - Stop the node.
