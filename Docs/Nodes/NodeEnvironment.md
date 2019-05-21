@@ -104,9 +104,9 @@ Setting Name | Description
 
 ### Sample configuration:
 
-**DO NOT USE THIS EXAMPLE CONFIGURATION IN YOUR NODES! FOLLOW THE [NODE SETUP DOCUMENT](NodeSetup.md) FOR DETAILED INSTRUCTIONS ON HOW TO CONFIGURE THE NODE.**
+Purpose of this example configuration is to show you how to set it **IF needed**, which is not the case for default setup process.
 
-Purpose of this example configuration is to show you how to set it IF you need it, which is not the case for default setup process!
+**DO NOT USE THIS EXAMPLE CONFIGURATION IN YOUR NODES! FOLLOW THE [NODE SETUP DOCUMENT](NodeSetup.md) FOR DETAILED INSTRUCTIONS ON HOW TO CONFIGURE THE NODE.**
 
 ```json
 {
