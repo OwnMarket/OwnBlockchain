@@ -9,7 +9,6 @@ open Own.Blockchain.Public.Core.Dtos
 
 type internal TransportCoreMock
     (
-    cancellationToken,
     networkId,
     peerIdentity,
     networkSendoutRetryTimeout,

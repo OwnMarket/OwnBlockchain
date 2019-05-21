@@ -271,7 +271,6 @@ type NetworkNode
         Log.debugf "Node identity is %s" (nodeConfig.Identity.Value |> Conversion.bytesToString)
         let networkId = getNetworkId ()
         initTransport
-            cts.Token
             networkId.Value
             nodeConfig.Identity.Value
             nodeConfig.NetworkSendoutRetryTimeout
