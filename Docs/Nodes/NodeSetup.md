@@ -98,7 +98,7 @@ By default, node runs in "pull" mode, which means it is fetching new blocks from
 
 - Have a DNS name, as an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types), pointing to the IP of the server on which your node is running.
 
-- Configure DNS name and port (default is `25718`) as `PublicAddress` in node configuration file (`Config.json` - refer to the [node environment document](NodeEnvironment.md#configuration-file) for more details).
+- Configure DNS name and port (default is `25718`) as `PublicAddress` in node configuration file (`Config.json`):
     - Stop the node.
     - Open configuration file in text editor (e.g. `nano` or `vim`).
         ```bash
