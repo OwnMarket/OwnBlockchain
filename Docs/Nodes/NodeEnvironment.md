@@ -1,8 +1,10 @@
 # Own Public Blockchain Node Environment and Configuration
 
-This document describes the standard operating environment, details of the configuration and the process of setting up an instance of the Own public blockchain network node.
+**NOTE:** For instructions how to use the setup scripts to setup a node, please follow [node setup](NodeSetup.md) document!
 
-While it is important to be aware of the details described in this document, the installation process is mostly automated with scripts. For instructions how to use the setup scripts to setup a node, please follow [node setup](NodeSetup.md) document.
+This document describes the standard operating environment, details of the configuration and the high level process of setting up an instance of the Own public blockchain network node.
+
+While it is important to be aware of the details described in this document, the installation process is mostly automated with [scripts](NodeSetup.md#scripted-deployment).
 
 
 ## Hardware Considerations
