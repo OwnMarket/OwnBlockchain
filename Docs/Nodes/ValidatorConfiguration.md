@@ -11,13 +11,13 @@ Before configuring a validator node, make sure to:
 - have the node accessible from public network, which assumes
     - having (and being in control of) a DNS name for your validator
     - configuring DNS name as an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types) pointing to the static IP address of the machine on which the node is running
-    - `PublicAddress` configured in configuration file (please refer to the [node environment document](NodeEnvironment.md#configuration-file) for more information)
+    - `PublicAddress` configured in configuration file (covered in the [node setup document](NodeSetup.md#expose-node-to-public-network))
 - have a dedicated CHX address ready (you can generate new private key and address using [online wallet](https://wallet.weown.com/wallet)). Keep private key secure and do not share it with anyone!
 
 
 ## Software Configuration
 
-For the node to be able to act as a validator, it must have `ValidatorPrivateKey` configured in the `Config.json` file. Please refer to [node environment configuration document](NodeEnvironment.md#configuration-file) for more info.
+For the node to be able to act as a validator, it must have `ValidatorPrivateKey` configured in the `Config.json` file.
 
 **DANGER: DO NOT CONFIGURE MULTIPLE NODES TO USE SAME PRIVATE KEY! THIS WILL EVENTUALLY RESULT IN CONFLICTING MESSAGES AND LEAD TO DEPOSIT SLASHING, AS WELL AS BLACKLISTING OF THE VALIDATOR ADDRESS!**
 
