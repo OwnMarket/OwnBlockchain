@@ -10,7 +10,7 @@ sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs
 wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo apt update -y
 sudo apt install -y postgresql-10 postgresql-contrib-10
-sudo -u postgres psql -c 'CREATE EXTENSION adminpack'
+sudo -u postgres psql -c 'CREATE EXTENSION IF NOT EXISTS adminpack'
 
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Node binaries'
