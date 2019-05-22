@@ -29,6 +29,16 @@ module Api =
     // Handlers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let getNodeInfoHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getNodeInfoApi ()
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getStatsHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -109,6 +119,28 @@ module Api =
         task {
             let response =
                 Composition.getEquivocationProofApi (EquivocationProofHash equivocationProofHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getHeadBlockNumberHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                {
+                    BlockNumber = (Composition.getLastAppliedBlockNumber ()).Value
+                }
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getHeadBlockHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getLastAppliedBlockNumber ()
+                |> Composition.getBlockApi
                 |> toApiResponse
 
             return! response next ctx
@@ -237,6 +269,17 @@ module Api =
             return! response next ctx
         }
 
+    let getRootHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                sprintf """<a href="%s" target="_blank" style="font-family: sans-serif">%s</a>"""
+                    "https://github.com/OwnMarket/OwnBlockchain/blob/master/Docs/Nodes/NodeApi.md"
+                    "API Documentation"
+                |> setBodyFromString
+
+            return! response next ctx
+        }
+
     let getWalletHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -256,7 +299,8 @@ module Api =
     let api =
         choose [
             GET >=> choose [
-                route "/" >=> text "TODO: Show link to the help page"
+                route "/" >=> getRootHandler
+                route "/node" >=> getNodeInfoHandler
                 route "/stats" >=> getStatsHandler
                 route "/network" >=> getNetworkStatsHandler
                 route "/peers" >=> getPeersHandler
@@ -264,6 +308,8 @@ module Api =
                 routef "/tx/%s/raw" getRawTxHandler
                 routef "/tx/%s" getTxHandler
                 routef "/equivocation/%s" getEquivocationProofHandler
+                route "/block/head/number" >=> getHeadBlockNumberHandler
+                route "/block/head" >=> getHeadBlockHandler
                 routef "/block/%d" getBlockHandler
                 routef "/address/%s/accounts" getAddressAccountsHandler
                 routef "/address/%s/assets" getAddressAssetsHandler

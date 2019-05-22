@@ -602,6 +602,18 @@ type ErrorResponseDto = {
     Errors : string list
 }
 
+type GetNodeInfoApiDto = {
+    VersionNumber : string
+    VersionHash : string
+    NetworkCode : string
+    PublicAddress : string
+    ValidatorAddress : string
+}
+
+type GetPeerListApiDto = {
+    Peers : string list
+}
+
 [<CLIMutable>]
 type GetTxPoolInfoApiDto = {
     PendingTxs : int64
@@ -738,8 +750,4 @@ type GetValidatorInfoApiDto = {
 
 type GetValidatorsApiDto = {
     Validators : GetValidatorInfoApiDto list
-}
-
-type GetPeerListApiDto = {
-    Peers : string list
 }

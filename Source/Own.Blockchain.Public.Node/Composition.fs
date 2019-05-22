@@ -491,6 +491,17 @@ module Composition =
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let getNodeInfoApi () =
+        Workflows.getNodeInfoApi
+            addressFromPrivateKey
+            Config.VersionNumber
+            Config.VersionHash
+            Config.NetworkCode
+            Config.PublicAddress
+            Config.ValidatorPrivateKey
+
+    let getPeersApi () = Workflows.getPeerListApi Peers.getPeerList
+
     let submitTx =
         Workflows.submitTx
             verifySignature
@@ -540,8 +551,6 @@ module Composition =
     let getValidatorsApi = Workflows.getValidatorsApi getCurrentValidators getAllValidators
 
     let getValidatorStakesApi = Workflows.getValidatorStakesApi getValidatorState getValidatorStakes
-
-    let getPeersApi () = Workflows.getPeerListApi Peers.getPeerList
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network

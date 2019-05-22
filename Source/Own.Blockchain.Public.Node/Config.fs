@@ -3,6 +3,7 @@
 open System
 open System.Globalization
 open System.IO
+open System.Reflection
 open System.Text.RegularExpressions
 open Microsoft.Extensions.Configuration
 open Own.Common.FSharp
@@ -11,7 +12,7 @@ open Own.Blockchain.Public.Core.DomainTypes
 
 type Config () =
 
-    static let appDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+    static let appDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
 
     static let workingDir = Directory.GetCurrentDirectory()
 
@@ -30,6 +31,19 @@ type Config () =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // General
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    static member VersionNumber
+        with get () =
+            let assembly = Assembly.GetExecutingAssembly()
+            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
+
+    static member VersionHash
+        with get () =
+            let versionHashFile = Path.Combine(appDir, "Version")
+            if File.Exists versionHashFile then
+                File.ReadAllText versionHashFile
+            else
+                "UNKNOWN"
+
     static member MinLogLevel
         with get () =
             let minLogLevel = config.["MinLogLevel"]

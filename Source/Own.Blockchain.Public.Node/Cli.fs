@@ -10,8 +10,7 @@ module Cli =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let handleShowVersionCommand () =
-        let assembly = Assembly.GetExecutingAssembly()
-        assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
+        Config.VersionNumber
         |> printfn "%s"
 
     let handleStartNodeCommand () =

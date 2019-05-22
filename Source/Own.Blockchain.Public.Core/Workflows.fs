@@ -1380,6 +1380,45 @@ module Workflows =
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let getNodeInfoApi
+        (addressFromPrivateKey : PrivateKey -> BlockchainAddress)
+        versionNumber
+        versionHash
+        networkCode
+        (publicAddress : string option)
+        validatorPrivateKey
+        =
+
+        let validatorAddress =
+            validatorPrivateKey
+            |> Option.ofObj
+            |> Option.map (fun pk ->
+                let address = PrivateKey pk |> addressFromPrivateKey
+                address.Value
+            )
+            |> Option.toObj
+
+        {
+            VersionNumber = versionNumber
+            VersionHash = versionHash
+            NetworkCode = networkCode
+            PublicAddress = publicAddress |> Option.toObj
+            ValidatorAddress = validatorAddress
+        }
+
+    let getPeerListApi
+        (getPeerList : unit -> GossipPeer list)
+        : Result<GetPeerListApiDto, AppErrors>
+        =
+
+        let peers =
+            getPeerList ()
+            |> List.map (fun m -> m.NetworkAddress.Value)
+            |> List.sort
+
+        { GetPeerListApiDto.Peers = peers }
+        |> Ok
+
     let submitTx
         verifySignature
         isValidHash
@@ -1740,16 +1779,3 @@ module Workflows =
                 GetValidatorStakesApiResponseDto.Stakes = getValidatorStakes address
             }
             |> Ok
-
-    let getPeerListApi
-        (getPeerList : unit -> GossipPeer list)
-        : Result<GetPeerListApiDto, AppErrors>
-        =
-
-        let peers =
-            getPeerList ()
-            |> List.map (fun m -> m.NetworkAddress.Value)
-            |> List.sort
-
-        { GetPeerListApiDto.Peers = peers }
-        |> Ok
