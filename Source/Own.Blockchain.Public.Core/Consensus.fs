@@ -28,6 +28,7 @@ module Consensus =
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusStateInfo -> ConsensusMessage -> unit,
         sendConsensusState : PeerNetworkIdentity -> ConsensusStateResponse -> unit,
         requestConsensusState : ConsensusRound -> BlockchainAddress option -> unit,
+        canParticipateInConsensus : BlockNumber -> bool option,
         publishEvent : AppEvent -> unit,
         scheduleMessage : int -> BlockchainAddress * ConsensusMessageEnvelope -> unit,
         scheduleStateResponse : int -> BlockNumber * ConsensusStateResponse -> unit,
@@ -215,21 +216,22 @@ module Consensus =
                 async {
                     do! Async.Sleep staleConsensusDetectionInterval
 
-                    let currentTime = Utils.getNetworkTimestamp ()
+                    if canParticipateInConsensus _blockNumber = Some true then
+                        let currentTime = Utils.getNetworkTimestamp ()
 
-                    // Detect stale round
-                    let roundDuration = currentTime - _roundStartTime
-                    if roundDuration > maxRoundDuration _round then
-                        Log.warning "Stale consensus round detected"
-                        requestConsensusState _round None
-                    elif emptyBlocksEnabled then
-                        // Detect stale height (relies on empty block pace)
-                        let heightDuration = currentTime - (getLastAppliedBlockTimestamp ()).Value
-                        if heightDuration > maxHeightDuration then
-                            Log.warning "Stale consensus height detected"
+                        // Detect stale round
+                        let roundDuration = currentTime - _roundStartTime
+                        if roundDuration > maxRoundDuration _round then
+                            Log.warning "Stale consensus round detected"
                             requestConsensusState _round None
+                        elif emptyBlocksEnabled then
+                            // Detect stale height (relies on empty block pace)
+                            let heightDuration = currentTime - (getLastAppliedBlockTimestamp ()).Value
+                            if heightDuration > maxHeightDuration then
+                                Log.warning "Stale consensus height detected"
+                                requestConsensusState _round None
 
-                    return! loop ()
+                        return! loop ()
                 }
 
             loop ()
@@ -1244,6 +1246,7 @@ module Consensus =
             sendConsensusMessage,
             sendConsensusState,
             requestConsensusState,
+            canParticipateInConsensus,
             publishEvent,
             scheduleMessage,
             scheduleStateResponse,
