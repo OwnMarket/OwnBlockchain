@@ -127,9 +127,7 @@ module Api =
     let getHeadBlockNumberHandler : HttpHandler = fun next ctx ->
         task {
             let response =
-                {
-                    BlockNumber = (Composition.getLastAppliedBlockNumber ()).Value
-                }
+                (Composition.getLastAppliedBlockNumber ()).Value
                 |> Ok
                 |> toApiResponse
 
