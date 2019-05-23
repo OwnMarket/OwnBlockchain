@@ -8,15 +8,31 @@ module Stats =
 
     type Counter =
         | PeerRequests
-        | PeerResponses
+        | PeerRequestTimeouts
+        | PeerRequestFailures
         | FailedMessageSendouts
+        | RequestedBlocks
+        | RequestedTxs
+        | PeerResponses
+        | ReceivedBlocks
+        | ReceivedTxs
+        | SentConsensusMessages
+        | ReceivedConsensusMessages
 
     type Counter with
         member __.CaseName =
             match __ with
             | PeerRequests -> "PeerRequests"
-            | PeerResponses -> "PeerResponses"
+            | PeerRequestTimeouts -> "PeerRequestTimeouts"
+            | PeerRequestFailures -> "PeerRequestFailures"
             | FailedMessageSendouts -> "FailedMessageSendouts"
+            | RequestedBlocks -> "RequestedBlocks"
+            | RequestedTxs -> "RequestedTxs"
+            | PeerResponses -> "PeerResponses"
+            | ReceivedBlocks -> "ReceivedBlocks"
+            | ReceivedTxs -> "ReceivedTxs"
+            | SentConsensusMessages -> "ReceivedConsensusMessages"
+            | ReceivedConsensusMessages -> "ReceivedConsensusMessages"
 
     type StatsSummaryEntry = {
         Counter : string
