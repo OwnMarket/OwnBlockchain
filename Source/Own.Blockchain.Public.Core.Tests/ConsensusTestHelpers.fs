@@ -225,6 +225,9 @@ module ConsensusTestHelpers =
             let requestConsensusState r t =
                 _stateRequests.Add (validatorAddress, r, t)
 
+            let canParticipateInConsensus _ =
+                Some true
+
             let publishEvent event =
                 _events.Add (validatorAddress, event)
 
@@ -279,6 +282,7 @@ module ConsensusTestHelpers =
                     sendConsensusMessage,
                     sendConsensusState,
                     requestConsensusState,
+                    canParticipateInConsensus,
                     publishEvent,
                     scheduleMessage,
                     scheduleStateResponse,
