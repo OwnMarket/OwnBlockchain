@@ -1134,6 +1134,7 @@ module Consensus =
                 }
                 |> sendPeerMessage
 
+                Stats.increment Stats.Counter.SentConsensusMessages
                 Log.debugf "Consensus message sent: %i / %i / %s"
                     consensusMessageEnvelope.BlockNumber.Value
                     consensusMessageEnvelope.Round.Value

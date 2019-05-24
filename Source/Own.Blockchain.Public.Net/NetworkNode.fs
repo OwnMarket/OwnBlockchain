@@ -654,34 +654,41 @@ type NetworkNode
                     let usedAddresses = new HashSet<NetworkAddress>()
                     messageIds
                     |> List.iter (fun messageId ->
+                        match messageId with
+                        | Tx _ -> Stats.increment Stats.Counter.RequestedTxs
+                        | Block _ -> Stats.increment Stats.Counter.RequestedBlocks
+                        | _ -> ()
+
                         match peerSelectionSentRequests.TryGetValue messageId with
                         | true, addresses -> usedAddresses.UnionWith(addresses)
                         | _ -> ()
                     )
 
                     let targetedAddresses = usedAddresses |> Seq.toList
-
-                    __.GetActivePeers()
-                    |> List.map (fun m -> m.NetworkAddress)
-                    |> List.except targetedAddresses
-                    |> List.filter (isSelf >> not)
-                    |> __.SelectPeer preferredPeer
-                    |> tee (fun address ->
-                        messageIds
-                        |> List.iter (fun messageId ->
-                            match address with
-                            | Some networkAddress ->
-                                peerSelectionSentRequests.AddOrUpdate(
-                                    messageId,
-                                    networkAddress :: targetedAddresses,
-                                    fun _ _ -> networkAddress :: targetedAddresses)
-                                |> ignore
-                            | None ->
-                                Log.errorf "Cannot retrieve data from peers for %A" messageId
-                                peerSelectionSentRequests.TryRemove messageId |> ignore
-                            )
-                    )
-                    |> Option.iter (fun address ->
+                    let selectedPeer =
+                        __.GetActivePeers()
+                        |> List.map (fun m -> m.NetworkAddress)
+                        |> List.except targetedAddresses
+                        |> List.filter (isSelf >> not)
+                        |> __.SelectPeer preferredPeer
+                        |> tee (fun address ->
+                            messageIds
+                            |> List.iter (fun messageId ->
+                                match address with
+                                | Some networkAddress ->
+                                    peerSelectionSentRequests.AddOrUpdate(
+                                        messageId,
+                                        networkAddress :: targetedAddresses,
+                                        fun _ _ -> networkAddress :: targetedAddresses)
+                                    |> ignore
+                                | None ->
+                                    Stats.increment Stats.Counter.PeerRequestFailures
+                                    Log.errorf "Cannot retrieve data from peers for %A" messageId
+                                    peerSelectionSentRequests.TryRemove messageId |> ignore
+                                )
+                        )
+                    match selectedPeer with
+                    | Some address ->
                         let peerMessageEnvelope =
                             {
                                 PeerMessageEnvelope.NetworkId = getNetworkId ()
@@ -695,25 +702,26 @@ type NetworkNode
                         let peerMessageEnvelopeDto =
                             Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
                         sendRequestMessage peerMessageEnvelopeDto address.Value
-                    )
 
-                    do! Async.Sleep(4 * gossipConfig.GossipIntervalMillis)
+                        do! Async.Sleep(4 * gossipConfig.GossipIntervalMillis)
 
-                    (*
-                        If no answer is received within 2 cycles (request - response i.e 4xtCycle),
-                        repeat (i.e choose another peer).
-                    *)
+                        (*
+                            If no answer is received within 2 cycles (request - response i.e 4xtCycle),
+                            repeat (i.e choose another peer).
+                        *)
 
-                    let requestsWithNoReplies =
-                        messageIds
-                        |> List.choose (fun messageId ->
-                            match (peerSelectionSentRequests.TryGetValue messageId) with
-                            | true, addresses when not (addresses.IsEmpty) -> Some messageId
-                            | _ -> None
-                        )
+                        Stats.increment Stats.Counter.PeerRequestTimeouts
+                        let requestsWithNoReplies =
+                            messageIds
+                            |> List.choose (fun messageId ->
+                                match (peerSelectionSentRequests.TryGetValue messageId) with
+                                | true, addresses when not (addresses.IsEmpty) -> Some messageId
+                                | _ -> None
+                            )
 
-                    if not requestsWithNoReplies.IsEmpty then
-                        return! loop requestsWithNoReplies None
+                        if not requestsWithNoReplies.IsEmpty then
+                            return! loop requestsWithNoReplies None
+                    | None -> ()
                 }
 
             Async.Start (loop validRequestIds preferredPeer, cts.Token)

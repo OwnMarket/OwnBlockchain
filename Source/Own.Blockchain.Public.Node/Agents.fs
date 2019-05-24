@@ -91,6 +91,7 @@ module Agents =
             |> Log.info
         | TxReceived (h, _)
         | TxFetched (h, _) ->
+            Stats.increment Stats.Counter.ReceivedTxs
             h.Value
             |> formatMessage
             |> Log.info
@@ -125,6 +126,7 @@ module Agents =
             |> Log.notice
         | BlockReceived (bn, _)
         | BlockFetched (bn, _) ->
+            Stats.increment Stats.Counter.ReceivedBlocks
             bn.Value
             |> string
             |> formatMessage
@@ -146,6 +148,11 @@ module Agents =
             |> Log.success
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
+            match event with
+            | ConsensusMessageReceived _ ->
+                Stats.increment Stats.Counter.ReceivedConsensusMessages
+            | _ -> ()
+
             match c with
             | Synchronize -> "Synchronize"
             | Message (sender, consensusMessageEnvelope) ->
