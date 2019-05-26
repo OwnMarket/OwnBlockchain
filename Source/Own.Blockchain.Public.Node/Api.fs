@@ -360,6 +360,7 @@ module Api =
         |> ignore
 
     let start () =
+        Log.infof "Exposing API on: %s" Config.ApiListeningAddresses
         WebHostBuilder()
             .SuppressStatusMessages(true)
             .UseKestrel()
