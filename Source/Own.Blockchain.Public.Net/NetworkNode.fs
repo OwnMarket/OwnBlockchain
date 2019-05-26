@@ -379,7 +379,7 @@ type NetworkNode
         __.StartServer ()
 
     member private __.StartServer () =
-        Log.infof "Listening on: %s" nodeConfig.ListeningAddress.Value
+        Log.infof "Listening to peers on: %s" nodeConfig.ListeningAddress.Value
         nodeConfigPublicIPAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage nodeConfig.ListeningAddress.Value
 
