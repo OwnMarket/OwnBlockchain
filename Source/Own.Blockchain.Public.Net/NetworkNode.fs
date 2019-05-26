@@ -369,7 +369,7 @@ type NetworkNode
         Async.Start (loop (), cts.Token)
 
     member private __.StartNode () =
-        Log.debug "Start node..."
+        Log.debug "Starting node..."
         __.InitializePeerList ()
         __.StartDnsResolver ()
         __.StartSentRequestsMonitor ()
@@ -379,7 +379,7 @@ type NetworkNode
         __.StartServer ()
 
     member private __.StartServer () =
-        Log.infof "Listen on: %s" nodeConfig.ListeningAddress.Value
+        Log.infof "Listening on: %s" nodeConfig.ListeningAddress.Value
         nodeConfigPublicIPAddress |> Option.iter (fun a -> Log.infof "Public address: %s" a.Value)
         receiveMessage nodeConfig.ListeningAddress.Value
 
