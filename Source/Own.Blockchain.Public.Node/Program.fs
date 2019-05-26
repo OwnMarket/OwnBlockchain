@@ -8,17 +8,12 @@ open Own.Blockchain.Public.Node
 
 [<EntryPoint>]
 let main argv =
-    printfn
-        """
-                                  _
-   ___           __      __     ////
- /  _  \   _   /    \  /,,\\\  ////
-|  |_|  | \  \/  /\  \/../\\\\////
- \ ___ /   \ __ /  \ __ /  \\\///
-
- Own Public Blockchain Node %s
-        """
-        Config.VersionNumber
+    printfn """                                  _ """ // IgnoreCodeStyle
+    printfn """   ___           __      __     ////""" // IgnoreCodeStyle
+    printfn """ /  _  \   _   /    \  /,,\\\  //// """ // IgnoreCodeStyle
+    printfn """|  |_|  | \  \/  /\  \/../\\\\////  """ // IgnoreCodeStyle
+    printfn """ \ ___ /   \ __ /  \ __ /  \\\///   """ // IgnoreCodeStyle
+    printfn "\n Own Public Blockchain Node %s\n" Config.VersionNumber
 
     try
         Thread.CurrentThread.CurrentCulture <- CultureInfo.InvariantCulture

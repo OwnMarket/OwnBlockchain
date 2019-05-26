@@ -335,10 +335,13 @@ let checkRules file =
 
         [
             for lineNumber, pair in lines do
-                for rule in rules do
-                    match rule pair with
-                    | Some error -> yield (file, lineNumber, error)
-                    | None -> ()
+                match pair with
+                | _, Some l when l.EndsWith "IgnoreCodeStyle" -> ()
+                | _ ->
+                    for rule in rules do
+                        match rule pair with
+                        | Some error -> yield (file, lineNumber, error)
+                        | None -> ()
         ]
 
 let shouldSkip path =

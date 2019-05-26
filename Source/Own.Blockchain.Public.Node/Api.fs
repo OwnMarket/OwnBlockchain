@@ -270,7 +270,7 @@ module Api =
     let getRootHandler : HttpHandler = fun next ctx ->
         task {
             let response =
-                sprintf """<a href="%s" target="_blank" style="font-family: sans-serif">%s</a>"""
+                sprintf """<a href="%s" target="_blank" style="font-family: sans-serif">%s</a>""" // IgnoreCodeStyle
                     "https://github.com/OwnMarket/OwnBlockchain/blob/master/Docs/Nodes/NodeApi.md"
                     "API Documentation"
                 |> setBodyFromString
@@ -282,7 +282,7 @@ module Api =
         task {
             let response =
                 System.IO.File.ReadAllText(Config.WalletFrontendFile)
-                    .Replace("""<base href="/">""", """<base href="/wallet">""")
+                    .Replace("""<base href="/">""", """<base href="/wallet">""") // IgnoreCodeStyle
                     .Replace("<<NODE_API_URL>>", "")
                     .Replace("<<NETWORK_CODE>>", Config.NetworkCode)
                 |> setBodyFromString
