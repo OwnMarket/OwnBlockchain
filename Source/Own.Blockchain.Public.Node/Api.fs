@@ -104,6 +104,28 @@ module Api =
             return! response next ctx
         }
 
+    let getHeadBlockNumberHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                {
+                    BlockNumber = (Composition.getLastAppliedBlockNumber ()).Value
+                }
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getHeadBlockHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getLastAppliedBlockNumber ()
+                |> Composition.getBlockApi
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getBlockHandler blockNumber : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -250,6 +272,8 @@ module Api =
                 routef "/tx/%s/raw" getRawTxHandler
                 routef "/tx/%s" getTxHandler
                 routef "/equivocation/%s" getEquivocationProofHandler
+                route "/block/head/number" >=> getHeadBlockNumberHandler
+                route "/block/head" >=> getHeadBlockHandler
                 routef "/block/%d" getBlockHandler
                 routef "/address/%s/accounts" getAddressAccountsHandler
                 routef "/address/%s/assets" getAddressAssetsHandler
