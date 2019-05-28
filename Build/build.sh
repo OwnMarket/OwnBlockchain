@@ -16,7 +16,7 @@ rm -rf "$OUTPUT_DIR"
 mkdir -p -m 777 "$OUTPUT_DIR"
 
 # Build the Node
-for PLATFORM_ID in linux-x64 win-x64; do
+for PLATFORM_ID in linux-x64 osx-x64 win-x64; do
     pushd ../Source/Own.Blockchain.Public.Node
     mkdir -p "$TEMP_DIR/Node"
     dotnet publish -c Release -r $PLATFORM_ID -o "$TEMP_DIR/Node"
