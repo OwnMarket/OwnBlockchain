@@ -8,6 +8,8 @@ Endpoint | Verb | Description
 `/tx/{transactionHash}` | `GET` | Transaction info
 `/equivocation/{equivocationProofHash}` | `GET` | EquivocationProof info
 `/block/{blockNumber}` | `GET` | Block info
+`/block/head` | `GET` | Get latest block info
+`/block/head/number` | `GET` | Get latest block number
 `/address/{blockchainAddress}` | `GET` | Address info
 `/address/{blockchainAddress}/accounts` | `GET` | List of accounts controlled by the specified address
 `/address/{blockchainAddress}/assets` | `GET` | List of assets controlled by the specified address
@@ -24,6 +26,7 @@ Endpoint | Verb | Description
 `/stats` | `GET` | Various node statistics
 `/network` | `GET` | Various network statistics
 `/pool` | `GET` | Pending Tx count in the pool
+`/node` | `GET` | General info about node
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
 
@@ -233,6 +236,31 @@ Response JSON payload:
     ]
 }
 ```
+
+
+## `GET /block/head`
+
+Request URL:
+```
+/block/head
+```
+
+Response JSON payload has the same structure as specific block info.
+
+
+## `GET /block/head/number`
+
+Request URL:
+```
+/block/head/number
+```
+
+Response JSON payload contains only the block number:
+```json
+123
+```
+
+This endpoint is useful for scripting purposes, to avoid fetching the entire block body and parsing it with JSON tools.
 
 
 ## `GET /address/{blockchainAddress}`
@@ -670,5 +698,24 @@ Response JSON payload:
 ```json
 {
     "pendingTxs": 0
+}
+```
+
+
+## `GET /node`
+
+Request URL:
+```
+/node
+```
+
+Response JSON payload:
+```json
+{
+    "versionNumber": "1.3.0",
+    "versionHash": "2443c3a4c2c9b6bc17a65bfcc96ddd85ef32225b",
+    "networkCode": "OWN_PUBLIC_BLOCKCHAIN_MAINNET",
+    "publicAddress": "val01.mainnet.weown.com:25718",
+    "validatorAddress": "CHXV1i4NmCENFPFzqEk1ANb7BgBEiF9GHyT"
 }
 ```
