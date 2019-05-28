@@ -38,11 +38,14 @@ type Config () =
 
     static member VersionHash
         with get () =
-            let versionHashFile = Path.Combine(appDir, "Version")
-            if File.Exists versionHashFile then
-                File.ReadAllText versionHashFile
-            else
-                "UNKNOWN"
+            Path.Combine(appDir, "Version")
+            |> Some
+            |> Option.filter File.Exists
+            |> Option.bind (File.ReadLines >> Seq.tryHead)
+            |> Option.map (fun s -> s.Trim())
+            |> Option.filter (String.IsNullOrWhiteSpace >> not)
+            |> Option.filter (fun s -> Regex.IsMatch(s, "^[a-z0-9]+$"))
+            |? "UNKNOWN"
 
     static member MinLogLevel
         with get () =
