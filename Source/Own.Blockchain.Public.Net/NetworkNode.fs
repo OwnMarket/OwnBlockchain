@@ -39,6 +39,8 @@ type NetworkNode
     let deadPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let peersStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
+    let cacheValidators = new ConcurrentBag<NetworkAddress>()
+
     let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let peerSelectionSentRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let mutable lastMessageReceivedTimestamp = DateTime.UtcNow
@@ -207,6 +209,9 @@ type NetworkNode
         if gossipConfig.PeerResponseThrottlingTime > 0 then
             Async.Start (loop (), cts.Token)
 
+    let getGossipFanout () =
+        Math.Max (4, gossipConfig.FanoutPercentage * cacheValidators.Count / 100 + 1)
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -350,6 +355,19 @@ type NetworkNode
     // Gossip Discovery
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    member private __.StartValidatorsCache () =
+        let rec loop () =
+            async {
+                cacheValidators.Clear()
+                getCurrentValidators ()
+                |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
+                |> List.iter (fun a -> cacheValidators.Add a |> ignore)
+
+                do! Async.Sleep(30_000)
+                return! loop ()
+            }
+        Async.Start (loop (), cts.Token)
+
     member private __.StartDnsResolver () =
         let rec loop () =
             async {
@@ -372,6 +390,7 @@ type NetworkNode
         Log.debug "Starting node..."
         __.InitializePeerList ()
         __.StartDnsResolver ()
+        __.StartValidatorsCache ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
         __.StartSentGossipMessagesMonitor ()
@@ -494,7 +513,7 @@ type NetworkNode
         __.GetActivePeers()
         |> List.filter (fun m -> not (isSelf m.NetworkAddress))
         |> List.shuffle
-        |> List.truncate gossipConfig.Fanout
+        |> List.truncate (getGossipFanout ())
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Gossip Message Passing
@@ -538,7 +557,7 @@ type NetworkNode
             let fanoutRecipientAddresses =
                 recipientAddresses
                 |> List.shuffle
-                |> List.truncate gossipConfig.Fanout
+                |> List.truncate (getGossipFanout ())
 
             fanoutRecipientAddresses
             |> List.iter (fun recipientAddress ->
@@ -550,6 +569,8 @@ type NetworkNode
                 gossipMessage.MessageId
 
     member private __.SendGossipMessage message =
+        let gossipFanout = getGossipFanout ()
+
         let rec loop (msg : GossipMessage) =
             async {
                 let senderAddress = msg.SenderAddress |> optionToList
@@ -566,7 +587,7 @@ type NetworkNode
 
                 __.ProcessGossipMessage msg remainingRecipientAddresses
 
-                if remainingRecipientAddresses.Length >= gossipConfig.Fanout then
+                if remainingRecipientAddresses.Length >= gossipFanout then
                     do! Async.Sleep(gossipConfig.GossipIntervalMillis)
                     return! loop msg
             }

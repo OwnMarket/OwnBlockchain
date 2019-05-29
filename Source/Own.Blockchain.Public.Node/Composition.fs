@@ -607,7 +607,7 @@ module Composition =
             Config.AllowPrivateNetworkPeers
             Config.DnsResolverCacheExpirationTime
             Config.MaxConnectedPeers
-            Config.GossipFanout
+            Config.GossipFanoutPercentage
             Config.GossipDiscoveryInterval
             Config.GossipInterval
             Config.GossipMaxMissedHeartbeats

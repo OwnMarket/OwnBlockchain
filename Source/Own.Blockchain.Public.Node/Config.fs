@@ -158,11 +158,11 @@ type Config () =
             | true, value when value > 0 -> value
             | _ -> 200 // Default value if not explicitly configured.
 
-    static member GossipFanout
+    static member GossipFanoutPercentage // Percentage of validator count
         with get () =
-            match Int32.TryParse config.["GossipFanout"] with
-            | true, fanout when fanout > 0 -> fanout
-            | _ -> 4
+            match Int32.TryParse config.["GossipFanoutPercentage"] with
+            | true, value when value >= 4 && value <= 100 -> value
+            | _ -> 15
 
     static member GossipDiscoveryInterval // Milliseconds
         with get () =
