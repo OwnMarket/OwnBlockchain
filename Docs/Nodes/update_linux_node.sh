@@ -17,5 +17,5 @@ mkdir Package
 cd Package
 tar xzf ../OwnPublicBlockchainNode_linux-x64.tar.gz
 
-# Setup the node
+# Update the node
 ./update_node.sh
