@@ -19,3 +19,5 @@ tar xzf ../OwnPublicBlockchainNode_linux-x64.tar.gz
 
 # Update the node
 ./update_node.sh
+
+echo "Version hash: $(cat /opt/own/blockchain/public/node/Version)"
