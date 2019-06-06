@@ -44,7 +44,7 @@ type NetworkNode
     let sentRequests = new ConcurrentDictionary<NetworkMessageId, DateTime>()
     let receivedRequests = new ConcurrentDictionary<RequestDataMessage, DateTime>()
 
-    let dnsResolverCache = new ConcurrentDictionary<string, NetworkAddress option * DateTime>()
+    let dnsResolverCache = new ConcurrentDictionary<string, NetworkAddress * DateTime>()
 
     let cts = new CancellationTokenSource()
 
@@ -84,18 +84,26 @@ type NetworkNode
                         |> Some
                 with
                 | ex ->
-                    Log.error ex.AllMessages
+                    Log.warningf "[%s] %s" networkAddress ex.AllMessages
                     None
             | _ ->
-                Log.verbosef "Invalid port value: %s" port
+                Log.verbosef "Invalid port value: %s" networkAddress
                 None
         | _ ->
             Log.verbosef "Invalid peer format: %s" networkAddress
             None
 
     let memoizedConvertToIpAddress (networkAddress : string) =
-        dnsResolverCache.GetOrAdd(networkAddress, fun a -> convertToIpAddress a, DateTime.UtcNow)
-        |> fst
+        match dnsResolverCache.TryGetValue networkAddress with
+        | true, (ip, _) -> Some ip
+        | _ ->
+            convertToIpAddress networkAddress
+            |> Option.bind (fun ip ->
+                let timestamp = DateTime.UtcNow
+                dnsResolverCache.AddOrUpdate (networkAddress, (ip, timestamp), fun _ _ -> (ip, timestamp))
+                |> fst
+                |> Some
+            )
 
     let nodeConfigPublicIPAddress =
         match nodeConfig.PublicAddress with
@@ -225,10 +233,12 @@ type NetworkNode
                 |> List.ofDict
                 |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
                 |> List.iter (fun (dns, (ip, _)) ->
-                    let newIp = convertToIpAddress dns
-                    if newIp <> ip then
-                        let cacheValue = newIp, DateTime.UtcNow
-                        dnsResolverCache.AddOrUpdate(dns, cacheValue, fun _ _ -> cacheValue) |> ignore
+                    convertToIpAddress dns
+                    |> Option.iter (fun newIp ->
+                        if newIp <> ip then
+                            let cacheValue = newIp, DateTime.UtcNow
+                            dnsResolverCache.AddOrUpdate(dns, cacheValue, fun _ _ -> cacheValue) |> ignore
+                    )
                 )
                 do! Async.Sleep(gossipConfig.GossipDiscoveryIntervalMillis)
                 return! loop ()
