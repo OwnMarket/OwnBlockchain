@@ -147,8 +147,8 @@ type internal TransportCore
                 Log.error "Poller was disposed while adding socket"
         queue.Enqueue (targetAddress, msg)
 
-    let dealerSendAsync (e : NetMQQueueEventArgs<_>) =
-        e.Queue
+    let dealerSendAsync (queue : NetMQQueue<_>) =
+        queue
         |> netMQQueueToDict
         |> Seq.ofDict
         |> Seq.iter (fun (targetAddress, payload) ->
@@ -171,20 +171,53 @@ type internal TransportCore
                     Log.errorf "Socket not found for target %s" targetAddress
         )
 
+    let handleMulticastSendout () =
+        dealerSendAsync multicastMessageQueue
+
+    let handleDiscoverySendout () =
+        handleMulticastSendout ()
+        dealerSendAsync discoveryMessageQueue
+
+    let handleRequestsSendout () =
+        handleDiscoverySendout ()
+        dealerSendAsync requestsMessageQueue
+
+    let handleGossipSendout () =
+        handleRequestsSendout ()
+        dealerSendAsync gossipMessageQueue
+
     let wireDealerMessageQueueEvents () =
+        multicastMessageQueue.ReceiveReady
+        |> Observable.subscribe (fun _ ->
+            handleMulticastSendout ()
+        )
+        |> ignore
+
+        discoveryMessageQueue.ReceiveReady
+        |> Observable.subscribe (fun _ ->
+            handleDiscoverySendout ()
+        )
+        |> ignore
+
+        requestsMessageQueue.ReceiveReady
+        |> Observable.subscribe (fun _ ->
+            handleRequestsSendout ()
+        )
+        |> ignore
+
+        gossipMessageQueue.ReceiveReady
+        |> Observable.subscribe (fun _ ->
+            handleGossipSendout ()
+        )
+        |> ignore
+
         [
             multicastMessageQueue
             discoveryMessageQueue
             requestsMessageQueue
             gossipMessageQueue
         ]
-        |> List.iter (fun queue ->
-            queue.ReceiveReady
-            |> Observable.subscribe dealerSendAsync
-            |> ignore
-
-            poller.Add queue
-        )
+        |> List.iter poller.Add
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Router
@@ -195,6 +228,7 @@ type internal TransportCore
 
     let wireRouterMessageQueueEvents () =
         routerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
+            handleRequestsSendout ()
             e.Queue
             |> netMQQueueToDict
             |> Seq.ofDict
