@@ -31,7 +31,7 @@ module Stats =
             | PeerResponses -> "PeerResponses"
             | ReceivedBlocks -> "ReceivedBlocks"
             | ReceivedTxs -> "ReceivedTxs"
-            | SentConsensusMessages -> "ReceivedConsensusMessages"
+            | SentConsensusMessages -> "SentConsensusMessages"
             | ReceivedConsensusMessages -> "ReceivedConsensusMessages"
 
     type StatsSummaryEntry = {
