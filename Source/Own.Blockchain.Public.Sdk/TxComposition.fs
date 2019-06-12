@@ -7,6 +7,7 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Serialization
 open Own.Common.FSharp
 open Own.Blockchain.Common
+open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Crypto
 
@@ -110,6 +111,11 @@ type Tx (senderAddress, nonce) =
         )
         |> __.Actions.Add
 
+        Hashing.deriveHash
+            (__.SenderAddress |> BlockchainAddress)
+            (__.Nonce |> Nonce)
+            (__.Actions.Count |> Convert.ToInt16 |> TxActionNumber)
+
     member __.AddSetAssetCodeAction(assetHash, assetCode) =
         TxAction(
             "SetAssetCode",
@@ -136,6 +142,11 @@ type Tx (senderAddress, nonce) =
             CreateAccountTxActionDto()
         )
         |> __.Actions.Add
+
+        Hashing.deriveHash
+            (__.SenderAddress |> BlockchainAddress)
+            (__.Nonce |> Nonce)
+            (__.Actions.Count |> Convert.ToInt16 |> TxActionNumber)
 
     member __.AddSetAccountControllerAction(accountHash, controllerAddress) =
         TxAction(
