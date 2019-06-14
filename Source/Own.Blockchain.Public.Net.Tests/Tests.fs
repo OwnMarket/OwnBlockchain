@@ -218,7 +218,7 @@ module PeerTests =
             test <@ nodePeerList = expectedPeerList @>
         )
 
-        nodeList |> List.iter (fun n -> stopGossip n)
+        nodeList |> List.iter stopGossip
 
     let checkMessageReceived (nodeList : NetworkNode list) networkMessageId =
         nodeList |> List.iter (fun n ->
@@ -226,7 +226,7 @@ module PeerTests =
             test <@ nodeHasReceivedTx = true @>
         )
 
-        nodeList |> List.iter (fun n -> stopGossip n)
+        nodeList |> List.iter stopGossip
 
     let checkResponseReceived (node : NetworkNode) networkMessageId messageExists =
         let nodeHasReceivedTx = RawMock.hasData (node.GetListenAddress()) networkMessageId
@@ -392,7 +392,7 @@ module PeerTests =
             test <@ node.GetActivePeers().Length = 0 @>
         )
 
-        nodeList |> List.iter (fun n -> stopGossip n)
+        nodeList |> List.iter stopGossip
 
     let testGossipSingleMessage nodeConfigList cycleCount =
         // ARRANGE
@@ -547,7 +547,7 @@ module PeerTests =
         // ASSERT
         checkResponseReceived nodeList.[0] (Tx txHash) txExists
 
-        nodeList |> List.iter (fun n -> stopGossip n)
+        nodeList |> List.iter stopGossip
 
     let testRequestResponseMultipleDifferentMessageTypes nodeConfigList cycleCount =
         // ARRANGE
@@ -577,7 +577,7 @@ module PeerTests =
         checkResponseReceived nodeList.[0] (Tx txHash) true
         checkResponseReceived nodeList.[0] (Block blockNr) true
 
-        nodeList |> List.iter (fun n -> stopGossip n)
+        nodeList |> List.iter stopGossip
 
     let testRequestResponseMultipleSameMessageTypes nodeConfigList cycleCount =
         // ARRANGE
@@ -607,7 +607,7 @@ module PeerTests =
         checkResponseReceived nodeList.[0] (Tx txHash1) true
         checkResponseReceived nodeList.[0] (Tx txHash2) true
 
-        nodeList |> List.iter (fun n -> stopGossip n)
+        nodeList |> List.iter stopGossip
 
     [<Fact>]
     let ``Network - GossipDiscovery 3 nodes same bootstrap node`` () =
