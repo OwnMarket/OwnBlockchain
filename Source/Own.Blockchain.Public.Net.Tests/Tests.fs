@@ -32,6 +32,14 @@ module PeerTests =
         PeerMessageMaxSize = 1_000_000
     }
 
+    let gossipConfigBase = {
+        FanoutPercentage = 4
+        GossipDiscoveryIntervalMillis = 100
+        GossipIntervalMillis = 100
+        MissedHeartbeatIntervalMillis = 60000
+        PeerResponseThrottlingTime = 5000
+    }
+
     let testCleanup () =
         DbMock.reset ()
         RawMock.reset ()
@@ -232,16 +240,8 @@ module PeerTests =
         let nodeHasReceivedTx = RawMock.hasData (node.GetListenAddress()) networkMessageId
         test <@ nodeHasReceivedTx = messageExists @>
 
-    let createNodes nodeConfigList =
+    let createNodesWithGossipConfig gossipConfig nodeConfigList =
         // ARRANGE
-        let gossipConfig = {
-            FanoutPercentage = 4
-            GossipDiscoveryIntervalMillis = 100
-            GossipIntervalMillis = 100
-            MissedHeartbeatIntervalMillis = 60000
-            PeerResponseThrottlingTime = 5000
-        }
-
         let createNode (nodeConfig : NetworkNodeConfig) =
             let getAllPeerNodes = DbMock.getAllPeerNodes nodeConfig.ListeningAddress
             let savePeerNode = DbMock.savePeerNode nodeConfig.ListeningAddress
@@ -272,6 +272,9 @@ module PeerTests =
             |> List.map (fun config -> createNode config)
 
         (nodeList, gossipConfig.GossipIntervalMillis)
+
+    let createNodes nodeConfigList =
+        createNodesWithGossipConfig gossipConfigBase nodeConfigList
 
     let create3NodesConfigSameBootstrapNode (ports : int list) =
         let address1, address2, address3 =
@@ -393,6 +396,29 @@ module PeerTests =
         )
 
         nodeList |> List.iter stopGossip
+
+    let testNodeLeavesNetwork nodeConfigList cycleCount =
+        // ARRANGE
+        let gossipConfig = { gossipConfigBase with MissedHeartbeatIntervalMillis = 1000 }
+        let nodeList, tCycle = createNodesWithGossipConfig gossipConfig nodeConfigList
+
+        // ACT
+        nodeList |> List.iter (fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // ASSERT
+        stopGossip nodeList.[2]
+
+        System.Threading.Thread.Sleep (2 * cycleCount * tCycle)
+
+        nodeList
+        |> List.take 2
+        |> List.iter (fun node ->
+            test <@ node.GetActivePeers().Length = 2 @>
+        )
+
+        nodeList |> List.take 2 |> List.iter stopGossip
 
     let testGossipSingleMessage nodeConfigList cycleCount =
         // ARRANGE
@@ -644,6 +670,15 @@ module PeerTests =
         let nodeConfigList = [0; 123456; 123457] |> create3PrivateNodes
 
         testGossipDiscoveryNotAchieved nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - GossipDiscovery node leaves the network`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList = [411; 412; 413] |> create3NodesConfigSameBootstrapNode
+
+        testNodeLeavesNetwork nodeConfigList 5
 
     [<Fact>]
     let ``Network - GossipDiscovery 100 nodes`` () =
