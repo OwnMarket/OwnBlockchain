@@ -302,6 +302,11 @@ module PeerTests =
         }
         [nodeConfig1; nodeConfig2; nodeConfig3]
 
+    let create3PrivateNodes (ports : int list) =
+        ports
+        |> create3NodesConfigSameBootstrapNode
+        |> List.map (fun nodeConfig -> {nodeConfig with AllowPrivateNetworkPeers = false})
+
     let create3NodesConfigDifferentBoostrapNode (ports : int list) =
         let address1, address2, address3 =
             sprintf "127.0.0.1:%i" ports.[0],
@@ -371,6 +376,23 @@ module PeerTests =
 
         // ASSERT
         checkGossipDiscoveryConvergence nodeList
+
+    let testGossipDiscoveryNotAchieved nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter (fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // ASSERT
+        nodeList
+        |> List.iter (fun node ->
+            test <@ node.GetActivePeers().Length = 0 @>
+        )
+
+        nodeList |> List.iter (fun n -> stopGossip n)
 
     let testGossipSingleMessage nodeConfigList cycleCount =
         // ARRANGE
@@ -604,6 +626,15 @@ module PeerTests =
         let nodeConfigList = [211; 212; 213] |> create3NodesConfigDifferentBoostrapNode
 
         testGossipDiscovery nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - GossipDiscovery private peers not allowed`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList = [311; 312; 313] |> create3PrivateNodes
+
+        testGossipDiscoveryNotAchieved nodeConfigList 5
 
     [<Fact>]
     let ``Network - GossipDiscovery 100 nodes`` () =
