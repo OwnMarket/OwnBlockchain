@@ -637,6 +637,15 @@ module PeerTests =
         testGossipDiscoveryNotAchieved nodeConfigList 5
 
     [<Fact>]
+    let ``Network - GossipDiscovery invalid ip/port`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList = [0; 123456; 123457] |> create3PrivateNodes
+
+        testGossipDiscoveryNotAchieved nodeConfigList 5
+
+    [<Fact>]
     let ``Network - GossipDiscovery 100 nodes`` () =
         // ARRANGE
         setupTest ()
