@@ -775,6 +775,181 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
+    let ``Processing.processChanges TransferChx - TX1 succeeds if it leaves enough CHX for TX2 fee`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 10m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let actionFee = ChxAmount 0.01m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = 9.98m
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = 1m
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
+
+        let txSet = [txHash1; txHash2]
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then
+                Ok txEnvelope1
+            elif txHash = txHash2 then
+                Ok txEnvelope2
+            else
+                failwithf "Unexpected TX hash: %A" txHash
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let totalFee = actionFee * 2m
+        let senderChxBalance = ChxAmount 0m
+        let recipientChxBalance =
+            initialChxState.[recipientWallet.Address].Balance
+            + initialChxState.[senderWallet.Address].Balance
+            - totalFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + totalFee
+        let expectedStatus1 = Success
+        let expectedStatus2 = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 2 @>
+        test <@ output.TxResults.[txHash1].Status = expectedStatus1 @>
+        test <@ output.TxResults.[txHash2].Status = expectedStatus2 @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = Nonce 12L @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+    [<Fact>]
+    let ``Processing.processChanges TransferChx - TX1 fails if it doesn't leave enough CHX for TX2 fee`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let recipientWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 10m}
+                recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let actionFee = ChxAmount 0.01m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = 9.99m
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "TransferChx"
+                    ActionData =
+                        {
+                            RecipientAddress = recipientWallet.Address.Value
+                            Amount = 1m
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
+
+        let txSet = [txHash1; txHash2]
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then
+                Ok txEnvelope1
+            elif txHash = txHash2 then
+                Ok txEnvelope2
+            else
+                failwithf "Unexpected TX hash: %A" txHash
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let totalFee = actionFee * 2m
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - ChxAmount 1m - totalFee
+        let recipientChxBalance = initialChxState.[recipientWallet.Address].Balance + ChxAmount 1m
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + totalFee
+        let expectedStatus1 = (TxActionNumber 1s, TxErrorCode.InsufficientChxBalance) |> TxActionError |> Failure
+        let expectedStatus2 = Success
+
+        test <@ output.TxResults.Count = 2 @>
+        test <@ output.TxResults.[txHash1].Status = expectedStatus1 @>
+        test <@ output.TxResults.[txHash2].Status = expectedStatus2 @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = Nonce 12L @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Nonce = initialChxState.[recipientWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[recipientWallet.Address].Balance = recipientChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+    [<Fact>]
     let ``Processing.processChanges TransferChx with insufficient balance to cover fee - simulated invalid state`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()

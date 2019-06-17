@@ -1257,8 +1257,9 @@ module Processing =
 
         let processTxActions = processTxActions deriveHash validatorDeposit
 
-        let processTx (state : ProcessingState) (txHash : TxHash) =
-            let tx =
+        let loadTxs txHashes =
+            txHashes
+            |> List.map (fun txHash ->
                 getTxBody
                     getTx
                     createHash
@@ -1272,34 +1273,39 @@ module Processing =
                     | Error err ->
                         Log.appErrors err
                         failwithf "Cannot load tx %s" txHash.Value // TODO: Remove invalid tx from the pool?
+            )
 
+        let processValidatorReward (state : ProcessingState) (tx : Tx) =
             match processValidatorReward validatorDeposit tx validatorAddress state with
             | Error e ->
                 // Logic in excludeTxsIfBalanceCannotCoverFees is supposed to prevent this.
-                failwithf "Cannot process validator reward for tx %s (Error: %A)" txHash.Value e
+                failwithf "Cannot process validator reward for tx %s (Error: %A)" tx.TxHash.Value e
             | Ok state ->
                 state.CollectedReward <- state.CollectedReward + tx.TotalFee
-                match updateChxAddressNonce tx.Sender tx.Nonce state with
-                | Error e ->
-                    state.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
-                    state
-                | Ok oldState ->
-                    if tx.ExpirationTime.Value > 0L && tx.ExpirationTime < blockTimestamp then
-                        let txError = TxError TxErrorCode.TxExpired
-                        oldState.SetTxResult(txHash, { Status = Failure txError; BlockNumber = blockNumber })
-                        oldState
-                    else
-                        let newState = oldState.Clone()
-                        match processTxActions tx.Sender tx.Nonce tx.Actions newState with
-                        | Error e ->
-                            oldState.SetTxResult(txHash, { Status = Failure e; BlockNumber = blockNumber })
-                            oldState.MergeStateAfterFailedTx(newState)
-                            oldState
-                        | Ok state ->
-                            state.SetTxResult(txHash, { Status = Success; BlockNumber = blockNumber })
-                            state
+                state
 
-        let initialState =
+        let processTx (state : ProcessingState) (tx : Tx) =
+            match updateChxAddressNonce tx.Sender tx.Nonce state with
+            | Error e ->
+                state.SetTxResult(tx.TxHash, { Status = Failure e; BlockNumber = blockNumber })
+                state
+            | Ok oldState ->
+                if tx.ExpirationTime.Value > 0L && tx.ExpirationTime < blockTimestamp then
+                    let txError = TxError TxErrorCode.TxExpired
+                    oldState.SetTxResult(tx.TxHash, { Status = Failure txError; BlockNumber = blockNumber })
+                    oldState
+                else
+                    let newState = oldState.Clone()
+                    match processTxActions tx.Sender tx.Nonce tx.Actions newState with
+                    | Error e ->
+                        oldState.SetTxResult(tx.TxHash, { Status = Failure e; BlockNumber = blockNumber })
+                        oldState.MergeStateAfterFailedTx(newState)
+                        oldState
+                    | Ok state ->
+                        state.SetTxResult(tx.TxHash, { Status = Success; BlockNumber = blockNumber })
+                        state
+
+        let state =
             ProcessingState (
                 getChxAddressStateFromStorage,
                 getHoldingStateFromStorage,
@@ -1315,9 +1321,15 @@ module Processing =
                 getTotalChxStakedFromStorage
             )
 
+        let txs = loadTxs txSet
+
         let state =
-            txSet
-            |> List.fold processTx initialState
+            txs
+            |> List.fold processValidatorReward state
+
+        let state =
+            txs
+            |> List.fold processTx state
             |> processEquivocationProofs
                 getEquivocationProof
                 verifySignature
