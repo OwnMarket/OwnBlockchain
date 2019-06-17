@@ -763,7 +763,7 @@ type NetworkNode
         match peerMessageEnvelope.PeerMessage with
         | ResponseDataMessage responseMessage ->
             Log.debugf "Sending response (to %A request) to %s"
-                responseMessage.Items
+                responseMessage.Items.Head.MessageId
                 (targetIdentity.Value |> Conversion.bytesToString)
 
             let unicastMessageTask =
@@ -773,10 +773,6 @@ type NetworkNode
                     sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
                 }
             Async.Start (unicastMessageTask, cts.Token)
-
-            Log.debugf "Sending response (to %A request) to %s"
-                responseMessage.Items
-                (targetIdentity.Value |> Conversion.bytesToString)
 
         | _ -> ()
 
@@ -791,7 +787,7 @@ type NetworkNode
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
         __.Throttle receivedRequests [ requestDataMessage ] (fun _ ->
             Log.debugf "Received request for %A from %s"
-                requestDataMessage.Items
+                requestDataMessage.Items.Head
                 (requestDataMessage.SenderIdentity.Value |> Conversion.bytesToString)
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
@@ -802,7 +798,7 @@ type NetworkNode
         )
 
     member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) =
-        Log.debugf "Received response to %A request" responseDataMessage.Items
+        Log.debugf "Received response to %A request" responseDataMessage.Items.Head.MessageId
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = responseDataMessage |> ResponseDataMessage
