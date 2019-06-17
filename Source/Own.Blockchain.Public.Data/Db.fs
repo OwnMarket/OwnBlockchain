@@ -71,41 +71,39 @@ module Db =
         : PendingTxInfoDto list
         =
 
-        let txsToSkipParamValue =
-            (
-                txsToSkip
-                |> List.fold (fun acc (TxHash t) -> acc + sprintf "'%s'," t) ""
-            )
-
-        let skipConditionPattern =
-            if txsToSkipParamValue <> "" then
-                sprintf "AND tx_hash NOT IN (%s)" (txsToSkipParamValue.TrimEnd(','))
-            else
+        let skipCondition =
+            if txsToSkip.IsEmpty then
                 ""
+            else
+                txsToSkip
+                |> List.map (fun h -> sprintf "'%s'" h.Value)
+                |> fun vs -> String.Join(", ", vs)
+                |> sprintf "AND tx_hash NOT IN (%s)"
 
         let sql =
             match dbEngineType with
             | Firebird ->
                 sprintf
                     """
-                    SELECT FIRST @txCountToFetch tx_hash, sender_address, nonce, action_fee, tx_id AS appearance_order
+                    SELECT FIRST @txCountToFetch
+                        tx_hash, sender_address, nonce, action_fee, action_count, tx_id AS appearance_order
                     FROM tx
                     WHERE action_fee >= @minActionFee
                     %s
                     ORDER BY action_fee DESC, tx_id
                     """
-                    skipConditionPattern
+                    skipCondition
             | Postgres ->
                 sprintf
                     """
-                    SELECT tx_hash, sender_address, nonce, action_fee, tx_id AS appearance_order
+                    SELECT tx_hash, sender_address, nonce, action_fee, action_count, tx_id AS appearance_order
                     FROM tx
                     WHERE action_fee >= @minActionFee
                     %s
                     ORDER BY action_fee DESC, tx_id
                     LIMIT @txCountToFetch
                     """
-                    skipConditionPattern
+                    skipCondition
 
         let sqlParams =
             [
