@@ -33,7 +33,7 @@ module ProcessingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Processing.excludeUnprocessableTxs excludes txs after nonce gap`` () =
+    let ``Processing.excludeUnprocessableTxs excludes TXs after nonce gap`` () =
         let w1 = Signing.generateWallet ()
         let w2 = Signing.generateWallet ()
 
@@ -75,7 +75,7 @@ module ProcessingTests =
     [<InlineData(4, 1, "Tx1; Tx3")>]
     [<InlineData(4, 0, "Tx1; Tx3; Tx5")>]
     [<InlineData(5, 1, "Tx1; Tx3; Tx5")>]
-    let ``Processing.excludeUnprocessableTxs excludes txs if CHX balance cannot cover the fees``
+    let ``Processing.excludeUnprocessableTxs excludes TXs if CHX balance cannot cover the fees``
         (balance : decimal, staked : decimal, txHashes : string)
         =
 
@@ -123,7 +123,7 @@ module ProcessingTests =
         test <@ txHashes = expectedHashes @>
 
     [<Fact>]
-    let ``Processing.orderTxSet puts txs in correct order`` () =
+    let ``Processing.orderTxSet puts TXs in correct order`` () =
         let w1 = Signing.generateWallet ()
         let w2 = Signing.generateWallet ()
 
