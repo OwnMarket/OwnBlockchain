@@ -257,7 +257,7 @@ type NetworkNode
 
         validEntries
         |> Seq.toList
-        |> func
+        |> (fun entries -> if not entries.IsEmpty then func entries)
 
     member private __.StartSentRequestsMonitor () =
         startCachedDataMonitor sentRequests
@@ -678,7 +678,7 @@ type NetworkNode
     member __.SendRequestDataMessage requestIds (preferredPeer : NetworkAddress option) =
         __.Throttle sentRequests requestIds (fun validRequestIds ->
             Stats.increment Stats.Counter.PeerRequests
-            Log.debugf "Sending request for %A" requestIds
+            Log.debugf "Sending request for %A" validRequestIds
             let rec loop messageIds preferredPeer =
                 async {
 
