@@ -180,7 +180,7 @@ type Config () =
         with get () =
             match Int32.TryParse config.["GossipMaxMissedHeartbeats"] with
             | true, cycles when cycles > 0 -> cycles
-            | _ -> 30
+            | _ -> 100
 
     static member PeerResponseThrottlingTime // Milliseconds
         with get () =
