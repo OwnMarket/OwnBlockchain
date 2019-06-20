@@ -57,6 +57,21 @@ tar czf "$OUTPUT_DIR/OwnPublicBlockchainFaucet_linux-x64.tar.gz" *
 popd
 rm -rf "$TEMP_DIR/Faucet"
 
+# Build the SDK
+pushd ../Source/Own.Blockchain.Public.Sdk
+TEMP_SDK_LIB_DIR="$TEMP_DIR/SDK/lib/netstandard2.0"
+mkdir -p "$TEMP_SDK_LIB_DIR"
+dotnet publish -c Release -r linux-x64 -o "$TEMP_SDK_LIB_DIR"
+cp *.nuspec "$TEMP_DIR/SDK"
+popd
+
+cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native "$TEMP_SDK_LIB_DIR"
+
+pushd "$TEMP_DIR/SDK"
+nuget pack -OutputDirectory "$OUTPUT_DIR"
+popd
+rm -rf "$TEMP_DIR/SDK"
+
 # Cleanup
 rm -rf "$TEMP_DIR"
 

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Own.Blockchain.Sdk</id>
+    <version>0.2.0</version>
+    <title>Own Blockchain SDK</title>
+    <description>SDK for interacting with Own public blockchain</description>
+    <tags>Chainium Own Blockchain Crypto SDK</tags>
+    <authors>Own AG</authors>
+    <copyright>© Own AG</copyright>
+    <license type="expression">MIT</license>
+  </metadata>
+</package>
