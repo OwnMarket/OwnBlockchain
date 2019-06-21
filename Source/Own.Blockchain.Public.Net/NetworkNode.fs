@@ -123,6 +123,11 @@ type NetworkNode
     let isSelf networkAddress =
         nodeConfigPublicIPAddress = Some networkAddress
 
+    let isWhitelisted networkAddress =
+        isSelf networkAddress
+        || nodeConfig.BootstrapNodes |> List.contains networkAddress
+        || cacheValidators |> Seq.contains networkAddress
+
     let optionToList = function | Some x -> [x] | None -> []
 
     (*
@@ -189,9 +194,10 @@ type NetworkNode
         | true, cts -> cts.Cancel()
         | _ -> ()
 
-        let cts = new CancellationTokenSource()
-        Async.Start ((setPendingDeadPeer address), cts.Token)
-        peersStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
+        if not (isWhitelisted address) then
+            let cts = new CancellationTokenSource()
+            Async.Start ((setPendingDeadPeer address), cts.Token)
+            peersStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
 
     let updateActivePeer m =
         activePeers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
