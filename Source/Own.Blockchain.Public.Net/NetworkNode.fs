@@ -38,6 +38,8 @@ type NetworkNode
     let deadMembers = new ConcurrentDictionary<NetworkAddress, GossipMember>()
     let memberStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
+    let cacheValidators = new ConcurrentBag<NetworkAddress>()
+
     let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let peerSelectionSentRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let mutable lastMessageReceivedTimestamp = DateTime.UtcNow
@@ -118,6 +120,11 @@ type NetworkNode
     let isSelf networkAddress =
         nodeConfigPublicIPAddress = Some networkAddress
 
+    let isWhitelisted networkAddress =
+        isSelf networkAddress
+        || nodeConfig.BootstrapNodes |> List.contains networkAddress
+        || cacheValidators |> Seq.contains networkAddress
+
     let optionToList = function | Some x -> [x] | None -> []
 
     (*
@@ -184,9 +191,10 @@ type NetworkNode
         | true, cts -> cts.Cancel()
         | _ -> ()
 
-        let cts = new CancellationTokenSource()
-        Async.Start ((setPendingDeadMember address), cts.Token)
-        memberStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
+        if not (isWhitelisted address) then
+            let cts = new CancellationTokenSource()
+            Async.Start ((setPendingDeadMember address), cts.Token)
+            memberStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
 
     let updateActiveMember m =
         activeMembers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
@@ -256,6 +264,19 @@ type NetworkNode
 
     member __.StartReceivedRequestsMonitor () =
         startRequestsMonitor receivedRequests
+
+    member private __.StartValidatorsCache () =
+        let rec loop () =
+            async {
+                cacheValidators.Clear()
+                getCurrentValidators ()
+                |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
+                |> List.iter (fun a -> cacheValidators.Add a |> ignore)
+
+                do! Async.Sleep(30_000)
+                return! loop ()
+            }
+        Async.Start (loop (), cts.Token)
 
     member __.StartGossip publishEvent =
         Log.debugf "Node identity is %s" (nodeConfig.Identity.Value |> Conversion.bytesToString)
@@ -426,6 +447,7 @@ type NetworkNode
         Log.debug "Start node..."
         __.InitializeMemberList ()
         __.StartDnsResolver ()
+        __.StartValidatorsCache ()
         __.StartSentRequestsMonitor ()
         __.StartReceivedRequestsMonitor ()
         __.StartServer ()
