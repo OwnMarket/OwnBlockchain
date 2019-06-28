@@ -499,6 +499,7 @@ module Composition =
             Config.NetworkCode
             Config.PublicAddress
             Config.ValidatorPrivateKey
+            Config.MinTxActionFee
 
     let getPeersApi () = Workflows.getPeerListApi Peers.getPeerList
 

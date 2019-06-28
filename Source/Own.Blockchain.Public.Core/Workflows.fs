@@ -1387,6 +1387,7 @@ module Workflows =
         networkCode
         (publicAddress : string option)
         validatorPrivateKey
+        minTxActionFee
         =
 
         let validatorAddress =
@@ -1404,6 +1405,7 @@ module Workflows =
             NetworkCode = networkCode
             PublicAddress = publicAddress |> Option.toObj
             ValidatorAddress = validatorAddress
+            MinTxActionFee = minTxActionFee
         }
 
     let getPeerListApi

@@ -608,6 +608,7 @@ type GetNodeInfoApiDto = {
     NetworkCode : string
     PublicAddress : string
     ValidatorAddress : string
+    MinTxActionFee : decimal
 }
 
 type GetPeerListApiDto = {
