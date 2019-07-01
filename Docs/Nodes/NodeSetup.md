@@ -42,30 +42,21 @@ Please refer to the corresponding section below, depending on your use case.
 
 This deployment approach assumes installing the node on a clean machine with `Ubuntu Server 18.04 LTS` operating system installed.
 
-Login into your Linux machine and execute following command in terminal:
+Login into your Linux machine and execute one of the below two commands in terminal. **Don't execute both commands.**
 
-```bash
-wget -O - https://raw.githubusercontent.com/OwnMarket/OwnBlockchain/master/Docs/Nodes/setup_linux_node.sh | bash
-```
+- If setting up the node for MainNet, execute this command:
+    ```bash
+    wget -O - https://raw.githubusercontent.com/OwnMarket/OwnBlockchain/master/Docs/Nodes/setup_linux_node.sh | bash
+    ```
+
+- If setting up the node for TestNet, execute this command:
+    ```bash
+    wget -O - https://raw.githubusercontent.com/OwnMarket/OwnBlockchain/master/Docs/Nodes/setup_linux_node_on_testnet.sh | bash
+    ```
 
 Some commands in the setup scripts are executed in `sudo` mode and will require entering password.
 
 After installation is done, one instance of the node will be registered as a [systemd](https://en.wikipedia.org/wiki/Systemd) service. Setup script will provide instructions at the end of the execution on how to manage the node service and take a look at its logs. Those are standard systemd commands.
-
-**NOTE:** By default, node is configured to connect to MainNet. If, however, you would like to configure the node to connect to TestNet, make sure to do that **before** starting the node for the first time. Otherwise node instance state reset will be needed, because one instance cannot work with both networks at the same time.
-
-To configure the node to connect to TestNet instead of the MainNet, execute following commands:
-
-- Copy TestNet genesis file to instance directory
-    ```bash
-    sudo cp /opt/own/blockchain/public/node/Networks/Test/Genesis.json /var/lib/own/blockchain/public/node/ins1/Genesis.json
-    ```
-- Change bootstrap nodes in configuration file
-    - Open file in text editor (e.g. `nano` or `vim`)
-        ```bash
-        sudo nano /var/lib/own/blockchain/public/node/ins1/Config.json
-        ```
-    - Replace `.mainnet.weown.com` with `.testnet.weown.com` for all bootstrap nodes in the list and save the file.
 
 At this point the node can be started
 

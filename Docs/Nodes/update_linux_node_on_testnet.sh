@@ -10,14 +10,14 @@ mkdir -p -m 777 "$SETUP_DIR"
 cd "$SETUP_DIR"
 
 # Download the package
-wget https://github.com/OwnMarket/OwnBlockchain/releases/download/v1.2.4/OwnPublicBlockchainNode_linux-x64.tar.gz
+wget https://github.com/OwnMarket/OwnBlockchain/releases/latest/download/OwnPublicBlockchainNode_linux-x64.tar.gz
 
 # Extract the package
 mkdir Package
 cd Package
 tar xzf ../OwnPublicBlockchainNode_linux-x64.tar.gz
 
-# Setup the node
-./setup_node.sh
+# Update the node
+./update_node.sh
 
 echo "Version hash: $(cat /opt/own/blockchain/public/node/Version)"

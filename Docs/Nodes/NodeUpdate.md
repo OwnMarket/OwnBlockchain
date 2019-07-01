@@ -12,11 +12,17 @@ To update the node software to latest released version, login into your Linux ma
 sudo systemctl stop own-blockchain-public-node@ins1
 ```
 
-Once the instances are stopped, execute following command in terminal:
+Once the instances are stopped, execute one of the below two commands in terminal. **Don't execute both commands.**
 
-```bash
-wget -O - https://raw.githubusercontent.com/OwnMarket/OwnBlockchain/master/Docs/Nodes/update_linux_node.sh | bash
-```
+- If updating the MainNet node, execute this command:
+    ```bash
+    wget -O - https://raw.githubusercontent.com/OwnMarket/OwnBlockchain/master/Docs/Nodes/update_linux_node.sh | bash
+    ```
+
+- If updating the TestNet node, execute this command:
+    ```bash
+    wget -O - https://raw.githubusercontent.com/OwnMarket/OwnBlockchain/master/Docs/Nodes/update_linux_node_on_testnet.sh | bash
+    ```
 
 Some commands in the update scripts are executed in `sudo` mode and will require entering password.
 
