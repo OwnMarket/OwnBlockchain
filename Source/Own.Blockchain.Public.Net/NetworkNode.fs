@@ -651,19 +651,27 @@ type NetworkNode
             )
 
     member private __.ReceivePeerMessage publishEvent dto =
-        let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto Serialization.deserializePeerMessage dto
-        match peerMessageEnvelope.PeerMessage with
-        | GossipDiscoveryMessage m ->
-            lastMessageReceivedTimestamp <- DateTime.UtcNow
-            __.ReceivePeers m
-        | GossipMessage m ->
-            lastMessageReceivedTimestamp <- DateTime.UtcNow
-            __.ReceiveGossipMessage publishEvent m
-        | MulticastMessage m ->
-            lastMessageReceivedTimestamp <- DateTime.UtcNow
-            __.ReceiveMulticastMessage publishEvent m
-        | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m
-        | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m
+        try
+            let peerMessageEnvelope = Mapping.peerMessageEnvelopeFromDto Serialization.deserializePeerMessage dto
+            match peerMessageEnvelope.PeerMessage with
+            | GossipDiscoveryMessage m ->
+                lastMessageReceivedTimestamp <- DateTime.UtcNow
+                __.ReceivePeers m
+            | GossipMessage m ->
+                lastMessageReceivedTimestamp <- DateTime.UtcNow
+                __.ReceiveGossipMessage publishEvent m
+            | MulticastMessage m ->
+                lastMessageReceivedTimestamp <- DateTime.UtcNow
+                __.ReceiveMulticastMessage publishEvent m
+            | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m
+            | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m
+        with
+        | ex when ex.Message.Contains("code is invalid") ->
+            Log.warningf "Cannot deserialize peer message"
+            Log.debug ex.AllMessagesAndStackTraces
+        | ex ->
+            Log.warning ex.AllMessages
+            Log.debug ex.AllMessagesAndStackTraces
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Multicast Message Passing
