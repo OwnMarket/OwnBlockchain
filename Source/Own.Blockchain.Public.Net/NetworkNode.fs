@@ -787,16 +787,7 @@ type NetworkNode
                     sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
                 }
             Async.Start (unicastMessageTask, cts.Token)
-
         | _ -> ()
-
-        let unicastMessageTask =
-            async {
-                let peerMessageEnvelopeDto =
-                    Mapping.peerMessageEnvelopeToDto Serialization.serializeBinary peerMessageEnvelope
-                sendResponseMessage peerMessageEnvelopeDto targetIdentity.Value
-            }
-        Async.Start (unicastMessageTask, cts.Token)
 
     member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
         __.Throttle receivedRequests [ requestDataMessage ] (fun _ ->
