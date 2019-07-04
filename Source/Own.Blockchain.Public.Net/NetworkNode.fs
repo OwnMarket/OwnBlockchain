@@ -754,8 +754,6 @@ type NetworkNode
                             If no answer is received within 2 cycles (request - response i.e 4xtCycle),
                             repeat (i.e choose another peer).
                         *)
-
-                        Stats.increment Stats.Counter.PeerRequestTimeouts
                         let requestsWithNoReplies =
                             messageIds
                             |> List.choose (fun messageId ->
@@ -765,6 +763,7 @@ type NetworkNode
                             )
 
                         if not requestsWithNoReplies.IsEmpty then
+                            Stats.increment Stats.Counter.PeerRequestTimeouts
                             return! loop requestsWithNoReplies None
                     | None -> ()
                 }
