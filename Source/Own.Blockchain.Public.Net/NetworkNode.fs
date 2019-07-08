@@ -389,13 +389,8 @@ type NetworkNode
                 dnsResolverCache
                 |> List.ofDict
                 |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
-                |> List.iter (fun (dns, (ip, _)) ->
-                    convertToIpAddress dns
-                    |> Option.iter (fun newIp ->
-                        if newIp <> ip then
-                            let cacheValue = newIp, DateTime.UtcNow
-                            dnsResolverCache.AddOrUpdate(dns, cacheValue, fun _ _ -> cacheValue) |> ignore
-                    )
+                |> List.iter (fun (dns, _) ->
+                    dnsResolverCache.TryRemove dns |> ignore
                 )
                 do! Async.Sleep(gossipConfig.GossipDiscoveryIntervalMillis)
                 return! loop ()
