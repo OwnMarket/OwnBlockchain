@@ -10,7 +10,11 @@ Transactions must be cryptographically signed, using a private key of the sender
 
 Please refer to the SDK docs for more information:
 
-- [JavaScript SDK](https://github.com/OwnMarket/OwnBlockchainSdkJS)
+- [SDK for JavaScript](https://github.com/OwnMarket/OwnBlockchainSdkJS)
+- [SDK for .NET](https://github.com/OwnMarket/OwnBlockchain/tree/master/Source/Own.Blockchain.Public.Sdk)
+- [SDK for JVM](https://github.com/OwnMarket/OwnBlockchainSdkJVM)
+- [SDK for Go](https://github.com/OwnMarket/own-blockchain-sdk-go)
+- [SDK for Python](https://github.com/OwnMarket/OwnBlockchainSdkPython)
 
 
 ## Signing transactions using the wallet software
