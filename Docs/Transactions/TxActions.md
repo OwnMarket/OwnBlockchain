@@ -78,7 +78,7 @@ Parameter | Data Type | Description
 `SharedRewardPercent` | decimal | Percent of the reward shared with stakers. (0 - 100)
 `IsEnabled` | bool | Decides if the validator gets excluded from the next configuration block
 
-**NOTE:** The transaction must be signed using the private key of the validator wallet address with enough stake to participate in consensus.
+**NOTE:** The transaction must be signed using the private key of the validator wallet address with enough CHX to be locked for deposit (10000 CHX).
 
 ### `RemoveValidator`
 
@@ -86,7 +86,7 @@ This action type is used by a validator to remove itself from the list of valida
 
 This action has no parameters and is specified as `"actionData": {}` in JSON representation of the transaction.
 
-**NOTE:** The transaction must be signed using the private key of the validator wallet address with enough stake to participate in consensus, not blacklisted and not having its deposit locked.
+**NOTE:** The transaction must be signed using the private key of the validator wallet address, not blacklisted and not having its deposit locked.
 
 ## Asset Management Actions
 
