@@ -8,8 +8,8 @@
         <Compile Include="..\AssemblyInfo.fs" />
         <Compile Include="Errors.fs" />
         <Compile Include="Log.fs" />
-        <Compile Include="Stats.fs" />
         <Compile Include="Utils.fs" />
+        <Compile Include="Stats.fs" />
         <Compile Include="Conversion.fs" />
         <Compile Include="Agent.fs" />
     </ItemGroup>
