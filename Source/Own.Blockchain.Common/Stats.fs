@@ -43,6 +43,8 @@ module Stats =
         NodeStartTime : string
         NodeUpTime : string
         NodeCurrentTime : string
+        NetworkTime : string
+        NetworkTimeOffset : int64
         Counters : StatsSummaryEntry list
     }
 
@@ -61,11 +63,14 @@ module Stats =
 
     let getCurrent () =
         let currentTime = DateTime.UtcNow
+        let networkTime = Utils.getNetworkTimestamp () |> DateTimeOffset.FromUnixTimeMilliseconds
 
         {
             NodeStartTime = nodeStartTime.ToString("u")
             NodeUpTime = currentTime.Subtract(nodeStartTime).ToString("d\.hh\:mm\:ss")
             NodeCurrentTime = currentTime.ToString("u")
+            NetworkTime = networkTime.ToString("u")
+            NetworkTimeOffset = Utils.networkTimeOffset
             Counters =
                 counters
                 |> List.ofDict
