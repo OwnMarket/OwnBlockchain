@@ -278,15 +278,18 @@ module Api =
             return! response next ctx
         }
 
+    let getWalletFrontendFile =
+        let walletFrontendFile = lazy (
+            System.IO.File.ReadAllText(Config.WalletFrontendFile)
+                .Replace("""<base href="/">""", """<base href="/wallet">""") // IgnoreCodeStyle
+                .Replace("<<NODE_API_URL>>", "")
+                .Replace("<<NETWORK_CODE>>", Config.NetworkCode)
+        )
+        fun () -> walletFrontendFile.Value
+
     let getWalletHandler : HttpHandler = fun next ctx ->
         task {
-            let response =
-                System.IO.File.ReadAllText(Config.WalletFrontendFile)
-                    .Replace("""<base href="/">""", """<base href="/wallet">""") // IgnoreCodeStyle
-                    .Replace("<<NODE_API_URL>>", "")
-                    .Replace("<<NETWORK_CODE>>", Config.NetworkCode)
-                |> setBodyFromString
-
+            let response = getWalletFrontendFile () |> setBodyFromString
             return! response next ctx
         }
 
