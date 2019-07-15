@@ -2329,6 +2329,7 @@ module Db =
             ]
         try
             match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 0
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't remove peer"
         with
