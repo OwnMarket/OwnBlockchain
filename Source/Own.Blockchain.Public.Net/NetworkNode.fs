@@ -513,7 +513,7 @@ type NetworkNode
     member private __.UpdateMember inputMember =
         __.GetActiveMember inputMember.NetworkAddress
         |> Option.iter (fun _ ->
-            saveActiveMember inputMember |> Result.iterError Log.appErrors
+            updateActiveMember inputMember
             monitorActiveMember inputMember.NetworkAddress
         )
 
