@@ -380,6 +380,23 @@ module PeerTests =
         // ASSERT
         checkGossipDiscoveryConvergence nodeList
 
+    let testGossipDiscoveryMaxPeers nodeConfigList maxPeerCount cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter (fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        nodeList
+        |> List.iter (fun n ->
+            let peerCount = n.GetActivePeers().Length
+            test <@ peerCount = maxPeerCount @>
+        )
+
+        nodeList |> List.iter stopGossip
+
     let testGossipDiscoveryNotAchieved nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
@@ -707,6 +724,39 @@ module PeerTests =
             )
 
         testGossipDiscovery (nodeConfig1 :: nodeConfigList) 80
+
+    // [<Fact>]
+    let ``Network - GossipDiscovery 10 max peers nodes`` () =
+        // ARRANGE
+        setupTest ()
+
+        let address411 = "127.0.0.1:411"
+
+        // Max connected peers = 10.
+        let nodeConfig1 = {
+            nodeConfigBase with
+                Identity = Conversion.stringToBytes address411 |> PeerNetworkIdentity
+                ListeningAddress = NetworkAddress address411
+                PublicAddress = NetworkAddress address411 |> Some
+                BootstrapNodes = []
+                MaxConnectedPeers = 10
+        }
+
+        // Total peers = 20.
+        let nodeConfigList =
+            [412..430]
+            |> List.map (fun port ->
+                {
+                    nodeConfigBase with
+                        Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
+                        PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
+                        BootstrapNodes = [NetworkAddress address411]
+                        MaxConnectedPeers = 10
+                }
+            )
+
+        testGossipDiscoveryMaxPeers (nodeConfig1 :: nodeConfigList) nodeConfig1.MaxConnectedPeers 80
 
     [<Fact>]
     let ``Network - GossipMessagePassing 3 nodes single message`` () =
