@@ -1,4 +1,4 @@
-# Own Asset Management Protocol
+# Decentralised Asset Management (DAM) Protocol
 
 This document describes the concepts and interface enabling other systems to interact with and manage the assets created on the Own public blockchain.
 
