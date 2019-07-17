@@ -477,6 +477,49 @@ module PeerTests =
             test <@ node.GetActivePeers().Length = 3 @>
         )
 
+    let testGossipDiscoveryDeadNodeRejoins nodeConfigList cycleCount =
+        // ARRANGE
+        let gossipConfig = { gossipConfigBase with MissedHeartbeatIntervalMillis = 1000 }
+        let nodeList, tCycle = createNodesWithGossipConfig gossipConfig nodeConfigList
+
+        // ACT
+        nodeList |> List.iter (fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // ASSERT
+        nodeList
+        |> List.iter (fun node ->
+            test <@ node.GetActivePeers().Length = 3 @>
+        )
+
+        // Last node becomes dead.
+        stopGossip nodeList.[2]
+
+        System.Threading.Thread.Sleep (2 * gossipConfig.MissedHeartbeatIntervalMillis)
+
+        // Dead node removed from active peers.
+        nodeList
+        |> List.truncate 2
+        |> List.iter (fun node ->
+            test <@ node.GetActivePeers().Length = 2 @>
+        )
+
+        // Dead node rejoins network.
+        startGossip nodeList.[2]
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // The formerly dead none added as active peer.
+        nodeList
+        |> List.iter (fun node ->
+            System.Diagnostics.Debug.Print (node.GetListenAddress().Value)
+            test <@ node.GetActivePeers().Length = 3 @>
+        )
+
+        // Cleanup
+        nodeList |> List.iter stopGossip
+
     let testGossipSingleMessage nodeConfigList cycleCount =
         // ARRANGE
         let nodeList, tCycle = createNodes nodeConfigList
@@ -746,34 +789,6 @@ module PeerTests =
 
         testNodeFallsbackToBootstrap nodeConfigList 5
 
-    [<Fact>]
-    let ``Network - GossipDiscovery 100 nodes`` () =
-        // ARRANGE
-        setupTest ()
-
-        let address311 = "127.0.0.1:311"
-        let nodeConfig1 = {
-            nodeConfigBase with
-                Identity = Conversion.stringToBytes address311 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address311
-                PublicAddress = NetworkAddress address311 |> Some
-                BootstrapNodes = []
-        }
-
-        let nodeConfigList =
-            [312..410]
-            |> List.map (fun port ->
-                {
-                    nodeConfigBase with
-                        Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
-                        ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
-                        PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
-                        BootstrapNodes = [NetworkAddress address311]
-                }
-            )
-
-        testGossipDiscovery (nodeConfig1 :: nodeConfigList) 80
-
     // [<Fact>]
     let ``Network - GossipDiscovery 10 max peers nodes`` () =
         // ARRANGE
@@ -806,6 +821,43 @@ module PeerTests =
             )
 
         testGossipDiscoveryMaxPeers (nodeConfig1 :: nodeConfigList) nodeConfig1.MaxConnectedPeers 80
+
+    [<Fact>]
+    let ``Network - GossipDiscovery dead node rejoins network`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList = [711; 712; 713] |> create3NodesConfigSameBootstrapNode
+
+        testGossipDiscoveryDeadNodeRejoins nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - GossipDiscovery 100 nodes`` () =
+        // ARRANGE
+        setupTest ()
+
+        let address311 = "127.0.0.1:311"
+        let nodeConfig1 = {
+            nodeConfigBase with
+                Identity = Conversion.stringToBytes address311 |> PeerNetworkIdentity
+                ListeningAddress = NetworkAddress address311
+                PublicAddress = NetworkAddress address311 |> Some
+                BootstrapNodes = []
+        }
+
+        let nodeConfigList =
+            [312..410]
+            |> List.map (fun port ->
+                {
+                    nodeConfigBase with
+                        Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
+                        PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
+                        BootstrapNodes = [NetworkAddress address311]
+                }
+            )
+
+        testGossipDiscovery (nodeConfig1 :: nodeConfigList) 80
 
     [<Fact>]
     let ``Network - GossipMessagePassing 3 nodes single message`` () =
