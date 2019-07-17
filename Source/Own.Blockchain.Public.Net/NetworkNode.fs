@@ -51,7 +51,7 @@ type NetworkNode
 
     let dnsResolverCache = new ConcurrentDictionary<string, NetworkAddress * DateTime>()
 
-    let cts = new CancellationTokenSource()
+    let mutable cts = new CancellationTokenSource()
 
     let printActivePeers () =
         #if DEBUG
@@ -278,6 +278,7 @@ type NetworkNode
         startCachedDataMonitor receivedGossipMessages
 
     member __.StartGossip publishEvent =
+        cts <- new CancellationTokenSource()
         Log.debugf "Node identity is %s" (nodeConfig.Identity.Value |> Conversion.bytesToString)
         let networkId = getNetworkId ()
         initTransport
