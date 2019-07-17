@@ -277,33 +277,35 @@ module PeerTests =
         createNodesWithGossipConfig gossipConfigBase nodeConfigList
 
     let create3NodesConfigSameBootstrapNode (ports : int list) =
-        let address1, address2, address3 =
-            sprintf "127.0.0.1:%i" ports.[0],
-            sprintf "127.0.0.1:%i" ports.[1],
-            sprintf "127.0.0.1:%i" ports.[2]
+        let addresses =
+            ports
+            |> List.map (sprintf "127.0.0.1:%i")
+
+        let nodeConfigs =
+            addresses
+            |> List.map (fun address ->
+                {
+                    nodeConfigBase with
+                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress address
+                        PublicAddress = NetworkAddress address|> Some
+                        BootstrapNodes = []
+                }
+            )
+
+        let nodeConfig0 = nodeConfigs.[0]
 
         let nodeConfig1 = {
-            nodeConfigBase with
-                Identity = Conversion.stringToBytes address1 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address1
-                PublicAddress = NetworkAddress address1 |> Some
-                BootstrapNodes = []
+            nodeConfigs.[1] with
+                BootstrapNodes = [NetworkAddress addresses.[0]]
         }
+
         let nodeConfig2 = {
-            nodeConfigBase with
-                Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address2
-                PublicAddress = NetworkAddress address2|> Some
-                BootstrapNodes = [NetworkAddress address1]
+            nodeConfigs.[2] with
+                BootstrapNodes = [NetworkAddress addresses.[0]]
         }
-        let nodeConfig3 = {
-            nodeConfigBase with
-                Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address3
-                PublicAddress = NetworkAddress address3 |> Some
-                BootstrapNodes = [NetworkAddress address1]
-        }
-        [nodeConfig1; nodeConfig2; nodeConfig3]
+
+        [nodeConfig0; nodeConfig1; nodeConfig2]
 
     let create3PrivateNodes (ports : int list) =
         ports
@@ -311,33 +313,49 @@ module PeerTests =
         |> List.map (fun nodeConfig -> {nodeConfig with AllowPrivateNetworkPeers = false})
 
     let create3NodesConfigDifferentBoostrapNode (ports : int list) =
-        let address1, address2, address3 =
-            sprintf "127.0.0.1:%i" ports.[0],
-            sprintf "127.0.0.1:%i" ports.[1],
-            sprintf "127.0.0.1:%i" ports.[2]
+        let addresses =
+            ports
+            |> List.map (sprintf "127.0.0.1:%i")
+
+        let nodeConfigs =
+            addresses
+            |> List.map (fun address ->
+                {
+                    nodeConfigBase with
+                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress address
+                        PublicAddress = NetworkAddress address|> Some
+                        BootstrapNodes = []
+                }
+            )
+
+        let nodeConfig0 = nodeConfigs.[0]
 
         let nodeConfig1 = {
-            nodeConfigBase with
-                Identity = Conversion.stringToBytes address1 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address1
-                PublicAddress = NetworkAddress address1|> Some
-                BootstrapNodes = []
+            nodeConfigs.[1] with
+                BootstrapNodes = [NetworkAddress addresses.[0]]
         }
         let nodeConfig2 = {
-            nodeConfigBase with
-                Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address2
-                PublicAddress = NetworkAddress address2 |> Some
-                BootstrapNodes = [NetworkAddress address1]
+            nodeConfigs.[2] with
+                BootstrapNodes = [NetworkAddress addresses.[1]]
         }
-        let nodeConfig3 = {
-            nodeConfigBase with
-                Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address3
-                PublicAddress = NetworkAddress address3 |> Some
-                BootstrapNodes = [NetworkAddress address2]
-        }
-        [nodeConfig1; nodeConfig2; nodeConfig3]
+        [nodeConfig0; nodeConfig1; nodeConfig2]
+
+    let create5NodesConfig2BoostrapNodes (ports : int list) =
+        let addresses =
+            ports
+            |> List.map (sprintf "127.0.0.1:%i")
+
+        addresses
+        |> List.map (fun address ->
+            {
+                nodeConfigBase with
+                    Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
+                    ListeningAddress = NetworkAddress address
+                    PublicAddress = NetworkAddress address|> Some
+                    BootstrapNodes = addresses |> List.truncate 2 |> List.map NetworkAddress
+            }
+        )
 
     let create3NodesMeshedNetwork (ports : int list) =
         let address1, address2, address3 =
@@ -436,6 +454,28 @@ module PeerTests =
         )
 
         nodeList |> List.take 2 |> List.iter stopGossip
+
+    let testNodeFallsbackToBootstrap nodeConfigList cycleCount =
+        // ARRANGE
+        let gossipConfig = { gossipConfigBase with MissedHeartbeatIntervalMillis = 1000 }
+        let nodeList, tCycle = createNodesWithGossipConfig gossipConfig nodeConfigList
+
+        // ACT
+        nodeList |> List.iter (fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // ASSERT
+        nodeList |> List.iter stopGossip
+
+        System.Threading.Thread.Sleep (2 * cycleCount * tCycle)
+
+        nodeList
+        |> List.skip 2
+        |> List.iter (fun node ->
+            // The non-bootstrap nodes have themselves + 2 bootstrap as peers.
+            test <@ node.GetActivePeers().Length = 3 @>
+        )
 
     let testGossipSingleMessage nodeConfigList cycleCount =
         // ARRANGE
@@ -698,6 +738,15 @@ module PeerTests =
         testNodeLeavesNetwork nodeConfigList 5
 
     [<Fact>]
+    let ``Network - GossipDiscovery node fallback to bootstrap after losing peers`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList = [511..515] |> create5NodesConfig2BoostrapNodes
+
+        testNodeFallsbackToBootstrap nodeConfigList 5
+
+    [<Fact>]
     let ``Network - GossipDiscovery 100 nodes`` () =
         // ARRANGE
         setupTest ()
@@ -730,28 +779,28 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let address411 = "127.0.0.1:411"
+        let address611 = "127.0.0.1:611"
 
         // Max connected peers = 10.
         let nodeConfig1 = {
             nodeConfigBase with
-                Identity = Conversion.stringToBytes address411 |> PeerNetworkIdentity
-                ListeningAddress = NetworkAddress address411
-                PublicAddress = NetworkAddress address411 |> Some
+                Identity = Conversion.stringToBytes address611 |> PeerNetworkIdentity
+                ListeningAddress = NetworkAddress address611
+                PublicAddress = NetworkAddress address611 |> Some
                 BootstrapNodes = []
                 MaxConnectedPeers = 10
         }
 
         // Total peers = 20.
         let nodeConfigList =
-            [412..430]
+            [612..630]
             |> List.map (fun port ->
                 {
                     nodeConfigBase with
                         Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                         PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
-                        BootstrapNodes = [NetworkAddress address411]
+                        BootstrapNodes = [NetworkAddress address611]
                         MaxConnectedPeers = 10
                 }
             )
