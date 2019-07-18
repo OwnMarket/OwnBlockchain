@@ -1,16 +1,19 @@
 ﻿namespace Own.Blockchain.Public.Net.Tests
 
 open Own.Blockchain.Common
-open Own.Blockchain.Public.Core.Events
+open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
+open Own.Blockchain.Public.Core.Events
 
 module WorkflowsMock =
 
     let processPeerMessage
         address
         respondToPeer
+        getPeerList
         getNetworkId
-        peerMessageEnvelope
+        (peerMessageEnvelope : PeerMessageEnvelope)
         : Result<AppEvent option, AppError list> list option
         =
 
@@ -57,7 +60,13 @@ module WorkflowsMock =
                     | PeerList ->
                         {
                             MessageId = messageId
-                            Data = "peerList" |> Conversion.stringToBytes
+                            Data =
+                                {
+                                    GossipDiscoveryMessageDto.ActiveMembers =
+                                        getPeerList ()
+                                        |> List.map Mapping.gossipPeerToDto
+                                }
+                                |> Serialization.serializeBinary
                         }
                         |> Ok
                 )
@@ -86,6 +95,23 @@ module WorkflowsMock =
             | [] -> Ok None
             | _ -> Result.appErrors errors
 
+        let processResponse address (responseItems : ResponseItemMessage list) =
+            responseItems
+            |> List.map (fun response ->
+                 RawMock.savePeerData address response.MessageId
+                 match response.MessageId with
+                 | PeerList ->
+                     response.Data
+                     |> Serialization.deserializeBinary<GossipDiscoveryMessageDto>
+                     |> fun m ->
+                         m.ActiveMembers
+                         |> List.map Mapping.gossipPeerFromDto
+                         |> PeerListReceived
+                         |> Some
+                         |> Ok
+                 | _ -> Ok None
+            )
+
         match peerMessageEnvelope.PeerMessage with
         | GossipMessage m ->
             RawMock.savePeerData address m.MessageId
@@ -95,8 +121,6 @@ module WorkflowsMock =
             None
         | RequestDataMessage m -> [ processRequest address m.Items m.SenderIdentity ] |> Some
         | ResponseDataMessage m ->
-            m.Items
-            |> List.iter (fun response -> RawMock.savePeerData address response.MessageId)
-            None
+            processResponse address m.Items |> Some
         | _ ->
             None

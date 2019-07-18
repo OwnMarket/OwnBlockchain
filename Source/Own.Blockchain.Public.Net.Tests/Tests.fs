@@ -62,6 +62,9 @@ module PeerTests =
     let respondToPeer (node : NetworkNode) targetAddress peerMessageEnvelope =
         node.SendResponseDataMessage targetAddress peerMessageEnvelope
 
+    let getPeerList (node : NetworkNode) =
+        fun () -> node.GetActivePeers()
+
     let gossipTx (node : NetworkNode) txHash =
         let gossipMessage = GossipMessage {
             MessageId = Tx txHash
@@ -124,12 +127,23 @@ module PeerTests =
 
     let private peerMessageHandlers =
         new ConcurrentDictionary<NetworkAddress, MailboxProcessor<PeerMessageEnvelope> option>()
+
+    let private updatePeerListHandlers =
+        new ConcurrentDictionary<NetworkAddress, MailboxProcessor<GossipPeer list> option>()
+
     let private invokePeerMessageHandler (node : NetworkNode) m =
         let found, peerMessageHandler = peerMessageHandlers.TryGetValue (node.GetListenAddress())
         if found then
             match peerMessageHandler with
             | Some h -> h.Post m
             | None -> Log.error "PeerMessageHandler agent not started for node %s"
+
+    let private invokeUpdatePeerListHandler (node : NetworkNode) peerList =
+        let found, updatePeerListHandler = updatePeerListHandlers.TryGetValue (node.GetListenAddress())
+        if found then
+            match updatePeerListHandler with
+            | Some h -> h.Post peerList
+            | None -> Log.error "UpdatePeerListHandler agent not started for node %s"
 
     // TODO: Fix the network tests by adjusting the mocked propagation logic.
     let publishEvent node appEvent =
@@ -173,7 +187,7 @@ module PeerTests =
         | BlockchainHeadReceived _ ->
             ()
         | PeerListReceived peerList ->
-            () // TODO: fix this
+            invokeUpdatePeerListHandler node peerList
 
     let private startPeerMessageHandler (node : NetworkNode) =
         let found, _ = peerMessageHandlers.TryGetValue (node.GetListenAddress())
@@ -184,6 +198,7 @@ module PeerTests =
                         WorkflowsMock.processPeerMessage
                             (node.GetListenAddress())
                             (respondToPeer node)
+                            (getPeerList node)
                             getNetworkId
                             peerMessage
                         |> Option.iter (
@@ -203,8 +218,26 @@ module PeerTests =
             )
             |> ignore
 
+    let private startUpdatePeerListHandler (node : NetworkNode) =
+        let found, _ = updatePeerListHandlers.TryGetValue (node.GetListenAddress())
+        if not found then
+            let updatePeerListHandler =
+                Agent.start <| fun peerList ->
+                    async {
+                        node.ReceivePeers {ActivePeers = peerList}
+                    }
+                |> Some
+
+            updatePeerListHandlers.AddOrUpdate (
+                (node.GetListenAddress()),
+                updatePeerListHandler,
+                fun _ _ -> updatePeerListHandler
+            )
+            |> ignore
+
     let startGossip (node : NetworkNode) =
         startPeerMessageHandler node
+        startUpdatePeerListHandler node
         node.StartGossip (publishEvent node)
 
     let stopGossip (node : NetworkNode) =
@@ -307,10 +340,16 @@ module PeerTests =
 
         [nodeConfig0; nodeConfig1; nodeConfig2]
 
-    let create3PrivateNodes (ports : int list) =
+    let create3NodesNoPrivateAllowed (ports : int list) =
         ports
         |> create3NodesConfigSameBootstrapNode
         |> List.map (fun nodeConfig -> {nodeConfig with AllowPrivateNetworkPeers = false})
+
+    let create3Nodes1PrivateConfigSameBootstrapNode (ports : int list) =
+        let nodes =
+            ports
+            |> create3NodesConfigSameBootstrapNode
+        [nodes.[0]; nodes.[1]; { nodes.[2] with PublicAddress = None }]
 
     let create3NodesConfigDifferentBoostrapNode (ports : int list) =
         let addresses =
@@ -513,9 +552,28 @@ module PeerTests =
         // The formerly dead none added as active peer.
         nodeList
         |> List.iter (fun node ->
-            System.Diagnostics.Debug.Print (node.GetListenAddress().Value)
             test <@ node.GetActivePeers().Length = 3 @>
         )
+
+        // Cleanup
+        nodeList |> List.iter stopGossip
+
+    let testGossipDiscoveryForPrivateNode nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter (fun n -> startGossip n)
+
+        // Wait for Gossip Discovery among the public nodes.
+        System.Threading.Thread.Sleep (2 * cycleCount * tCycle)
+
+        // Wait for peer list request.
+        System.Threading.Thread.Sleep (8 * cycleCount * tCycle)
+
+        // ASSERT
+        // Expect bootstrap + the public node
+        test <@ nodeList.[2].GetActivePeers().Length = 2 @>
 
         // Cleanup
         nodeList |> List.iter stopGossip
@@ -758,7 +816,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = [311; 312; 313] |> create3PrivateNodes
+        let nodeConfigList = [311; 312; 313] |> create3NodesNoPrivateAllowed
 
         testGossipDiscoveryNotAchieved nodeConfigList 5
 
@@ -767,7 +825,7 @@ module PeerTests =
         // ARRANGE
         setupTest ()
 
-        let nodeConfigList = [0; 123456; 123457] |> create3PrivateNodes
+        let nodeConfigList = [0; 123456; 123457] |> create3NodesNoPrivateAllowed
 
         testGossipDiscoveryNotAchieved nodeConfigList 5
 
@@ -830,6 +888,15 @@ module PeerTests =
         let nodeConfigList = [711; 712; 713] |> create3NodesConfigSameBootstrapNode
 
         testGossipDiscoveryDeadNodeRejoins nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - GossipDiscovery private node`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList = [811; 812; 813] |> create3Nodes1PrivateConfigSameBootstrapNode
+
+        testGossipDiscoveryForPrivateNode nodeConfigList 10
 
     [<Fact>]
     let ``Network - GossipDiscovery 100 nodes`` () =
