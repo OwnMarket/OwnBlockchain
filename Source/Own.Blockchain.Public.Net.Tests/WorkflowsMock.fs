@@ -98,18 +98,18 @@ module WorkflowsMock =
         let processResponse address (responseItems : ResponseItemMessage list) =
             responseItems
             |> List.map (fun response ->
-                 RawMock.savePeerData address response.MessageId
-                 match response.MessageId with
-                 | PeerList ->
-                     response.Data
-                     |> Serialization.deserializeBinary<GossipDiscoveryMessageDto>
-                     |> fun m ->
-                         m.ActiveMembers
-                         |> List.map Mapping.gossipPeerFromDto
-                         |> PeerListReceived
-                         |> Some
-                         |> Ok
-                 | _ -> Ok None
+                RawMock.savePeerData address response.MessageId
+                match response.MessageId with
+                | PeerList ->
+                    response.Data
+                    |> Serialization.deserializeBinary<GossipDiscoveryMessageDto>
+                    |> fun m ->
+                        m.ActiveMembers
+                        |> List.map Mapping.gossipPeerFromDto
+                        |> PeerListReceived
+                        |> Some
+                        |> Ok
+                | _ -> Ok None
             )
 
         match peerMessageEnvelope.PeerMessage with
