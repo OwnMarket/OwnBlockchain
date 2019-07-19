@@ -67,6 +67,7 @@ module internal PeerMessageHandler =
                 getAllPeerNodes,
                 savePeerNode,
                 removePeerNode,
+                Utils.resolveHostToIpAddress,
                 initTransport,
                 sendGossipDiscoveryMessage,
                 sendGossipMessage,

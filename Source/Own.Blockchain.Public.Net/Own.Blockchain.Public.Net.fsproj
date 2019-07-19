@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <Compile Include="..\AssemblyInfo.fs" />
+        <Compile Include="Utils.fs" />
         <Compile Include="Ntp.fs" />
         <Compile Include="TransportCore.fs" />
         <Compile Include="Transport.fs" />

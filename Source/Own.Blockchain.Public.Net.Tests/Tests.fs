@@ -273,6 +273,16 @@ module PeerTests =
         let nodeHasReceivedTx = RawMock.hasData (node.GetListenAddress()) networkMessageId
         test <@ nodeHasReceivedTx = messageExists @>
 
+    let resolveHostToIpAddress (networkAddress : string) allowPrivatePeers =
+        if networkAddress.Contains("Node1") then
+            "127.0.0.1:1001" |> NetworkAddress |> Some
+        elif networkAddress.Contains("Node2") then
+            "127.0.0.1:1002" |> NetworkAddress |> Some
+        elif networkAddress.Contains("Node3") then
+            "127.0.0.1:1003" |> NetworkAddress |> Some
+        else
+            Own.Blockchain.Public.Net.Utils.resolveHostToIpAddress networkAddress allowPrivatePeers
+
     let createNodesWithGossipConfig gossipConfig nodeConfigList =
         // ARRANGE
         let createNode (nodeConfig : NetworkNodeConfig) =
@@ -286,6 +296,7 @@ module PeerTests =
                 getAllPeerNodes,
                 savePeerNode,
                 removePeerNode,
+                resolveHostToIpAddress,
                 TransportMock.init,
                 TransportMock.sendGossipDiscoveryMessage,
                 TransportMock.sendGossipMessage,
@@ -309,6 +320,35 @@ module PeerTests =
     let createNodes nodeConfigList =
         createNodesWithGossipConfig gossipConfigBase nodeConfigList
 
+    let create3NodesWithHostNames (hosts : string list) =
+        let mutable nodeIndex = 0;
+        let nodeConfigs =
+            hosts
+            |> List.map (fun address ->
+                nodeIndex <- nodeIndex + 1
+                {
+                    nodeConfigBase with
+                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress (sprintf "127.0.0.1:100%i" nodeIndex)
+                        PublicAddress = NetworkAddress address |> Some
+                        BootstrapNodes = []
+                }
+            )
+
+        let nodeConfig0 = nodeConfigs.[0]
+
+        let nodeConfig1 = {
+            nodeConfigs.[1] with
+                BootstrapNodes = [NetworkAddress hosts.[0]]
+        }
+
+        let nodeConfig2 = {
+            nodeConfigs.[2] with
+                BootstrapNodes = [NetworkAddress hosts.[0]]
+        }
+
+        [nodeConfig0; nodeConfig1; nodeConfig2]
+
     let create3NodesConfigSameBootstrapNode (ports : int list) =
         let addresses =
             ports
@@ -321,7 +361,7 @@ module PeerTests =
                     nodeConfigBase with
                         Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress address
-                        PublicAddress = NetworkAddress address|> Some
+                        PublicAddress = NetworkAddress address |> Some
                         BootstrapNodes = []
                 }
             )
@@ -574,6 +614,28 @@ module PeerTests =
         // ASSERT
         // Expect bootstrap + the public node
         test <@ nodeList.[2].GetActivePeers().Length = 2 @>
+
+        // Cleanup
+        nodeList |> List.iter stopGossip
+
+    let testGossipDiscoveryHostResolvedToIp nodeConfigList cycleCount =
+        // ARRANGE
+        let nodeList, tCycle = createNodes nodeConfigList
+
+        // ACT
+        nodeList |> List.iter (fun n -> startGossip n)
+
+        System.Threading.Thread.Sleep (cycleCount * tCycle)
+
+        // ASSERT
+        nodeList
+        |> List.iter (fun node ->
+            let peers = node.GetActivePeers()
+            test <@ peers.Length = 3 @>
+            peers |> List.iter (fun peer ->
+                test <@ peer.NetworkAddress.Value.Contains("127.0.0.1") @>
+            )
+        )
 
         // Cleanup
         nodeList |> List.iter stopGossip
@@ -897,6 +959,18 @@ module PeerTests =
         let nodeConfigList = [811; 812; 813] |> create3Nodes1PrivateConfigSameBootstrapNode
 
         testGossipDiscoveryForPrivateNode nodeConfigList 10
+
+    [<Fact>]
+    let ``Network - Gossip Discovery host resolves to Ip`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList =
+            [1..3]
+            |> List.map (sprintf "Node%i")
+            |> create3NodesWithHostNames
+
+        testGossipDiscoveryHostResolvedToIp nodeConfigList 5
 
     [<Fact>]
     let ``Network - GossipDiscovery 100 nodes`` () =

@@ -21,6 +21,7 @@ type NetworkNode
     getAllPeerNodes,
     savePeerNode : NetworkAddress -> Result<unit, AppErrors>,
     removePeerNode : NetworkAddress -> Result<unit, AppErrors>,
+    resolveHostToIpAddress,
     initTransport,
     sendGossipDiscoveryMessage,
     sendGossipMessage,
@@ -64,45 +65,11 @@ type NetworkNode
             ()
         #endif
 
-    let convertToIpAddress (networkAddress : string) =
-        match networkAddress.LastIndexOf ":" with
-        | index when index > 0 ->
-            let port = networkAddress.Substring(index + 1)
-            match UInt16.TryParse port with
-            | true, 0us ->
-                Log.verbose "Received peer with port 0 discarded"
-                None
-            | true, _ ->
-                try
-                    let host = networkAddress.Substring(0, index)
-                    let ipAddress =
-                        Dns.GetHostAddresses(host)
-                        |> Array.sortBy (fun ip -> ip.AddressFamily)
-                        |> Array.head
-                    let isPrivateIp = ipAddress.IsPrivate()
-                    if not nodeConfig.AllowPrivateNetworkPeers && isPrivateIp then
-                        Log.verbose "Private IPs are not allowed as peers"
-                        None
-                    else
-                        sprintf "%s:%s" (ipAddress.ToString()) port
-                        |> NetworkAddress
-                        |> Some
-                with
-                | ex ->
-                    Log.warningf "[%s] %s" networkAddress ex.AllMessages
-                    None
-            | _ ->
-                Log.verbosef "Invalid port value: %s" networkAddress
-                None
-        | _ ->
-            Log.verbosef "Invalid peer format: %s" networkAddress
-            None
-
     let memoizedConvertToIpAddress (networkAddress : string) =
         match dnsResolverCache.TryGetValue networkAddress with
         | true, (ip, _) -> Some ip
         | _ ->
-            convertToIpAddress networkAddress
+            resolveHostToIpAddress networkAddress nodeConfig.AllowPrivateNetworkPeers
             |> Option.bind (fun ip ->
                 let timestamp = DateTime.UtcNow
                 dnsResolverCache.AddOrUpdate (networkAddress, (ip, timestamp), fun _ _ -> (ip, timestamp))
