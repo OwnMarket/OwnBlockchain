@@ -20,9 +20,9 @@ This, of course, highly depends on the network conditions and usage patterns (i.
 
 A machine used to host a node serving as the backend for a rarely used wallet will, of course, serve the purpose even with one CPU core, because lagging behind the network during activity bursts might be tolerable in such a scenario.
 
-However, a machine hosting a node used as an entry point to the network for another software system (e.g. share register, bank, exchange, etc.), with frequent interactions with the blockchain, should have at least 2-4 CPU cores to avoid lagging behind network due to not being able to apply incoming blocks and transactions fast enough.
+However, a machine hosting a node used as an entry point to the network for another software system (e.g. share register, bank, exchange, etc.), with frequent interactions with the blockchain, should have 2-4 CPU cores to avoid lagging behind network due to not being able to apply incoming blocks and transactions fast enough.
 
-Validator nodes participate in consensus protocol, with frequent message exchange bursts during which all message signatures must be cryptographically verified. To be able to cope with the amount of messages and create new blocks on time, validator nodes should have "serious" computational power. This heavily depends on the number of validator nodes at the point in time (min 4, max 100). But as a rule of thumb there should be at least 8-16 CPU cores.
+Validator nodes participate in consensus protocol, with frequent message exchange bursts during which all message signatures must be cryptographically verified. To be able to cope with the amount of messages and create new blocks on time, validator nodes should have "serious" computational power. This heavily depends on the number of validator nodes at the point in time (min 4, max 100) and on the transaction volume. However, validators should have **at least** 4 CPU cores, while 8-16 CPU cores is strongly recommended.
 
 
 ### RAM
