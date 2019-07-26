@@ -655,12 +655,20 @@ module Workflows =
 
     let persistTxResults saveTxResult txResults =
         txResults
-        |> Map.toList
-        |> List.fold (fun result (txHash, txResult) ->
-            result >>= fun _ ->
+        |> Map.toSeq
+        |> Seq.map (fun (txHash, txResult) ->
+            async {
                 Log.noticef "Saving TxResult %s" txHash
-                saveTxResult (TxHash txHash) txResult
-        ) (Ok ())
+                return saveTxResult (TxHash txHash) txResult
+            }
+        )
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Array.choose (function Error e -> Some e | _ -> None)
+        |> List.concat
+        |> function
+        | [] -> Ok ()
+        | appErrors -> Error appErrors
 
     let removeOrphanTxResults getAllPendingTxHashes txResultExists deleteTxResult =
         let pendingTxHashes = getAllPendingTxHashes ()
