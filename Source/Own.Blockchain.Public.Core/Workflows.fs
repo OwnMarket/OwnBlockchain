@@ -656,14 +656,10 @@ module Workflows =
     let persistTxResults saveTxResult txResults =
         txResults
         |> Map.toSeq
-        |> Seq.map (fun (txHash, txResult) ->
-            async {
-                Log.noticef "Saving TxResult %s" txHash
-                return saveTxResult (TxHash txHash) txResult
-            }
+        |> Array.AsyncParallel.map (fun (txHash, txResult) ->
+            Log.noticef "Saving TxResult %s" txHash
+            saveTxResult (TxHash txHash) txResult
         )
-        |> Async.Parallel
-        |> Async.RunSynchronously
         |> Array.choose (function Error e -> Some e | _ -> None)
         |> List.concat
         |> function
