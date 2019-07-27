@@ -90,3 +90,34 @@ module Map =
     /// Produces a new Map by maping both key and value.
     let remap mapper =
         Map.toSeq >> Seq.map mapper >> Map.ofSeq
+
+module Array =
+
+    module AsyncParallel =
+
+        let map f xs =
+            xs
+            |> Seq.map (fun x ->
+                async {
+                    return f x
+                }
+            )
+            |> Async.Parallel
+            |> Async.RunSynchronously
+
+        let filter f xs =
+            xs
+            |> Seq.map (fun x ->
+                async {
+                    return x, f x
+                }
+            )
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> Array.filter snd
+            |> Array.map fst
+
+        let forall f xs =
+            xs
+            |> map f
+            |> Array.forall id

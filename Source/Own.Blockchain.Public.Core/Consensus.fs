@@ -1043,11 +1043,13 @@ module Consensus =
         let ensureBlockReady (block : Block) =
             let missingTxs =
                 block.TxSet
-                |> List.filter (txExists >> not)
+                |> Array.AsyncParallel.filter (txExists >> not)
+                |> Array.toList
 
             let missingEquivocationProofs =
                 block.EquivocationProofs
-                |> List.filter (equivocationProofExists >> not)
+                |> Array.AsyncParallel.filter (equivocationProofExists >> not)
+                |> Array.toList
 
             match missingTxs, missingEquivocationProofs with
             | [], [] ->
