@@ -185,8 +185,8 @@ module Synchronization =
                 let block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
                 if block.TxSet |> Array.AsyncParallel.forall txExists
                     && block.EquivocationProofs |> Array.AsyncParallel.forall equivocationProofExists
-                    && block.TxSet |> Array.AsyncParallel.forall txExistsInDb
-                    && block.EquivocationProofs |> Array.AsyncParallel.forall equivocationProofExistsInDb
+                    && block.TxSet |> List.forall txExistsInDb
+                    && block.EquivocationProofs |> List.forall equivocationProofExistsInDb
                 then
                     Log.noticef "Applying block %i" block.Header.Number.Value
                     do! applyBlock block.Header.Number
