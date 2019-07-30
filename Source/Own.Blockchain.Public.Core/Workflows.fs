@@ -438,6 +438,7 @@ module Workflows =
         getAvailableChxBalanceFromStorage
         addressFromPrivateKey
         minTxActionFee
+        maxTxSetFetchIterations
         createEmptyBlocks
         minEmptyBlockTime
         minValidatorCount
@@ -476,8 +477,11 @@ module Workflows =
                         getChxAddressState
                         getAvailableChxBalance
                         minTxActionFee
+                        maxTxSetFetchIterations
                         currentConfiguration.MaxTxCountPerBlock
-                    |> Processing.orderTxSet
+                    |> fun (txSet, iteration) ->
+                        Log.debugf "TX set (%i) for proposal fetched in %i iteration(s)" txSet.Length iteration
+                        Processing.orderTxSet txSet
 
                 let equivocationProofs =
                     getPendingEquivocationProofs blockNumber
@@ -1046,7 +1050,9 @@ module Workflows =
         getAvailableChxBalanceFromStorage
         publishEvent
         minTxActionFee
+        maxTxSetFetchIterations
         maxTxCountPerBlock
+        txRepropagationCount
         =
 
         let getChxAddressState = memoize (getChxAddressStateFromStorage >> Option.map Mapping.chxAddressStateFromDto)
@@ -1057,14 +1063,17 @@ module Workflows =
             getChxAddressState
             getAvailableChxBalance
             minTxActionFee
-            maxTxCountPerBlock
-        |> Processing.orderTxSet
+            maxTxSetFetchIterations
+            maxTxCountPerBlock // Fetching more at once significantly reduces number of DB calls when TX pool is large.
+        |> fun (txSet, iteration) ->
+            Log.debugf "TX set (%i) for re-propagation fetched in %i iteration(s)" txSet.Length iteration
+            Processing.orderTxSet txSet
+        |> List.truncate txRepropagationCount // Yes, it's actually more efficient in combination with change above.
         |> List.iter (fun txHash ->
             match getTx txHash with
             | Ok txEnvelopeDto -> (txHash, txEnvelopeDto) |> TxVerified |> publishEvent
-            | _ ->
-                Log.errorf "Tx %s does not exist" txHash.Value
-            )
+            | _ -> Log.errorf "Tx %s does not exist" txHash.Value
+        )
 
     let propagateEquivocationProof
         publicAddress

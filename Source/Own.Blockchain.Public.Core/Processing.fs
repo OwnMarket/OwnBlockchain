@@ -904,27 +904,40 @@ module Processing =
         getChxAddressState
         getAvailableChxBalance
         minTxActionFee
+        maxTxSetFetchIterations
         maxTxCountPerBlock
-        : PendingTxInfo list
+        : PendingTxInfo list * int
         =
 
-        let rec getTxSet txHashesToSkip (txSet : PendingTxInfo list) =
+        let rec getTxSet iteration (txHashesToSkip : TxHash list) (txSet : PendingTxInfo list) =
             let txCountToFetch = maxTxCountPerBlock - txSet.Length
+            if iteration > maxTxSetFetchIterations then
+                Log.warningf "Trying to fetch up to %i TXs, while skipping %i in iteration %i"
+                    txCountToFetch
+                    txHashesToSkip.Length
+                    iteration
+
             let fetchedTxs =
                 getPendingTxs minTxActionFee txHashesToSkip txCountToFetch
                 |> List.map Mapping.pendingTxInfoFromDto
             let txSet = excludeUnprocessableTxs getChxAddressState getAvailableChxBalance (txSet @ fetchedTxs)
-            if txSet.Length = maxTxCountPerBlock || fetchedTxs.Length = 0 then
-                txSet
+            if txSet.Length = maxTxCountPerBlock
+                || fetchedTxs.Length = 0
+                || (iteration >= maxTxSetFetchIterations && not txSet.IsEmpty)
+            then
+                txSet, iteration
             else
+                if iteration >= maxTxSetFetchIterations then
+                    Log.warningf "Could not build TxSet in %i iterations" iteration
+
                 let txHashesToSkip =
                     fetchedTxs
                     |> List.map (fun t -> t.TxHash)
                     |> List.append txHashesToSkip
 
-                getTxSet txHashesToSkip txSet
+                getTxSet (iteration + 1) txHashesToSkip txSet
 
-        getTxSet [] []
+        getTxSet 1 [] []
 
     let orderTxSet (txSet : PendingTxInfo list) : TxHash list =
         let rec orderSet orderedSet unorderedSet =

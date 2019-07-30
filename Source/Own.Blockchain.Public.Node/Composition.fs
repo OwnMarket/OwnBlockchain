@@ -287,6 +287,7 @@ module Composition =
             getAvailableChxBalance
             addressFromPrivateKey
             (ChxAmount Config.MinTxActionFee)
+            Config.MaxTxSetFetchIterations
             Config.CreateEmptyBlocks
             Config.MinEmptyBlockTime
             Config.MinValidatorCount
@@ -572,6 +573,8 @@ module Composition =
             getAvailableChxBalance
             publishEvent
             (ChxAmount Config.MinTxActionFee)
+            Config.MaxTxSetFetchIterations
+            Config.MaxTxCountPerBlock
             Config.TxRepropagationCount
 
     let propagateEquivocationProof =

@@ -267,6 +267,12 @@ type Config () =
 
     static member MaxActionCountPerTx = 1000
 
+    static member MaxTxSetFetchIterations
+        with get () =
+            match Int32.TryParse config.["MaxTxSetFetchIterations"] with
+            | true, value when value > 0 -> value
+            | _ -> 10
+
     static member TxCacheExpirationTime // Seconds
         with get () =
             match Int32.TryParse config.["TxCacheExpirationTime"] with
