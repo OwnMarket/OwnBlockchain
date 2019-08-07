@@ -331,8 +331,7 @@ module Processing =
                 Validators =
                     validators
                     |> Seq.ofDict
-                    |> Seq.choose (fun (a, (st, c)) ->
-                        st |> Option.map (fun s -> a, (s, c)))
+                    |> Seq.choose (fun (a, (st, c)) -> st |> Option.map (fun s -> a, (s, c)))
                     |> Seq.choose (fun (a, (s, ch)) -> ch |> Option.map (fun c -> a, (s, c)))
                     |> Map.ofSeq
                 Stakes =
