@@ -2110,6 +2110,7 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addValidator conn transaction validatorInfo
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't update validator state"
         with
@@ -2261,6 +2262,8 @@ module Db =
         (stateChanges : ProcessingOutputDto)
         : Result<unit, AppErrors>
         =
+
+        Log.debugf "PERSISTING CHANGES:\n%A" stateChanges
 
         use conn = DbTools.newConnection dbEngineType dbConnectionString
 
