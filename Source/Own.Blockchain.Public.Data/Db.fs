@@ -2128,7 +2128,7 @@ module Db =
         let foldFn result (validatorAddress, (state : ValidatorStateDto, change : ValidatorChangeCode)) =
             result
             >>= (fun _ ->
-                let validatorState =
+                let validatorInfo =
                     {
                         ValidatorAddress = validatorAddress
                         NetworkAddress = state.NetworkAddress
@@ -2139,11 +2139,11 @@ module Db =
                     }
                 match change with
                 | ValidatorChangeCode.Add ->
-                    addValidator conn transaction validatorState
+                    addValidator conn transaction validatorInfo
                 | ValidatorChangeCode.Remove ->
                     removeValidator conn transaction validatorAddress
                 | ValidatorChangeCode.Update ->
-                    updateValidator conn transaction validatorState
+                    updateValidator conn transaction validatorInfo
                 | _ -> Result.appError (sprintf "Invalid validator change : %A" change)
             )
 

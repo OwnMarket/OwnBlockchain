@@ -1641,7 +1641,7 @@ module Workflows =
             |> Result.appError
         | Some accountState ->
             getAccountHoldings accountHash assetHash
-            |> Mapping.accountHoldingDtosToGetAccoungHoldingsResponseDto accountHash accountState
+            |> Mapping.accountHoldingDtosToGetAccountHoldingsResponseDto accountHash accountState
             |> Ok
 
     let getAccountVotesApi

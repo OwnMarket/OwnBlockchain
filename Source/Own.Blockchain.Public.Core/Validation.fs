@@ -83,10 +83,10 @@ module Validation =
                 yield AppError "RecipientAddress is not valid"
 
             if action.Amount <= 0m then
-                yield AppError "CHX amount must be higher than zero"
+                yield AppError "CHX amount must be greater than zero"
 
             if action.Amount > Utils.maxBlockchainNumeric then
-                yield AppError (sprintf "CHX amount cannot be higher than %M" Utils.maxBlockchainNumeric)
+                yield AppError (sprintf "CHX amount cannot be greater than %M" Utils.maxBlockchainNumeric)
 
             if not (Utils.isRounded7 action.Amount) then
                 yield AppError "CHX amount must have at most 7 decimals"
@@ -104,10 +104,10 @@ module Validation =
             yield! validateHash isValidHash action.AssetHash "AssetHash"
 
             if action.Amount <= 0m then
-                yield AppError "Asset amount must be higher than zero"
+                yield AppError "Asset amount must be greater than zero"
 
             if action.Amount > Utils.maxBlockchainNumeric then
-                yield AppError (sprintf "Asset amount cannot be higher than %M" Utils.maxBlockchainNumeric)
+                yield AppError (sprintf "Asset amount cannot be greater than %M" Utils.maxBlockchainNumeric)
 
             if not (Utils.isRounded7 action.Amount) then
                 yield AppError "Asset amount must have at most 7 decimals"
@@ -120,10 +120,10 @@ module Validation =
             yield! validateHash isValidHash action.AssetHash "AssetHash"
 
             if action.Amount <= 0m then
-                yield AppError "Asset amount must be higher than zero"
+                yield AppError "Asset amount must be greater than zero"
 
             if action.Amount > Utils.maxBlockchainNumeric then
-                yield AppError (sprintf "Asset amount cannot be higher than %M" Utils.maxBlockchainNumeric)
+                yield AppError (sprintf "Asset amount cannot be greater than %M" Utils.maxBlockchainNumeric)
 
             if not (Utils.isRounded7 action.Amount) then
                 yield AppError "Asset amount must have at most 7 decimals"
@@ -188,7 +188,7 @@ module Validation =
                 yield AppError "CHX amount cannot be zero"
 
             if action.Amount > Utils.maxBlockchainNumeric then
-                yield AppError (sprintf "CHX amount cannot be higher than %M" Utils.maxBlockchainNumeric)
+                yield AppError (sprintf "CHX amount cannot be greater than %M" Utils.maxBlockchainNumeric)
 
             if not (Utils.isRounded7 action.Amount) then
                 yield AppError "CHX amount must have at most 7 decimals"
@@ -217,7 +217,7 @@ module Validation =
                 yield AppError "Vote weight cannot be negative"
 
             if action.VoteWeight > Utils.maxBlockchainNumeric then
-                yield AppError (sprintf "Vote weight cannot be higher than %M" Utils.maxBlockchainNumeric)
+                yield AppError (sprintf "Vote weight cannot be greater than %M" Utils.maxBlockchainNumeric)
 
             if not (Utils.isRounded7 action.VoteWeight) then
                 yield AppError "Vote weight must have at most 7 decimals"
@@ -284,16 +284,16 @@ module Validation =
                 yield AppError "Sender address doesn't match the signature"
 
             if t.Nonce <= 0L then
-                yield AppError "Nonce must be positive"
+                yield AppError "Nonce must be greater than zero"
 
             if t.ExpirationTime < 0L then
                 yield AppError "ExpirationTime cannot be negative"
 
             if t.ActionFee <= 0m then
-                yield AppError "ActionFee must be positive"
+                yield AppError "ActionFee must be greater than zero"
 
             if t.ActionFee > Utils.maxBlockchainNumeric then
-                yield AppError (sprintf "ActionFee cannot be higher than %M" Utils.maxBlockchainNumeric)
+                yield AppError (sprintf "ActionFee cannot be greater than %M" Utils.maxBlockchainNumeric)
 
             if not (Utils.isRounded7 t.ActionFee) then
                 yield AppError "ActionFee must have at most 7 decimal places"

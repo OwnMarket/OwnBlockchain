@@ -668,7 +668,7 @@ module Mapping =
     // API
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let accountHoldingDtosToGetAccoungHoldingsResponseDto
+    let accountHoldingDtosToGetAccountHoldingsResponseDto
         (AccountHash accountHash)
         (accountState : AccountStateDto)
         (holdings : AccountHoldingDto list)
