@@ -103,6 +103,8 @@ module Composition =
     let getStakers = Db.getStakers Config.DbEngineType Config.DbConnectionString
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbEngineType Config.DbConnectionString
 
+    let getTradeOrderState = Db.getTradeOrderState Config.DbEngineType Config.DbConnectionString
+
     let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
     let savePeerNode = Db.savePeerNode Config.DbEngineType Config.DbConnectionString
     let removePeerNode = Db.removePeerNode Config.DbEngineType Config.DbConnectionString
@@ -251,6 +253,7 @@ module Composition =
             getStakers
             getTotalChxStaked
             getTopStakersByStake
+            getTradeOrderState
             getValidatorsAtHeight
             getLockedAndBlacklistedValidators
             Hashing.deriveHash

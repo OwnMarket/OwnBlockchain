@@ -517,6 +517,7 @@ module Blocks =
             Validators = genesisValidators
             Stakes = Map.empty
             StakingRewards = Map.empty
+            TradeOrders = Map.empty
         }
 
     let assembleGenesisBlock

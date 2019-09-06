@@ -23,12 +23,15 @@ module ValidationTests =
     let setAssetCodeActionType = "SetAssetCode"
     let configureValidatorActionType = "ConfigureValidator"
     let delegateStakeActionType = "DelegateStake"
+    let placeTradeOrderActionType = "PlaceTradeOrder"
+    let cancelTradeOrderActionType = "CancelTradeOrder"
 
     let accountHash1, accountHash2 =
         AccountHash "3dYWB8TyU17SFf3ZLZ7fpQxoQAneoxdn92XRf88ZdxYC",
         AccountHash "4NZXDMd2uKLTmkKVciu84pkSnzUtic6TKxD61grbGcm9"
 
     let assetHash = AssetHash "BPRi75qm2RYWa2QAtyGwyjDXp7BkS9jR1EWAmUqsdEsC"
+    let assetHash2 = AssetHash "EJibjhAgic9ynhpQbr2Sx3bbYDvREc4RwdQGdVSAWgzH"
 
     [<Fact>]
     let ``Validation.validateTx BasicValidation single validation error`` () =
@@ -1098,3 +1101,496 @@ module ValidationTests =
         | Error e ->
             test <@ e.Length = 1 @>
             test <@ e.[0].Message.Contains("Values in equivocation proof must be ordered") @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Trade Orders
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder invalid action data`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = ""
+                                BaseAssetHash = ""
+                                QuoteAssetHash = ""
+                                Side = ""
+                                Amount = 0m
+                                OrderType = ""
+                                LimitPrice = 0m
+                                StopPrice = 0m
+                                TrailingDelta = 0m
+                                TrailingDeltaIsPercentage = false
+                                TimeInForce = ""
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 8 @>
+            test <@ errors.[0].Message = "AccountHash is not provided" @>
+            test <@ errors.[1].Message = "BaseAssetHash is not provided" @>
+            test <@ errors.[2].Message = "QuoteAssetHash is not provided" @>
+            test <@ errors.[3].Message = "QuoteAssetHash cannot be the same as BaseAssetHash" @>
+            test <@ errors.[4].Message = "Side must have a valid value" @>
+            test <@ errors.[5].Message = "Amount must be greater than zero" @>
+            test <@ errors.[6].Message = "OrderType must have a valid value" @>
+            test <@ errors.[7].Message = "TimeInForce must have a valid value" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder prices not accepted in unrelated orders`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 100m
+                                OrderType = "MARKET"
+                                LimitPrice = 1m
+                                StopPrice = 1m
+                                TrailingDelta = 1m
+                                TrailingDeltaIsPercentage = false
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 3 @>
+            test <@ errors.[0].Message = "LimitPrice in non-LIMIT order types should not be set" @>
+            test <@ errors.[1].Message = "StopPrice in non-STOP order types should not be set" @>
+            test <@ errors.[2].Message = "TrailingDelta in non-TRAILING order types should not be set" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder LimitPrice mandatory in LIMIT orders`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 100m
+                                OrderType = "LIMIT"
+                                LimitPrice = 0m
+                                StopPrice = 0m
+                                TrailingDelta = 0m
+                                TrailingDeltaIsPercentage = false
+                                TimeInForce = "GTE"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+            test <@ errors.[0].Message = "LimitPrice in LIMIT order types must be greater than zero" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder StopPrice mandatory in STOP orders`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 100m
+                                OrderType = "STOP"
+                                LimitPrice = 0m
+                                StopPrice = 0m
+                                TrailingDelta = 0m
+                                TrailingDeltaIsPercentage = false
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+            test <@ errors.[0].Message = "StopPrice in STOP order types must be greater than zero" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder TrailingDelta mandatory in TRAILING orders`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 100m
+                                OrderType = "TRAILING_STOP"
+                                LimitPrice = 0m
+                                StopPrice = 1m
+                                TrailingDelta = 0m
+                                TrailingDeltaIsPercentage = false
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+            test <@ errors.[0].Message = "TrailingDelta in TRAILING order types must be greater than zero" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder numbers should not be greater than max`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = Utils.maxBlockchainNumeric + 1m
+                                OrderType = "TRAILING_STOP_LIMIT"
+                                LimitPrice = Utils.maxBlockchainNumeric + 1m
+                                StopPrice = Utils.maxBlockchainNumeric + 1m
+                                TrailingDelta = Utils.maxBlockchainNumeric + 1m
+                                TrailingDeltaIsPercentage = false
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 4 @>
+            test <@ errors.[0].Message.StartsWith("Amount cannot be greater than") @>
+            test <@ errors.[1].Message.StartsWith("LimitPrice cannot be greater than") @>
+            test <@ errors.[2].Message.StartsWith("StopPrice cannot be greater than") @>
+            test <@ errors.[3].Message.StartsWith("TrailingDelta cannot be greater than") @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder numbers must be rounded to allowed number of decimals`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 0.00000001m
+                                OrderType = "TRAILING_STOP_LIMIT"
+                                LimitPrice = 0.00000001m
+                                StopPrice = 0.00000001m
+                                TrailingDelta = 0.00000001m
+                                TrailingDeltaIsPercentage = false
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 4 @>
+            test <@ errors.[0].Message = "Amount must have at most 7 decimals" @>
+            test <@ errors.[1].Message = "LimitPrice must have at most 7 decimals" @>
+            test <@ errors.[2].Message = "StopPrice must have at most 7 decimals" @>
+            test <@ errors.[3].Message = "TrailingDelta must have at most 7 decimals" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder TrailingDelta percentage must be rounded to 2 decimals`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 100m
+                                OrderType = "TRAILING_STOP_LIMIT"
+                                LimitPrice = 1m
+                                StopPrice = 1m
+                                TrailingDelta = 0.001m
+                                TrailingDeltaIsPercentage = true
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+            test <@ errors.[0].Message = "TrailingDelta percentage must have at most 2 decimals" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder TrailingDelta percentage must be less than 100`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 100m
+                                OrderType = "TRAILING_STOP_LIMIT"
+                                LimitPrice = 1m
+                                StopPrice = 1m
+                                TrailingDelta = 100m
+                                TrailingDeltaIsPercentage = true
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+            test <@ errors.[0].Message = "TrailingDelta percentage must be less than 100%" @>
+
+    [<Fact>]
+    let ``Validation.validateTx PlaceTradeOrder TrailingDeltaIsPercentage valid only for TRAILING orders`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = placeTradeOrderActionType
+                        ActionData =
+                            {
+                                PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                                BaseAssetHash = assetHash.Value
+                                QuoteAssetHash = assetHash2.Value
+                                Side = "BUY"
+                                Amount = 100m
+                                OrderType = "MARKET"
+                                LimitPrice = 0m
+                                StopPrice = 0m
+                                TrailingDelta = 0m
+                                TrailingDeltaIsPercentage = true
+                                TimeInForce = "IOC"
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+            test <@ errors.[0].Message = "TrailingDeltaIsPercentage in non-TRAILING order types should not be set" @>
+
+    [<Fact>]
+    let ``Validation.validateTx CancelTradeOrder invalid action data`` () =
+        let testTx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = cancelTradeOrderActionType
+                        ActionData =
+                            {
+                                CancelTradeOrderTxActionDto.TradeOrderHash = ""
+                            }
+                    }
+                ]
+        }
+
+        let result =
+            Validation.validateTx
+                Hashing.isValidHash
+                Hashing.isValidBlockchainAddress
+                Helpers.maxActionCountPerTx
+                chAddress
+                txHash
+                testTx
+
+        match result with
+        | Ok _ -> failwith "Validation should fail in case of this test"
+        | Error errors ->
+            test <@ errors.Length = 1 @>
+            test <@ errors.[0].Message = "TradeOrderHash is not provided" @>

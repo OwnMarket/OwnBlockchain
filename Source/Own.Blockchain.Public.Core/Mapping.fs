@@ -153,6 +153,42 @@ module Mapping =
                 ProviderAddress = BlockchainAddress a.ProviderAddress
             }
             |> RemoveKycProvider
+        | :? PlaceTradeOrderTxActionDto as a ->
+            {
+                PlaceTradeOrderTxAction.AccountHash = AccountHash a.AccountHash
+                BaseAssetHash = AssetHash a.BaseAssetHash
+                QuoteAssetHash = AssetHash a.QuoteAssetHash
+                Side =
+                    match a.Side with
+                    | "BUY" -> TradeOrderSide.Buy
+                    | "SELL" -> TradeOrderSide.Sell
+                    | v -> failwithf "Invalid TradeOrderSide value: %s" v
+                Amount = AssetAmount a.Amount
+                OrderType =
+                    match a.OrderType with
+                    | "MARKET" -> TradeOrderType.Market
+                    | "LIMIT" -> TradeOrderType.Limit
+                    | "STOP" -> TradeOrderType.Stop
+                    | "STOP_LIMIT" -> TradeOrderType.StopLimit
+                    | "TRAILING_STOP" -> TradeOrderType.TrailingStop
+                    | "TRAILING_STOP_LIMIT" -> TradeOrderType.TrailingStopLimit
+                    | v -> failwithf "Invalid TradeOrderType value: %s" v
+                LimitPrice = AssetAmount a.LimitPrice
+                StopPrice = AssetAmount a.StopPrice
+                TrailingDelta = AssetAmount a.TrailingDelta
+                TrailingDeltaIsPercentage = a.TrailingDeltaIsPercentage
+                TimeInForce =
+                    match a.TimeInForce with
+                    | "GTE" -> TradeOrderTimeInForce.GoodTilExpired
+                    | "IOC" -> TradeOrderTimeInForce.ImmediateOrCancel
+                    | v -> failwithf "Invalid TradeOrderTimeInForce value: %s" v
+            }
+            |> PlaceTradeOrder
+        | :? CancelTradeOrderTxActionDto as a ->
+            {
+                CancelTradeOrderTxAction.TradeOrderHash = TradeOrderHash a.TradeOrderHash
+            }
+            |> CancelTradeOrder
         | _ ->
             failwith "Invalid action type to map"
 
@@ -596,6 +632,74 @@ module Mapping =
             Amount = ChxAmount dto.Amount
         }
 
+    let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =
+        {
+            AccountHash = AccountHash dto.AccountHash
+            BaseAssetHash = AssetHash dto.BaseAssetHash
+            QuoteAssetHash = AssetHash dto.QuoteAssetHash
+            Side =
+                match dto.Side with
+                | 1s -> TradeOrderSide.Buy
+                | 2s -> TradeOrderSide.Sell
+                | s -> failwithf "Invalid trade order side code: %i" s
+            Amount = AssetAmount dto.Amount
+            OrderType =
+                match dto.OrderType with
+                | 1s -> TradeOrderType.Market
+                | 2s -> TradeOrderType.Limit
+                | 3s -> TradeOrderType.Stop
+                | 4s -> TradeOrderType.StopLimit
+                | 5s -> TradeOrderType.TrailingStop
+                | 6s -> TradeOrderType.TrailingStopLimit
+                | t -> failwithf "Invalid trade order type code: %i" t
+            LimitPrice = AssetAmount dto.LimitPrice
+            StopPrice = AssetAmount dto.StopPrice
+            TrailingDelta = AssetAmount dto.TrailingDelta
+            TrailingDeltaIsPercentage = dto.TrailingDeltaIsPercentage
+            TimeInForce =
+                match dto.TimeInForce with
+                | 1s -> TradeOrderTimeInForce.GoodTilExpired
+                | 2s -> TradeOrderTimeInForce.ImmediateOrCancel
+                | t -> failwithf "Invalid trade order time in force code: %i" t
+            BlockNumber = BlockNumber dto.BlockNumber
+            IsExecutable = dto.IsExecutable
+        }
+
+    let tradeOrderStateToDto (state : TradeOrderState) : TradeOrderStateDto =
+        {
+            AccountHash = state.AccountHash.Value
+            BaseAssetHash = state.BaseAssetHash.Value
+            QuoteAssetHash = state.QuoteAssetHash.Value
+            Side =
+                match state.Side with
+                | TradeOrderSide.Buy -> 1s
+                | TradeOrderSide.Sell -> 2s
+            Amount = state.Amount.Value
+            OrderType =
+                match state.OrderType with
+                | TradeOrderType.Market -> 1s
+                | TradeOrderType.Limit -> 2s
+                | TradeOrderType.Stop -> 3s
+                | TradeOrderType.StopLimit -> 4s
+                | TradeOrderType.TrailingStop -> 5s
+                | TradeOrderType.TrailingStopLimit -> 6s
+            LimitPrice = state.LimitPrice.Value
+            StopPrice = state.StopPrice.Value
+            TrailingDelta = state.TrailingDelta.Value
+            TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
+            TimeInForce =
+                match state.TimeInForce with
+                | TradeOrderTimeInForce.GoodTilExpired -> 1s
+                | TradeOrderTimeInForce.ImmediateOrCancel -> 2s
+            BlockNumber = state.BlockNumber.Value
+            IsExecutable = state.IsExecutable
+        }
+
+    let tradeOrderChangeToCode (change : TradeOrderChange) =
+        match change with
+        | TradeOrderChange.Add -> TradeOrderChangeCode.Add
+        | TradeOrderChange.Remove -> TradeOrderChangeCode.Remove
+
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults
@@ -650,6 +754,10 @@ module Mapping =
                 (sa, va), stakeStateToDto s
             )
 
+        let tradeOrders =
+            output.TradeOrders
+            |> Map.remap (fun (TradeOrderHash h, (s, c)) -> h, (tradeOrderStateToDto s, tradeOrderChangeToCode c))
+
         {
             ProcessingOutputDto.TxResults = txResults
             EquivocationProofResults = equivocationProofResults
@@ -662,6 +770,7 @@ module Mapping =
             Assets = assets
             Validators = validators
             Stakes = stakes
+            TradeOrders = tradeOrders
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

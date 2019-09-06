@@ -319,6 +319,7 @@ module Workflows =
         getStakersFromStorage
         getTotalChxStakedFromStorage
         getTopStakersFromStorage
+        getTradeOrderStateFromStorage
         (getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list)
         getLockedAndBlacklistedValidators
         deriveHash
@@ -354,6 +355,8 @@ module Workflows =
         let getTotalChxStaked = memoize getTotalChxStakedFromStorage
 
         let getTopStakers = getTopStakersFromStorage >> List.map Mapping.stakerInfoFromDto
+
+        let getTradeOrderState = memoize (getTradeOrderStateFromStorage >> Option.map Mapping.tradeOrderStateFromDto)
 
         let validators = getValidatorsAtHeight (blockNumber - 1)
 
@@ -397,6 +400,7 @@ module Workflows =
                 getStakers
                 getTotalChxStaked
                 getTopStakers
+                getTradeOrderState
                 getLockedAndBlacklistedValidators
                 maxActionCountPerTx
                 validatorDeposit

@@ -23,6 +23,7 @@ module Processing =
         getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option,
         getStakersFromStorage : BlockchainAddress -> BlockchainAddress list,
         getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount,
+        getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
         chxAddresses : ConcurrentDictionary<BlockchainAddress, ChxAddressState>,
@@ -39,7 +40,8 @@ module Processing =
         stakers : ConcurrentDictionary<BlockchainAddress, BlockchainAddress list>, // Not part of the blockchain state
         totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not part of the blockchain state
         stakingRewards : ConcurrentDictionary<BlockchainAddress, ChxAmount>,
-        collectedReward : ChxAmount
+        collectedReward : ChxAmount,
+        tradeOrders : ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>
         ) =
 
         let getChxAddressState address =
@@ -58,7 +60,8 @@ module Processing =
             getValidatorStateFromStorage : BlockchainAddress -> ValidatorState option,
             getStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option,
             getStakersFromStorage : BlockchainAddress -> BlockchainAddress list,
-            getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
+            getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount,
+            getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option
             ) =
             ProcessingState(
                 getChxAddressStateFromStorage,
@@ -73,6 +76,7 @@ module Processing =
                 getStakeStateFromStorage,
                 getStakersFromStorage,
                 getTotalChxStakedFromStorage,
+                getTradeOrderStateFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAddressState>(),
@@ -88,7 +92,8 @@ module Processing =
                 ConcurrentDictionary<BlockchainAddress, BlockchainAddress list>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
-                ChxAmount 0m
+                ChxAmount 0m,
+                ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>()
             )
 
         member val CollectedReward = collectedReward with get, set
@@ -107,6 +112,7 @@ module Processing =
                 getStakeStateFromStorage,
                 getStakersFromStorage,
                 getTotalChxStakedFromStorage,
+                getTradeOrderStateFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(equivocationProofResults),
                 ConcurrentDictionary(chxAddresses),
@@ -122,7 +128,8 @@ module Processing =
                 ConcurrentDictionary(stakers),
                 ConcurrentDictionary(totalChxStaked),
                 ConcurrentDictionary(stakingRewards),
-                __.CollectedReward
+                __.CollectedReward,
+                ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>(tradeOrders)
             )
 
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
@@ -147,6 +154,8 @@ module Processing =
                 __.GetValidator (other.Key) |> ignore
             for other in otherOutput.Stakes do
                 __.GetStake (other.Key) |> ignore
+            for other in otherOutput.TradeOrders do
+                __.GetTradeOrder (other.Key) |> ignore
 
         member __.GetChxAddress (address : BlockchainAddress) =
             chxAddresses.GetOrAdd(address, getChxAddressState)
@@ -197,6 +206,24 @@ module Processing =
 
         member __.GetStakers validatorAddress =
             stakers.GetOrAdd(validatorAddress, getStakersFromStorage)
+
+        member __.GetTradeOrder (tradeOrderHash : TradeOrderHash) =
+            tradeOrders.GetOrAdd(tradeOrderHash, fun _ ->
+                getTradeOrderStateFromStorage tradeOrderHash
+                |> fun state -> state, None
+            )
+            |> fun (state, change) ->
+                match change with
+                | Some c when c = TradeOrderChange.Remove -> None
+                | _ -> state
+
+        member __.GetTradingPair (baseAssetHash : AssetHash, quoteAssetHash : AssetHash) =
+            // TODO DSX: tradingPairs.GetOrAdd((baseAssetHash, quoteAssetHash), getTradingPairFromStorage)
+            // TODO DSX: Remove the dummy implementation below
+            if __.GetAsset(baseAssetHash).IsSome && __.GetAsset(quoteAssetHash).IsSome then
+                Some ()
+            else
+                None
 
         // Not part of the blockchain state
         member __.GetTotalChxStaked address =
@@ -269,6 +296,24 @@ module Processing =
             let state = Some state
             stakes.AddOrUpdate((stakerAddress, validatorAddress), state, fun _ _ -> state) |> ignore
 
+        member __.SetTradeOrder (tradeOrderHash, state, change) =
+            let state, change = Some state, Some change
+            let processingChange =
+                match tradeOrders.TryGetValue tradeOrderHash with
+                | true, (_, existingChange) ->
+                    if existingChange = Some TradeOrderChange.Add && change = Some TradeOrderChange.Remove
+                        || existingChange = Some TradeOrderChange.Remove && change = Some TradeOrderChange.Add
+                    then
+                        None
+                    else
+                        change
+                | _ -> change
+            tradeOrders.AddOrUpdate(
+                tradeOrderHash,
+                (state, processingChange),
+                fun _ _ -> (state, processingChange)
+            ) |> ignore
+
         // Not part of the blockchain state
         member __.SetTotalChxStaked (address : BlockchainAddress, amount) =
             totalChxStaked.AddOrUpdate(address, amount, fun _ _ -> amount) |> ignore
@@ -340,6 +385,12 @@ module Processing =
                     |> Seq.choose (fun (k, v) -> v |> Option.map (fun s -> k, s))
                     |> Map.ofSeq
                 StakingRewards = stakingRewards |> Map.ofDict
+                TradeOrders =
+                    tradeOrders
+                    |> Seq.ofDict
+                    |> Seq.choose (fun (h, (st, c)) -> st |> Option.map (fun s -> h, (s, c)))
+                    |> Seq.choose (fun (h, (s, ch)) -> ch |> Option.map (fun c -> h, (s, c)))
+                    |> Map.ofSeq
             }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -841,6 +892,80 @@ module Processing =
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
 
+    let processPlaceTradeOrderTxAction
+        deriveHash
+        (blockNumber : BlockNumber)
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (nonce : Nonce)
+        (actionNumber : TxActionNumber)
+        (action : PlaceTradeOrderTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetAccount(action.AccountHash) with
+        | None ->
+            Error TxErrorCode.AccountNotFound
+        | Some accountState when accountState.ControllerAddress = senderAddress ->
+            match state.GetTradingPair(action.BaseAssetHash, action.QuoteAssetHash) with
+            | None ->
+                Error TxErrorCode.TradingPairNotFound
+            | Some pair ->
+                // TODO DSX: Check trading pair conditions
+                let tradeOrderHash =
+                    deriveHash senderAddress nonce actionNumber
+                    |> TradeOrderHash
+                match state.GetTradeOrder(tradeOrderHash) with
+                | Some state ->
+                    failwithf "Trade order %s already exists: %A" tradeOrderHash.Value state
+                | None ->
+                    let tradeOrderState =
+                        {
+                            AccountHash = action.AccountHash
+                            BaseAssetHash = action.BaseAssetHash
+                            QuoteAssetHash = action.QuoteAssetHash
+                            Side = action.Side
+                            Amount = action.Amount
+                            OrderType = action.OrderType
+                            LimitPrice = action.LimitPrice
+                            StopPrice = action.StopPrice
+                            TrailingDelta = action.TrailingDelta
+                            TrailingDeltaIsPercentage = action.TrailingDeltaIsPercentage
+                            TimeInForce = action.TimeInForce
+                            BlockNumber = blockNumber
+                            IsExecutable =
+                                match action.OrderType with
+                                | Market
+                                | Limit -> true
+                                | _ -> false
+                        }
+                    state.SetTradeOrder(tradeOrderHash, tradeOrderState, TradeOrderChange.Add)
+                    Ok state
+        | _ ->
+            Error TxErrorCode.SenderIsNotSourceAccountController
+
+    let processCancelTradeOrderTxAction
+        (state : ProcessingState)
+        (senderAddress : BlockchainAddress)
+        (action : CancelTradeOrderTxAction)
+        : Result<ProcessingState, TxErrorCode>
+        =
+
+        match state.GetTradeOrder(action.TradeOrderHash) with
+        | None ->
+            Error TxErrorCode.TradeOrderNotFound
+        | Some tradeOrderState ->
+            match state.GetAccount(tradeOrderState.AccountHash) with
+            | None ->
+                failwithf "Cannot get state for account %s in trade order %s"
+                    tradeOrderState.AccountHash.Value
+                    action.TradeOrderHash.Value
+            | Some accountState when accountState.ControllerAddress = senderAddress ->
+                state.SetTradeOrder(action.TradeOrderHash, tradeOrderState, TradeOrderChange.Remove)
+                Ok state
+            | _ ->
+                Error TxErrorCode.SenderIsNotSourceAccountController
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TX Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1003,6 +1128,7 @@ module Processing =
     let processTxAction
         deriveHash
         validatorDeposit
+        blockNumber
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actionNumber : TxActionNumber)
@@ -1029,10 +1155,14 @@ module Processing =
         | ChangeKycControllerAddress action -> processChangeKycControllerAddressTxAction state senderAddress action
         | AddKycProvider action -> processAddKycProviderTxAction state senderAddress action
         | RemoveKycProvider action -> processRemoveKycProviderTxAction state senderAddress action
+        | PlaceTradeOrder action ->
+            processPlaceTradeOrderTxAction deriveHash blockNumber state senderAddress nonce actionNumber action
+        | CancelTradeOrder action -> processCancelTradeOrderTxAction state senderAddress action
 
     let processTxActions
         deriveHash
         validatorDeposit
+        blockNumber
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actions : TxAction list)
@@ -1045,7 +1175,7 @@ module Processing =
             result
             >>= fun state ->
                 let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
-                processTxAction deriveHash validatorDeposit senderAddress nonce actionNumber action state
+                processTxAction deriveHash validatorDeposit blockNumber senderAddress nonce actionNumber action state
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
@@ -1252,6 +1382,7 @@ module Processing =
         (getStakersFromStorage : BlockchainAddress -> BlockchainAddress list)
         (getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount)
         (getTopStakers : BlockchainAddress -> StakerInfo list)
+        (getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option)
         getLockedAndBlacklistedValidators
         maxActionCountPerTx
         validatorDeposit
@@ -1267,7 +1398,7 @@ module Processing =
         (txSet : TxHash list)
         =
 
-        let processTxActions = processTxActions deriveHash validatorDeposit
+        let processTxActions = processTxActions deriveHash validatorDeposit blockNumber
 
         let loadTxs txHashes =
             txHashes
@@ -1331,7 +1462,8 @@ module Processing =
                 getValidatorStateFromStorage,
                 getStakeStateFromStorage,
                 getStakersFromStorage,
-                getTotalChxStakedFromStorage
+                getTotalChxStakedFromStorage,
+                getTradeOrderStateFromStorage
             )
 
         let txs = loadTxs txSet

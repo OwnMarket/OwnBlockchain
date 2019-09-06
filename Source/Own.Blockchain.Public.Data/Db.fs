@@ -614,6 +614,50 @@ module Db =
         | _ -> failwith "Multiple consensus state entries found"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Trading
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let getTradeOrderState
+        dbEngineType
+        (dbConnectionString : string)
+        (TradeOrderHash tradeOrderHash)
+        : TradeOrderStateDto option
+        =
+
+        let sql =
+            """
+            SELECT
+                block_number,
+                acc.account_hash,
+                ba.asset_hash AS base_asset_hash,
+                qa.asset_hash AS quote_asset_hash,
+                side,
+                amount,
+                order_type,
+                limit_price,
+                stop_price,
+                trailing_delta,
+                trailing_delta_is_percentage,
+                time_in_force,
+                is_executable
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE trade_order_hash = @tradeOrderHash
+            """
+
+        let sqlParams =
+            [
+                "@tradeOrderHash", tradeOrderHash |> box
+            ]
+
+        match DbTools.query<TradeOrderStateDto> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | [tradeOrderState] -> Some tradeOrderState
+        | _ -> failwithf "Multiple trade orders found for hash %A" tradeOrderHash
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2256,6 +2300,146 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private addTradeOrder
+        conn
+        transaction
+        (tradeOrderInfo : TradeOrderInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            INSERT INTO trade_order (
+                trade_order_hash,
+                block_number,
+                account_id,
+                base_asset_id,
+                quote_asset_id,
+                side,
+                amount,
+                order_type,
+                limit_price,
+                stop_price,
+                trailing_delta,
+                trailing_delta_is_percentage,
+                time_in_force,
+                is_executable
+            )
+            VALUES (
+                @tradeOrderHash,
+                @blockNumber,
+                (SELECT account_id FROM account WHERE account_hash = @accountHash),
+                (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash),
+                (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash),
+                @side,
+                @amount,
+                @orderType,
+                @limitPrice,
+                @stopPrice,
+                @trailingDelta,
+                @trailingDeltaIsPercentage,
+                @timeInForce,
+                @isExecutable
+            )
+            """
+
+        let sqlParams =
+            [
+                "@tradeOrderHash", tradeOrderInfo.TradeOrderHash |> box
+                "@blockNumber", tradeOrderInfo.BlockNumber |> box
+                "@accountHash", tradeOrderInfo.AccountHash |> box
+                "@baseAssetHash", tradeOrderInfo.BaseAssetHash |> box
+                "@quoteAssetHash", tradeOrderInfo.QuoteAssetHash |> box
+                "@side", tradeOrderInfo.Side |> box
+                "@amount", tradeOrderInfo.Amount |> box
+                "@orderType", tradeOrderInfo.OrderType |> box
+                "@limitPrice", tradeOrderInfo.LimitPrice |> box
+                "@stopPrice", tradeOrderInfo.StopPrice |> box
+                "@trailingDelta", tradeOrderInfo.TrailingDelta |> box
+                "@trailingDeltaIsPercentage", tradeOrderInfo.TrailingDeltaIsPercentage |> box
+                "@timeInForce", tradeOrderInfo.TimeInForce |> box
+                "@isExecutable", tradeOrderInfo.IsExecutable |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert trade order state"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert trade order state"
+
+    let private removeTradeOrder
+        conn
+        transaction
+        (tradeOrderHash : string)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            DELETE FROM trade_order
+            WHERE trade_order_hash = @tradeOrderHash
+            """
+
+        let sqlParams =
+            [
+                "@tradeOrderHash", tradeOrderHash |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0
+            | 1 -> Ok ()
+            | _ ->
+                sprintf "Didn't remove trade order: %s" tradeOrderHash
+                |> Result.appError
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            sprintf "Failed to remove trade order: %s" tradeOrderHash
+            |> Result.appError
+
+    let private updateTradeOrders
+        (conn : DbConnection)
+        (transaction : DbTransaction)
+        (tradeOrders : Map<string, TradeOrderStateDto * TradeOrderChangeCode>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result (tradeOrderHash, (state : TradeOrderStateDto, change : TradeOrderChangeCode)) =
+            result
+            >>= (fun _ ->
+                let tradeOrderInfo =
+                    {
+                        TradeOrderHash = tradeOrderHash
+                        BlockNumber = state.BlockNumber
+                        AccountHash = state.AccountHash
+                        BaseAssetHash = state.BaseAssetHash
+                        QuoteAssetHash = state.QuoteAssetHash
+                        Side = state.Side
+                        Amount = state.Amount
+                        OrderType = state.OrderType
+                        LimitPrice = state.LimitPrice
+                        StopPrice = state.StopPrice
+                        TrailingDelta = state.TrailingDelta
+                        TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
+                        TimeInForce = state.TimeInForce
+                        IsExecutable = state.IsExecutable
+                    }
+                match change with
+                | TradeOrderChangeCode.Add ->
+                    addTradeOrder conn transaction tradeOrderInfo
+                | TradeOrderChangeCode.Remove ->
+                    removeTradeOrder conn transaction tradeOrderHash
+                | _ -> Result.appError (sprintf "Invalid trade order change : %A" change)
+            )
+
+        tradeOrders
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
     let persistStateChanges
         dbEngineType
         (dbConnectionString : string)
@@ -2284,6 +2468,7 @@ module Db =
                 do! updateVotes conn transaction stateChanges.Votes
                 do! updateKycProviders conn transaction stateChanges.KycProviders
                 do! updateEligibilities conn transaction stateChanges.Eligibilities
+                do! updateTradeOrders conn transaction stateChanges.TradeOrders
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber
                 do! removeOldConsensusMessages conn transaction blockNumber

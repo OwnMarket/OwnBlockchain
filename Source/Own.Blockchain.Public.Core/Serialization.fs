@@ -51,6 +51,8 @@ module Serialization =
             "ChangeKycControllerAddress", tokenToAction<ChangeKycControllerAddressTxActionDto>
             "AddKycProvider", tokenToAction<AddKycProviderTxActionDto>
             "RemoveKycProvider", tokenToAction<RemoveKycProviderTxActionDto>
+            "PlaceTradeOrder", tokenToAction<PlaceTradeOrderTxActionDto>
+            "CancelTradeOrder", tokenToAction<CancelTradeOrderTxActionDto>
         ]
         |> Map.ofList
 

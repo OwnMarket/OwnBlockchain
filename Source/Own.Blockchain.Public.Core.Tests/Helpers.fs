@@ -20,6 +20,8 @@ module Helpers =
 
     let randomString () = Guid.NewGuid().ToString("N")
 
+    let randomHash () = Guid.NewGuid().ToByteArray() |> Hashing.hash
+
     let maxActionCountPerTx = 1000
 
     let minTxActionFee = ChxAmount 0.001m
@@ -43,6 +45,8 @@ module Helpers =
         | ChangeKycControllerAddress action -> box action :?> 'T
         | AddKycProvider action -> box action :?> 'T
         | RemoveKycProvider action -> box action :?> 'T
+        | PlaceTradeOrder action -> box action :?> 'T
+        | CancelTradeOrder action -> box action :?> 'T
 
     let newPendingTxInfo
         (txHash : TxHash)
@@ -157,6 +161,7 @@ module Helpers =
             GetStakersFromStorage : BlockchainAddress -> BlockchainAddress list
             GetTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
             GetTopStakers : BlockchainAddress -> StakerInfo list
+            GetTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option
             GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
             MaxActionCountPerTx : int
             ValidatorDeposit : ChxAmount
@@ -198,6 +203,7 @@ module Helpers =
             GetStakersFromStorage = fun _ -> unexpectedInvocation "GetStakersFromStorage"
             GetTotalChxStakedFromStorage = fun _ -> ChxAmount 0m
             GetTopStakers = fun _ -> []
+            GetTradeOrderStateFromStorage = fun _ -> unexpectedInvocation "GetTradeOrderStateFromStorage"
             GetLockedAndBlacklistedValidators = fun _ -> []
             MaxActionCountPerTx = maxActionCountPerTx
             ValidatorDeposit = validatorDeposit
@@ -237,6 +243,7 @@ module Helpers =
             mockedDeps.GetStakersFromStorage
             mockedDeps.GetTotalChxStakedFromStorage
             mockedDeps.GetTopStakers
+            mockedDeps.GetTradeOrderStateFromStorage
             mockedDeps.GetLockedAndBlacklistedValidators
             mockedDeps.MaxActionCountPerTx
             mockedDeps.ValidatorDeposit

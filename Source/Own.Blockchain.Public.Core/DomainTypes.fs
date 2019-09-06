@@ -75,7 +75,33 @@ type KycProvider = {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// TX
+// Trading
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type TradeOrderHash = TradeOrderHash of string
+
+type TradeOrderSide =
+    | Buy
+    | Sell
+
+type TradeOrderType =
+    | Market
+    | Limit
+    | Stop
+    | StopLimit
+    | TrailingStop
+    | TrailingStopLimit
+
+type TradeOrderTimeInForce =
+    | GoodTilExpired
+    | ImmediateOrCancel
+
+type TradeOrderChange =
+    | Add
+    | Remove
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Tx
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type TransferChxTxAction = {
@@ -159,6 +185,24 @@ type RemoveKycProviderTxAction = {
     ProviderAddress : BlockchainAddress
 }
 
+type PlaceTradeOrderTxAction = {
+    AccountHash : AccountHash
+    BaseAssetHash : AssetHash
+    QuoteAssetHash : AssetHash
+    Side : TradeOrderSide
+    Amount : AssetAmount
+    OrderType : TradeOrderType
+    LimitPrice : AssetAmount
+    StopPrice : AssetAmount
+    TrailingDelta : AssetAmount
+    TrailingDeltaIsPercentage : bool
+    TimeInForce : TradeOrderTimeInForce
+}
+
+type CancelTradeOrderTxAction = {
+    TradeOrderHash : TradeOrderHash
+}
+
 type TxAction =
     | TransferChx of TransferChxTxAction
     | TransferAsset of TransferAssetTxAction
@@ -178,6 +222,8 @@ type TxAction =
     | ChangeKycControllerAddress of ChangeKycControllerAddressTxAction
     | AddKycProvider of AddKycProviderTxAction
     | RemoveKycProvider of RemoveKycProviderTxAction
+    | PlaceTradeOrder of PlaceTradeOrderTxAction
+    | CancelTradeOrder of CancelTradeOrderTxAction
 
 type TxHash = TxHash of string
 type Timestamp = Timestamp of int64 // Unix timestamp in milliseconds
@@ -314,6 +360,10 @@ type TxErrorCode =
     | NotEligibleInSecondary = 660s
     | KycProviderAlreadyExists = 670s
 
+    // Trading
+    | TradingPairNotFound = 710s
+    | TradeOrderNotFound = 720s
+
     // Validators
     | ValidatorNotFound = 910s
     | InsufficientStake = 920s
@@ -409,6 +459,22 @@ type StakerInfo = {
     Amount : ChxAmount
 }
 
+type TradeOrderState = {
+    AccountHash : AccountHash
+    BaseAssetHash : AssetHash
+    QuoteAssetHash : AssetHash
+    Side : TradeOrderSide
+    Amount : AssetAmount
+    OrderType : TradeOrderType
+    LimitPrice : AssetAmount
+    StopPrice : AssetAmount
+    TrailingDelta : AssetAmount
+    TrailingDeltaIsPercentage : bool
+    TimeInForce : TradeOrderTimeInForce
+    BlockNumber : BlockNumber
+    IsExecutable : bool
+}
+
 type ProcessingOutput = {
     TxResults : Map<TxHash, TxResult>
     EquivocationProofResults : Map<EquivocationProofHash, EquivocationProofResult>
@@ -422,6 +488,7 @@ type ProcessingOutput = {
     Validators : Map<BlockchainAddress, ValidatorState * ValidatorChange>
     Stakes : Map<BlockchainAddress * BlockchainAddress, StakeState>
     StakingRewards : Map<BlockchainAddress, ChxAmount>
+    TradeOrders : Map<TradeOrderHash, TradeOrderState * TradeOrderChange>
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -764,6 +831,10 @@ type AssetAmount with
         AssetAmount (a1 / a2)
     static member (/) (AssetAmount a1, a2) =
         AssetAmount (a1 / a2)
+
+type TradeOrderHash with
+    member __.Value =
+        __ |> fun (TradeOrderHash v) -> v
 
 type Tx with
     member __.TotalFee = __.ActionFee * decimal __.Actions.Length

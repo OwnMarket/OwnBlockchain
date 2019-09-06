@@ -7427,3 +7427,705 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
         test <@ output.Stakes.[senderWallet.Address, stakeValidatorAddress].Amount = currentStakeAmount @>
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Trade Orders
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    [<Theory>]
+    [<InlineData("BUY", "Buy", "MARKET", "Market", 0, 0, 0, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("BUY", "Buy", "LIMIT", "Limit", 12, 0, 0, false, "GTE", "GoodTilExpired")>]
+    [<InlineData("BUY", "Buy", "STOP", "Stop", 0, 11, 0, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("BUY", "Buy", "STOP_LIMIT", "StopLimit", 12, 11, 0, false, "GTE", "GoodTilExpired")>]
+    [<InlineData("BUY", "Buy", "TRAILING_STOP", "TrailingStop", 0, 11, 2, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("BUY", "Buy", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 12, 11, 3, false, "GTE", "GoodTilExpired")>]
+    [<InlineData("BUY", "Buy", "TRAILING_STOP", "TrailingStop", 0, 11, 20, true, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("BUY", "Buy", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 12, 11, 30, true, "GTE", "GoodTilExpired")>]
+    [<InlineData("SELL", "Sell", "MARKET", "Market", 0, 0, 0, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("SELL", "Sell", "LIMIT", "Limit", 10, 0, 0, false, "GTE", "GoodTilExpired")>]
+    [<InlineData("SELL", "Sell", "STOP", "Stop", 0, 11, 0, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("SELL", "Sell", "STOP_LIMIT", "StopLimit", 10, 11, 0, false, "GTE", "GoodTilExpired")>]
+    [<InlineData("SELL", "Sell", "TRAILING_STOP", "TrailingStop", 0, 11, 2, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("SELL", "Sell", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 10, 11, 3, false, "GTE", "GoodTilExpired")>]
+    [<InlineData("SELL", "Sell", "TRAILING_STOP", "TrailingStop", 0, 11, 20, true, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("SELL", "Sell", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 10, 11, 30, true, "GTE", "GoodTilExpired")>]
+    let ``Processing.processChanges PlaceTradeOrder - values propagated from action to the order book``
+        (
+            sideCode : string,
+            sideCaseName : string,
+            orderTypeCode : string,
+            orderTypeCaseName : string,
+            limitPrice : decimal,
+            stopPrice : decimal,
+            trailingDelta : decimal,
+            trailingDeltaIsPercentage : bool,
+            timeInForceCode : string,
+            timeInForceCaseName : string
+        )
+        =
+
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let tradeOrderHash = Hashing.deriveHash senderWallet.Address nonce (TxActionNumber 1s) |> TradeOrderHash
+        let orderAmount = 100m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = sideCode
+                            Amount = orderAmount
+                            OrderType = orderTypeCode
+                            LimitPrice = limitPrice
+                            StopPrice = stopPrice
+                            TrailingDelta = trailingDelta
+                            TrailingDeltaIsPercentage = trailingDeltaIsPercentage
+                            TimeInForce = timeInForceCode
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        let getTradeOrderState _ =
+            None
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetTradeOrderStateFromStorage = getTradeOrderState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 1 @>
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[tradeOrderHash]
+        test <@ unionCaseName tradeOrderState.Side = sideCaseName @>
+        test <@ tradeOrderState.Amount = AssetAmount orderAmount @>
+        test <@ unionCaseName tradeOrderState.OrderType = orderTypeCaseName @>
+        test <@ tradeOrderState.LimitPrice = AssetAmount limitPrice @>
+        test <@ tradeOrderState.StopPrice = AssetAmount stopPrice @>
+        test <@ tradeOrderState.TrailingDelta = AssetAmount trailingDelta @>
+        test <@ tradeOrderState.TrailingDeltaIsPercentage = trailingDeltaIsPercentage @>
+        test <@ unionCaseName tradeOrderState.TimeInForce = timeInForceCaseName @>
+        test <@ tradeOrderChange = TradeOrderChange.Add @>
+
+    [<Fact>]
+    let ``Processing.processChanges PlaceTradeOrder - Error: AccountNotFound`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "BUY"
+                            Amount = 100m
+                            OrderType = "MARKET"
+                            LimitPrice = 0m
+                            StopPrice = 0m
+                            TrailingDelta = 0m
+                            TrailingDeltaIsPercentage = false
+                            TimeInForce = "IOC"
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            None
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.AccountNotFound) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processChanges PlaceTradeOrder - Error: TradingPairNotFound`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "BUY"
+                            Amount = 100m
+                            OrderType = "MARKET"
+                            LimitPrice = 0m
+                            StopPrice = 0m
+                            TrailingDelta = 0m
+                            TrailingDeltaIsPercentage = false
+                            TimeInForce = "IOC"
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState assetHash =
+            if assetHash = assetHash1 then
+                {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+                |> Some
+            else
+                None
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.TradingPairNotFound) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processChanges PlaceTradeOrder - Error: SenderIsNotSourceAccountController`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let accountControllerWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "BUY"
+                            Amount = 100m
+                            OrderType = "MARKET"
+                            LimitPrice = 0m
+                            StopPrice = 0m
+                            TrailingDelta = 0m
+                            TrailingDeltaIsPercentage = false
+                            TimeInForce = "IOC"
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = accountControllerWallet.Address}
+
+        let getAssetState assetHash =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotSourceAccountController) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processChanges CancelTradeOrder - Error: TradeOrderNotFound`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CancelTradeOrder"
+                    ActionData =
+                        {
+                            CancelTradeOrderTxActionDto.TradeOrderHash = Helpers.randomHash ()
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getTradeOrderState _ =
+            None
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetTradeOrderStateFromStorage = getTradeOrderState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.TradeOrderNotFound) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processChanges CancelTradeOrder - Exception: Cannot get state for account `` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CancelTradeOrder"
+                    ActionData =
+                        {
+                            CancelTradeOrderTxActionDto.TradeOrderHash = Helpers.randomHash ()
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getTradeOrderState _ =
+            {
+                TradeOrderState.AccountHash = Helpers.randomHash () |> AccountHash
+                BaseAssetHash = assetHash1
+                QuoteAssetHash = assetHash2
+                Side = TradeOrderSide.Buy
+                Amount = AssetAmount 100m
+                OrderType = TradeOrderType.Market
+                LimitPrice = AssetAmount 0m
+                StopPrice = AssetAmount 0m
+                TrailingDelta = AssetAmount 0m
+                TrailingDeltaIsPercentage = false
+                TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                BlockNumber = BlockNumber 1L
+                IsExecutable = true
+            }
+            |> Some
+
+        let getAccountState _ =
+            None
+
+        // ACT
+        let processChanges () =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetTradeOrderStateFromStorage = getTradeOrderState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        raisesWith<exn>
+            <@ processChanges () @>
+            (fun ex -> <@ ex.Message.StartsWith "Cannot get state for account" @>)
+
+    [<Fact>]
+    let ``Processing.processChanges CancelTradeOrder - Error: SenderIsNotSourceAccountController`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let accountControllerWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CancelTradeOrder"
+                    ActionData =
+                        {
+                            CancelTradeOrderTxActionDto.TradeOrderHash = Helpers.randomHash ()
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getTradeOrderState _ =
+            {
+                TradeOrderState.AccountHash = Helpers.randomHash () |> AccountHash
+                BaseAssetHash = assetHash1
+                QuoteAssetHash = assetHash2
+                Side = TradeOrderSide.Buy
+                Amount = AssetAmount 100m
+                OrderType = TradeOrderType.Market
+                LimitPrice = AssetAmount 0m
+                StopPrice = AssetAmount 0m
+                TrailingDelta = AssetAmount 0m
+                TrailingDeltaIsPercentage = false
+                TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                BlockNumber = BlockNumber 1L
+                IsExecutable = true
+            }
+            |> Some
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = accountControllerWallet.Address}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetTradeOrderStateFromStorage = getTradeOrderState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.SenderIsNotSourceAccountController) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 0 @>
+
+    [<Fact>]
+    let ``Processing.processChanges CancelTradeOrder - Order removed from state`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let tradeOrderHash = Helpers.randomHash () |> TradeOrderHash
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "CancelTradeOrder"
+                    ActionData =
+                        {
+                            CancelTradeOrderTxActionDto.TradeOrderHash = tradeOrderHash.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getTradeOrderState _ =
+            {
+                TradeOrderState.AccountHash = accountHash1
+                BaseAssetHash = assetHash1
+                QuoteAssetHash = assetHash2
+                Side = TradeOrderSide.Buy
+                Amount = AssetAmount 100m
+                OrderType = TradeOrderType.Market
+                LimitPrice = AssetAmount 0m
+                StopPrice = AssetAmount 0m
+                TrailingDelta = AssetAmount 0m
+                TrailingDeltaIsPercentage = false
+                TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                BlockNumber = BlockNumber 1L
+                IsExecutable = true
+            }
+            |> Some
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetTradeOrderStateFromStorage = getTradeOrderState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 1 @>
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[tradeOrderHash]
+        test <@ tradeOrderState.Side = TradeOrderSide.Buy @>
+        test <@ tradeOrderState.Amount.Value = 100m @>
+        test <@ tradeOrderState.OrderType = TradeOrderType.Market @>
+        test <@ tradeOrderState.LimitPrice.Value = 0m @>
+        test <@ tradeOrderState.StopPrice.Value = 0m @>
+        test <@ tradeOrderState.TrailingDelta.Value = 0m @>
+        test <@ tradeOrderState.TrailingDeltaIsPercentage = false @>
+        test <@ tradeOrderState.TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>

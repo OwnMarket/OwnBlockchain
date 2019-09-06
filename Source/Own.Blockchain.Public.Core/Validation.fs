@@ -274,6 +274,97 @@ module Validation =
     let private validateRemoveKycProvider isValidHash isValidAddress (action : RemoveKycProviderTxActionDto) =
         validateSetKycProvider isValidHash isValidAddress action.AssetHash action.ProviderAddress
 
+    let private validatePlaceTradeOrder isValidHash (action : PlaceTradeOrderTxActionDto) =
+        let tradeOrderSideCodes = ["BUY"; "SELL"]
+        let tradeOrderTypeCodes = ["MARKET"; "LIMIT"; "STOP"; "STOP_LIMIT"; "TRAILING_STOP"; "TRAILING_STOP_LIMIT"]
+        let limitOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("LIMIT"))
+        let stopOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("STOP"))
+        let trailingOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("TRAILING"))
+        let tradeOrderTimeInForceCodes = ["GTE"; "IOC"]
+
+        [
+            // AccountHash
+            yield! validateHash isValidHash action.AccountHash "AccountHash"
+
+            // BaseAssetHash and QuoteAssetHash
+            yield! validateHash isValidHash action.BaseAssetHash "BaseAssetHash"
+            yield! validateHash isValidHash action.QuoteAssetHash "QuoteAssetHash"
+            if action.QuoteAssetHash = action.BaseAssetHash then
+                yield AppError "QuoteAssetHash cannot be the same as BaseAssetHash"
+
+            // Side
+            if not (tradeOrderSideCodes |> List.contains action.Side) then
+                yield AppError "Side must have a valid value"
+
+            // Amount
+            if action.Amount <= 0m then
+                yield AppError "Amount must be greater than zero"
+            if action.Amount > Utils.maxBlockchainNumeric then
+                yield AppError (sprintf "Amount cannot be greater than %M" Utils.maxBlockchainNumeric)
+            if not (Utils.isRounded7 action.Amount) then
+                yield AppError "Amount must have at most 7 decimals"
+
+            // OrderType
+            if not (tradeOrderTypeCodes |> List.contains action.OrderType) then
+                yield AppError "OrderType must have a valid value"
+
+            // LimitPrice
+            if limitOrderTypeCodes |> List.contains action.OrderType then
+                if action.LimitPrice <= 0m then
+                    yield AppError "LimitPrice in LIMIT order types must be greater than zero"
+                if action.LimitPrice > Utils.maxBlockchainNumeric then
+                    yield AppError (sprintf "LimitPrice cannot be greater than %M" Utils.maxBlockchainNumeric)
+                if not (Utils.isRounded7 action.LimitPrice) then
+                    yield AppError "LimitPrice must have at most 7 decimals"
+            else
+                if action.LimitPrice <> 0m then
+                    yield AppError "LimitPrice in non-LIMIT order types should not be set"
+
+            // StopPrice
+            if stopOrderTypeCodes |> List.contains action.OrderType then
+                if action.StopPrice <= 0m then
+                    yield AppError "StopPrice in STOP order types must be greater than zero"
+                if action.StopPrice > Utils.maxBlockchainNumeric then
+                    yield AppError (sprintf "StopPrice cannot be greater than %M" Utils.maxBlockchainNumeric)
+                if not (Utils.isRounded7 action.StopPrice) then
+                    yield AppError "StopPrice must have at most 7 decimals"
+            else
+                if action.StopPrice <> 0m then
+                    yield AppError "StopPrice in non-STOP order types should not be set"
+
+            // TrailingDelta
+            if trailingOrderTypeCodes |> List.contains action.OrderType then
+                if action.TrailingDelta <= 0m then
+                    yield AppError "TrailingDelta in TRAILING order types must be greater than zero"
+                if action.TrailingDeltaIsPercentage then
+                    if action.TrailingDelta >= 100m then
+                        yield AppError "TrailingDelta percentage must be less than 100%"
+                    if not (Utils.isRounded2 action.TrailingDelta) then
+                        yield AppError "TrailingDelta percentage must have at most 2 decimals"
+                else
+                    if action.TrailingDelta > Utils.maxBlockchainNumeric then
+                        yield AppError (sprintf "TrailingDelta cannot be greater than %M" Utils.maxBlockchainNumeric)
+                    if not (Utils.isRounded7 action.TrailingDelta) then
+                        yield AppError "TrailingDelta must have at most 7 decimals"
+            else
+                if action.TrailingDelta <> 0m then
+                    yield AppError "TrailingDelta in non-TRAILING order types should not be set"
+                if action.TrailingDeltaIsPercentage then
+                    yield AppError "TrailingDeltaIsPercentage in non-TRAILING order types should not be set"
+
+            // TimeInForce
+            if not (tradeOrderTimeInForceCodes |> List.contains action.TimeInForce) then
+                yield AppError "TimeInForce must have a valid value"
+            if not (limitOrderTypeCodes |> List.contains action.OrderType) then
+                if action.TimeInForce = "GTE" then
+                    yield AppError "TimeInForce in non-LIMIT order types cannot not be GTE"
+        ]
+
+    let private validateCancelTradeOrder isValidHash (action : CancelTradeOrderTxActionDto) =
+        [
+            yield! validateHash isValidHash action.TradeOrderHash "TradeOrderHash"
+        ]
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TX validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -343,6 +434,10 @@ module Validation =
                 validateAddKycProvider isValidHash isValidAddress a
             | :? RemoveKycProviderTxActionDto as a ->
                 validateRemoveKycProvider isValidHash isValidAddress a
+            | :? PlaceTradeOrderTxActionDto as a ->
+                validatePlaceTradeOrder isValidHash a
+            | :? CancelTradeOrderTxActionDto as a ->
+                validateCancelTradeOrder isValidHash a
             | _ ->
                 let error = sprintf "Unknown action data type: %s" (action.ActionData.GetType()).FullName
                 [AppError error]

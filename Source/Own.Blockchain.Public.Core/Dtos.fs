@@ -118,6 +118,26 @@ type RemoveKycProviderTxActionDto = {
 }
 
 [<CLIMutable>]
+type PlaceTradeOrderTxActionDto = {
+    AccountHash : string
+    BaseAssetHash : string
+    QuoteAssetHash : string
+    Side : string // BUY, SELL
+    Amount : decimal
+    OrderType : string // MARKET, LIMIT, STOP, STOP_LIMIT, TRAILING_STOP, TRAILING_STOP_LIMIT
+    LimitPrice : decimal
+    StopPrice : decimal
+    TrailingDelta : decimal
+    TrailingDeltaIsPercentage : bool
+    TimeInForce : string // GTE, IOC, FOK
+}
+
+[<CLIMutable>]
+type CancelTradeOrderTxActionDto = {
+    TradeOrderHash : string
+}
+
+[<CLIMutable>]
 type TxActionDto = {
     ActionType : string
     ActionData : obj
@@ -411,6 +431,27 @@ type StakeStateDto = {
     Amount : decimal
 }
 
+[<CLIMutable>]
+type TradeOrderStateDto = {
+    BlockNumber : int64
+    AccountHash : string
+    BaseAssetHash : string
+    QuoteAssetHash : string
+    Side : int16
+    Amount : decimal
+    OrderType : int16
+    LimitPrice : decimal
+    StopPrice : decimal
+    TrailingDelta : decimal
+    TrailingDeltaIsPercentage : bool
+    TimeInForce : int16
+    IsExecutable : bool
+}
+
+type TradeOrderChangeCode =
+    | Add = 0uy
+    | Remove = 1uy
+
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     EquivocationProofResults : Map<string, EquivocationProofResultDto>
@@ -423,6 +464,7 @@ type ProcessingOutputDto = {
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto * ValidatorChangeCode>
     Stakes : Map<string * string, StakeStateDto>
+    TradeOrders : Map<string, TradeOrderStateDto * TradeOrderChangeCode>
 }
 
 [<CLIMutable>]
@@ -514,6 +556,24 @@ type AccountVoteDto = {
     ResolutionHash : string
     VoteHash : string
     VoteWeight: decimal
+}
+
+[<CLIMutable>]
+type TradeOrderInfoDto = {
+    TradeOrderHash : string
+    BlockNumber : int64
+    AccountHash : string
+    BaseAssetHash : string
+    QuoteAssetHash : string
+    Side : int16
+    Amount : decimal
+    OrderType : int16
+    LimitPrice : decimal
+    StopPrice : decimal
+    TrailingDelta : decimal
+    TrailingDeltaIsPercentage : bool
+    TimeInForce : int16
+    IsExecutable : bool
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
