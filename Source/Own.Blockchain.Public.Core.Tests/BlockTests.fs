@@ -559,6 +559,12 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let tradeOrders =
+            [
+                // TODO DSX
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -573,6 +579,7 @@ module BlockTests =
                 Validators = validators
                 Stakes = stakes
                 StakingRewards = stakingRewards
+                TradeOrders = tradeOrders
             }
 
         // Blockchain Configuration
@@ -980,6 +987,12 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let tradeOrders =
+            [
+                // TODO DSX
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -994,6 +1007,7 @@ module BlockTests =
                 Validators = validators
                 Stakes = stakes
                 StakingRewards = stakingRewards
+                TradeOrders = tradeOrders
             }
 
         // ACT
@@ -1365,6 +1379,12 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let tradeOrders =
+            [
+                // TODO DSX
+            ]
+            |> Map.ofList
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -1379,6 +1399,7 @@ module BlockTests =
                 Validators = validators
                 Stakes = stakes
                 StakingRewards = stakingRewards
+                TradeOrders = tradeOrders
             }
 
         let assembledBlock =
