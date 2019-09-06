@@ -43,12 +43,14 @@ module Stats =
         NodeStartTime : string
         NodeUpTime : string
         NodeCurrentTime : string
+        NodeCurrentTimestamp : int64
         NetworkTime : string
+        NetworkTimestamp : int64
         NetworkTimeOffset : int64
         Counters : StatsSummaryEntry list
     }
 
-    let private nodeStartTime = DateTime.UtcNow
+    let private nodeStartTime = DateTimeOffset.UtcNow
     let private counters = new ConcurrentDictionary<Counter, int64>()
 
     let incrementBy value counter =
@@ -62,14 +64,16 @@ module Stats =
     let decrement = decrementBy 1L
 
     let getCurrent () =
-        let currentTime = DateTime.UtcNow
+        let currentTime = DateTimeOffset.UtcNow
         let networkTime = Utils.getNetworkTimestamp () |> DateTimeOffset.FromUnixTimeMilliseconds
 
         {
             NodeStartTime = nodeStartTime.ToString("u")
             NodeUpTime = currentTime.Subtract(nodeStartTime).ToString("d\.hh\:mm\:ss")
             NodeCurrentTime = currentTime.ToString("u")
+            NodeCurrentTimestamp = currentTime.ToUnixTimeMilliseconds()
             NetworkTime = networkTime.ToString("u")
+            NetworkTimestamp = networkTime.ToUnixTimeMilliseconds()
             NetworkTimeOffset = Utils.networkTimeOffset
             Counters =
                 counters
