@@ -7435,24 +7435,28 @@ module ProcessingTests =
     [<Theory>]
     [<InlineData("BUY", "Buy", "MARKET", "Market", 0, 0, 0, false, "IOC", "ImmediateOrCancel")>]
     [<InlineData("BUY", "Buy", "LIMIT", "Limit", 12, 0, 0, false, "GTE", "GoodTilExpired")>]
-    [<InlineData("BUY", "Buy", "STOP", "Stop", 0, 11, 0, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("BUY", "Buy", "STOP_MARKET", "StopMarket", 0, 11, 0, false, "IOC", "ImmediateOrCancel")>]
     [<InlineData("BUY", "Buy", "STOP_LIMIT", "StopLimit", 12, 11, 0, false, "GTE", "GoodTilExpired")>]
-    [<InlineData("BUY", "Buy", "TRAILING_STOP", "TrailingStop", 0, 11, 2, false, "IOC", "ImmediateOrCancel")>]
-    [<InlineData("BUY", "Buy", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 12, 11, 3, false, "GTE", "GoodTilExpired")>]
-    [<InlineData("BUY", "Buy", "TRAILING_STOP", "TrailingStop", 0, 11, 20, true, "IOC", "ImmediateOrCancel")>]
-    [<InlineData("BUY", "Buy", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 12, 11, 30, true, "GTE", "GoodTilExpired")>]
+    [<InlineData(
+        "BUY", "Buy", "TRAILING_STOP_MARKET", "TrailingStopMarket", 0, 11, 2, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData(
+        "BUY", "Buy", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 12, 11, 3, false, "GTE", "GoodTilExpired")>]
+    [<InlineData(
+        "BUY", "Buy", "TRAILING_STOP_MARKET", "TrailingStopMarket", 0, 11, 20, true, "IOC", "ImmediateOrCancel")>]
+    [<InlineData(
+        "BUY", "Buy", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 12, 11, 30, true, "GTE", "GoodTilExpired")>]
     [<InlineData("SELL", "Sell", "MARKET", "Market", 0, 0, 0, false, "IOC", "ImmediateOrCancel")>]
     [<InlineData("SELL", "Sell", "LIMIT", "Limit", 10, 0, 0, false, "GTE", "GoodTilExpired")>]
-    [<InlineData("SELL", "Sell", "STOP", "Stop", 0, 11, 0, false, "IOC", "ImmediateOrCancel")>]
+    [<InlineData("SELL", "Sell", "STOP_MARKET", "StopMarket", 0, 11, 0, false, "IOC", "ImmediateOrCancel")>]
     [<InlineData("SELL", "Sell", "STOP_LIMIT", "StopLimit", 10, 11, 0, false, "GTE", "GoodTilExpired")>]
-    [<InlineData("SELL", "Sell", "TRAILING_STOP", "TrailingStop", 0, 11, 2, false, "IOC", "ImmediateOrCancel")>]
     [<InlineData(
-        "SELL", "Sell", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 10, 11, 3, false, "GTE", "GoodTilExpired"
-    )>]
-    [<InlineData("SELL", "Sell", "TRAILING_STOP", "TrailingStop", 0, 11, 20, true, "IOC", "ImmediateOrCancel")>]
+        "SELL", "Sell", "TRAILING_STOP_MARKET", "TrailingStopMarket", 0, 11, 2, false, "IOC", "ImmediateOrCancel")>]
     [<InlineData(
-        "SELL", "Sell", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 10, 11, 30, true, "GTE", "GoodTilExpired"
-    )>]
+        "SELL", "Sell", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 10, 11, 3, false, "GTE", "GoodTilExpired")>]
+    [<InlineData(
+        "SELL", "Sell", "TRAILING_STOP_MARKET", "TrailingStopMarket", 0, 11, 20, true, "IOC", "ImmediateOrCancel")>]
+    [<InlineData(
+        "SELL", "Sell", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 10, 11, 30, true, "GTE", "GoodTilExpired")>]
     let ``Processing.processChanges PlaceTradeOrder - values propagated from action to the order book``
         (
             sideCode : string,

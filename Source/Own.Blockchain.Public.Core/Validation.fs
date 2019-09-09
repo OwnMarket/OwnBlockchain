@@ -276,7 +276,8 @@ module Validation =
 
     let private validatePlaceTradeOrder isValidHash (action : PlaceTradeOrderTxActionDto) =
         let tradeOrderSideCodes = ["BUY"; "SELL"]
-        let tradeOrderTypeCodes = ["MARKET"; "LIMIT"; "STOP"; "STOP_LIMIT"; "TRAILING_STOP"; "TRAILING_STOP_LIMIT"]
+        let tradeOrderTypeCodes =
+            ["MARKET"; "LIMIT"; "STOP_MARKET"; "STOP_LIMIT"; "TRAILING_STOP_MARKET"; "TRAILING_STOP_LIMIT"]
         let limitOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("LIMIT"))
         let stopOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("STOP"))
         let trailingOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("TRAILING"))

@@ -87,9 +87,9 @@ type TradeOrderSide =
 type TradeOrderType =
     | Market
     | Limit
-    | Stop
+    | StopMarket
     | StopLimit
-    | TrailingStop
+    | TrailingStopMarket
     | TrailingStopLimit
 
 type TradeOrderTimeInForce =

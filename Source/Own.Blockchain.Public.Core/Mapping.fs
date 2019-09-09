@@ -168,9 +168,9 @@ module Mapping =
                     match a.OrderType with
                     | "MARKET" -> TradeOrderType.Market
                     | "LIMIT" -> TradeOrderType.Limit
-                    | "STOP" -> TradeOrderType.Stop
+                    | "STOP_MARKET" -> TradeOrderType.StopMarket
                     | "STOP_LIMIT" -> TradeOrderType.StopLimit
-                    | "TRAILING_STOP" -> TradeOrderType.TrailingStop
+                    | "TRAILING_STOP_MARKET" -> TradeOrderType.TrailingStopMarket
                     | "TRAILING_STOP_LIMIT" -> TradeOrderType.TrailingStopLimit
                     | v -> failwithf "Invalid TradeOrderType value: %s" v
                 LimitPrice = AssetAmount a.LimitPrice
@@ -647,9 +647,9 @@ module Mapping =
                 match dto.OrderType with
                 | 1s -> TradeOrderType.Market
                 | 2s -> TradeOrderType.Limit
-                | 3s -> TradeOrderType.Stop
+                | 3s -> TradeOrderType.StopMarket
                 | 4s -> TradeOrderType.StopLimit
-                | 5s -> TradeOrderType.TrailingStop
+                | 5s -> TradeOrderType.TrailingStopMarket
                 | 6s -> TradeOrderType.TrailingStopLimit
                 | t -> failwithf "Invalid trade order type code: %i" t
             LimitPrice = AssetAmount dto.LimitPrice
@@ -679,9 +679,9 @@ module Mapping =
                 match state.OrderType with
                 | TradeOrderType.Market -> 1s
                 | TradeOrderType.Limit -> 2s
-                | TradeOrderType.Stop -> 3s
+                | TradeOrderType.StopMarket -> 3s
                 | TradeOrderType.StopLimit -> 4s
-                | TradeOrderType.TrailingStop -> 5s
+                | TradeOrderType.TrailingStopMarket -> 5s
                 | TradeOrderType.TrailingStopLimit -> 6s
             LimitPrice = state.LimitPrice.Value
             StopPrice = state.StopPrice.Value
