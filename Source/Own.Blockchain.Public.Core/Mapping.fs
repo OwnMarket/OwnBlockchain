@@ -632,35 +632,60 @@ module Mapping =
             Amount = ChxAmount dto.Amount
         }
 
+    let tradeOrderSideFromCode (tradeOrderSideCode : byte) : TradeOrderSide =
+        match tradeOrderSideCode with
+        | 1uy -> TradeOrderSide.Buy
+        | 2uy -> TradeOrderSide.Sell
+        | s -> failwithf "Invalid trade order side code: %i" s
+
+    let tradeOrderSideToCode (tradeOrderSide : TradeOrderSide) : byte =
+        match tradeOrderSide with
+        | TradeOrderSide.Buy -> 1uy
+        | TradeOrderSide.Sell -> 2uy
+
+    let tradeOrderTypeFromCode (tradeOrderTypeCode : byte) : TradeOrderType =
+        match tradeOrderTypeCode with
+        | 1uy -> TradeOrderType.Market
+        | 2uy -> TradeOrderType.Limit
+        | 3uy -> TradeOrderType.StopMarket
+        | 4uy -> TradeOrderType.StopLimit
+        | 5uy -> TradeOrderType.TrailingStopMarket
+        | 6uy -> TradeOrderType.TrailingStopLimit
+        | t -> failwithf "Invalid trade order type code: %i" t
+
+    let tradeOrderTypeToCode (tradeOrderType : TradeOrderType) : byte =
+        match tradeOrderType with
+        | TradeOrderType.Market -> 1uy
+        | TradeOrderType.Limit -> 2uy
+        | TradeOrderType.StopMarket -> 3uy
+        | TradeOrderType.StopLimit -> 4uy
+        | TradeOrderType.TrailingStopMarket -> 5uy
+        | TradeOrderType.TrailingStopLimit -> 6uy
+
+    let tradeOrderTimeInForceFromCode (tradeOrderTimeInForceCode : byte) : TradeOrderTimeInForce =
+        match tradeOrderTimeInForceCode with
+        | 1uy -> TradeOrderTimeInForce.GoodTilExpired
+        | 2uy -> TradeOrderTimeInForce.ImmediateOrCancel
+        | t -> failwithf "Invalid trade order time in force code: %i" t
+
+    let tradeOrderTimeInForceToCode (tradeOrderTimeInForce : TradeOrderTimeInForce) : byte =
+        match tradeOrderTimeInForce with
+        | TradeOrderTimeInForce.GoodTilExpired -> 1uy
+        | TradeOrderTimeInForce.ImmediateOrCancel -> 2uy
+
     let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =
         {
             AccountHash = AccountHash dto.AccountHash
             BaseAssetHash = AssetHash dto.BaseAssetHash
             QuoteAssetHash = AssetHash dto.QuoteAssetHash
-            Side =
-                match dto.Side with
-                | 1s -> TradeOrderSide.Buy
-                | 2s -> TradeOrderSide.Sell
-                | s -> failwithf "Invalid trade order side code: %i" s
+            Side = dto.Side |> tradeOrderSideFromCode
             Amount = AssetAmount dto.Amount
-            OrderType =
-                match dto.OrderType with
-                | 1s -> TradeOrderType.Market
-                | 2s -> TradeOrderType.Limit
-                | 3s -> TradeOrderType.StopMarket
-                | 4s -> TradeOrderType.StopLimit
-                | 5s -> TradeOrderType.TrailingStopMarket
-                | 6s -> TradeOrderType.TrailingStopLimit
-                | t -> failwithf "Invalid trade order type code: %i" t
+            OrderType = dto.OrderType |> tradeOrderTypeFromCode
             LimitPrice = AssetAmount dto.LimitPrice
             StopPrice = AssetAmount dto.StopPrice
             TrailingDelta = AssetAmount dto.TrailingDelta
             TrailingDeltaIsPercentage = dto.TrailingDeltaIsPercentage
-            TimeInForce =
-                match dto.TimeInForce with
-                | 1s -> TradeOrderTimeInForce.GoodTilExpired
-                | 2s -> TradeOrderTimeInForce.ImmediateOrCancel
-                | t -> failwithf "Invalid trade order time in force code: %i" t
+            TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
             BlockNumber = BlockNumber dto.BlockNumber
             IsExecutable = dto.IsExecutable
         }
@@ -670,27 +695,14 @@ module Mapping =
             AccountHash = state.AccountHash.Value
             BaseAssetHash = state.BaseAssetHash.Value
             QuoteAssetHash = state.QuoteAssetHash.Value
-            Side =
-                match state.Side with
-                | TradeOrderSide.Buy -> 1s
-                | TradeOrderSide.Sell -> 2s
+            Side = state.Side |> tradeOrderSideToCode
             Amount = state.Amount.Value
-            OrderType =
-                match state.OrderType with
-                | TradeOrderType.Market -> 1s
-                | TradeOrderType.Limit -> 2s
-                | TradeOrderType.StopMarket -> 3s
-                | TradeOrderType.StopLimit -> 4s
-                | TradeOrderType.TrailingStopMarket -> 5s
-                | TradeOrderType.TrailingStopLimit -> 6s
+            OrderType = state.OrderType |> tradeOrderTypeToCode
             LimitPrice = state.LimitPrice.Value
             StopPrice = state.StopPrice.Value
             TrailingDelta = state.TrailingDelta.Value
             TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
-            TimeInForce =
-                match state.TimeInForce with
-                | TradeOrderTimeInForce.GoodTilExpired -> 1s
-                | TradeOrderTimeInForce.ImmediateOrCancel -> 2s
+            TimeInForce = state.TimeInForce |> tradeOrderTimeInForceToCode
             BlockNumber = state.BlockNumber.Value
             IsExecutable = state.IsExecutable
         }

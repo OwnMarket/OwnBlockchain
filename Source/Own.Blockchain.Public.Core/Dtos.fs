@@ -437,14 +437,14 @@ type TradeOrderStateDto = {
     AccountHash : string
     BaseAssetHash : string
     QuoteAssetHash : string
-    Side : int16
+    Side : byte
     Amount : decimal
-    OrderType : int16
+    OrderType : byte
     LimitPrice : decimal
     StopPrice : decimal
     TrailingDelta : decimal
     TrailingDeltaIsPercentage : bool
-    TimeInForce : int16
+    TimeInForce : byte
     IsExecutable : bool
 }
 
@@ -565,14 +565,14 @@ type TradeOrderInfoDto = {
     AccountHash : string
     BaseAssetHash : string
     QuoteAssetHash : string
-    Side : int16
+    Side : byte
     Amount : decimal
-    OrderType : int16
+    OrderType : byte
     LimitPrice : decimal
     StopPrice : decimal
     TrailingDelta : decimal
     TrailingDeltaIsPercentage : bool
-    TimeInForce : int16
+    TimeInForce : byte
     IsExecutable : bool
 }
 

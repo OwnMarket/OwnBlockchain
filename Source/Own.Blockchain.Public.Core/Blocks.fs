@@ -223,6 +223,37 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createTradeOrderStateHash
+        decodeHash
+        createHash
+        (TradeOrderHash tradeOrderHash, (state : TradeOrderState, change : TradeOrderChange))
+        =
+
+        let tradeOrderSideCodeBytes = [| state.Side |> Mapping.tradeOrderSideToCode |]
+        let tradeOrderOrderTypeCodeBytes = [| state.OrderType |> Mapping.tradeOrderTypeToCode |]
+        let tradeOrderTimeInForceCodeBytes = [| state.TimeInForce |> Mapping.tradeOrderTimeInForceToCode |]
+        let tradeOrderChangeCodeBytes = [| change |> Mapping.tradeOrderChangeToCode |> byte |]
+
+        [
+            tradeOrderHash |> decodeHash
+            state.AccountHash.Value |> decodeHash
+            state.BaseAssetHash.Value |> decodeHash
+            state.QuoteAssetHash.Value |> decodeHash
+            tradeOrderSideCodeBytes
+            state.Amount.Value |> decimalToBytes
+            tradeOrderOrderTypeCodeBytes
+            state.LimitPrice.Value |> decimalToBytes
+            state.StopPrice.Value |> decimalToBytes
+            state.TrailingDelta.Value |> decimalToBytes
+            state.TrailingDeltaIsPercentage |> boolToBytes
+            tradeOrderTimeInForceCodeBytes
+            state.BlockNumber.Value |> int64ToBytes
+            state.IsExecutable |> boolToBytes
+            tradeOrderChangeCodeBytes
+        ]
+        |> Array.concat
+        |> createHash
+
     let createConfigurationMerkleRoot
         decodeHash
         createHash
@@ -407,6 +438,12 @@ module Blocks =
                 createStakeStateHash decodeHash createHash (stakerAddress, validatorAddress, state)
             )
 
+        let tradeOrderHashes =
+            output.TradeOrders
+            |> Map.toList
+            |> List.sort // Ensure a predictable order
+            |> List.map (createTradeOrderStateHash decodeHash createHash)
+
         let stateRoot =
             chxAddressHashes
             @ holdingHashes
@@ -417,6 +454,7 @@ module Blocks =
             @ assetHashes
             @ validatorHashes
             @ stakeHashes
+            @ tradeOrderHashes
             |> createMerkleTree
 
         let stakingRewards =

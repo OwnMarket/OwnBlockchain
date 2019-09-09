@@ -284,6 +284,56 @@ module BlockTests =
         test <@ stakingRewardHash = "AAA...F............" @>
 
     [<Fact>]
+    let ``Blocks.createTradeOrderStateHash`` () =
+        let tradeOrderHash = TradeOrderHash "AAA"
+        let state =
+            {
+                TradeOrderState.AccountHash = AccountHash "DA"
+                BaseAssetHash = AssetHash "DB"
+                QuoteAssetHash = AssetHash "DC"
+                Side = TradeOrderSide.Sell
+                Amount = AssetAmount 4m
+                OrderType = TradeOrderType.TrailingStopLimit
+                LimitPrice = AssetAmount 5m
+                StopPrice = AssetAmount 6m
+                TrailingDelta = AssetAmount 3m
+                TrailingDeltaIsPercentage = true
+                TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                BlockNumber = BlockNumber 7L
+                IsExecutable = true
+            }
+
+        let expectedHash =
+            [
+                "AAA" // TradeOrderHash
+                "DA" // AccountHash
+                "DB" // BaseAssetHash
+                "DC" // QuoteAssetHash
+                "B" // Side
+                "...D............" // Amount
+                "F" // OrderType
+                "...E............" // LimitPrice
+                "...F............" // StopPrice
+                "...C............" // TrailingDelta
+                "A" // TrailingDeltaIsPercentage
+                "B" // TimeInForce
+                ".......G" // BlockNumber
+                "A" // IsExecutable
+                "." // TradeOrderChange
+            ]
+            |> String.Concat
+
+        // ACT
+        let stateHash =
+            Blocks.createTradeOrderStateHash
+                DummyHash.decode
+                DummyHash.create
+                (tradeOrderHash, (state, TradeOrderChange.Add))
+
+        // ASSERT
+        test <@ stateHash = expectedHash @>
+
+    [<Fact>]
     let ``Blocks.createBlockHash`` () =
         let blockNumber = BlockNumber 1L
         let previousBlockHash = BlockHash "B"
@@ -561,7 +611,44 @@ module BlockTests =
 
         let tradeOrders =
             [
-                // TODO DSX
+                TradeOrderHash "AAA",
+                    (
+                        {
+                            TradeOrderState.AccountHash = AccountHash "BA"
+                            BaseAssetHash = AssetHash "BB"
+                            QuoteAssetHash = AssetHash "BC"
+                            Side = TradeOrderSide.Buy
+                            Amount = AssetAmount 3m
+                            OrderType = TradeOrderType.Market
+                            LimitPrice = AssetAmount 0m
+                            StopPrice = AssetAmount 0m
+                            TrailingDelta = AssetAmount 0m
+                            TrailingDeltaIsPercentage = false
+                            TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                            BlockNumber = BlockNumber 6L
+                            IsExecutable = true
+                        },
+                        TradeOrderChange.Add
+                    )
+                TradeOrderHash "BBB",
+                    (
+                        {
+                            TradeOrderState.AccountHash = AccountHash "CA"
+                            BaseAssetHash = AssetHash "CB"
+                            QuoteAssetHash = AssetHash "CC"
+                            Side = TradeOrderSide.Sell
+                            Amount = AssetAmount 4m
+                            OrderType = TradeOrderType.TrailingStopLimit
+                            LimitPrice = AssetAmount 5m
+                            StopPrice = AssetAmount 6m
+                            TrailingDelta = AssetAmount 3m
+                            TrailingDeltaIsPercentage = true
+                            TimeInForce = TradeOrderTimeInForce.GoodTilExpired
+                            BlockNumber = BlockNumber 7L
+                            IsExecutable = false
+                        },
+                        TradeOrderChange.Remove
+                    )
             ]
             |> Map.ofList
 
@@ -668,6 +755,8 @@ module BlockTests =
                 "CCCCCIII...C.............C.FA." // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
+                "AAABABBBCA...C............A.................................................B.......FA." // Order 1
+                "BBBCACBCCB...D............F...E...............F...............C............AA.......G.A" // Order 2
             ]
             |> String.Concat
 
@@ -989,7 +1078,44 @@ module BlockTests =
 
         let tradeOrders =
             [
-                // TODO DSX
+                TradeOrderHash "AAA",
+                    (
+                        {
+                            TradeOrderState.AccountHash = AccountHash "BA"
+                            BaseAssetHash = AssetHash "BB"
+                            QuoteAssetHash = AssetHash "BC"
+                            Side = TradeOrderSide.Buy
+                            Amount = AssetAmount 3m
+                            OrderType = TradeOrderType.Market
+                            LimitPrice = AssetAmount 0m
+                            StopPrice = AssetAmount 0m
+                            TrailingDelta = AssetAmount 0m
+                            TrailingDeltaIsPercentage = false
+                            TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                            BlockNumber = BlockNumber 6L
+                            IsExecutable = true
+                        },
+                        TradeOrderChange.Add
+                    )
+                TradeOrderHash "BBB",
+                    (
+                        {
+                            TradeOrderState.AccountHash = AccountHash "CA"
+                            BaseAssetHash = AssetHash "CB"
+                            QuoteAssetHash = AssetHash "CC"
+                            Side = TradeOrderSide.Sell
+                            Amount = AssetAmount 4m
+                            OrderType = TradeOrderType.TrailingStopLimit
+                            LimitPrice = AssetAmount 5m
+                            StopPrice = AssetAmount 6m
+                            TrailingDelta = AssetAmount 3m
+                            TrailingDeltaIsPercentage = true
+                            TimeInForce = TradeOrderTimeInForce.GoodTilExpired
+                            BlockNumber = BlockNumber 7L
+                            IsExecutable = true
+                        },
+                        TradeOrderChange.Remove
+                    )
             ]
             |> Map.ofList
 
@@ -1113,11 +1239,15 @@ module BlockTests =
                     (stakerAddress, validatorAddress, state)
                     |> Blocks.createStakeStateHash Hashing.decode Hashing.hash
                 )
+
+                tradeOrders
+                |> Map.toList
+                |> List.map (Blocks.createTradeOrderStateHash Hashing.decode Hashing.hash)
             ]
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 24 true @>
+        test <@ stateMerkleProofs = List.replicate 26 true @>
 
     [<Theory>]
     [<InlineData("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -1381,7 +1511,44 @@ module BlockTests =
 
         let tradeOrders =
             [
-                // TODO DSX
+                TradeOrderHash "AAA",
+                    (
+                        {
+                            TradeOrderState.AccountHash = AccountHash "BA"
+                            BaseAssetHash = AssetHash "BB"
+                            QuoteAssetHash = AssetHash "BC"
+                            Side = TradeOrderSide.Buy
+                            Amount = AssetAmount 3m
+                            OrderType = TradeOrderType.Market
+                            LimitPrice = AssetAmount 0m
+                            StopPrice = AssetAmount 0m
+                            TrailingDelta = AssetAmount 0m
+                            TrailingDeltaIsPercentage = false
+                            TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                            BlockNumber = BlockNumber 6L
+                            IsExecutable = true
+                        },
+                        TradeOrderChange.Add
+                    )
+                TradeOrderHash "BBB",
+                    (
+                        {
+                            TradeOrderState.AccountHash = AccountHash "CA"
+                            BaseAssetHash = AssetHash "CB"
+                            QuoteAssetHash = AssetHash "CC"
+                            Side = TradeOrderSide.Sell
+                            Amount = AssetAmount 4m
+                            OrderType = TradeOrderType.TrailingStopLimit
+                            LimitPrice = AssetAmount 5m
+                            StopPrice = AssetAmount 6m
+                            TrailingDelta = AssetAmount 3m
+                            TrailingDeltaIsPercentage = true
+                            TimeInForce = TradeOrderTimeInForce.GoodTilExpired
+                            BlockNumber = BlockNumber 7L
+                            IsExecutable = true
+                        },
+                        TradeOrderChange.Remove
+                    )
             ]
             |> Map.ofList
 
