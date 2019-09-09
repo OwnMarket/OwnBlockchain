@@ -61,7 +61,7 @@ module ValidationTests =
                 ]
         }
 
-        let expMessage = AppError "Nonce must be positive"
+        let expMessage = AppError "Nonce must be greater than zero"
         let result =
             Validation.validateTx
                 Hashing.isValidHash
