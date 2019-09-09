@@ -59,6 +59,7 @@ type NetworkNode
             Log.verbose "==================== ACTIVE CONNECTIONS ===================="
             activePeers
             |> Seq.ofDict
+            |> Seq.sort
             |> Seq.iter (fun (a, m) -> Log.verbosef "%s Heartbeat:%i" a.Value m.Heartbeat)
             Log.verbose "============================================================"
         #else
@@ -117,25 +118,31 @@ type NetworkNode
         Here this will be scheduled right after a node is declared, so total time
         elapsed is 2xTFail
     *)
-    let setFinalDeadPeer networkAddress =
+    let setFinalDeadPeer peerAddress =
         async {
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
-            let found, _ = activePeers.TryGetValue networkAddress
+            let found, _ = activePeers.TryGetValue peerAddress
             if not found then
-                Log.warningf "Peer marked as DEAD %s" networkAddress.Value
+                Log.warningf "Peer marked as DEAD %s" peerAddress.Value
 
-                deadPeers.TryRemove networkAddress |> ignore
-                peersStateMonitor.TryRemove networkAddress |> ignore
-                networkAddress.Value |> closeConnection
-
-                removePeerNode networkAddress
-                |> Result.iterError (fun _ -> Log.errorf "Error removing peer %A" networkAddress)
+                removePeerNode peerAddress
+                |> Result.handle
+                    (fun _ ->
+                        deadPeers.TryRemove peerAddress |> ignore
+                        peersStateMonitor.TryRemove peerAddress |> ignore
+                        peerAddress.Value |> closeConnection
+                    )
+                    (fun _ -> Log.errorf "Error removing peer %A" peerAddress)
         }
 
-    let monitorPendingDeadPeer networkAddress =
-        let cts = new CancellationTokenSource()
-        Async.Start ((setFinalDeadPeer networkAddress), cts.Token)
-        peersStateMonitor.AddOrUpdate (networkAddress, cts, fun _ _ -> cts) |> ignore
+    let monitorPendingDeadPeer peerAddress =
+        let cts =
+            match peersStateMonitor.TryGetValue peerAddress with
+            | true, cts -> cts
+            | _ -> new CancellationTokenSource()
+
+        peersStateMonitor.AddOrUpdate (peerAddress, cts, fun _ _ -> cts) |> ignore
+        Async.Start ((setFinalDeadPeer peerAddress), cts.Token)
 
     (*
         It declares a peer as dead.
@@ -144,34 +151,34 @@ type NetworkNode
         - remove its timers
         - set to be removed from the dead-nodes. so that if it recovers can be added
     *)
-    let setPendingDeadPeer (networkAddress : NetworkAddress) =
+    let setPendingDeadPeer (peerAddress : NetworkAddress) =
         async {
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
-            Log.verbosef "Peer potentially DEAD: %s" networkAddress.Value
-            match activePeers.TryGetValue networkAddress with
+            Log.verbosef "Peer potentially DEAD: %s" peerAddress.Value
+            match activePeers.TryGetValue peerAddress with
             | true, activePeer ->
-                activePeers.TryRemove networkAddress |> ignore
-                deadPeers.AddOrUpdate (networkAddress, activePeer, fun _ _ -> activePeer) |> ignore
-                monitorPendingDeadPeer networkAddress
+                activePeers.TryRemove peerAddress |> ignore
+                deadPeers.AddOrUpdate (peerAddress, activePeer, fun _ _ -> activePeer) |> ignore
+                monitorPendingDeadPeer peerAddress
             | _ -> ()
         }
 
-    let monitorActivePeer address =
-        match peersStateMonitor.TryGetValue address with
+    let monitorActivePeer peerAddress =
+        match peersStateMonitor.TryGetValue peerAddress with
         | true, cts -> cts.Cancel()
         | _ -> ()
 
-        if not (isWhitelisted address) then
+        if not (isWhitelisted peerAddress) then
             let cts = new CancellationTokenSource()
-            Async.Start ((setPendingDeadPeer address), cts.Token)
-            peersStateMonitor.AddOrUpdate (address, cts, fun _ _ -> cts) |> ignore
+            peersStateMonitor.AddOrUpdate (peerAddress, cts, fun _ _ -> cts) |> ignore
+            Async.Start ((setPendingDeadPeer peerAddress), cts.Token)
 
-    let updateActivePeer m =
-        activePeers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
+    let updateActivePeer peer =
+        activePeers.AddOrUpdate (peer.NetworkAddress, peer, fun _ _ -> peer) |> ignore
 
-    let saveActivePeer m =
-        activePeers.AddOrUpdate (m.NetworkAddress, m, fun _ _ -> m) |> ignore
-        savePeerNode m.NetworkAddress
+    let saveActivePeer peer =
+        activePeers.AddOrUpdate (peer.NetworkAddress, peer, fun _ _ -> peer) |> ignore
+        savePeerNode peer.NetworkAddress
 
     let startCachedDataMonitor (entries : ConcurrentDictionary<_, DateTime>) =
         let rec loop () =
