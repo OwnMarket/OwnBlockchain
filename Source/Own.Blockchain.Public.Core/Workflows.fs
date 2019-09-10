@@ -1799,3 +1799,32 @@ module Workflows =
                 KycProviders = kycProviders
             }
             |> Ok
+
+    let getTradeOrderBookApi
+        (getExecutableTradeOrders : AssetHash * AssetHash -> TradeOrderInfoDto list)
+        (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
+        =
+
+        let orderBook = Trading.getTradeOrderBook getExecutableTradeOrders (baseAssetHash, quoteAssetHash)
+
+        {|
+            BuyOrders = orderBook.BuyOrders |> List.map Mapping.tradeOrderInfoToTradeOrderApiDto
+            SellOrders = orderBook.SellOrders |> List.map Mapping.tradeOrderInfoToTradeOrderApiDto
+        |}
+
+    let getAccountTradeOrdersApi
+        (getAccountTradeOrders : AccountHash -> TradeOrderInfoDto list)
+        (accountHash : AccountHash)
+        =
+
+        getAccountTradeOrders accountHash
+        |> List.map Mapping.tradeOrderInfoFromDto
+        |> List.sortBy (fun o ->
+            o.BaseAssetHash,
+            o.QuoteAssetHash,
+            o.Side,
+            (if o.Side = TradeOrderSide.Buy then -o.LimitPrice.Value else o.LimitPrice.Value),
+            o.BlockNumber,
+            o.TradeOrderHash
+        )
+        |> List.map Mapping.tradeOrderInfoToTradeOrderApiDto

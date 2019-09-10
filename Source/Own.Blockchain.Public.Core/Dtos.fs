@@ -124,12 +124,12 @@ type PlaceTradeOrderTxActionDto = {
     QuoteAssetHash : string
     Side : string // BUY, SELL
     Amount : decimal
-    OrderType : string // MARKET, LIMIT, STOP, STOP_LIMIT, TRAILING_STOP, TRAILING_STOP_LIMIT
+    OrderType : string // MARKET, LIMIT, STOP_MARKET, STOP_LIMIT, TRAILING_STOP_MARKET, TRAILING_STOP_LIMIT
     LimitPrice : decimal
     StopPrice : decimal
     TrailingDelta : decimal
     TrailingDeltaIsPercentage : bool
-    TimeInForce : string // GTE, IOC, FOK
+    TimeInForce : string // GTE, IOC
 }
 
 [<CLIMutable>]
@@ -811,4 +811,21 @@ type GetValidatorInfoApiDto = {
 
 type GetValidatorsApiDto = {
     Validators : GetValidatorInfoApiDto list
+}
+
+type TradeOrderApiDto = {
+    TradeOrderHash : string
+    AccountHash : string
+    BaseAssetHash : string
+    QuoteAssetHash : string
+    Side : string
+    Amount : decimal
+    OrderType : string
+    LimitPrice : decimal
+    StopPrice : decimal
+    TrailingDelta : decimal
+    TrailingDeltaIsPercentage : bool
+    TimeInForce : string
+    IsExecutable : bool
+    BlockNumber : int64
 }

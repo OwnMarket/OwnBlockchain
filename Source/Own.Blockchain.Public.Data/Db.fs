@@ -657,6 +657,80 @@ module Db =
         | [tradeOrderState] -> Some tradeOrderState
         | _ -> failwithf "Multiple trade orders found for hash %A" tradeOrderHash
 
+    let getExecutableTradeOrders
+        dbEngineType
+        (dbConnectionString : string)
+        (AssetHash baseAssetHash, AssetHash quoteAssetHash)
+        : TradeOrderInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                trade_order_hash,
+                block_number,
+                acc.account_hash,
+                @baseAssetHash AS base_asset_hash,
+                @quoteAssetHash AS quote_asset_hash,
+                side,
+                amount,
+                order_type,
+                limit_price,
+                stop_price,
+                trailing_delta,
+                trailing_delta_is_percentage,
+                time_in_force,
+                is_executable
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE ba.asset_hash = @baseAssetHash
+            AND qa.asset_hash = @quoteAssetHash
+            AND is_executable = TRUE
+            """
+
+        [
+            "@baseAssetHash", baseAssetHash |> box
+            "@quoteAssetHash", quoteAssetHash |> box
+        ]
+        |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
+
+    let getAccountTradeOrders
+        dbEngineType
+        (dbConnectionString : string)
+        (AccountHash accountHash)
+        : TradeOrderInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                block_number,
+                acc.account_hash,
+                ba.asset_hash AS base_asset_hash,
+                qa.asset_hash AS quote_asset_hash,
+                side,
+                amount,
+                order_type,
+                limit_price,
+                stop_price,
+                trailing_delta,
+                trailing_delta_is_percentage,
+                time_in_force,
+                is_executable
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE account_hash = @accountHash
+            """
+
+        [
+            "@accountHash", accountHash |> box
+        ]
+        |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -712,6 +712,24 @@ module Mapping =
         | TradeOrderChange.Add -> TradeOrderChangeCode.Add
         | TradeOrderChange.Remove -> TradeOrderChangeCode.Remove
 
+    let tradeOrderInfoFromDto (dto : TradeOrderInfoDto) : TradeOrderInfo =
+        {
+            TradeOrderHash = TradeOrderHash dto.TradeOrderHash
+            AccountHash = AccountHash dto.AccountHash
+            BaseAssetHash = AssetHash dto.BaseAssetHash
+            QuoteAssetHash = AssetHash dto.QuoteAssetHash
+            Side = dto.Side |> tradeOrderSideFromCode
+            Amount = AssetAmount dto.Amount
+            OrderType = dto.OrderType |> tradeOrderTypeFromCode
+            LimitPrice = AssetAmount dto.LimitPrice
+            StopPrice = AssetAmount dto.StopPrice
+            TrailingDelta = AssetAmount dto.TrailingDelta
+            TrailingDeltaIsPercentage = dto.TrailingDeltaIsPercentage
+            TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
+            IsExecutable = dto.IsExecutable
+            BlockNumber = BlockNumber dto.BlockNumber
+        }
+
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults
@@ -883,6 +901,37 @@ module Mapping =
             DepositTaken = depositTaken
             DepositDistribution = depositDistribution
             IncludedInBlockNumber = blockNumber
+        }
+
+    let tradeOrderInfoToTradeOrderApiDto (tradeOrderInfo : TradeOrderInfo) =
+        {
+            TradeOrderApiDto.TradeOrderHash = tradeOrderInfo.TradeOrderHash.Value
+            AccountHash = tradeOrderInfo.AccountHash.Value
+            BaseAssetHash = tradeOrderInfo.BaseAssetHash.Value
+            QuoteAssetHash = tradeOrderInfo.QuoteAssetHash.Value
+            Side =
+                match tradeOrderInfo.Side with
+                | Buy -> "BUY"
+                | Sell -> "SELL"
+            Amount = tradeOrderInfo.Amount.Value
+            OrderType =
+                match tradeOrderInfo.OrderType with
+                | Market -> "MARKET"
+                | Limit -> "LIMIT"
+                | StopMarket -> "STOP_MARKET"
+                | StopLimit -> "STOP_LIMIT"
+                | TrailingStopMarket -> "TRAILING_STOP_MARKET"
+                | TrailingStopLimit -> "TRAILING_STOP_LIMIT"
+            LimitPrice = tradeOrderInfo.LimitPrice.Value
+            StopPrice = tradeOrderInfo.StopPrice.Value
+            TrailingDelta = tradeOrderInfo.TrailingDelta.Value
+            TrailingDeltaIsPercentage = tradeOrderInfo.TrailingDeltaIsPercentage
+            TimeInForce =
+                match tradeOrderInfo.TimeInForce with
+                | GoodTilExpired -> "GTE"
+                | ImmediateOrCancel -> "IOC"
+            IsExecutable = tradeOrderInfo.IsExecutable
+            BlockNumber = tradeOrderInfo.BlockNumber.Value
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

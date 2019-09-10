@@ -267,6 +267,26 @@ module Api =
             return! response next ctx
         }
 
+    let getTradeOrderBookHandler (baseAssetHash : string, quoteAssetHash : string) : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTradeOrderBookApi (AssetHash baseAssetHash, AssetHash quoteAssetHash)
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getAccountTradeOrdersHandler (accountHash : string) : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAccountTradeOrdersApi (AccountHash accountHash)
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getRootHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -321,6 +341,10 @@ module Api =
                 route "/validators" >=> getValidatorsHandler
                 routef "/validator/%s/stakes" getValidatorStakesHandler
                 routef "/address/%s/stakes" getAddressStakesHandler
+
+                // Trading
+                routef "/trade-order-book/%s/%s" getTradeOrderBookHandler
+                routef "/account/%s/trade-orders" getAccountTradeOrdersHandler
 
                 // Entity state
                 routef "/address/%s/accounts" getAddressAccountsHandler

@@ -12,6 +12,7 @@
         <Compile Include="Mapping.fs" />
         <Compile Include="Validation.fs" />
         <Compile Include="Serialization.fs" />
+        <Compile Include="Trading.fs" />
         <Compile Include="Processing.fs" />
         <Compile Include="Blocks.fs" />
         <Compile Include="Synchronization.fs" />

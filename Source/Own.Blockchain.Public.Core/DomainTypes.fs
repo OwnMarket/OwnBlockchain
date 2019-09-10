@@ -96,6 +96,28 @@ type TradeOrderChange =
     | Add
     | Remove
 
+type TradeOrderInfo = {
+    TradeOrderHash : TradeOrderHash
+    AccountHash : AccountHash
+    BaseAssetHash : AssetHash
+    QuoteAssetHash : AssetHash
+    Side : TradeOrderSide
+    Amount : AssetAmount
+    OrderType : TradeOrderType
+    LimitPrice : AssetAmount
+    StopPrice : AssetAmount
+    TrailingDelta : AssetAmount
+    TrailingDeltaIsPercentage : bool
+    TimeInForce : TradeOrderTimeInForce
+    IsExecutable : bool
+    BlockNumber : BlockNumber
+}
+
+type TradeOrderBook = {
+    BuyOrders : TradeOrderInfo list
+    SellOrders : TradeOrderInfo list
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TX
 ////////////////////////////////////////////////////////////////////////////////////////////////////

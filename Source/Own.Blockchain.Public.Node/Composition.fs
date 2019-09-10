@@ -104,6 +104,8 @@ module Composition =
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbEngineType Config.DbConnectionString
 
     let getTradeOrderState = Db.getTradeOrderState Config.DbEngineType Config.DbConnectionString
+    let getExecutableTradeOrders = Db.getExecutableTradeOrders Config.DbEngineType Config.DbConnectionString
+    let getAccountTradeOrders = Db.getAccountTradeOrders Config.DbEngineType Config.DbConnectionString
 
     let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
     let savePeerNode = Db.savePeerNode Config.DbEngineType Config.DbConnectionString
@@ -556,6 +558,10 @@ module Composition =
     let getAssetApi = Workflows.getAssetApi getAssetState
 
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getAssetKycProviders
+
+    let getTradeOrderBookApi = Workflows.getTradeOrderBookApi getExecutableTradeOrders
+
+    let getAccountTradeOrdersApi = Workflows.getAccountTradeOrdersApi getAccountTradeOrders
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network
