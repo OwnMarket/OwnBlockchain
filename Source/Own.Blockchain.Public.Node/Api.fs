@@ -189,7 +189,7 @@ module Api =
             return! response next ctx
         }
 
-    let getAccountHandler (accountHash : string): HttpHandler = fun next ctx ->
+    let getAccountHandler (accountHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
                 ctx.TryGetQueryStringValue "asset"
@@ -200,7 +200,7 @@ module Api =
             return! response next ctx
         }
 
-    let getAccountVotesHandler (accountHash : string): HttpHandler = fun next ctx ->
+    let getAccountVotesHandler (accountHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
                 ctx.TryGetQueryStringValue "asset"
@@ -211,7 +211,7 @@ module Api =
             return! response next ctx
         }
 
-    let getAccountEligibilitiesHandler (accountHash : string): HttpHandler = fun next ctx ->
+    let getAccountEligibilitiesHandler (accountHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
                 Composition.getAccountEligibilitiesApi (AccountHash accountHash)
@@ -220,7 +220,7 @@ module Api =
             return! response next ctx
         }
 
-    let getAccountKycProvidersHandler (accountHash : string): HttpHandler = fun next ctx ->
+    let getAccountKycProvidersHandler (accountHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
                 Composition.getAccountKycProvidersApi (AccountHash accountHash)
@@ -229,7 +229,7 @@ module Api =
             return! response next ctx
         }
 
-    let getAssetHandler (assetHash : string): HttpHandler = fun next ctx ->
+    let getAssetHandler (assetHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
                 Composition.getAssetApi (AssetHash assetHash)
@@ -238,7 +238,7 @@ module Api =
             return! response next ctx
         }
 
-    let getAssetKycProvidersHandler (assetHash : string): HttpHandler = fun next ctx ->
+    let getAssetKycProvidersHandler (assetHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
                 Composition.getAssetKycProvidersApi (AssetHash assetHash)
