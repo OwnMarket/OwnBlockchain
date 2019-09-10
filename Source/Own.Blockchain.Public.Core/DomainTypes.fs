@@ -1,10 +1,6 @@
-namespace Own.Blockchain.Public.Core.DomainTypes
+namespace rec Own.Blockchain.Public.Core.DomainTypes
 
 open Own.Blockchain.Common
-
-type NetworkId = NetworkId of byte[] // Unencoded hash of the network code.
-type NetworkAddress = NetworkAddress of string
-type PeerNetworkIdentity = PeerNetworkIdentity of byte[]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Wallet
@@ -101,7 +97,7 @@ type TradeOrderChange =
     | Remove
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Tx
+// TX
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type TransferChxTxAction = {
@@ -226,7 +222,6 @@ type TxAction =
     | CancelTradeOrder of CancelTradeOrderTxAction
 
 type TxHash = TxHash of string
-type Timestamp = Timestamp of int64 // Unix timestamp in milliseconds
 
 type Tx = {
     TxHash : TxHash
@@ -268,6 +263,7 @@ type BlockchainConfiguration = {
 
 type BlockNumber = BlockNumber of int64
 type BlockHash = BlockHash of string
+type Timestamp = Timestamp of int64 // Unix timestamp in milliseconds
 type MerkleTreeRoot = MerkleTreeRoot of string
 
 type BlockHeader = {
@@ -286,8 +282,6 @@ type BlockHeader = {
     ConfigurationRoot : MerkleTreeRoot
 }
 
-type EquivocationProofHash = EquivocationProofHash of string
-
 type StakingReward = {
     StakerAddress : BlockchainAddress
     Amount : ChxAmount
@@ -300,8 +294,6 @@ type Block = {
     StakingRewards : StakingReward list
     Configuration : BlockchainConfiguration option
 }
-
-type ConsensusRound = ConsensusRound of int
 
 type BlockEnvelope = {
     Block : Block
@@ -501,6 +493,8 @@ type ConsensusStep =
     | Vote
     | Commit
 
+type ConsensusRound = ConsensusRound of int
+
 type ConsensusMessage =
     | Propose of Block * ConsensusRound
     | Vote of BlockHash option
@@ -547,6 +541,8 @@ type ConsensusCommand =
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
 
+type EquivocationProofHash = EquivocationProofHash of string
+
 [<RequireQualifiedAccess>]
 type EquivocationValue =
     | BlockHash of BlockHash option
@@ -567,6 +563,10 @@ type EquivocationProof = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Network
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+type NetworkId = NetworkId of byte[] // Unencoded hash of the network code.
+type NetworkAddress = NetworkAddress of string
+type PeerNetworkIdentity = PeerNetworkIdentity of byte[]
 
 type NetworkMessageId =
     | Tx of TxHash
