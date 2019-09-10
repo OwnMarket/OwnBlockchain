@@ -530,13 +530,17 @@ module Composition =
 
     let getBlockApi = Workflows.getBlockApi getLastAppliedBlockNumber getBlock
 
+    let getValidatorsApi = Workflows.getValidatorsApi getCurrentValidators getAllValidators
+
+    let getValidatorStakesApi = Workflows.getValidatorStakesApi getValidatorState getValidatorStakes
+
+    let getAddressStakesApi = Workflows.getAddressStakesApi getAddressStakes
+
     let getAddressApi = Workflows.getAddressApi getChxAddressState getDetailedChxBalance
 
     let getAddressAccountsApi = Workflows.getAddressAccountsApi getAddressAccounts
 
     let getAddressAssetsApi = Workflows.getAddressAssetsApi getAddressAssets
-
-    let getAddressStakesApi = Workflows.getAddressStakesApi getAddressStakes
 
     let getAccountApi = Workflows.getAccountApi getAccountState getAccountHoldings
 
@@ -549,10 +553,6 @@ module Composition =
     let getAssetApi = Workflows.getAssetApi getAssetState
 
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getAssetKycProviders
-
-    let getValidatorsApi = Workflows.getValidatorsApi getCurrentValidators getAllValidators
-
-    let getValidatorStakesApi = Workflows.getValidatorStakesApi getValidatorState getValidatorStakes
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Network

@@ -1563,6 +1563,71 @@ module Workflows =
             getBlock blockNumber
             >>= (Mapping.blockEnvelopeDtoToGetBlockApiResponseDto >> Ok)
 
+    let getValidatorsApi
+        (getCurrentValidators : unit -> ValidatorSnapshot list)
+        (getAllValidators : unit -> GetValidatorInfoApiDto list)
+        (activeOnly : bool option)
+        : Result<GetValidatorsApiDto, AppErrors>
+        =
+
+        let currentValidators =
+            getCurrentValidators ()
+            |> List.map (fun v ->
+                {
+                    ValidatorAddress = v.ValidatorAddress.Value
+                    NetworkAddress = v.NetworkAddress.Value
+                    SharedRewardPercent = v.SharedRewardPercent
+                    IsActive = true
+                }
+            )
+
+        let allValidators =
+            getAllValidators ()
+            |> List.map (fun v ->
+                let isActive =
+                    currentValidators
+                    |> List.map (fun c -> c.ValidatorAddress)
+                    |> List.contains v.ValidatorAddress
+                {v with IsActive = isActive}
+            )
+
+        let validators =
+            match activeOnly with
+            | Some isActive when isActive -> currentValidators
+            | _ -> allValidators
+
+        Ok {Validators = validators}
+
+    let getValidatorStakesApi
+        getValidatorState
+        (getValidatorStakes : BlockchainAddress -> ValidatorStakeInfoDto list)
+        (address : BlockchainAddress)
+        : Result<GetValidatorStakesApiResponseDto, AppErrors>
+        =
+
+        match getValidatorState address with
+        | None ->
+            sprintf "Validator %s does not exist" address.Value
+            |> Result.appError
+        | Some _ ->
+            {
+                ValidatorAddress = address.Value
+                GetValidatorStakesApiResponseDto.Stakes = getValidatorStakes address
+            }
+            |> Ok
+
+    let getAddressStakesApi
+        (getAddressStakes : BlockchainAddress -> AddressStakeInfoDto list)
+        (address : BlockchainAddress)
+        : Result<GetAddressStakesApiResponseDto, AppErrors>
+        =
+
+        {
+            BlockchainAddress = address.Value
+            GetAddressStakesApiResponseDto.Stakes = getAddressStakes address
+        }
+        |> Ok
+
     let getAddressApi
         (getChxAddressState : BlockchainAddress -> ChxAddressStateDto option)
         getDetailedChxBalance
@@ -1612,18 +1677,6 @@ module Workflows =
         {
             BlockchainAddress = address.Value
             GetAddressAssetsApiResponseDto.Assets = assets
-        }
-        |> Ok
-
-    let getAddressStakesApi
-        (getAddressStakes : BlockchainAddress -> AddressStakeInfoDto list)
-        (address : BlockchainAddress)
-        : Result<GetAddressStakesApiResponseDto, AppErrors>
-        =
-
-        {
-            BlockchainAddress = address.Value
-            GetAddressStakesApiResponseDto.Stakes = getAddressStakes address
         }
         |> Ok
 
@@ -1739,58 +1792,5 @@ module Workflows =
             {
                 AssetHash = assetHash.Value
                 KycProviders = kycProviders
-            }
-            |> Ok
-
-    let getValidatorsApi
-        (getCurrentValidators : unit -> ValidatorSnapshot list)
-        (getAllValidators : unit -> GetValidatorInfoApiDto list)
-        (activeOnly : bool option)
-        : Result<GetValidatorsApiDto, AppErrors>
-        =
-
-        let currentValidators =
-            getCurrentValidators ()
-            |> List.map (fun v ->
-                {
-                    ValidatorAddress = v.ValidatorAddress.Value
-                    NetworkAddress = v.NetworkAddress.Value
-                    SharedRewardPercent = v.SharedRewardPercent
-                    IsActive = true
-                }
-            )
-
-        let allValidators =
-            getAllValidators ()
-            |> List.map (fun v ->
-                let isActive =
-                    currentValidators
-                    |> List.map (fun c -> c.ValidatorAddress)
-                    |> List.contains v.ValidatorAddress
-                {v with IsActive = isActive}
-            )
-
-        let validators =
-            match activeOnly with
-            | Some isActive when isActive -> currentValidators
-            | _ -> allValidators
-
-        Ok {Validators = validators}
-
-    let getValidatorStakesApi
-        getValidatorState
-        (getValidatorStakes : BlockchainAddress -> ValidatorStakeInfoDto list)
-        (address : BlockchainAddress)
-        : Result<GetValidatorStakesApiResponseDto, AppErrors>
-        =
-
-        match getValidatorState address with
-        | None ->
-            sprintf "Validator %s does not exist" address.Value
-            |> Result.appError
-        | Some _ ->
-            {
-                ValidatorAddress = address.Value
-                GetValidatorStakesApiResponseDto.Stakes = getValidatorStakes address
             }
             |> Ok
