@@ -9,7 +9,7 @@ open Own.Blockchain.Public.Core.Dtos
 module Mapping =
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Tx
+    // TX
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let txStatusNumberToString (txStatusNumber : byte) =
@@ -17,7 +17,7 @@ module Mapping =
         | 0uy -> "Pending"
         | 1uy -> "Success"
         | 2uy -> "Failure"
-        | s -> failwithf "Unknown tx status: %i" s
+        | s -> failwithf "Unknown TX status: %i" s
 
     let txErrorCodeNumberToString (txErrorCodeNumber : Nullable<int16>) : string =
         if not txErrorCodeNumber.HasValue then
@@ -26,7 +26,7 @@ module Mapping =
             let txErrorCode : TxErrorCode = LanguagePrimitives.EnumOfValue txErrorCodeNumber.Value
             txErrorCode.ToString() |> Some
         else
-            failwithf "Unknown tx error code: %s" (txErrorCodeNumber.ToString())
+            failwithf "Unknown TX error code: %s" (txErrorCodeNumber.ToString())
         |> Option.toObj
 
     let txEnvelopeFromDto (dto : TxEnvelopeDto) : TxEnvelope =

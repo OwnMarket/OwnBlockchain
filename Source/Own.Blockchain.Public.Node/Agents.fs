@@ -12,7 +12,7 @@ module Agents =
 
     let private txPropagator = Agent.start <| fun (txHash : TxHash, txEnvelopeDto : TxEnvelopeDto) ->
         async {
-            Log.debugf "Propagating Tx %s" txHash.Value
+            Log.debugf "Propagating TX %s" txHash.Value
             Composition.propagateTx txHash txEnvelopeDto
         }
 

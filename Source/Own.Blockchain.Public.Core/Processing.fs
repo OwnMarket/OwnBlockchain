@@ -842,7 +842,7 @@ module Processing =
             Error TxErrorCode.SenderIsNotAssetController
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Tx Processing
+    // TX Processing
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let excludeTxsWithNonceGap
@@ -1284,7 +1284,7 @@ module Processing =
                     | Ok tx -> tx
                     | Error err ->
                         Log.appErrors err
-                        failwithf "Cannot load tx %s" txHash.Value // TODO: Remove invalid tx from the pool?
+                        failwithf "Cannot load TX %s" txHash.Value // TODO: Remove invalid tx from the pool?
             )
             |> Array.toList
 
@@ -1292,7 +1292,7 @@ module Processing =
             match processValidatorReward validatorDeposit tx validatorAddress state with
             | Error e ->
                 // Logic in excludeTxsIfBalanceCannotCoverFees is supposed to prevent this.
-                failwithf "Cannot process validator reward for tx %s (Error: %A)" tx.TxHash.Value e
+                failwithf "Cannot process validator reward for TX %s (Error: %A)" tx.TxHash.Value e
             | Ok state ->
                 state.CollectedReward <- state.CollectedReward + tx.TotalFee
                 state

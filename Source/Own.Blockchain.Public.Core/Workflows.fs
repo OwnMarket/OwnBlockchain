@@ -734,7 +734,7 @@ module Workflows =
                 if txResultExists txHash then
                     return!
                         sprintf
-                            "Tx %s cannot be included in the block %i because it is already processed"
+                            "TX %s cannot be included in the block %i because it is already processed"
                             txHash.Value
                             block.Header.Number.Value
                         |> Result.appError
@@ -1072,7 +1072,7 @@ module Workflows =
         |> List.iter (fun txHash ->
             match getTx txHash with
             | Ok txEnvelopeDto -> (txHash, txEnvelopeDto) |> TxVerified |> publishEvent
-            | _ -> Log.errorf "Tx %s does not exist" txHash.Value
+            | _ -> Log.errorf "TX %s does not exist" txHash.Value
         )
 
     let propagateEquivocationProof
@@ -1298,7 +1298,7 @@ module Workflows =
                                 Data = txEvenvelopeDto |> Serialization.serializeBinary
                             }
                             |> Ok
-                        | _ -> Result.appError (sprintf "Requested tx %s not found" txHash.Value)
+                        | _ -> Result.appError (sprintf "Requested TX %s not found" txHash.Value)
                     | EquivocationProof equivocationProofHash ->
                         match getEquivocationProof equivocationProofHash with
                         | Ok equivocationProofDto ->
@@ -1501,7 +1501,7 @@ module Workflows =
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
 
             let! txResult =
-                // If the Tx is still in the pool (DB), we respond with Pending status and ignore the TxResult file.
+                // If the TX is still in the pool (DB), we respond with Pending status and ignore the TxResult file.
                 // This avoids the lag in the state changes (when TxResult file is persisted, but DB not yet updated).
                 match getTxInfo txHash with
                 | Some _ -> Ok None

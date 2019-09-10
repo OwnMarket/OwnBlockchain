@@ -58,7 +58,7 @@ module Log =
             log "DBG" o |> printInColor ConsoleColor.DarkGray
 
     /// Ordinary events.
-    /// (e.g. Tx submitted; block received)
+    /// (e.g. TX submitted; block received)
     let info o =
         if minLogLevel <= LogLevel.Info then
             log "INF" o |> printInColor ConsoleColor.White

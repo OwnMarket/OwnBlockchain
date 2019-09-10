@@ -29,7 +29,7 @@ module ProcessingTests =
         VoteHash "GiAukfYsxdyNBeh6N2DKVXEkZtASmjbciGfqpU5bSDmE"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Tx preparation
+    // TX preparation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
@@ -2054,7 +2054,7 @@ module ProcessingTests =
         let getTx txHash =
             if txHash = txHash1 then Ok txEnvelope1
             elif txHash = txHash2 then Ok txEnvelope2
-            else Result.appError "Invalid tx hash"
+            else Result.appError "Invalid TX hash"
 
         let getChxAddressState address =
             initialChxState |> Map.tryFind address
@@ -2238,7 +2238,7 @@ module ProcessingTests =
         let getTx txHash =
             if txHash = txHash1 then Ok txEnvelope1
             elif txHash = txHash2 then Ok txEnvelope2
-            else Result.appError "Invalid tx hash"
+            else Result.appError "Invalid TX hash"
 
         let getChxAddressState address =
             initialChxState |> Map.tryFind address
@@ -2758,7 +2758,7 @@ module ProcessingTests =
         let getTx txHash =
             if txHash = txHash1 then Ok txEnvelope1
             elif txHash = txHash2 then Ok txEnvelope2
-            else Result.appError "Invalid tx hash"
+            else Result.appError "Invalid TX hash"
 
         let getChxAddressState address =
             initialChxState |> Map.tryFind address
@@ -3252,7 +3252,7 @@ module ProcessingTests =
         let getTx txHash =
             if txHash = txHash1 then Ok txEnvelope1
             elif txHash = txHash2 then Ok txEnvelope2
-            else Result.appError "Invalid tx hash"
+            else Result.appError "Invalid TX hash"
 
         let getChxAddressState address =
             initialChxState |> Map.tryFind address
@@ -3719,7 +3719,7 @@ module ProcessingTests =
         let getTx txHash =
             if txHash = txHash1 then Ok txEnvelope1
             elif txHash = txHash2 then Ok txEnvelope2
-            else Result.appError "Invalid tx hash"
+            else Result.appError "Invalid TX hash"
 
         let getChxAddressState address =
             initialChxState |> Map.tryFind address

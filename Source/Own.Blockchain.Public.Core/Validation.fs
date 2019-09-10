@@ -275,7 +275,7 @@ module Validation =
         validateSetKycProvider isValidHash isValidAddress action.AssetHash action.ProviderAddress
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Tx validation
+    // TX validation
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let private validateTxFields maxActionCountPerTx (BlockchainAddress signerAddress) (t : TxDto) =
@@ -378,9 +378,9 @@ module Validation =
     let validateTxEnvelope (txEnvelopeDto : TxEnvelopeDto) : Result<TxEnvelope, AppErrors> =
         [
             if txEnvelopeDto.Tx.IsNullOrWhiteSpace() then
-                yield AppError "Tx is missing from the tx envelope"
+                yield AppError "TX is missing from the TX envelope"
             if txEnvelopeDto.Signature.IsNullOrWhiteSpace() then
-                yield AppError "Signature is missing from the tx envelope"
+                yield AppError "Signature is missing from the TX envelope"
         ]
         |> Errors.orElseWith (fun _ -> Mapping.txEnvelopeFromDto txEnvelopeDto)
 
@@ -390,7 +390,7 @@ module Validation =
         | Some blockchainAddress ->
             Ok blockchainAddress
         | None ->
-            Result.appError "Cannot verify tx signature"
+            Result.appError "Cannot verify TX signature"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquivocationProof validation

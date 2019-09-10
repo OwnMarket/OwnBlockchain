@@ -649,9 +649,9 @@ module BlockTests =
                 "FFFGGGCCCCDA...B............" // Vote 3 Holding 2
                 "DDDEEEAAHH" // Eligibility 1
                 "FFFGGG..HH" // Eligibility 2
-                "EEEAAAABBBA" // Add Kyc controllers for Asset 1
-                "FFFAAAA" // Add Kyc controllers for Asset 2
-                "GGGBBB." // Remove Kyc controllers for Asset 3
+                "EEEAAAABBBA" // Add KYC controllers for Asset 1
+                "FFFAAAA" // Add KYC controllers for Asset 2
+                "GGGBBB." // Remove KYC controllers for Asset 3
                 "AAAABBBB" // Account 1
                 "CCCCDDDD" // Account 2
                 "EEEEHHHFFFF." // Asset 1

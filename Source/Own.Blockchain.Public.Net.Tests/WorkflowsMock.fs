@@ -30,7 +30,7 @@ module WorkflowsMock =
                             }
                             |> Ok
                         else
-                            Result.appError (sprintf "Error Tx %A not found" txHash)
+                            Result.appError (sprintf "Error TX %A not found" txHash)
                     | EquivocationProof equivocationProofHash ->
                         if RawMock.hasData address messageId then
                             {

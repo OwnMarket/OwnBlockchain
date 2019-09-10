@@ -787,7 +787,7 @@ module PeerTests =
             // Last node contains the tx.
             RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash)
 
-        // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
+        // Worst case scenario : a single node contains the TX and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep (4 * (nodeCount - 1) * tCycle)
 
         // ASSERT
@@ -816,7 +816,7 @@ module PeerTests =
         // Last node contains the block.
         RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Block blockNr)
 
-        // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
+        // Worst case scenario : a single node contains the TX and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep (2 * 4 * (nodeCount - 1) * tCycle)
 
         // ASSERT
@@ -846,7 +846,7 @@ module PeerTests =
         // Last node contains the tx.
         RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash2)
 
-        // Worst case scenario : a single node contains the Tx and it's the last contacted for it => (n-1) cycles
+        // Worst case scenario : a single node contains the TX and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep (2 * 4 * (nodeCount - 1) * tCycle)
 
         // ASSERT
