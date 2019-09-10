@@ -153,6 +153,26 @@ module Api =
             return! response next ctx
         }
 
+    let getValidatorsHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                ctx.TryGetQueryStringValue "activeOnly"
+                |> Option.map (bool.TryParse >> snd)
+                |> Composition.getValidatorsApi
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
+    let getValidatorStakesHandler blockchainAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getValidatorStakesApi (BlockchainAddress blockchainAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAddressHandler blockchainAddress : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -247,26 +267,6 @@ module Api =
             return! response next ctx
         }
 
-    let getValidatorsHandler : HttpHandler = fun next ctx ->
-        task {
-            let response =
-                ctx.TryGetQueryStringValue "activeOnly"
-                |> Option.map (bool.TryParse >> snd)
-                |> Composition.getValidatorsApi
-                |> toApiResponse
-
-            return! response next ctx
-        }
-
-    let getValidatorStakesHandler blockchainAddress : HttpHandler = fun next ctx ->
-        task {
-            let response =
-                Composition.getValidatorStakesApi (BlockchainAddress blockchainAddress)
-                |> toApiResponse
-
-            return! response next ctx
-        }
-
     let getRootHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -301,20 +301,30 @@ module Api =
         choose [
             GET >=> choose [
                 route "/" >=> getRootHandler
+
+                // System
                 route "/node" >=> getNodeInfoHandler
                 route "/stats" >=> getStatsHandler
                 route "/network" >=> getNetworkStatsHandler
                 route "/peers" >=> getPeersHandler
                 route "/pool" >=> getTxPoolInfoHandler
+
+                // Canonical blockchain data
                 routef "/tx/%s/raw" getRawTxHandler
                 routef "/tx/%s" getTxHandler
                 routef "/equivocation/%s" getEquivocationProofHandler
                 route "/block/head/number" >=> getHeadBlockNumberHandler
                 route "/block/head" >=> getHeadBlockHandler
                 routef "/block/%d" getBlockHandler
+
+                // Validators & Staking
+                route "/validators" >=> getValidatorsHandler
+                routef "/validator/%s/stakes" getValidatorStakesHandler
+                routef "/address/%s/stakes" getAddressStakesHandler
+
+                // Entity state
                 routef "/address/%s/accounts" getAddressAccountsHandler
                 routef "/address/%s/assets" getAddressAssetsHandler
-                routef "/address/%s/stakes" getAddressStakesHandler
                 routef "/address/%s" getAddressHandler
                 routef "/account/%s/votes" getAccountVotesHandler
                 routef "/account/%s/eligibilities" getAccountEligibilitiesHandler
@@ -322,8 +332,8 @@ module Api =
                 routef "/account/%s" getAccountHandler
                 routef "/asset/%s/kyc-providers" getAssetKycProvidersHandler
                 routef "/asset/%s" getAssetHandler
-                route "/validators" >=> getValidatorsHandler
-                routef "/validator/%s/stakes" getValidatorStakesHandler
+
+                // Wallet
                 routeStartsWith "/wallet" >=> getWalletHandler
             ]
             POST >=> choose [
