@@ -433,7 +433,6 @@ type StakeStateDto = {
 
 [<CLIMutable>]
 type TradeOrderStateDto = {
-    BlockNumber : int64
     AccountHash : string
     BaseAssetHash : string
     QuoteAssetHash : string
@@ -446,6 +445,7 @@ type TradeOrderStateDto = {
     TrailingDeltaIsPercentage : bool
     TimeInForce : byte
     IsExecutable : bool
+    BlockNumber : int64
 }
 
 type TradeOrderChangeCode =
@@ -561,7 +561,6 @@ type AccountVoteDto = {
 [<CLIMutable>]
 type TradeOrderInfoDto = {
     TradeOrderHash : string
-    BlockNumber : int64
     AccountHash : string
     BaseAssetHash : string
     QuoteAssetHash : string
@@ -574,6 +573,7 @@ type TradeOrderInfoDto = {
     TrailingDeltaIsPercentage : bool
     TimeInForce : byte
     IsExecutable : bool
+    BlockNumber : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

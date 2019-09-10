@@ -2413,8 +2413,7 @@ module Db =
             >>= (fun _ ->
                 let tradeOrderInfo =
                     {
-                        TradeOrderHash = tradeOrderHash
-                        BlockNumber = state.BlockNumber
+                        TradeOrderInfoDto.TradeOrderHash = tradeOrderHash
                         AccountHash = state.AccountHash
                         BaseAssetHash = state.BaseAssetHash
                         QuoteAssetHash = state.QuoteAssetHash
@@ -2427,6 +2426,7 @@ module Db =
                         TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
                         TimeInForce = state.TimeInForce
                         IsExecutable = state.IsExecutable
+                        BlockNumber = state.BlockNumber
                     }
                 match change with
                 | TradeOrderChangeCode.Add ->

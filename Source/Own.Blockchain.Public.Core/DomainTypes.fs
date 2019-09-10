@@ -463,8 +463,8 @@ type TradeOrderState = {
     TrailingDelta : AssetAmount
     TrailingDeltaIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
-    BlockNumber : BlockNumber
     IsExecutable : bool
+    BlockNumber : BlockNumber
 }
 
 type ProcessingOutput = {

@@ -299,8 +299,8 @@ module BlockTests =
                 TrailingDelta = AssetAmount 3m
                 TrailingDeltaIsPercentage = true
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
-                BlockNumber = BlockNumber 7L
                 IsExecutable = true
+                BlockNumber = BlockNumber 7L
             }
 
         let expectedHash =
@@ -317,8 +317,8 @@ module BlockTests =
                 "...C............" // TrailingDelta
                 "A" // TrailingDeltaIsPercentage
                 "B" // TimeInForce
-                ".......G" // BlockNumber
                 "A" // IsExecutable
+                ".......G" // BlockNumber
                 "." // TradeOrderChange
             ]
             |> String.Concat
@@ -625,8 +625,8 @@ module BlockTests =
                             TrailingDelta = AssetAmount 0m
                             TrailingDeltaIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
-                            BlockNumber = BlockNumber 6L
                             IsExecutable = true
+                            BlockNumber = BlockNumber 6L
                         },
                         TradeOrderChange.Add
                     )
@@ -644,8 +644,8 @@ module BlockTests =
                             TrailingDelta = AssetAmount 3m
                             TrailingDeltaIsPercentage = true
                             TimeInForce = TradeOrderTimeInForce.GoodTilExpired
-                            BlockNumber = BlockNumber 7L
                             IsExecutable = false
+                            BlockNumber = BlockNumber 7L
                         },
                         TradeOrderChange.Remove
                     )
@@ -755,8 +755,8 @@ module BlockTests =
                 "CCCCCIII...C.............C.FA." // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
-                "AAABABBBCA...C............A.................................................B.......FA." // Order 1
-                "BBBCACBCCB...D............F...E...............F...............C............AA.......G.A" // Order 2
+                "AAABABBBCA...C............A.................................................BA.......F." // Order 1
+                "BBBCACBCCB...D............F...E...............F...............C............AA........GA" // Order 2
             ]
             |> String.Concat
 
@@ -1092,8 +1092,8 @@ module BlockTests =
                             TrailingDelta = AssetAmount 0m
                             TrailingDeltaIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
-                            BlockNumber = BlockNumber 6L
                             IsExecutable = true
+                            BlockNumber = BlockNumber 6L
                         },
                         TradeOrderChange.Add
                     )
@@ -1111,8 +1111,8 @@ module BlockTests =
                             TrailingDelta = AssetAmount 3m
                             TrailingDeltaIsPercentage = true
                             TimeInForce = TradeOrderTimeInForce.GoodTilExpired
-                            BlockNumber = BlockNumber 7L
                             IsExecutable = true
+                            BlockNumber = BlockNumber 7L
                         },
                         TradeOrderChange.Remove
                     )
@@ -1525,8 +1525,8 @@ module BlockTests =
                             TrailingDelta = AssetAmount 0m
                             TrailingDeltaIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
-                            BlockNumber = BlockNumber 6L
                             IsExecutable = true
+                            BlockNumber = BlockNumber 6L
                         },
                         TradeOrderChange.Add
                     )
@@ -1544,8 +1544,8 @@ module BlockTests =
                             TrailingDelta = AssetAmount 3m
                             TrailingDeltaIsPercentage = true
                             TimeInForce = TradeOrderTimeInForce.GoodTilExpired
-                            BlockNumber = BlockNumber 7L
                             IsExecutable = true
+                            BlockNumber = BlockNumber 7L
                         },
                         TradeOrderChange.Remove
                     )

@@ -247,8 +247,8 @@ module Blocks =
             state.TrailingDelta.Value |> decimalToBytes
             state.TrailingDeltaIsPercentage |> boolToBytes
             tradeOrderTimeInForceCodeBytes
-            state.BlockNumber.Value |> int64ToBytes
             state.IsExecutable |> boolToBytes
+            state.BlockNumber.Value |> int64ToBytes
             tradeOrderChangeCodeBytes
         ]
         |> Array.concat

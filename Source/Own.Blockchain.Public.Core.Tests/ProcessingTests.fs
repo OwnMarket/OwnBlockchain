@@ -7930,8 +7930,8 @@ module ProcessingTests =
                 TrailingDelta = AssetAmount 0m
                 TrailingDeltaIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
-                BlockNumber = BlockNumber 1L
                 IsExecutable = true
+                BlockNumber = BlockNumber 1L
             }
             |> Some
 
@@ -8007,8 +8007,8 @@ module ProcessingTests =
                 TrailingDelta = AssetAmount 0m
                 TrailingDeltaIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
-                BlockNumber = BlockNumber 1L
                 IsExecutable = true
+                BlockNumber = BlockNumber 1L
             }
             |> Some
 
@@ -8095,8 +8095,8 @@ module ProcessingTests =
                 TrailingDelta = AssetAmount 0m
                 TrailingDeltaIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
-                BlockNumber = BlockNumber 1L
                 IsExecutable = true
+                BlockNumber = BlockNumber 1L
             }
             |> Some
 

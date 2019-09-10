@@ -686,8 +686,8 @@ module Mapping =
             TrailingDelta = AssetAmount dto.TrailingDelta
             TrailingDeltaIsPercentage = dto.TrailingDeltaIsPercentage
             TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
-            BlockNumber = BlockNumber dto.BlockNumber
             IsExecutable = dto.IsExecutable
+            BlockNumber = BlockNumber dto.BlockNumber
         }
 
     let tradeOrderStateToDto (state : TradeOrderState) : TradeOrderStateDto =
@@ -703,8 +703,8 @@ module Mapping =
             TrailingDelta = state.TrailingDelta.Value
             TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
             TimeInForce = state.TimeInForce |> tradeOrderTimeInForceToCode
-            BlockNumber = state.BlockNumber.Value
             IsExecutable = state.IsExecutable
+            BlockNumber = state.BlockNumber.Value
         }
 
     let tradeOrderChangeToCode (change : TradeOrderChange) =

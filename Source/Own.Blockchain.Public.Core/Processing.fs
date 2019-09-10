@@ -932,12 +932,12 @@ module Processing =
                             TrailingDelta = action.TrailingDelta
                             TrailingDeltaIsPercentage = action.TrailingDeltaIsPercentage
                             TimeInForce = action.TimeInForce
-                            BlockNumber = blockNumber
                             IsExecutable =
                                 match action.OrderType with
                                 | Market
                                 | Limit -> true
                                 | _ -> false
+                            BlockNumber = blockNumber
                         }
                     state.SetTradeOrder(tradeOrderHash, tradeOrderState, TradeOrderChange.Add)
                     Ok state
