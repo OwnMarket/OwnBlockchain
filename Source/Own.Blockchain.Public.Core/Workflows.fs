@@ -32,6 +32,7 @@ module Workflows =
             |> Option.map Mapping.validatorStateFromDto
             |> Option.map (fun _ -> validatorDeposit)
             |? ChxAmount 0m
+            |> min (chxBalance - chxStaked)
 
         {
             Total = chxBalance.Value
