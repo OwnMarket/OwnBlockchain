@@ -118,6 +118,13 @@ type RemoveKycProviderTxActionDto = {
 }
 
 [<CLIMutable>]
+type ConfigureTradingPairTxActionDto = {
+    BaseAssetHash : string
+    QuoteAssetHash : string
+    IsEnabled : bool
+}
+
+[<CLIMutable>]
 type PlaceTradeOrderTxActionDto = {
     AccountHash : string
     BaseAssetHash : string
@@ -432,6 +439,11 @@ type StakeStateDto = {
 }
 
 [<CLIMutable>]
+type TradingPairStateDto = {
+    IsEnabled : bool
+}
+
+[<CLIMutable>]
 type TradeOrderStateDto = {
     AccountHash : string
     BaseAssetHash : string
@@ -464,6 +476,7 @@ type ProcessingOutputDto = {
     Assets : Map<string, AssetStateDto>
     Validators : Map<string, ValidatorStateDto * ValidatorChangeCode>
     Stakes : Map<string * string, StakeStateDto>
+    TradingPairs : Map<string * string, TradingPairStateDto>
     TradeOrders : Map<string, TradeOrderStateDto * TradeOrderChangeCode>
 }
 
@@ -556,6 +569,13 @@ type AccountVoteDto = {
     ResolutionHash : string
     VoteHash : string
     VoteWeight: decimal
+}
+
+[<CLIMutable>]
+type TradingPairInfoDto = {
+    BaseAssetHash : string
+    QuoteAssetHash : string
+    IsEnabled : bool
 }
 
 [<CLIMutable>]
@@ -811,6 +831,12 @@ type GetValidatorInfoApiDto = {
 
 type GetValidatorsApiDto = {
     Validators : GetValidatorInfoApiDto list
+}
+
+type TradingPairApiDto = {
+    BaseAssetHash : string
+    QuoteAssetHash : string
+    IsEnabled : bool
 }
 
 type TradeOrderApiDto = {

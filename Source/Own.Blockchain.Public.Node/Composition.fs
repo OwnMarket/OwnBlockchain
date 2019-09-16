@@ -103,6 +103,14 @@ module Composition =
     let getStakers = Db.getStakers Config.DbEngineType Config.DbConnectionString
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbEngineType Config.DbConnectionString
 
+    let getTradingPairControllers () =
+        Db.getTradingPairControllers Config.DbEngineType Config.DbConnectionString
+        // TODO DSX: Remove below upon implementing governance
+        |> function
+        | [] -> [BlockchainAddress Config.GenesisAddress]
+        | cs -> cs
+
+    let getTradingPairState = Db.getTradingPairState Config.DbEngineType Config.DbConnectionString
     let getTradeOrderState = Db.getTradeOrderState Config.DbEngineType Config.DbConnectionString
     let getExecutableTradeOrders = Db.getExecutableTradeOrders Config.DbEngineType Config.DbConnectionString
     let getAccountTradeOrders = Db.getAccountTradeOrders Config.DbEngineType Config.DbConnectionString
@@ -255,6 +263,8 @@ module Composition =
             getStakers
             getTotalChxStaked
             getTopStakersByStake
+            getTradingPairControllers
+            getTradingPairState
             getTradeOrderState
             getValidatorsAtHeight
             getLockedAndBlacklistedValidators

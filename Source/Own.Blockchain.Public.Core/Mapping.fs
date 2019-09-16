@@ -153,6 +153,13 @@ module Mapping =
                 ProviderAddress = BlockchainAddress a.ProviderAddress
             }
             |> RemoveKycProvider
+        | :? ConfigureTradingPairTxActionDto as a ->
+            {
+                ConfigureTradingPairTxAction.BaseAssetHash = AssetHash a.BaseAssetHash
+                QuoteAssetHash = AssetHash a.QuoteAssetHash
+                IsEnabled = a.IsEnabled
+            }
+            |> ConfigureTradingPair
         | :? PlaceTradeOrderTxActionDto as a ->
             {
                 PlaceTradeOrderTxAction.AccountHash = AccountHash a.AccountHash
@@ -632,6 +639,16 @@ module Mapping =
             Amount = ChxAmount dto.Amount
         }
 
+    let tradingPairStateToDto (state : TradingPairState) : TradingPairStateDto =
+        {
+            TradingPairStateDto.IsEnabled = state.IsEnabled
+        }
+
+    let tradingPairStateFromDto (dto : TradingPairStateDto) : TradingPairState =
+        {
+            TradingPairState.IsEnabled = dto.IsEnabled
+        }
+
     let tradeOrderSideFromCode (tradeOrderSideCode : byte) : TradeOrderSide =
         match tradeOrderSideCode with
         | 1uy -> TradeOrderSide.Buy
@@ -784,6 +801,12 @@ module Mapping =
                 (sa, va), stakeStateToDto s
             )
 
+        let tradingPairs =
+            output.TradingPairs
+            |> Map.remap (fun ((AssetHash ba, AssetHash qa), s : TradingPairState) ->
+                (ba, qa), tradingPairStateToDto s
+            )
+
         let tradeOrders =
             output.TradeOrders
             |> Map.remap (fun (TradeOrderHash h, (s, c)) -> h, (tradeOrderStateToDto s, tradeOrderChangeToCode c))
@@ -800,6 +823,7 @@ module Mapping =
             Assets = assets
             Validators = validators
             Stakes = stakes
+            TradingPairs = tradingPairs
             TradeOrders = tradeOrders
         }
 

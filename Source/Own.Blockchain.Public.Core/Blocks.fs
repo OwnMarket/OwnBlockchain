@@ -223,6 +223,20 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createTradingPairStateHash
+        decodeHash
+        createHash
+        ((baseAssetHash : AssetHash, quoteAssetHash : AssetHash), state : TradingPairState)
+        =
+
+        [
+            baseAssetHash.Value |> decodeHash
+            quoteAssetHash.Value |> decodeHash
+            state.IsEnabled |> boolToBytes
+        ]
+        |> Array.concat
+        |> createHash
+
     let createTradeOrderStateHash
         decodeHash
         createHash
@@ -438,6 +452,12 @@ module Blocks =
                 createStakeStateHash decodeHash createHash (stakerAddress, validatorAddress, state)
             )
 
+        let tradingPairHashes =
+            output.TradingPairs
+            |> Map.toList
+            |> List.sort // Ensure a predictable order
+            |> List.map (createTradingPairStateHash decodeHash createHash)
+
         let tradeOrderHashes =
             output.TradeOrders
             |> Map.toList
@@ -454,6 +474,7 @@ module Blocks =
             @ assetHashes
             @ validatorHashes
             @ stakeHashes
+            @ tradingPairHashes
             @ tradeOrderHashes
             |> createMerkleTree
 
@@ -555,6 +576,7 @@ module Blocks =
             Validators = genesisValidators
             Stakes = Map.empty
             StakingRewards = Map.empty
+            TradingPairs = Map.empty
             TradeOrders = Map.empty
         }
 

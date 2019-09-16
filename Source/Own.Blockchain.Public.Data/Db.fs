@@ -617,6 +617,44 @@ module Db =
     // Trading
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let getTradingPairControllers
+        dbEngineType
+        (dbConnectionString : string)
+        : BlockchainAddress list
+        =
+
+        // TODO DSX: Implement governance
+        []
+
+    let getTradingPairState
+        dbEngineType
+        (dbConnectionString : string)
+        (AssetHash baseAssetHash, AssetHash quoteAssetHash)
+        : TradingPairStateDto option
+        =
+
+        let sql =
+            """
+            SELECT
+                is_enabled
+            FROM trading_pair
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE ba.asset_hash = @baseAssetHash
+            AND qa.asset_hash = @quoteAssetHash
+            """
+
+        let sqlParams =
+            [
+                "@baseAssetHash", baseAssetHash |> box
+                "@quoteAssetHash", quoteAssetHash |> box
+            ]
+
+        match DbTools.query<TradingPairStateDto> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | [tradingPairState] -> Some tradingPairState
+        | _ -> failwithf "Multiple trading pairs found for asset pair %s / %s" baseAssetHash quoteAssetHash
+
     let getTradeOrderState
         dbEngineType
         (dbConnectionString : string)
@@ -2374,6 +2412,96 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private addTradingPair
+        conn
+        transaction
+        (tradingPairInfo : TradingPairInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            INSERT INTO trading_pair (
+                base_asset_id,
+                quote_asset_id,
+                is_enabled
+            )
+            VALUES (
+                (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash),
+                (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash),
+                @isEnabled
+            )
+            """
+
+        let sqlParams =
+            [
+                "@baseAssetHash", tradingPairInfo.BaseAssetHash |> box
+                "@quoteAssetHash", tradingPairInfo.QuoteAssetHash |> box
+                "@isEnabled", tradingPairInfo.IsEnabled |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert trading pair state"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert trading pair state"
+
+    let private updateTradingPair
+        conn
+        transaction
+        (tradingPairInfo : TradingPairInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            UPDATE trading_pair
+            SET is_enabled = @isEnabled
+            WHERE base_asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash)
+            AND quote_asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash)
+            """
+
+        let sqlParams =
+            [
+                "@baseAssetHash", tradingPairInfo.BaseAssetHash |> box
+                "@quoteAssetHash", tradingPairInfo.QuoteAssetHash |> box
+                "@isEnabled", tradingPairInfo.IsEnabled |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 0 -> addTradingPair conn transaction tradingPairInfo
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update trading pair state"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update trading pair state"
+
+    let private updateTradingPairs
+        conn
+        transaction
+        (stakes : Map<string * string, TradingPairStateDto>)
+        : Result<unit, AppErrors>
+        =
+
+        let foldFn result ((baseAssetHash, quoteAssetHash), state : TradingPairStateDto) =
+            result
+            >>= fun _ ->
+                {
+                    TradingPairInfoDto.BaseAssetHash = baseAssetHash
+                    QuoteAssetHash = quoteAssetHash
+                    IsEnabled = state.IsEnabled
+                }
+                |> updateTradingPair conn transaction
+
+        stakes
+        |> Map.toList
+        |> List.fold foldFn (Ok ())
+
     let private addTradeOrder
         conn
         transaction
@@ -2542,6 +2670,7 @@ module Db =
                 do! updateVotes conn transaction stateChanges.Votes
                 do! updateKycProviders conn transaction stateChanges.KycProviders
                 do! updateEligibilities conn transaction stateChanges.Eligibilities
+                do! updateTradingPairs conn transaction stateChanges.TradingPairs
                 do! updateTradeOrders conn transaction stateChanges.TradeOrders
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber

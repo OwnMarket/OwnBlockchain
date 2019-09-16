@@ -51,6 +51,7 @@ module Serialization =
             "ChangeKycControllerAddress", tokenToAction<ChangeKycControllerAddressTxActionDto>
             "AddKycProvider", tokenToAction<AddKycProviderTxActionDto>
             "RemoveKycProvider", tokenToAction<RemoveKycProviderTxActionDto>
+            "ConfigureTradingPair", tokenToAction<ConfigureTradingPairTxActionDto>
             "PlaceTradeOrder", tokenToAction<PlaceTradeOrderTxActionDto>
             "CancelTradeOrder", tokenToAction<CancelTradeOrderTxActionDto>
         ]

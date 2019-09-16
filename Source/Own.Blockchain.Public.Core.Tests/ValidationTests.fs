@@ -23,6 +23,7 @@ module ValidationTests =
     let setAssetCodeActionType = "SetAssetCode"
     let configureValidatorActionType = "ConfigureValidator"
     let delegateStakeActionType = "DelegateStake"
+    let configureTradingPairActionType = "ConfigureTradingPair"
     let placeTradeOrderActionType = "PlaceTradeOrder"
     let cancelTradeOrderActionType = "CancelTradeOrder"
 

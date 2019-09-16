@@ -45,6 +45,7 @@ module Helpers =
         | ChangeKycControllerAddress action -> box action :?> 'T
         | AddKycProvider action -> box action :?> 'T
         | RemoveKycProvider action -> box action :?> 'T
+        | ConfigureTradingPair action -> box action :?> 'T
         | PlaceTradeOrder action -> box action :?> 'T
         | CancelTradeOrder action -> box action :?> 'T
 
@@ -161,6 +162,8 @@ module Helpers =
             GetStakersFromStorage : BlockchainAddress -> BlockchainAddress list
             GetTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
             GetTopStakers : BlockchainAddress -> StakerInfo list
+            GetTradingPairControllersFromStorage : unit -> BlockchainAddress list
+            GetTradingPairStateFromStorage : AssetHash * AssetHash -> TradingPairState option
             GetTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option
             GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
             MaxActionCountPerTx : int
@@ -203,6 +206,8 @@ module Helpers =
             GetStakersFromStorage = fun _ -> unexpectedInvocation "GetStakersFromStorage"
             GetTotalChxStakedFromStorage = fun _ -> ChxAmount 0m
             GetTopStakers = fun _ -> []
+            GetTradingPairControllersFromStorage = fun _ -> unexpectedInvocation "GetTradingPairControllersFromStorage"
+            GetTradingPairStateFromStorage = fun _ -> unexpectedInvocation "GetTradingPairStateFromStorage"
             GetTradeOrderStateFromStorage = fun _ -> unexpectedInvocation "GetTradeOrderStateFromStorage"
             GetLockedAndBlacklistedValidators = fun _ -> []
             MaxActionCountPerTx = maxActionCountPerTx
@@ -243,6 +248,8 @@ module Helpers =
             mockedDeps.GetStakersFromStorage
             mockedDeps.GetTotalChxStakedFromStorage
             mockedDeps.GetTopStakers
+            mockedDeps.GetTradingPairControllersFromStorage
+            mockedDeps.GetTradingPairStateFromStorage
             mockedDeps.GetTradeOrderStateFromStorage
             mockedDeps.GetLockedAndBlacklistedValidators
             mockedDeps.MaxActionCountPerTx

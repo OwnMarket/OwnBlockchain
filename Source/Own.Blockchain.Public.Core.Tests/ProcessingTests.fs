@@ -7530,6 +7530,12 @@ module ProcessingTests =
         let getTradeOrderState _ =
             None
 
+        let getTradingPairState _ =
+            {
+                TradingPairState.IsEnabled = true
+            }
+            |> Some
+
         // ACT
         let output =
             { Helpers.processChangesMockedDeps with
@@ -7538,6 +7544,7 @@ module ProcessingTests =
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
                 GetTradeOrderStateFromStorage = getTradeOrderState
+                GetTradingPairStateFromStorage = getTradingPairState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
@@ -7627,6 +7634,7 @@ module ProcessingTests =
                 GetChxAddressStateFromStorage = getChxAddressState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
+                GetTradingPairStateFromStorage = getTradingPairState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
@@ -7703,6 +7711,9 @@ module ProcessingTests =
                 |> Some
             else
                 None
+
+        let getTradingPairState _ =
+            None
 
         // ACT
         let output =

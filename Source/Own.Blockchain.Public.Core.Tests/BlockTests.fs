@@ -284,6 +284,33 @@ module BlockTests =
         test <@ stakingRewardHash = "AAA...F............" @>
 
     [<Fact>]
+    let ``Blocks.createTradingPairStateHash`` () =
+        let baseAssetHash = AssetHash "BBB"
+        let quoteAssetHash = AssetHash "CCC"
+        let state =
+            {
+                TradingPairState.IsEnabled = true
+            }
+
+        let expectedHash =
+            [
+                "BBB" // BaseAssetHash
+                "CCC" // QuoteAssetHash
+                "A" // IsExecutable
+            ]
+            |> String.Concat
+
+        // ACT
+        let stateHash =
+            Blocks.createTradingPairStateHash
+                DummyHash.decode
+                DummyHash.create
+                ((baseAssetHash, quoteAssetHash), state)
+
+        // ASSERT
+        test <@ stateHash = expectedHash @>
+
+    [<Fact>]
     let ``Blocks.createTradeOrderStateHash`` () =
         let tradeOrderHash = TradeOrderHash "AAA"
         let state =
@@ -609,6 +636,13 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let tradingPairs =
+            [
+                (AssetHash "AAA", AssetHash "BBB"), {TradingPairState.IsEnabled = true}
+                (AssetHash "CCC", AssetHash "DDD"), {TradingPairState.IsEnabled = false}
+            ]
+            |> Map.ofList
+
         let tradeOrders =
             [
                 TradeOrderHash "AAA",
@@ -666,6 +700,7 @@ module BlockTests =
                 Validators = validators
                 Stakes = stakes
                 StakingRewards = stakingRewards
+                TradingPairs = tradingPairs
                 TradeOrders = tradeOrders
             }
 
@@ -755,6 +790,8 @@ module BlockTests =
                 "CCCCCIII...C.............C.FA." // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
+                "AAABBBA" // Trading Pair 1
+                "CCCDDD." // Trading Pair 2
                 "AAABABBBCA...C............A.................................................BA.......F." // Order 1
                 "BBBCACBCCB...D............F...E...............F...............C............AA........GA" // Order 2
             ]
@@ -1076,6 +1113,13 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let tradingPairs =
+            [
+                (AssetHash "AAA", AssetHash "BBB"), {TradingPairState.IsEnabled = true}
+                (AssetHash "CCC", AssetHash "DDD"), {TradingPairState.IsEnabled = false}
+            ]
+            |> Map.ofList
+
         let tradeOrders =
             [
                 TradeOrderHash "AAA",
@@ -1133,6 +1177,7 @@ module BlockTests =
                 Validators = validators
                 Stakes = stakes
                 StakingRewards = stakingRewards
+                TradingPairs = tradingPairs
                 TradeOrders = tradeOrders
             }
 
@@ -1240,6 +1285,10 @@ module BlockTests =
                     |> Blocks.createStakeStateHash Hashing.decode Hashing.hash
                 )
 
+                tradingPairs
+                |> Map.toList
+                |> List.map (Blocks.createTradingPairStateHash Hashing.decode Hashing.hash)
+
                 tradeOrders
                 |> Map.toList
                 |> List.map (Blocks.createTradeOrderStateHash Hashing.decode Hashing.hash)
@@ -1247,7 +1296,7 @@ module BlockTests =
             |> List.concat
             |> Helpers.verifyMerkleProofs block.Header.StateRoot
 
-        test <@ stateMerkleProofs = List.replicate 26 true @>
+        test <@ stateMerkleProofs = List.replicate 28 true @>
 
     [<Theory>]
     [<InlineData("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
@@ -1509,6 +1558,13 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let tradingPairs =
+            [
+                (AssetHash "AAA", AssetHash "BBB"), {TradingPairState.IsEnabled = true}
+                (AssetHash "CCC", AssetHash "DDD"), {TradingPairState.IsEnabled = false}
+            ]
+            |> Map.ofList
+
         let tradeOrders =
             [
                 TradeOrderHash "AAA",
@@ -1566,6 +1622,7 @@ module BlockTests =
                 Validators = validators
                 Stakes = stakes
                 StakingRewards = stakingRewards
+                TradingPairs = tradingPairs
                 TradeOrders = tradeOrders
             }
 

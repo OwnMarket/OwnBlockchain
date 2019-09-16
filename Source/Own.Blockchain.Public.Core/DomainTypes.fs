@@ -74,6 +74,12 @@ type KycProvider = {
 // Trading
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type TradingPairInfo = {
+    BaseAssetHash : AssetHash
+    QuoteAssetHash : AssetHash
+    IsEnabled : bool
+}
+
 type TradeOrderHash = TradeOrderHash of string
 
 type TradeOrderSide =
@@ -203,6 +209,12 @@ type RemoveKycProviderTxAction = {
     ProviderAddress : BlockchainAddress
 }
 
+type ConfigureTradingPairTxAction = {
+    BaseAssetHash : AssetHash
+    QuoteAssetHash : AssetHash
+    IsEnabled : bool
+}
+
 type PlaceTradeOrderTxAction = {
     AccountHash : AccountHash
     BaseAssetHash : AssetHash
@@ -240,6 +252,7 @@ type TxAction =
     | ChangeKycControllerAddress of ChangeKycControllerAddressTxAction
     | AddKycProvider of AddKycProviderTxAction
     | RemoveKycProvider of RemoveKycProviderTxAction
+    | ConfigureTradingPair of ConfigureTradingPairTxAction
     | PlaceTradeOrder of PlaceTradeOrderTxAction
     | CancelTradeOrder of CancelTradeOrderTxAction
 
@@ -375,8 +388,11 @@ type TxErrorCode =
     | KycProviderAlreadyExists = 670s
 
     // Trading
-    | TradingPairNotFound = 710s
-    | TradeOrderNotFound = 720s
+    | BaseAssetNotFound = 710s
+    | QuoteAssetNotFound = 720s
+    | TradingPairNotFound = 730s
+    | SenderIsNotTradingPairController = 740s
+    | TradeOrderNotFound = 750s
 
     // Validators
     | ValidatorNotFound = 910s
@@ -473,6 +489,10 @@ type StakerInfo = {
     Amount : ChxAmount
 }
 
+type TradingPairState = {
+    IsEnabled : bool
+}
+
 type TradeOrderState = {
     AccountHash : AccountHash
     BaseAssetHash : AssetHash
@@ -502,6 +522,7 @@ type ProcessingOutput = {
     Validators : Map<BlockchainAddress, ValidatorState * ValidatorChange>
     Stakes : Map<BlockchainAddress * BlockchainAddress, StakeState>
     StakingRewards : Map<BlockchainAddress, ChxAmount>
+    TradingPairs : Map<AssetHash * AssetHash, TradingPairState>
     TradeOrders : Map<TradeOrderHash, TradeOrderState * TradeOrderChange>
 }
 

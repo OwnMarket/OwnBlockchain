@@ -274,6 +274,12 @@ module Validation =
     let private validateRemoveKycProvider isValidHash isValidAddress (action : RemoveKycProviderTxActionDto) =
         validateSetKycProvider isValidHash isValidAddress action.AssetHash action.ProviderAddress
 
+    let private validateConfigureTradingPair isValidHash (action : ConfigureTradingPairTxActionDto) =
+        [
+            yield! validateHash isValidHash action.BaseAssetHash "BaseAssetHash"
+            yield! validateHash isValidHash action.QuoteAssetHash "QuoteAssetHash"
+        ]
+
     let private validatePlaceTradeOrder isValidHash (action : PlaceTradeOrderTxActionDto) =
         let tradeOrderSideCodes = ["BUY"; "SELL"]
         let tradeOrderTypeCodes =
@@ -435,6 +441,8 @@ module Validation =
                 validateAddKycProvider isValidHash isValidAddress a
             | :? RemoveKycProviderTxActionDto as a ->
                 validateRemoveKycProvider isValidHash isValidAddress a
+            | :? ConfigureTradingPairTxActionDto as a ->
+                validateConfigureTradingPair isValidHash a
             | :? PlaceTradeOrderTxActionDto as a ->
                 validatePlaceTradeOrder isValidHash a
             | :? CancelTradeOrderTxActionDto as a ->
