@@ -961,7 +961,7 @@ module Db =
             """
             SELECT provider_address
             FROM kyc_provider
-            WHERE provider_address = (SELECT controller_address from account where account_hash = @accountHash)
+            WHERE provider_address = (SELECT controller_address FROM account WHERE account_hash = @accountHash)
             """
 
         [
