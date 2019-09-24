@@ -2811,6 +2811,215 @@ module ProcessingTests =
         test <@ output.TxResults.[txHash2].Status = expectedStatusTxHash2 @>
         test <@ output.Votes = Map.empty @>
 
+    [<Fact>]
+    let ``Processing.processChanges SubmitVote and SubmitVoteWeight separate Tx`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = accountHash1
+        let assetHash = assetHash1
+        let voteWeight = VoteWeight 1m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (accountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce1 = Nonce 11L
+        let nonce2 = nonce1 + 1L
+
+        let actionFee = ChxAmount 1m
+
+        // Vote Yes on RS1
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash1.Value
+                            VoteHash = voteHashYes.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce1 (Timestamp 0L) actionFee
+
+        // Weight vote on RS1
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash1.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce2 (Timestamp 0L) actionFee
+
+        let txSet = [txHash1; txHash2]
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            elif txHash = txHash2 then Ok txEnvelope2
+            else Result.appError "Invalid TX hash"
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getVoteState (voteId: VoteId) =
+            // No vote for rsh1
+            if voteId.ResolutionHash = resolutionHash1 then
+                None
+            else
+                None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetHoldingStateFromStorage = getHoldingState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        test <@ output.TxResults.Count = 2 @>
+        test <@ output.TxResults.[txHash1].Status = Success @>
+        test <@ output.TxResults.[txHash2].Status = Success @>
+        test <@ output.Votes.Count = 1 @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash1}]
+            = {VoteHash = voteHashYes; VoteWeight = Some voteWeight} @>
+
+    [<Fact>]
+    let ``Processing.processChanges SubmitVote and SubmitVoteWeight same Tx`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash = accountHash1
+        let assetHash = assetHash1
+        let voteWeight = VoteWeight 1m
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (accountHash, assetHash), {HoldingState.Balance = AssetAmount 50m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce1 = Nonce 11L
+
+        let actionFee = ChxAmount 1m
+
+        // Vote Yes on RS1
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "SubmitVote"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash1.Value
+                            VoteHash = voteHashYes.Value
+                        }
+                } :> obj
+                {
+                    ActionType = "SubmitVoteWeight"
+                    ActionData =
+                        {
+                            AccountHash = accountHash.Value
+                            AssetHash = assetHash.Value
+                            ResolutionHash = resolutionHash1.Value
+                            VoteWeight = voteWeight.Value
+                        }
+                } :> obj
+            ]
+            |> Helpers.newTx senderWallet nonce1 (Timestamp 0L) actionFee
+
+        let txSet = [txHash1]
+
+        // COMPOSE
+        let getTx txHash =
+            if txHash = txHash1 then Ok txEnvelope1
+            else Result.appError "Invalid TX hash"
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getHoldingState key =
+            initialHoldingState |> Map.tryFind key
+
+        let getVoteState (voteId: VoteId) =
+            // No vote for rsh1
+            if voteId.ResolutionHash = resolutionHash1 then
+                None
+            else
+                None
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetHoldingStateFromStorage = getHoldingState
+                GetVoteStateFromStorage = getVoteState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash1].Status = Success @>
+        test <@ output.Votes.Count = 1 @>
+        test <@ output.Votes.[{AccountHash = accountHash; AssetHash = assetHash; ResolutionHash = resolutionHash1}]
+            = {VoteHash = voteHashYes; VoteWeight = Some voteWeight} @>
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // SetAccountEligibility
     ////////////////////////////////////////////////////////////////////////////////////////////////////
