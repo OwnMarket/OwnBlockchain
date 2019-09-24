@@ -1568,8 +1568,8 @@ module Db =
     let private addVote conn transaction (voteInfo : VoteInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO vote (holding_id, resolution_hash, vote_hash)
-            SELECT holding_id, @resolutionHash, @voteHash
+            INSERT INTO vote (holding_id, resolution_hash, vote_hash, vote_weight)
+            SELECT holding_id, @resolutionHash, @voteHash, @voteWeight
             FROM holding
             JOIN account USING (account_id)
             WHERE asset_hash = @assetHash
@@ -1582,6 +1582,7 @@ module Db =
                 "@assetHash", voteInfo.AssetHash |> box
                 "@resolutionHash", voteInfo.ResolutionHash |> box
                 "@voteHash", voteInfo.VoteState.VoteHash |> box
+                "@voteWeight", voteInfo.VoteState.VoteWeight |> boxNullable
             ]
 
         try
