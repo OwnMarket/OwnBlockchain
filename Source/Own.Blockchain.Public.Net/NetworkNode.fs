@@ -1,7 +1,6 @@
 ﻿namespace Own.Blockchain.Public.Net
 
 open System
-open System.Net
 open System.Collections.Concurrent
 open System.Collections.Generic
 open System.Threading
@@ -38,6 +37,7 @@ type NetworkNode
 
     let activePeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let deadPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
+    let excludedPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let peersStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
     let cacheValidators = new ConcurrentBag<NetworkAddress>()
@@ -144,6 +144,18 @@ type NetworkNode
         peersStateMonitor.AddOrUpdate (peerAddress, cts, fun _ _ -> cts) |> ignore
         Async.Start ((setFinalDeadPeer peerAddress), cts.Token)
 
+    let setPeerForExclusion networkAddress =
+        async {
+            do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
+            let found, _ = activePeers.TryGetValue networkAddress
+            if not found then
+                Log.debugf "Peer %s has been excluded" networkAddress.Value
+                excludedPeers.TryRemove networkAddress |> ignore
+                networkAddress.Value |> closeConnection
+                removePeerNode networkAddress
+                |> Result.iterError (fun _ -> Log.errorf "Error removing peer %A" networkAddress)
+        }
+
     (*
         It declares a peer as dead.
         - remove it from active nodes
@@ -174,11 +186,16 @@ type NetworkNode
             Async.Start ((setPendingDeadPeer peerAddress), cts.Token)
 
     let updateActivePeer peer =
-        activePeers.AddOrUpdate (peer.NetworkAddress, peer, fun _ _ -> peer) |> ignore
+        if not (excludedPeers.ContainsKey peer.NetworkAddress) then
+            activePeers.AddOrUpdate (peer.NetworkAddress, peer, fun _ _ -> peer) |> ignore
 
     let saveActivePeer peer =
-        activePeers.AddOrUpdate (peer.NetworkAddress, peer, fun _ _ -> peer) |> ignore
-        savePeerNode peer.NetworkAddress
+        if not (excludedPeers.ContainsKey peer.NetworkAddress)
+            && activePeers.Count < nodeConfig.MaxConnectedPeers then
+            activePeers.AddOrUpdate (peer.NetworkAddress, peer, fun _ _ -> peer) |> ignore
+            savePeerNode peer.NetworkAddress
+        else
+            Ok()
 
     let startCachedDataMonitor (entries : ConcurrentDictionary<_, DateTime>) =
         let rec loop () =
@@ -294,13 +311,33 @@ type NetworkNode
         // Filter the existing peers, if any, (used to refresh connection, i.e increase heartbeat).
         let existingPeers =
             receivedPeers
-            |> List.filter (fun m -> m.NetworkAddress |> __.GetActivePeer |> Option.isSome)
+            |> Set.ofList
+            |> Set.intersect (__.GetActivePeers() |> Set.ofList)
+            |> Set.toList
 
-        let activePeersCount = __.GetActivePeers() |> List.length
-        let take = nodeConfig.MaxConnectedPeers - activePeersCount
+        let activePeersCount = __.GetActivePeers().Length
 
+        // Max peers count reached.
+        if activePeersCount >= nodeConfig.MaxConnectedPeers then
+            // Exclude non-whitelisted peer.
+            __.GetActivePeers()
+            |> List.shuffle
+            |> List.filter (fun peer -> not (isWhitelisted peer.NetworkAddress))
+            |> List.tryHead
+            |> Option.iter (fun peer ->
+                // Shallow exclusion.
+                activePeers.TryRemove peer.NetworkAddress |> ignore
+                excludedPeers.AddOrUpdate(peer.NetworkAddress, peer, fun _ _ -> peer) |> ignore
+                // Deep exclusion.
+                let cts = new CancellationTokenSource()
+                Async.Start ((setPeerForExclusion peer.NetworkAddress), cts.Token)
+            )
+
+        // If active peers count reached max, onboard a new peer, otherwise onboard up to max.
+        let take = Math.Max(1, nodeConfig.MaxConnectedPeers - activePeersCount)
         receivedPeers
         |> List.except existingPeers
+        |> List.except excludedPeers.Values
         |> List.shuffle
         |> List.truncate take
         |> List.append existingPeers

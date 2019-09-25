@@ -48,6 +48,15 @@ module PeerTests =
     let setupTest () =
         testCleanup ()
 
+    let printPeers (node : NetworkNode) =
+        let peers =
+            node.GetActivePeers()
+            |> List.map (fun p -> p.NetworkAddress.Value.Replace("127.0.0.1:", "") |> int)
+            |> List.sort
+
+        let nodeAddress = node.GetListenAddress().Value.Replace("127.0.0.1:", "")
+        System.Diagnostics.Debug.Print (sprintf "[%s] --> %A \n" nodeAddress peers)
+
     let getNetworkId =
         let networkCode = "OWN_PUBLIC_BLOCKCHAIN_TEST"
         let networkId = lazy (Hashing.networkId networkCode)
@@ -479,7 +488,8 @@ module PeerTests =
 
     let testGossipDiscoveryMaxPeers nodeConfigList maxPeerCount cycleCount =
         // ARRANGE
-        let nodeList, tCycle = createNodes nodeConfigList
+        let gossipConfig = { gossipConfigBase with MissedHeartbeatIntervalMillis = 1000 }
+        let nodeList, tCycle = createNodesWithGossipConfig gossipConfig nodeConfigList
 
         // ACT
         nodeList |> List.iter (fun n -> startGossip n)
@@ -488,8 +498,9 @@ module PeerTests =
 
         nodeList
         |> List.iter (fun n ->
+            // printPeers n
             let peerCount = n.GetActivePeers().Length
-            test <@ peerCount = maxPeerCount @>
+            test <@ peerCount > 2 && peerCount <= maxPeerCount @>
         )
 
         nodeList |> List.iter stopGossip
@@ -909,7 +920,7 @@ module PeerTests =
 
         testNodeFallsbackToBootstrap nodeConfigList 5
 
-    // [<Fact>]
+    [<Fact>]
     let ``Network - GossipDiscovery 10 max peers nodes`` () =
         // ARRANGE
         setupTest ()
