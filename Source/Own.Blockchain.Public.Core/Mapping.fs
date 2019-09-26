@@ -186,7 +186,7 @@ module Mapping =
                 TrailingDeltaIsPercentage = a.TrailingDeltaIsPercentage
                 TimeInForce =
                     match a.TimeInForce with
-                    | "GTE" -> TradeOrderTimeInForce.GoodTilExpired
+                    | "GTC" -> TradeOrderTimeInForce.GoodTilCancelled
                     | "IOC" -> TradeOrderTimeInForce.ImmediateOrCancel
                     | v -> failwithf "Invalid TradeOrderTimeInForce value: %s" v
             }
@@ -681,13 +681,13 @@ module Mapping =
 
     let tradeOrderTimeInForceFromCode (tradeOrderTimeInForceCode : byte) : TradeOrderTimeInForce =
         match tradeOrderTimeInForceCode with
-        | 1uy -> TradeOrderTimeInForce.GoodTilExpired
+        | 1uy -> TradeOrderTimeInForce.GoodTilCancelled
         | 2uy -> TradeOrderTimeInForce.ImmediateOrCancel
         | t -> failwithf "Invalid trade order time in force code: %i" t
 
     let tradeOrderTimeInForceToCode (tradeOrderTimeInForce : TradeOrderTimeInForce) : byte =
         match tradeOrderTimeInForce with
-        | TradeOrderTimeInForce.GoodTilExpired -> 1uy
+        | TradeOrderTimeInForce.GoodTilCancelled -> 1uy
         | TradeOrderTimeInForce.ImmediateOrCancel -> 2uy
 
     let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =
@@ -1010,7 +1010,7 @@ module Mapping =
             TrailingDeltaIsPercentage = tradeOrderInfo.TrailingDeltaIsPercentage
             TimeInForce =
                 match tradeOrderInfo.TimeInForce with
-                | TradeOrderTimeInForce.GoodTilExpired -> "GTE"
+                | TradeOrderTimeInForce.GoodTilCancelled -> "GTC"
                 | TradeOrderTimeInForce.ImmediateOrCancel -> "IOC"
             IsExecutable = tradeOrderInfo.IsExecutable
             AmountFilled = tradeOrderInfo.AmountFilled.Value

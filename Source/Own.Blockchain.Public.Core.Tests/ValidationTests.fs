@@ -1227,7 +1227,7 @@ module ValidationTests =
                                 StopPrice = 0m
                                 TrailingDelta = 0m
                                 TrailingDeltaIsPercentage = false
-                                TimeInForce = "GTE"
+                                TimeInForce = "GTC"
                             }
                     }
                 ]

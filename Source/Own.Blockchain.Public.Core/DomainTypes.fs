@@ -103,7 +103,7 @@ type ExecTradeOrderType =
 
 [<RequireQualifiedAccess>]
 type TradeOrderTimeInForce =
-    | GoodTilExpired
+    | GoodTilCancelled
     | ImmediateOrCancel
 
 [<RequireQualifiedAccess>]

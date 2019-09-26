@@ -136,7 +136,7 @@ type PlaceTradeOrderTxActionDto = {
     StopPrice : decimal
     TrailingDelta : decimal
     TrailingDeltaIsPercentage : bool
-    TimeInForce : string // GTE, IOC
+    TimeInForce : string // GTC, IOC
 }
 
 [<CLIMutable>]

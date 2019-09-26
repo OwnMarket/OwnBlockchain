@@ -287,7 +287,7 @@ module Validation =
         let limitOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("LIMIT"))
         let stopOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("STOP"))
         let trailingOrderTypeCodes = tradeOrderTypeCodes |> List.filter (fun c -> c.Contains("TRAILING"))
-        let tradeOrderTimeInForceCodes = ["GTE"; "IOC"]
+        let tradeOrderTimeInForceCodes = ["GTC"; "IOC"]
 
         [
             // AccountHash
@@ -363,8 +363,8 @@ module Validation =
             if not (tradeOrderTimeInForceCodes |> List.contains action.TimeInForce) then
                 yield AppError "TimeInForce must have a valid value"
             if not (limitOrderTypeCodes |> List.contains action.OrderType) then
-                if action.TimeInForce = "GTE" then
-                    yield AppError "TimeInForce in non-LIMIT order types cannot not be GTE"
+                if action.TimeInForce = "GTC" then
+                    yield AppError "TimeInForce in non-LIMIT order types cannot not be GTC"
         ]
 
     let private validateCancelTradeOrder isValidHash (action : CancelTradeOrderTxActionDto) =
