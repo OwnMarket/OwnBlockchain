@@ -331,12 +331,15 @@ module BlockTests =
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
                 AmountFilled = AssetAmount 3m
-                Status = TradeOrderStatus.Open
+                Status = TradeOrderStatus.Filled
             }
 
         let expectedHash =
             [
                 "AAA" // TradeOrderHash
+                ".......G" // BlockNumber
+                "...H" // TxPosition
+                ".I" // ActionNumber
                 "DA" // AccountHash
                 "DB" // BaseAssetHash
                 "DC" // QuoteAssetHash
@@ -349,7 +352,8 @@ module BlockTests =
                 "A" // TrailingDeltaIsPercentage
                 "B" // TimeInForce
                 "A" // IsExecutable
-                ".......G" // BlockNumber
+                "...C............" // AmountFilled
+                "A" // Status
                 "." // TradeOrderChange
             ]
             |> String.Concat
@@ -804,8 +808,52 @@ module BlockTests =
                 "IIBBBBB...B............" // Stake 2
                 "AAABBBA" // Trading Pair 1
                 "CCCDDD." // Trading Pair 2
-                "AAABABBBCA...C............A.................................................BA.......F." // Order 1
-                "BBBCACBCCB...D............F...E...............F...............C............AA........GA" // Order 2
+                // Trade Order 1
+                [
+                    "AAA"
+                    ".......F"
+                    "...G"
+                    ".H"
+                    "BA"
+                    "BB"
+                    "BC"
+                    "A"
+                    "...C............"
+                    "A"
+                    "................"
+                    "................"
+                    "................"
+                    "."
+                    "B"
+                    "A"
+                    "...C............"
+                    "A"
+                    "."
+                ]
+                |> String.Concat
+                // Trade Order 2
+                [
+                    "BBB"
+                    ".......G"
+                    "...H"
+                    ".I"
+                    "CA"
+                    "CB"
+                    "CC"
+                    "B"
+                    "...D............"
+                    "F"
+                    "...E............"
+                    "...F............"
+                    "...C............"
+                    "A"
+                    "A"
+                    "."
+                    "...A............"
+                    "."
+                    "A"
+                ]
+                |> String.Concat
             ]
             |> String.Concat
 

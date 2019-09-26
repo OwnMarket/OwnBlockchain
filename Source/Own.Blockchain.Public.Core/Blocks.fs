@@ -246,10 +246,14 @@ module Blocks =
         let tradeOrderSideCodeBytes = [| state.Side |> Mapping.tradeOrderSideToCode |]
         let tradeOrderOrderTypeCodeBytes = [| state.OrderType |> Mapping.tradeOrderTypeToCode |]
         let tradeOrderTimeInForceCodeBytes = [| state.TimeInForce |> Mapping.tradeOrderTimeInForceToCode |]
+        let tradeOrderStatusCodeBytes = [| state.Status |> Mapping.tradeOrderStatusToCode |]
         let tradeOrderChangeCodeBytes = [| change |> Mapping.tradeOrderChangeToCode |> byte |]
 
         [
             tradeOrderHash |> decodeHash
+            state.BlockNumber.Value |> int64ToBytes
+            state.TxPosition |> int32ToBytes
+            state.ActionNumber.Value |> int16ToBytes
             state.AccountHash.Value |> decodeHash
             state.BaseAssetHash.Value |> decodeHash
             state.QuoteAssetHash.Value |> decodeHash
@@ -262,7 +266,8 @@ module Blocks =
             state.TrailingDeltaIsPercentage |> boolToBytes
             tradeOrderTimeInForceCodeBytes
             state.IsExecutable |> boolToBytes
-            state.BlockNumber.Value |> int64ToBytes
+            state.AmountFilled.Value |> decimalToBytes
+            tradeOrderStatusCodeBytes
             tradeOrderChangeCodeBytes
         ]
         |> Array.concat

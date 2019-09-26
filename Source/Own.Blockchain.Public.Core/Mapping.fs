@@ -690,6 +690,18 @@ module Mapping =
         | TradeOrderTimeInForce.GoodTilCancelled -> 1uy
         | TradeOrderTimeInForce.ImmediateOrCancel -> 2uy
 
+    let tradeOrderStatusToCode (tradeOrderStatus : TradeOrderStatus) : byte =
+        match tradeOrderStatus with
+        | TradeOrderStatus.Open -> 0uy
+        | TradeOrderStatus.Filled -> 1uy
+        | TradeOrderStatus.Cancelled reason ->
+            match reason with
+            | TradeOrderCancelReason.TriggeredByUser -> 21uy
+            | TradeOrderCancelReason.TriggeredByTimeInForce -> 22uy
+            | TradeOrderCancelReason.Expired -> 23uy
+            | TradeOrderCancelReason.InsufficientQuoteAssetBalance -> 24uy
+            | TradeOrderCancelReason.NotEligible -> 25uy
+
     let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =
         {
             BlockNumber = BlockNumber dto.BlockNumber
