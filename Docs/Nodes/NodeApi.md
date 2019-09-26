@@ -111,11 +111,12 @@ Response JSON payload:
     "validatorAddress": "CHT72YWjChhv5xYeDono6Nn4Z5Qe5Q7aRyq",
     "blockNumber": 123,
     "consensusRound": 0,
-    "consensusStep": 1,
+    "consensusStep": "Vote",
     "equivocationValue1": "9VMtBESNLXWFRQXrd2HbXc2CGWUkdyPQjAKP5MciU59k",
     "equivocationValue2": "D8ViZH31RHBYrDfUhUC1DK49pY1dxCvgRMsbnS9Lbn3p",
     "signature1": "E5nmjsHcL1hFmJEjphUhg6DBn6gyxYzrTKKtXvDGB8FhefQZQ6o5QJ1MRgXqqY97YMsCe8cs3muDF524Mq1Q9qTzG",
     "signature2": "M4jAhLWup8fe6NVnUg193uqLzGdgFuo6XFP2pDZFWGNvK6LuwYRqwM8HBADatgTZreXz2oZr5GhA3kZqi2GhaHrZE",
+    "status": "Processed",
     "depositTaken": 5000,
     "depositDistribution" : [
         {
