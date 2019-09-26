@@ -619,9 +619,9 @@ module Mapping =
 
     let validatorChangeToCode (change : ValidatorChange) =
         match change with
-        | Add -> ValidatorChangeCode.Add
-        | Remove -> ValidatorChangeCode.Remove
-        | Update -> ValidatorChangeCode.Update
+        | ValidatorChange.Add -> ValidatorChangeCode.Add
+        | ValidatorChange.Remove -> ValidatorChangeCode.Remove
+        | ValidatorChange.Update -> ValidatorChangeCode.Update
 
     let stakeStateFromDto (dto : StakeStateDto) : StakeState =
         {
@@ -692,6 +692,9 @@ module Mapping =
 
     let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =
         {
+            BlockNumber = BlockNumber dto.BlockNumber
+            TxPosition = dto.TxPosition
+            ActionNumber = TxActionNumber dto.ActionNumber
             AccountHash = AccountHash dto.AccountHash
             BaseAssetHash = AssetHash dto.BaseAssetHash
             QuoteAssetHash = AssetHash dto.QuoteAssetHash
@@ -704,11 +707,15 @@ module Mapping =
             TrailingDeltaIsPercentage = dto.TrailingDeltaIsPercentage
             TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
             IsExecutable = dto.IsExecutable
-            BlockNumber = BlockNumber dto.BlockNumber
+            AmountFilled = AssetAmount dto.AmountFilled
+            Status = TradeOrderStatus.Open
         }
 
     let tradeOrderStateToDto (state : TradeOrderState) : TradeOrderStateDto =
         {
+            BlockNumber = state.BlockNumber.Value
+            TxPosition = state.TxPosition
+            ActionNumber = state.ActionNumber.Value
             AccountHash = state.AccountHash.Value
             BaseAssetHash = state.BaseAssetHash.Value
             QuoteAssetHash = state.QuoteAssetHash.Value
@@ -721,17 +728,64 @@ module Mapping =
             TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
             TimeInForce = state.TimeInForce |> tradeOrderTimeInForceToCode
             IsExecutable = state.IsExecutable
-            BlockNumber = state.BlockNumber.Value
+            AmountFilled = state.AmountFilled.Value
+        }
+
+    let tradeOrderStateFromInfo (info : TradeOrderInfo) : TradeOrderState =
+        {
+            BlockNumber = info.BlockNumber
+            TxPosition = info.TxPosition
+            ActionNumber = info.ActionNumber
+            AccountHash = info.AccountHash
+            BaseAssetHash = info.BaseAssetHash
+            QuoteAssetHash = info.QuoteAssetHash
+            Side = info.Side
+            Amount = info.Amount
+            OrderType = info.OrderType
+            LimitPrice = info.LimitPrice
+            StopPrice = info.StopPrice
+            TrailingDelta = info.TrailingDelta
+            TrailingDeltaIsPercentage = info.TrailingDeltaIsPercentage
+            TimeInForce = info.TimeInForce
+            IsExecutable = info.IsExecutable
+            AmountFilled = info.AmountFilled
+            Status = info.Status
+        }
+
+    let tradeOrderStateToInfo (tradeOrderHash : TradeOrderHash, state : TradeOrderState) : TradeOrderInfo =
+        {
+            TradeOrderHash = tradeOrderHash
+            BlockNumber = state.BlockNumber
+            TxPosition = state.TxPosition
+            ActionNumber = state.ActionNumber
+            AccountHash = state.AccountHash
+            BaseAssetHash = state.BaseAssetHash
+            QuoteAssetHash = state.QuoteAssetHash
+            Side = state.Side
+            Amount = state.Amount
+            OrderType = state.OrderType
+            LimitPrice = state.LimitPrice
+            StopPrice = state.StopPrice
+            TrailingDelta = state.TrailingDelta
+            TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
+            TimeInForce = state.TimeInForce
+            IsExecutable = state.IsExecutable
+            AmountFilled = state.AmountFilled
+            Status = state.Status
         }
 
     let tradeOrderChangeToCode (change : TradeOrderChange) =
         match change with
         | TradeOrderChange.Add -> TradeOrderChangeCode.Add
+        | TradeOrderChange.Update -> TradeOrderChangeCode.Update
         | TradeOrderChange.Remove -> TradeOrderChangeCode.Remove
 
     let tradeOrderInfoFromDto (dto : TradeOrderInfoDto) : TradeOrderInfo =
         {
             TradeOrderHash = TradeOrderHash dto.TradeOrderHash
+            BlockNumber = BlockNumber dto.BlockNumber
+            TxPosition = dto.TxPosition
+            ActionNumber = TxActionNumber dto.ActionNumber
             AccountHash = AccountHash dto.AccountHash
             BaseAssetHash = AssetHash dto.BaseAssetHash
             QuoteAssetHash = AssetHash dto.QuoteAssetHash
@@ -744,7 +798,8 @@ module Mapping =
             TrailingDeltaIsPercentage = dto.TrailingDeltaIsPercentage
             TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
             IsExecutable = dto.IsExecutable
-            BlockNumber = BlockNumber dto.BlockNumber
+            AmountFilled = AssetAmount dto.AmountFilled
+            Status = TradeOrderStatus.Open
         }
 
     let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
@@ -930,32 +985,36 @@ module Mapping =
     let tradeOrderInfoToTradeOrderApiDto (tradeOrderInfo : TradeOrderInfo) =
         {
             TradeOrderApiDto.TradeOrderHash = tradeOrderInfo.TradeOrderHash.Value
+            BlockNumber = tradeOrderInfo.BlockNumber.Value
+            TxPosition = tradeOrderInfo.TxPosition
+            ActionNumber = tradeOrderInfo.ActionNumber.Value
             AccountHash = tradeOrderInfo.AccountHash.Value
             BaseAssetHash = tradeOrderInfo.BaseAssetHash.Value
             QuoteAssetHash = tradeOrderInfo.QuoteAssetHash.Value
             Side =
                 match tradeOrderInfo.Side with
-                | Buy -> "BUY"
-                | Sell -> "SELL"
+                | TradeOrderSide.Buy -> "BUY"
+                | TradeOrderSide.Sell -> "SELL"
             Amount = tradeOrderInfo.Amount.Value
             OrderType =
                 match tradeOrderInfo.OrderType with
-                | Market -> "MARKET"
-                | Limit -> "LIMIT"
-                | StopMarket -> "STOP_MARKET"
-                | StopLimit -> "STOP_LIMIT"
-                | TrailingStopMarket -> "TRAILING_STOP_MARKET"
-                | TrailingStopLimit -> "TRAILING_STOP_LIMIT"
+                | TradeOrderType.Market -> "MARKET"
+                | TradeOrderType.Limit -> "LIMIT"
+                | TradeOrderType.StopMarket -> "STOP_MARKET"
+                | TradeOrderType.StopLimit -> "STOP_LIMIT"
+                | TradeOrderType.TrailingStopMarket -> "TRAILING_STOP_MARKET"
+                | TradeOrderType.TrailingStopLimit -> "TRAILING_STOP_LIMIT"
             LimitPrice = tradeOrderInfo.LimitPrice.Value
             StopPrice = tradeOrderInfo.StopPrice.Value
             TrailingDelta = tradeOrderInfo.TrailingDelta.Value
             TrailingDeltaIsPercentage = tradeOrderInfo.TrailingDeltaIsPercentage
             TimeInForce =
                 match tradeOrderInfo.TimeInForce with
-                | GoodTilExpired -> "GTE"
-                | ImmediateOrCancel -> "IOC"
+                | TradeOrderTimeInForce.GoodTilExpired -> "GTE"
+                | TradeOrderTimeInForce.ImmediateOrCancel -> "IOC"
             IsExecutable = tradeOrderInfo.IsExecutable
-            BlockNumber = tradeOrderInfo.BlockNumber.Value
+            AmountFilled = tradeOrderInfo.AmountFilled.Value
+            Status = "Open" // TODO DSX
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

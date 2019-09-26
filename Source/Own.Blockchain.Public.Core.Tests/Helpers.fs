@@ -165,6 +165,7 @@ module Helpers =
             GetTradingPairControllersFromStorage : unit -> BlockchainAddress list
             GetTradingPairStateFromStorage : AssetHash * AssetHash -> TradingPairState option
             GetTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option
+            GetTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list
             GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
             MaxActionCountPerTx : int
             ValidatorDeposit : ChxAmount
@@ -209,6 +210,7 @@ module Helpers =
             GetTradingPairControllersFromStorage = fun _ -> unexpectedInvocation "GetTradingPairControllersFromStorage"
             GetTradingPairStateFromStorage = fun _ -> unexpectedInvocation "GetTradingPairStateFromStorage"
             GetTradeOrderStateFromStorage = fun _ -> unexpectedInvocation "GetTradeOrderStateFromStorage"
+            GetTradeOrdersFromStorage = fun _ -> unexpectedInvocation "GetTradeOrdersFromStorage"
             GetLockedAndBlacklistedValidators = fun _ -> []
             MaxActionCountPerTx = maxActionCountPerTx
             ValidatorDeposit = validatorDeposit
@@ -251,6 +253,7 @@ module Helpers =
             mockedDeps.GetTradingPairControllersFromStorage
             mockedDeps.GetTradingPairStateFromStorage
             mockedDeps.GetTradeOrderStateFromStorage
+            mockedDeps.GetTradeOrdersFromStorage
             mockedDeps.GetLockedAndBlacklistedValidators
             mockedDeps.MaxActionCountPerTx
             mockedDeps.ValidatorDeposit

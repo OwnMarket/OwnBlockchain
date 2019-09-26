@@ -666,6 +666,8 @@ module Db =
             """
             SELECT
                 block_number,
+                tx_position,
+                action_number,
                 acc.account_hash,
                 ba.asset_hash AS base_asset_hash,
                 qa.asset_hash AS quote_asset_hash,
@@ -677,7 +679,8 @@ module Db =
                 trailing_delta,
                 trailing_delta_is_percentage,
                 time_in_force,
-                is_executable
+                is_executable,
+                amount_filled
             FROM trade_order
             JOIN account AS acc USING (account_id)
             JOIN asset AS ba ON ba.asset_id = base_asset_id
@@ -695,6 +698,47 @@ module Db =
         | [tradeOrderState] -> Some tradeOrderState
         | _ -> failwithf "Multiple trade orders found for hash %A" tradeOrderHash
 
+    let getTradeOrders
+        dbEngineType
+        (dbConnectionString : string)
+        (AssetHash baseAssetHash, AssetHash quoteAssetHash)
+        : TradeOrderInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                trade_order_hash,
+                block_number,
+                tx_position,
+                action_number,
+                acc.account_hash,
+                @baseAssetHash AS base_asset_hash,
+                @quoteAssetHash AS quote_asset_hash,
+                side,
+                amount,
+                order_type,
+                limit_price,
+                stop_price,
+                trailing_delta,
+                trailing_delta_is_percentage,
+                time_in_force,
+                is_executable,
+                amount_filled
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE ba.asset_hash = @baseAssetHash
+            AND qa.asset_hash = @quoteAssetHash
+            """
+
+        [
+            "@baseAssetHash", baseAssetHash |> box
+            "@quoteAssetHash", quoteAssetHash |> box
+        ]
+        |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
+
     let getExecutableTradeOrders
         dbEngineType
         (dbConnectionString : string)
@@ -707,6 +751,8 @@ module Db =
             SELECT
                 trade_order_hash,
                 block_number,
+                tx_position,
+                action_number,
                 acc.account_hash,
                 @baseAssetHash AS base_asset_hash,
                 @quoteAssetHash AS quote_asset_hash,
@@ -718,7 +764,8 @@ module Db =
                 trailing_delta,
                 trailing_delta_is_percentage,
                 time_in_force,
-                is_executable
+                is_executable,
+                amount_filled
             FROM trade_order
             JOIN account AS acc USING (account_id)
             JOIN asset AS ba ON ba.asset_id = base_asset_id
@@ -745,6 +792,8 @@ module Db =
             """
             SELECT
                 block_number,
+                tx_position,
+                action_number,
                 acc.account_hash,
                 ba.asset_hash AS base_asset_hash,
                 qa.asset_hash AS quote_asset_hash,
@@ -756,7 +805,8 @@ module Db =
                 trailing_delta,
                 trailing_delta_is_percentage,
                 time_in_force,
-                is_executable
+                is_executable,
+                amount_filled
             FROM trade_order
             JOIN account AS acc USING (account_id)
             JOIN asset AS ba ON ba.asset_id = base_asset_id
@@ -2514,6 +2564,8 @@ module Db =
             INSERT INTO trade_order (
                 trade_order_hash,
                 block_number,
+                tx_position,
+                action_number,
                 account_id,
                 base_asset_id,
                 quote_asset_id,
@@ -2525,11 +2577,14 @@ module Db =
                 trailing_delta,
                 trailing_delta_is_percentage,
                 time_in_force,
-                is_executable
+                is_executable,
+                amount_filled
             )
             VALUES (
                 @tradeOrderHash,
                 @blockNumber,
+                @txPosition,
+                @actionNumber,
                 (SELECT account_id FROM account WHERE account_hash = @accountHash),
                 (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash),
                 (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash),
@@ -2541,7 +2596,8 @@ module Db =
                 @trailingDelta,
                 @trailingDeltaIsPercentage,
                 @timeInForce,
-                @isExecutable
+                @isExecutable,
+                @amountFilled
             )
             """
 
@@ -2549,6 +2605,8 @@ module Db =
             [
                 "@tradeOrderHash", tradeOrderInfo.TradeOrderHash |> box
                 "@blockNumber", tradeOrderInfo.BlockNumber |> box
+                "@txPosition", tradeOrderInfo.TxPosition |> box
+                "@actionNumber", tradeOrderInfo.ActionNumber |> box
                 "@accountHash", tradeOrderInfo.AccountHash |> box
                 "@baseAssetHash", tradeOrderInfo.BaseAssetHash |> box
                 "@quoteAssetHash", tradeOrderInfo.QuoteAssetHash |> box
@@ -2561,6 +2619,7 @@ module Db =
                 "@trailingDeltaIsPercentage", tradeOrderInfo.TrailingDeltaIsPercentage |> box
                 "@timeInForce", tradeOrderInfo.TimeInForce |> box
                 "@isExecutable", tradeOrderInfo.IsExecutable |> box
+                "@amountFilled", tradeOrderInfo.AmountFilled |> box
             ]
 
         try
@@ -2571,6 +2630,41 @@ module Db =
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert trade order state"
+
+    let private updateTradeOrder
+        conn
+        transaction
+        (tradeOrderInfo : TradeOrderInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            UPDATE trade_order
+            SET limit_price = @limitPrice,
+                stop_price = @stopPrice,
+                is_executable = @isExecutable,
+                amount_filled = @amountFilled
+            WHERE trade_order_hash = @tradeOrderHash
+            """
+
+        let sqlParams =
+            [
+                "@tradeOrderHash", tradeOrderInfo.TradeOrderHash |> box
+                "@limitPrice", tradeOrderInfo.LimitPrice |> box
+                "@stopPrice", tradeOrderInfo.StopPrice |> box
+                "@isExecutable", tradeOrderInfo.IsExecutable |> box
+                "@amountFilled", tradeOrderInfo.AmountFilled |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update trade order state"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update trade order state"
 
     let private removeTradeOrder
         conn
@@ -2592,7 +2686,6 @@ module Db =
 
         try
             match DbTools.executeWithinTransaction conn transaction sql sqlParams with
-            | 0
             | 1 -> Ok ()
             | _ ->
                 sprintf "Didn't remove trade order: %s" tradeOrderHash
@@ -2616,6 +2709,9 @@ module Db =
                 let tradeOrderInfo =
                     {
                         TradeOrderInfoDto.TradeOrderHash = tradeOrderHash
+                        BlockNumber = state.BlockNumber
+                        TxPosition = state.TxPosition
+                        ActionNumber = state.ActionNumber
                         AccountHash = state.AccountHash
                         BaseAssetHash = state.BaseAssetHash
                         QuoteAssetHash = state.QuoteAssetHash
@@ -2628,11 +2724,13 @@ module Db =
                         TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
                         TimeInForce = state.TimeInForce
                         IsExecutable = state.IsExecutable
-                        BlockNumber = state.BlockNumber
+                        AmountFilled = state.AmountFilled
                     }
                 match change with
                 | TradeOrderChangeCode.Add ->
                     addTradeOrder conn transaction tradeOrderInfo
+                | TradeOrderChangeCode.Update ->
+                    updateTradeOrder conn transaction tradeOrderInfo
                 | TradeOrderChangeCode.Remove ->
                     removeTradeOrder conn transaction tradeOrderHash
                 | _ -> Result.appError (sprintf "Invalid trade order change : %A" change)

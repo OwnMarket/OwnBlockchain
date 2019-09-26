@@ -315,7 +315,10 @@ module BlockTests =
         let tradeOrderHash = TradeOrderHash "AAA"
         let state =
             {
-                TradeOrderState.AccountHash = AccountHash "DA"
+                TradeOrderState.BlockNumber = BlockNumber 7L
+                TxPosition = 8
+                ActionNumber = TxActionNumber 9s
+                AccountHash = AccountHash "DA"
                 BaseAssetHash = AssetHash "DB"
                 QuoteAssetHash = AssetHash "DC"
                 Side = TradeOrderSide.Sell
@@ -327,7 +330,8 @@ module BlockTests =
                 TrailingDeltaIsPercentage = true
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
-                BlockNumber = BlockNumber 7L
+                AmountFilled = AssetAmount 3m
+                Status = TradeOrderStatus.Open
             }
 
         let expectedHash =
@@ -648,7 +652,10 @@ module BlockTests =
                 TradeOrderHash "AAA",
                     (
                         {
-                            TradeOrderState.AccountHash = AccountHash "BA"
+                            TradeOrderState.BlockNumber = BlockNumber 6L
+                            TxPosition = 7
+                            ActionNumber = TxActionNumber 8s
+                            AccountHash = AccountHash "BA"
                             BaseAssetHash = AssetHash "BB"
                             QuoteAssetHash = AssetHash "BC"
                             Side = TradeOrderSide.Buy
@@ -660,14 +667,18 @@ module BlockTests =
                             TrailingDeltaIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                             IsExecutable = true
-                            BlockNumber = BlockNumber 6L
+                            AmountFilled = AssetAmount 3m
+                            Status = TradeOrderStatus.Filled
                         },
                         TradeOrderChange.Add
                     )
                 TradeOrderHash "BBB",
                     (
                         {
-                            TradeOrderState.AccountHash = AccountHash "CA"
+                            TradeOrderState.BlockNumber = BlockNumber 7L
+                            TxPosition = 8
+                            ActionNumber = TxActionNumber 9s
+                            AccountHash = AccountHash "CA"
                             BaseAssetHash = AssetHash "CB"
                             QuoteAssetHash = AssetHash "CC"
                             Side = TradeOrderSide.Sell
@@ -679,7 +690,8 @@ module BlockTests =
                             TrailingDeltaIsPercentage = true
                             TimeInForce = TradeOrderTimeInForce.GoodTilExpired
                             IsExecutable = false
-                            BlockNumber = BlockNumber 7L
+                            AmountFilled = AssetAmount 1m
+                            Status = TradeOrderStatus.Open
                         },
                         TradeOrderChange.Remove
                     )
@@ -1125,7 +1137,10 @@ module BlockTests =
                 TradeOrderHash "AAA",
                     (
                         {
-                            TradeOrderState.AccountHash = AccountHash "BA"
+                            TradeOrderState.BlockNumber = BlockNumber 6L
+                            TxPosition = 7
+                            ActionNumber = TxActionNumber 8s
+                            AccountHash = AccountHash "BA"
                             BaseAssetHash = AssetHash "BB"
                             QuoteAssetHash = AssetHash "BC"
                             Side = TradeOrderSide.Buy
@@ -1137,14 +1152,18 @@ module BlockTests =
                             TrailingDeltaIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                             IsExecutable = true
-                            BlockNumber = BlockNumber 6L
+                            AmountFilled = AssetAmount 3m
+                            Status = TradeOrderStatus.Filled
                         },
                         TradeOrderChange.Add
                     )
                 TradeOrderHash "BBB",
                     (
                         {
-                            TradeOrderState.AccountHash = AccountHash "CA"
+                            TradeOrderState.BlockNumber = BlockNumber 7L
+                            TxPosition = 8
+                            ActionNumber = TxActionNumber 9s
+                            AccountHash = AccountHash "CA"
                             BaseAssetHash = AssetHash "CB"
                             QuoteAssetHash = AssetHash "CC"
                             Side = TradeOrderSide.Sell
@@ -1156,7 +1175,8 @@ module BlockTests =
                             TrailingDeltaIsPercentage = true
                             TimeInForce = TradeOrderTimeInForce.GoodTilExpired
                             IsExecutable = true
-                            BlockNumber = BlockNumber 7L
+                            AmountFilled = AssetAmount 3m
+                            Status = TradeOrderStatus.Open
                         },
                         TradeOrderChange.Remove
                     )
@@ -1570,7 +1590,10 @@ module BlockTests =
                 TradeOrderHash "AAA",
                     (
                         {
-                            TradeOrderState.AccountHash = AccountHash "BA"
+                            TradeOrderState.BlockNumber = BlockNumber 6L
+                            TxPosition = 7
+                            ActionNumber = TxActionNumber 8s
+                            AccountHash = AccountHash "BA"
                             BaseAssetHash = AssetHash "BB"
                             QuoteAssetHash = AssetHash "BC"
                             Side = TradeOrderSide.Buy
@@ -1582,13 +1605,17 @@ module BlockTests =
                             TrailingDeltaIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                             IsExecutable = true
-                            BlockNumber = BlockNumber 6L
+                            AmountFilled = AssetAmount 3m
+                            Status = TradeOrderStatus.Filled
                         },
                         TradeOrderChange.Add
                     )
                 TradeOrderHash "BBB",
                     (
                         {
+                            TradeOrderState.BlockNumber = BlockNumber 7L
+                            TxPosition = 8
+                            ActionNumber = TxActionNumber 9s
                             TradeOrderState.AccountHash = AccountHash "CA"
                             BaseAssetHash = AssetHash "CB"
                             QuoteAssetHash = AssetHash "CC"
@@ -1601,7 +1628,8 @@ module BlockTests =
                             TrailingDeltaIsPercentage = true
                             TimeInForce = TradeOrderTimeInForce.GoodTilExpired
                             IsExecutable = true
-                            BlockNumber = BlockNumber 7L
+                            AmountFilled = AssetAmount 3m
+                            Status = TradeOrderStatus.Open
                         },
                         TradeOrderChange.Remove
                     )

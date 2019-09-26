@@ -82,10 +82,12 @@ type TradingPairInfo = {
 
 type TradeOrderHash = TradeOrderHash of string
 
+[<RequireQualifiedAccess>]
 type TradeOrderSide =
     | Buy
     | Sell
 
+[<RequireQualifiedAccess>]
 type TradeOrderType =
     | Market
     | Limit
@@ -94,16 +96,27 @@ type TradeOrderType =
     | TrailingStopMarket
     | TrailingStopLimit
 
+[<RequireQualifiedAccess>]
+type ExecTradeOrderType =
+    | Market
+    | Limit
+
+[<RequireQualifiedAccess>]
 type TradeOrderTimeInForce =
     | GoodTilExpired
     | ImmediateOrCancel
 
+[<RequireQualifiedAccess>]
 type TradeOrderChange =
     | Add
     | Remove
+    | Update
 
 type TradeOrderInfo = {
     TradeOrderHash : TradeOrderHash
+    BlockNumber : BlockNumber
+    TxPosition : int
+    ActionNumber : TxActionNumber
     AccountHash : AccountHash
     BaseAssetHash : AssetHash
     QuoteAssetHash : AssetHash
@@ -116,12 +129,35 @@ type TradeOrderInfo = {
     TrailingDeltaIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
     IsExecutable : bool
-    BlockNumber : BlockNumber
+    AmountFilled : AssetAmount
+    Status : TradeOrderStatus
 }
 
 type TradeOrderBook = {
     BuyOrders : TradeOrderInfo list
     SellOrders : TradeOrderInfo list
+}
+
+[<RequireQualifiedAccess>]
+type TradeOrderCancelReason =
+    | TriggeredByUser
+    | TriggeredByTimeInForce
+    | Expired
+    | InsufficientQuoteAssetBalance
+    | NotEligible
+
+[<RequireQualifiedAccess>]
+type TradeOrderStatus =
+    | Open
+    | Filled
+    | Cancelled of TradeOrderCancelReason
+
+type Trade = {
+    Direction : TradeOrderSide
+    BuyOrder : TradeOrderHash
+    SellOrder : TradeOrderHash
+    Amount : AssetAmount
+    Price : AssetAmount
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -453,6 +489,7 @@ type EligibilityState = {
     KycControllerAddress : BlockchainAddress
 }
 
+[<RequireQualifiedAccess>]
 type KycProviderChange =
     | Add
     | Remove
@@ -475,6 +512,7 @@ type ValidatorState = {
     IsEnabled : bool
 }
 
+[<RequireQualifiedAccess>]
 type ValidatorChange =
     | Add
     | Remove
@@ -494,6 +532,9 @@ type TradingPairState = {
 }
 
 type TradeOrderState = {
+    BlockNumber : BlockNumber
+    TxPosition : int
+    ActionNumber : TxActionNumber
     AccountHash : AccountHash
     BaseAssetHash : AssetHash
     QuoteAssetHash : AssetHash
@@ -505,8 +546,11 @@ type TradeOrderState = {
     TrailingDelta : AssetAmount
     TrailingDeltaIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
+
+    // Execution tracking fields
     IsExecutable : bool
-    BlockNumber : BlockNumber
+    AmountFilled : AssetAmount
+    Status : TradeOrderStatus
 }
 
 type ProcessingOutput = {
@@ -878,6 +922,20 @@ type AssetAmount with
 type TradeOrderHash with
     member __.Value =
         __ |> fun (TradeOrderHash v) -> v
+
+type TradeOrderState with
+    member __.Time =
+        __.BlockNumber, __.TxPosition, __.ActionNumber
+    member __.ExecOrderType =
+        match __.OrderType with
+        | TradeOrderType.Market
+        | TradeOrderType.StopMarket
+        | TradeOrderType.TrailingStopMarket -> ExecTradeOrderType.Market
+        | TradeOrderType.Limit
+        | TradeOrderType.StopLimit
+        | TradeOrderType.TrailingStopLimit -> ExecTradeOrderType.Limit
+    member __.AmountRemaining =
+        __.Amount - __.AmountFilled
 
 type Tx with
     member __.TotalFee = __.ActionFee * decimal __.Actions.Length

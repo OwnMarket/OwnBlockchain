@@ -26,6 +26,7 @@ module Processing =
         getTradingPairControllers : unit -> BlockchainAddress list,
         getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option,
         getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
+        getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
         chxAddresses : ConcurrentDictionary<BlockchainAddress, ChxAddressState>,
@@ -66,7 +67,8 @@ module Processing =
             getTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount,
             getTradingPairControllers : unit -> BlockchainAddress list,
             getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option,
-            getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option
+            getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
+            getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list
             ) =
             ProcessingState(
                 getChxAddressStateFromStorage,
@@ -84,6 +86,7 @@ module Processing =
                 getTradingPairControllers,
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
+                getTradeOrdersFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAddressState>(),
@@ -123,6 +126,7 @@ module Processing =
                 getTradingPairControllers,
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
+                getTradeOrdersFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(equivocationProofResults),
                 ConcurrentDictionary(chxAddresses),
@@ -169,6 +173,10 @@ module Processing =
                 __.GetTradingPair (other.Key) |> ignore
             for other in otherOutput.TradeOrders do
                 __.GetTradeOrder (other.Key) |> ignore
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // State getters
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member __.GetChxAddress (address : BlockchainAddress) =
             chxAddresses.GetOrAdd(address, getChxAddressState)
@@ -237,9 +245,35 @@ module Processing =
                 | Some c when c = TradeOrderChange.Remove -> None
                 | _ -> state
 
+        // Helpers for trade order matching
+        member __.GetLoadedTradingPairs () =
+            tradingPairs.Keys
+            |> Seq.toList
+            |> List.sort
+
+        member __.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash) =
+            for tradeOrderInfo in getTradeOrdersFromStorage (baseAssetHash, quoteAssetHash) do
+                if not (tradeOrders.ContainsKey tradeOrderInfo.TradeOrderHash) then
+                    let state = tradeOrderInfo |> Mapping.tradeOrderStateFromInfo |> Some
+                    if not (tradeOrders.TryAdd(tradeOrderInfo.TradeOrderHash, (state, None))) then
+                        failwithf "Cannot add trade order to the state dictionary: %A" tradeOrderInfo
+
+        member __.GetTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash) =
+            tradeOrders
+            |> Seq.choose (fun o ->
+                match o.Value with
+                | Some s, _ when s.BaseAssetHash = baseAssetHash && s.QuoteAssetHash = quoteAssetHash -> Some (o.Key, s)
+                | _ -> None
+            )
+            |> Seq.toList
+
         // Not part of the blockchain state
         member __.GetTotalChxStaked address =
             totalChxStaked.GetOrAdd(address, getTotalChxStakedFromStorage)
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        // State setters
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         member __.SetChxAddress (address, state : ChxAddressState) =
             chxAddresses.AddOrUpdate(address, state, fun _ _ -> state) |> ignore
@@ -317,12 +351,21 @@ module Processing =
             let processingChange =
                 match tradeOrders.TryGetValue tradeOrderHash with
                 | true, (_, existingChange) ->
-                    if existingChange = Some TradeOrderChange.Add && change = Some TradeOrderChange.Remove
-                        || existingChange = Some TradeOrderChange.Remove && change = Some TradeOrderChange.Add
-                    then
+                    match existingChange, change with
+                    | Some TradeOrderChange.Add, Some TradeOrderChange.Update ->
+                        Some TradeOrderChange.Add
+                    | Some TradeOrderChange.Add, Some TradeOrderChange.Remove ->
                         None
-                    else
+                    | Some TradeOrderChange.Update, Some TradeOrderChange.Update
+                    | Some TradeOrderChange.Update, Some TradeOrderChange.Remove
+                    | None, Some _ ->
                         change
+                    | Some _, Some TradeOrderChange.Add
+                    | Some TradeOrderChange.Remove, Some _
+                    | Some TradeOrderChange.Remove, Some _
+                    | _, None ->
+                        failwithf "Cannot apply change [%A -> %A] to trade order %s: %A"
+                            existingChange change tradeOrderHash.Value state
                 | _ -> change
             tradeOrders.AddOrUpdate(
                 tradeOrderHash,
@@ -953,6 +996,7 @@ module Processing =
     let processPlaceTradeOrderTxAction
         deriveHash
         (blockNumber : BlockNumber)
+        (txPosition : int)
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
@@ -979,6 +1023,9 @@ module Processing =
                 | None ->
                     let tradeOrderState =
                         {
+                            BlockNumber = blockNumber
+                            TxPosition = txPosition
+                            ActionNumber = actionNumber
                             AccountHash = action.AccountHash
                             BaseAssetHash = action.BaseAssetHash
                             QuoteAssetHash = action.QuoteAssetHash
@@ -992,10 +1039,11 @@ module Processing =
                             TimeInForce = action.TimeInForce
                             IsExecutable =
                                 match action.OrderType with
-                                | Market
-                                | Limit -> true
+                                | TradeOrderType.Market
+                                | TradeOrderType.Limit -> true
                                 | _ -> false
-                            BlockNumber = blockNumber
+                            AmountFilled = AssetAmount 0m
+                            Status = TradeOrderStatus.Open
                         }
                     state.SetTradeOrder(tradeOrderHash, tradeOrderState, TradeOrderChange.Add)
                     Ok state
@@ -1187,6 +1235,7 @@ module Processing =
         deriveHash
         validatorDeposit
         blockNumber
+        txPosition
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actionNumber : TxActionNumber)
@@ -1215,13 +1264,15 @@ module Processing =
         | RemoveKycProvider action -> processRemoveKycProviderTxAction state senderAddress action
         | ConfigureTradingPair action -> processConfigureTradingPairTxAction state senderAddress action
         | PlaceTradeOrder action ->
-            processPlaceTradeOrderTxAction deriveHash blockNumber state senderAddress nonce actionNumber action
+            processPlaceTradeOrderTxAction
+                deriveHash blockNumber txPosition state senderAddress nonce actionNumber action
         | CancelTradeOrder action -> processCancelTradeOrderTxAction state senderAddress action
 
     let processTxActions
         deriveHash
         validatorDeposit
         blockNumber
+        txPosition
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actions : TxAction list)
@@ -1234,7 +1285,8 @@ module Processing =
             result
             >>= fun state ->
                 let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
-                processTxAction deriveHash validatorDeposit blockNumber senderAddress nonce actionNumber action state
+                processTxAction
+                    deriveHash validatorDeposit blockNumber txPosition senderAddress nonce actionNumber action state
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
@@ -1444,6 +1496,7 @@ module Processing =
         (getTradingPairControllersFromStorage : unit -> BlockchainAddress list)
         (getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option)
         (getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option)
+        (getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list)
         getLockedAndBlacklistedValidators
         maxActionCountPerTx
         validatorDeposit
@@ -1489,7 +1542,7 @@ module Processing =
                 state.CollectedReward <- state.CollectedReward + tx.TotalFee
                 state
 
-        let processTx (state : ProcessingState) (tx : Tx) =
+        let processTx (state : ProcessingState) (index : int, tx : Tx) =
             match updateChxAddressNonce tx.Sender tx.Nonce state with
             | Error e ->
                 state.SetTxResult(tx.TxHash, { Status = Failure e; BlockNumber = blockNumber })
@@ -1501,7 +1554,8 @@ module Processing =
                     oldState
                 else
                     let newState = oldState.Clone()
-                    match processTxActions tx.Sender tx.Nonce tx.Actions newState with
+                    let txPosition = index + 1
+                    match processTxActions txPosition tx.Sender tx.Nonce tx.Actions newState with
                     | Error e ->
                         oldState.SetTxResult(tx.TxHash, { Status = Failure e; BlockNumber = blockNumber })
                         oldState.MergeStateAfterFailedTx(newState)
@@ -1526,7 +1580,8 @@ module Processing =
                 getTotalChxStakedFromStorage,
                 getTradingPairControllersFromStorage,
                 getTradingPairFromStorage,
-                getTradeOrderStateFromStorage
+                getTradeOrderStateFromStorage,
+                getTradeOrdersFromStorage
             )
 
         let txs = loadTxs txSet
@@ -1537,6 +1592,7 @@ module Processing =
 
         let state =
             txs
+            |> List.indexed
             |> List.fold processTx state
             |> processEquivocationProofs
                 getEquivocationProof
@@ -1550,10 +1606,18 @@ module Processing =
                 validators
                 equivocationProofs
 
-        distributeReward processTxActions getTopStakers validatorAddress sharedRewardPercent state
+        distributeReward (processTxActions 0) getTopStakers validatorAddress sharedRewardPercent state
 
         if blockchainConfiguration.IsSome then
             updateValidatorCounters getLockedAndBlacklistedValidators state
             lockValidatorDeposits validatorDepositLockTime blockNumber blockchainConfiguration state
+
+        for baseAssetHash, quoteAssetHash in state.GetLoadedTradingPairs () do
+            state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)
+            Trading.matchTradeOrders
+                state.GetTradeOrdersForTradingPair
+                state.SetTradeOrder
+                state.GetHoldingOrDefault
+                (baseAssetHash, quoteAssetHash)
 
         state.ToProcessingOutput()

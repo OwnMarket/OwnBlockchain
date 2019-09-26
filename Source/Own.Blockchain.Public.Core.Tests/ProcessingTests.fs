@@ -7530,6 +7530,9 @@ module ProcessingTests =
         let getTradeOrderState _ =
             None
 
+        let getTradeOrdersFromStorage _ =
+            []
+
         let getTradingPairState _ =
             {
                 TradingPairState.IsEnabled = true
@@ -7544,6 +7547,7 @@ module ProcessingTests =
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
                 GetTradeOrderStateFromStorage = getTradeOrderState
+                GetTradeOrdersFromStorage = getTradeOrdersFromStorage
                 GetTradingPairStateFromStorage = getTradingPairState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
@@ -7930,7 +7934,10 @@ module ProcessingTests =
 
         let getTradeOrderState _ =
             {
-                TradeOrderState.AccountHash = Helpers.randomHash () |> AccountHash
+                TradeOrderState.BlockNumber = BlockNumber 1L
+                TxPosition = 2
+                ActionNumber = TxActionNumber 3s
+                AccountHash = Helpers.randomHash () |> AccountHash
                 BaseAssetHash = assetHash1
                 QuoteAssetHash = assetHash2
                 Side = TradeOrderSide.Buy
@@ -7942,7 +7949,8 @@ module ProcessingTests =
                 TrailingDeltaIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
-                BlockNumber = BlockNumber 1L
+                AmountFilled = AssetAmount 30m
+                Status = TradeOrderStatus.Open
             }
             |> Some
 
@@ -8007,7 +8015,10 @@ module ProcessingTests =
 
         let getTradeOrderState _ =
             {
-                TradeOrderState.AccountHash = Helpers.randomHash () |> AccountHash
+                TradeOrderState.BlockNumber = BlockNumber 1L
+                TxPosition = 2
+                ActionNumber = TxActionNumber 3s
+                AccountHash = Helpers.randomHash () |> AccountHash
                 BaseAssetHash = assetHash1
                 QuoteAssetHash = assetHash2
                 Side = TradeOrderSide.Buy
@@ -8019,7 +8030,8 @@ module ProcessingTests =
                 TrailingDeltaIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
-                BlockNumber = BlockNumber 1L
+                AmountFilled = AssetAmount 30m
+                Status = TradeOrderStatus.Open
             }
             |> Some
 
@@ -8095,7 +8107,10 @@ module ProcessingTests =
 
         let getTradeOrderState _ =
             {
-                TradeOrderState.AccountHash = accountHash1
+                TradeOrderState.BlockNumber = BlockNumber 1L
+                TxPosition = 2
+                ActionNumber = TxActionNumber 3s
+                AccountHash = accountHash1
                 BaseAssetHash = assetHash1
                 QuoteAssetHash = assetHash2
                 Side = TradeOrderSide.Buy
@@ -8107,7 +8122,8 @@ module ProcessingTests =
                 TrailingDeltaIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
-                BlockNumber = BlockNumber 1L
+                AmountFilled = AssetAmount 30m
+                Status = TradeOrderStatus.Open
             }
             |> Some
 

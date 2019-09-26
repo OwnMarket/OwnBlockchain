@@ -428,6 +428,7 @@ type ValidatorStateDto = {
     IsEnabled : bool
 }
 
+[<RequireQualifiedAccess>]
 type ValidatorChangeCode =
     | Add = 0uy
     | Remove = 1uy
@@ -445,6 +446,9 @@ type TradingPairStateDto = {
 
 [<CLIMutable>]
 type TradeOrderStateDto = {
+    BlockNumber : int64
+    TxPosition : int
+    ActionNumber : int16
     AccountHash : string
     BaseAssetHash : string
     QuoteAssetHash : string
@@ -457,12 +461,14 @@ type TradeOrderStateDto = {
     TrailingDeltaIsPercentage : bool
     TimeInForce : byte
     IsExecutable : bool
-    BlockNumber : int64
+    AmountFilled : decimal
 }
 
+[<RequireQualifiedAccess>]
 type TradeOrderChangeCode =
     | Add = 0uy
     | Remove = 1uy
+    | Update = 2uy
 
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
@@ -581,6 +587,9 @@ type TradingPairInfoDto = {
 [<CLIMutable>]
 type TradeOrderInfoDto = {
     TradeOrderHash : string
+    BlockNumber : int64
+    TxPosition : int
+    ActionNumber : int16
     AccountHash : string
     BaseAssetHash : string
     QuoteAssetHash : string
@@ -593,7 +602,7 @@ type TradeOrderInfoDto = {
     TrailingDeltaIsPercentage : bool
     TimeInForce : byte
     IsExecutable : bool
-    BlockNumber : int64
+    AmountFilled : decimal
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -841,6 +850,9 @@ type TradingPairApiDto = {
 
 type TradeOrderApiDto = {
     TradeOrderHash : string
+    BlockNumber : int64
+    TxPosition : int
+    ActionNumber : int16
     AccountHash : string
     BaseAssetHash : string
     QuoteAssetHash : string
@@ -853,5 +865,6 @@ type TradeOrderApiDto = {
     TrailingDeltaIsPercentage : bool
     TimeInForce : string
     IsExecutable : bool
-    BlockNumber : int64
+    AmountFilled : decimal
+    Status : string
 }

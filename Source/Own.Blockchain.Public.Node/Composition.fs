@@ -112,6 +112,7 @@ module Composition =
 
     let getTradingPairState = Db.getTradingPairState Config.DbEngineType Config.DbConnectionString
     let getTradeOrderState = Db.getTradeOrderState Config.DbEngineType Config.DbConnectionString
+    let getTradeOrders = Db.getTradeOrders Config.DbEngineType Config.DbConnectionString
     let getExecutableTradeOrders = Db.getExecutableTradeOrders Config.DbEngineType Config.DbConnectionString
     let getAccountTradeOrders = Db.getAccountTradeOrders Config.DbEngineType Config.DbConnectionString
 
@@ -266,6 +267,7 @@ module Composition =
             getTradingPairControllers
             getTradingPairState
             getTradeOrderState
+            getTradeOrders
             getValidatorsAtHeight
             getLockedAndBlacklistedValidators
             Hashing.deriveHash
