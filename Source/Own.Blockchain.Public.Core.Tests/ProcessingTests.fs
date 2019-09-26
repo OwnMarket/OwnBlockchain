@@ -7457,7 +7457,7 @@ module ProcessingTests =
         "SELL", "Sell", "TRAILING_STOP_MARKET", "TrailingStopMarket", 0, 11, 20, true, "IOC", "ImmediateOrCancel")>]
     [<InlineData(
         "SELL", "Sell", "TRAILING_STOP_LIMIT", "TrailingStopLimit", 10, 11, 30, true, "GTC", "GoodTilCancelled")>]
-    let ``Processing.processChanges PlaceTradeOrder - values propagated from action to the order book``
+    let ``Processing.processChanges PlaceTradeOrder - propagates values into order book``
         (
             sideCode : string,
             sideCaseName : string,
@@ -7527,6 +7527,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getHoldingState _ =
+            Some {HoldingState.Balance = AssetAmount 2000m; IsEmission = false}
+
         let getTradeOrderState _ =
             None
 
@@ -7546,6 +7549,7 @@ module ProcessingTests =
                 GetChxAddressStateFromStorage = getChxAddressState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
+                GetHoldingStateFromStorage = getHoldingState
                 GetTradeOrderStateFromStorage = getTradeOrderState
                 GetTradeOrdersFromStorage = getTradeOrdersFromStorage
                 GetTradingPairStateFromStorage = getTradingPairState
