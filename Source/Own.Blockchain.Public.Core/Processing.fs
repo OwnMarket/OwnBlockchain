@@ -427,9 +427,9 @@ module Processing =
                     let newToState = { toState with Balance = toState.Balance + action.Amount }
                     state.SetHolding(action.ToAccountHash, action.AssetHash, newToState)
 
-                    let holdingFromAcccount = state.GetHoldingOrDefault(action.FromAccountHash, action.AssetHash)
+                    let holdingFromAccount = state.GetHoldingOrDefault(action.FromAccountHash, action.AssetHash)
                     let holdingToAccount = state.GetHoldingOrDefault(action.ToAccountHash, action.AssetHash)
-                    if holdingFromAcccount.Balance.Value > Utils.maxBlockchainNumeric
+                    if holdingFromAccount.Balance.Value > Utils.maxBlockchainNumeric
                         || holdingToAccount.Balance.Value > Utils.maxBlockchainNumeric
                     then
                         Error TxErrorCode.ValueTooBig
