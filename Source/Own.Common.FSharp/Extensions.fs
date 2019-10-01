@@ -48,6 +48,9 @@ module Extensions =
 
 module Seq =
 
+    let tap f =
+        Seq.map (tap f)
+
     let inline shuffleWithRandom (r : Random) xs =
         xs |> Seq.sortBy (fun _ -> r.Next())
 
@@ -68,6 +71,9 @@ module Seq =
         |> Seq.map (|KeyValue|)
 
 module List =
+
+    let tap f =
+        List.map (tap f)
 
     let inline ofDict dictionary =
         dictionary
