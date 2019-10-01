@@ -7496,9 +7496,9 @@ module ProcessingTests =
                     ActionType = "PlaceTradeOrder"
                     ActionData =
                         {
-                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
-                            BaseAssetHash = assetHash1.Value
-                            QuoteAssetHash = assetHash2.Value
+                            PlaceTradeOrderTxActionDto.AccountHash = Helpers.randomHash ()
+                            BaseAssetHash = Helpers.randomHash ()
+                            QuoteAssetHash = Helpers.randomHash ()
                             Side = sideCode
                             Amount = orderAmount
                             OrderType = orderTypeCode
@@ -7604,9 +7604,9 @@ module ProcessingTests =
                     ActionType = "PlaceTradeOrder"
                     ActionData =
                         {
-                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
-                            BaseAssetHash = assetHash1.Value
-                            QuoteAssetHash = assetHash2.Value
+                            PlaceTradeOrderTxActionDto.AccountHash = Helpers.randomHash ()
+                            BaseAssetHash = Helpers.randomHash ()
+                            QuoteAssetHash = Helpers.randomHash ()
                             Side = "BUY"
                             Amount = 100m
                             OrderType = "MARKET"
@@ -7691,9 +7691,9 @@ module ProcessingTests =
                     ActionType = "PlaceTradeOrder"
                     ActionData =
                         {
-                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
-                            BaseAssetHash = assetHash1.Value
-                            QuoteAssetHash = assetHash2.Value
+                            PlaceTradeOrderTxActionDto.AccountHash = Helpers.randomHash ()
+                            BaseAssetHash = Helpers.randomHash ()
+                            QuoteAssetHash = Helpers.randomHash ()
                             Side = "BUY"
                             Amount = 100m
                             OrderType = "MARKET"
@@ -7720,11 +7720,8 @@ module ProcessingTests =
             Some {AccountState.ControllerAddress = senderWallet.Address}
 
         let getAssetState assetHash =
-            if assetHash = assetHash1 then
-                {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
-                |> Some
-            else
-                None
+            {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+            |> Some
 
         let getTradingPairState _ =
             None
@@ -7780,9 +7777,9 @@ module ProcessingTests =
                     ActionType = "PlaceTradeOrder"
                     ActionData =
                         {
-                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
-                            BaseAssetHash = assetHash1.Value
-                            QuoteAssetHash = assetHash2.Value
+                            PlaceTradeOrderTxActionDto.AccountHash = Helpers.randomHash ()
+                            BaseAssetHash = Helpers.randomHash ()
+                            QuoteAssetHash = Helpers.randomHash ()
                             Side = "BUY"
                             Amount = 100m
                             OrderType = "MARKET"
@@ -7949,8 +7946,8 @@ module ProcessingTests =
                 TxPosition = 2
                 ActionNumber = TxActionNumber 3s
                 AccountHash = Helpers.randomHash () |> AccountHash
-                BaseAssetHash = assetHash1
-                QuoteAssetHash = assetHash2
+                BaseAssetHash = Helpers.randomHash () |> AssetHash
+                QuoteAssetHash = Helpers.randomHash () |> AssetHash
                 Side = TradeOrderSide.Buy
                 Amount = AssetAmount 100m
                 OrderType = TradeOrderType.Market
@@ -8030,8 +8027,8 @@ module ProcessingTests =
                 TxPosition = 2
                 ActionNumber = TxActionNumber 3s
                 AccountHash = Helpers.randomHash () |> AccountHash
-                BaseAssetHash = assetHash1
-                QuoteAssetHash = assetHash2
+                BaseAssetHash = Helpers.randomHash () |> AssetHash
+                QuoteAssetHash = Helpers.randomHash () |> AssetHash
                 Side = TradeOrderSide.Buy
                 Amount = AssetAmount 100m
                 OrderType = TradeOrderType.Market
@@ -8121,9 +8118,9 @@ module ProcessingTests =
                 TradeOrderState.BlockNumber = BlockNumber 1L
                 TxPosition = 2
                 ActionNumber = TxActionNumber 3s
-                AccountHash = accountHash1
-                BaseAssetHash = assetHash1
-                QuoteAssetHash = assetHash2
+                AccountHash = Helpers.randomHash () |> AccountHash
+                BaseAssetHash = Helpers.randomHash () |> AssetHash
+                QuoteAssetHash = Helpers.randomHash () |> AssetHash
                 Side = TradeOrderSide.Buy
                 Amount = AssetAmount 100m
                 OrderType = TradeOrderType.Market
