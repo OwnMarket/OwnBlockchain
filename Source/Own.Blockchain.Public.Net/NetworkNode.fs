@@ -727,7 +727,7 @@ type NetworkNode
                         |> List.except targetedAddresses
                         |> List.filter (isSelf >> not)
                         |> __.SelectPeer preferredPeer
-                        |> tee (fun address ->
+                        |> tap (fun address ->
                             messageIds
                             |> List.iter (fun messageId ->
                                 match address with

@@ -18,7 +18,7 @@ module Common =
 
     let flip f x y = f y x
 
-    let tee f x = f x; x
+    let tap f x = f x; x
 
     let memoize (f : 'TIn -> 'TOut) =
         let cache = ConcurrentDictionary<'TIn, 'TOut>()
