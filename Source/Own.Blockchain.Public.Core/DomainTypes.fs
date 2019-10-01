@@ -925,6 +925,12 @@ type TradeOrderHash with
     member __.Value =
         __ |> fun (TradeOrderHash v) -> v
 
+type TradeOrderSide with
+    member __.CaseName =
+        match __ with
+        | Buy -> "Buy"
+        | Sell -> "Sell"
+
 type TradeOrderState with
     member __.Time =
         __.BlockNumber, __.TxPosition, __.ActionNumber
@@ -936,6 +942,14 @@ type TradeOrderState with
         | TradeOrderType.Limit
         | TradeOrderType.StopLimit
         | TradeOrderType.TrailingStopLimit -> ExecTradeOrderType.Limit
+    member __.IsStopOrder =
+        match __.OrderType with
+        | TradeOrderType.Market
+        | TradeOrderType.Limit -> false
+        | TradeOrderType.StopMarket
+        | TradeOrderType.StopLimit
+        | TradeOrderType.TrailingStopMarket
+        | TradeOrderType.TrailingStopLimit -> true
     member __.AmountRemaining =
         __.Amount - __.AmountFilled
 

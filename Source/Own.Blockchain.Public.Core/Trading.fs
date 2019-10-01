@@ -162,6 +162,23 @@ module Trading =
             }
             |> Some
 
+    let updateStopOrders
+        (getTradeOrders : AssetHash * AssetHash -> (TradeOrderHash * TradeOrderState) list)
+        (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
+        (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
+        price
+        =
+
+        for h, s in getTradeOrders (baseAssetHash, quoteAssetHash) do
+            if not s.IsExecutable
+                && s.IsStopOrder
+                && (
+                    s.Side = TradeOrderSide.Buy && price >= s.StopPrice
+                    || s.Side = TradeOrderSide.Sell && price <= s.StopPrice
+                )
+            then
+                setTradeOrder (h, { s with IsExecutable = true }, TradeOrderChange.Update)
+
     let matchTradeOrders
         (getTradeOrders : AssetHash * AssetHash -> (TradeOrderHash * TradeOrderState) list)
         (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
@@ -169,10 +186,8 @@ module Trading =
         (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
         =
 
-        let processTopOrders =
-            processTopOrders
-                getHolding
-                setTradeOrder
+        let processTopOrders = processTopOrders getHolding setTradeOrder
+        let updateStopOrders = updateStopOrders getTradeOrders setTradeOrder (baseAssetHash, quoteAssetHash)
 
         // Match orders
         let trades =
@@ -183,8 +198,19 @@ module Trading =
             )
             |> Seq.takeWhile Option.isSome
             |> Seq.choose (Option.bind processTopOrders)
+            |> Seq.tap (fun trade ->
+                Log.successf "TRADE: %s %M @ %M (%s/%s)"
+                    trade.Direction.CaseName
+                    trade.Amount.Value
+                    trade.Price.Value
+                    trade.BuyOrder.Value
+                    trade.SellOrder.Value
 
-        trades |> Seq.iter (Log.noticef "TRADE: %A") // TODO DSX: Include trades in the block
+                updateStopOrders trade.Price
+            )
+            |> Seq.toList
+
+        // TODO DSX: Include trades in the block
 
         // Remove IOC orders
         getTradeOrders (baseAssetHash, quoteAssetHash)
@@ -200,3 +226,5 @@ module Trading =
                 TradeOrderChange.Remove
             )
         )
+
+        trades

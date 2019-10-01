@@ -1628,5 +1628,6 @@ module Processing =
                 state.SetTradeOrder
                 state.GetHoldingOrDefault
                 (baseAssetHash, quoteAssetHash)
+            |> ignore // TODO DSX: Add trades to the block
 
         state.ToProcessingOutput()
