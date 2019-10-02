@@ -149,11 +149,15 @@ type NetworkNode
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
             let found, _ = activePeers.TryGetValue networkAddress
             if not found then
-                Log.debugf "Peer %s has been excluded" networkAddress.Value
-                excludedPeers.TryRemove networkAddress |> ignore
-                networkAddress.Value |> closeConnection
-                removePeerNode networkAddress
-                |> Result.iterError (fun _ -> Log.errorf "Error removing peer %A" networkAddress)
+                Log.verbosef "Peer %s has been excluded" networkAddress.Value
+            else
+                activePeers.TryRemove networkAddress |> ignore
+                Log.verbosef "Excluding %s peer" networkAddress.Value
+
+            excludedPeers.TryRemove networkAddress |> ignore
+            networkAddress.Value |> closeConnection
+            removePeerNode networkAddress
+            |> Result.iterError (fun _ -> Log.errorf "Error removing peer %A" networkAddress)
         }
 
     (*
