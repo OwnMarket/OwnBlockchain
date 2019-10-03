@@ -82,7 +82,6 @@ type TradingPairInfo = {
 
 type TradeOrderHash = TradeOrderHash of string
 
-[<RequireQualifiedAccess>]
 type TradeOrderSide =
     | Buy
     | Sell
@@ -101,7 +100,6 @@ type ExecTradeOrderType =
     | Market
     | Limit
 
-[<RequireQualifiedAccess>]
 type TradeOrderTimeInForce =
     | GoodTilCancelled
     | ImmediateOrCancel

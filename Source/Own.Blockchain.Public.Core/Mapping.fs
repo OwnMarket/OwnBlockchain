@@ -167,8 +167,8 @@ module Mapping =
                 QuoteAssetHash = AssetHash a.QuoteAssetHash
                 Side =
                     match a.Side with
-                    | "BUY" -> TradeOrderSide.Buy
-                    | "SELL" -> TradeOrderSide.Sell
+                    | "BUY" -> Buy
+                    | "SELL" -> Sell
                     | v -> failwithf "Invalid TradeOrderSide value: %s" v
                 Amount = AssetAmount a.Amount
                 OrderType =
@@ -186,7 +186,7 @@ module Mapping =
                 TrailingDeltaIsPercentage = a.TrailingDeltaIsPercentage
                 TimeInForce =
                     match a.TimeInForce with
-                    | "GTC" -> TradeOrderTimeInForce.GoodTilCancelled
+                    | "GTC" -> GoodTilCancelled
                     | "IOC" -> TradeOrderTimeInForce.ImmediateOrCancel
                     | v -> failwithf "Invalid TradeOrderTimeInForce value: %s" v
             }
@@ -651,14 +651,14 @@ module Mapping =
 
     let tradeOrderSideFromCode (tradeOrderSideCode : byte) : TradeOrderSide =
         match tradeOrderSideCode with
-        | 1uy -> TradeOrderSide.Buy
-        | 2uy -> TradeOrderSide.Sell
+        | 1uy -> Buy
+        | 2uy -> Sell
         | s -> failwithf "Invalid trade order side code: %i" s
 
     let tradeOrderSideToCode (tradeOrderSide : TradeOrderSide) : byte =
         match tradeOrderSide with
-        | TradeOrderSide.Buy -> 1uy
-        | TradeOrderSide.Sell -> 2uy
+        | Buy -> 1uy
+        | Sell -> 2uy
 
     let tradeOrderTypeFromCode (tradeOrderTypeCode : byte) : TradeOrderType =
         match tradeOrderTypeCode with
@@ -681,13 +681,13 @@ module Mapping =
 
     let tradeOrderTimeInForceFromCode (tradeOrderTimeInForceCode : byte) : TradeOrderTimeInForce =
         match tradeOrderTimeInForceCode with
-        | 1uy -> TradeOrderTimeInForce.GoodTilCancelled
+        | 1uy -> GoodTilCancelled
         | 2uy -> TradeOrderTimeInForce.ImmediateOrCancel
         | t -> failwithf "Invalid trade order time in force code: %i" t
 
     let tradeOrderTimeInForceToCode (tradeOrderTimeInForce : TradeOrderTimeInForce) : byte =
         match tradeOrderTimeInForce with
-        | TradeOrderTimeInForce.GoodTilCancelled -> 1uy
+        | GoodTilCancelled -> 1uy
         | TradeOrderTimeInForce.ImmediateOrCancel -> 2uy
 
     let tradeOrderStatusToCode (tradeOrderStatus : TradeOrderStatus) : byte =
@@ -1005,8 +1005,8 @@ module Mapping =
             QuoteAssetHash = tradeOrderInfo.QuoteAssetHash.Value
             Side =
                 match tradeOrderInfo.Side with
-                | TradeOrderSide.Buy -> "BUY"
-                | TradeOrderSide.Sell -> "SELL"
+                | Buy -> "BUY"
+                | Sell -> "SELL"
             Amount = tradeOrderInfo.Amount.Value
             OrderType =
                 match tradeOrderInfo.OrderType with
@@ -1022,7 +1022,7 @@ module Mapping =
             TrailingDeltaIsPercentage = tradeOrderInfo.TrailingDeltaIsPercentage
             TimeInForce =
                 match tradeOrderInfo.TimeInForce with
-                | TradeOrderTimeInForce.GoodTilCancelled -> "GTC"
+                | GoodTilCancelled -> "GTC"
                 | TradeOrderTimeInForce.ImmediateOrCancel -> "IOC"
             IsExecutable = tradeOrderInfo.IsExecutable
             AmountFilled = tradeOrderInfo.AmountFilled.Value

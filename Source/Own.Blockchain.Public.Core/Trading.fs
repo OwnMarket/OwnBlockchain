@@ -17,7 +17,7 @@ module Trading =
         let buyOrders, sellOrders =
             getExecutableTradeOrders (baseAssetHash, quoteAssetHash)
             |> List.map Mapping.tradeOrderInfoFromDto
-            |> List.partition (fun o -> o.Side = TradeOrderSide.Buy)
+            |> List.partition (fun o -> o.Side = Buy)
 
         {
             BuyOrders = buyOrders |> List.sortBy (fun o -> -o.LimitPrice.Value, o.BlockNumber, o.TradeOrderHash)
@@ -154,7 +154,7 @@ module Trading =
             let sellOrder = updateFilledOrder setTradeOrder (sellOrderHash, sellOrder, amountToFill)
 
             {
-                Trade.Direction = if buyOrder.Time > sellOrder.Time then TradeOrderSide.Buy else TradeOrderSide.Sell
+                Trade.Direction = if buyOrder.Time > sellOrder.Time then Buy else Sell
                 BuyOrder = buyOrderHash
                 SellOrder = sellOrderHash
                 Amount = amountToFill
@@ -173,8 +173,8 @@ module Trading =
             if not s.IsExecutable
                 && s.IsStopOrder
                 && (
-                    s.Side = TradeOrderSide.Buy && price >= s.StopPrice
-                    || s.Side = TradeOrderSide.Sell && price <= s.StopPrice
+                    s.Side = Buy && price >= s.StopPrice
+                    || s.Side = Sell && price <= s.StopPrice
                 )
             then
                 setTradeOrder (h, { s with IsExecutable = true }, TradeOrderChange.Update)
@@ -193,7 +193,7 @@ module Trading =
         let trades =
             Seq.initInfinite (fun _ ->
                 getTradeOrders (baseAssetHash, quoteAssetHash)
-                |> List.partition (fun (_, o) -> o.Side = TradeOrderSide.Buy)
+                |> List.partition (fun (_, o) -> o.Side = Buy)
                 |> getTopOrders
             )
             |> Seq.takeWhile Option.isSome

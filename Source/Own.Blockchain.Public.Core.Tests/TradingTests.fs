@@ -216,8 +216,7 @@ module TradingTests =
                 createTradeOrderState
                     (1L, 1, 1s)
                     accountHash1
-                    (TradeOrderSide.Sell, 100m, TradeOrderType.Limit, 5m, 0m, 0m, false,
-                        TradeOrderTimeInForce.GoodTilCancelled)
+                    (Sell, 100m, TradeOrderType.Limit, 5m, 0m, 0m, false, GoodTilCancelled)
                     (true, 0m, TradeOrderStatus.Open)
             ]
 

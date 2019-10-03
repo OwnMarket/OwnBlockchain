@@ -1015,12 +1015,12 @@ module Processing =
                 // TODO DSX: Check trading pair conditions
                 let assetHash, orderAmount =
                     match action.Side with
-                    | TradeOrderSide.Buy -> action.QuoteAssetHash, action.Amount * action.LimitPrice
-                    | TradeOrderSide.Sell -> action.BaseAssetHash, action.Amount
+                    | Buy -> action.QuoteAssetHash, action.Amount * action.LimitPrice
+                    | Sell -> action.BaseAssetHash, action.Amount
                 if state.GetHoldingOrDefault(action.AccountHash, assetHash).Balance < orderAmount then
                     match action.Side with
-                    | TradeOrderSide.Buy -> Error TxErrorCode.InsufficientQuoteAssetBalance
-                    | TradeOrderSide.Sell -> Error TxErrorCode.InsufficientBaseAssetBalance
+                    | Buy -> Error TxErrorCode.InsufficientQuoteAssetBalance
+                    | Sell -> Error TxErrorCode.InsufficientBaseAssetBalance
                 else
                     let tradeOrderHash =
                         deriveHash senderAddress nonce actionNumber

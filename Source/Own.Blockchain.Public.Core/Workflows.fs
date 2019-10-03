@@ -1834,7 +1834,7 @@ module Workflows =
             o.BaseAssetHash,
             o.QuoteAssetHash,
             o.Side,
-            (if o.Side = TradeOrderSide.Buy then -o.LimitPrice.Value else o.LimitPrice.Value),
+            (if o.Side = Buy then -o.LimitPrice.Value else o.LimitPrice.Value),
             o.BlockNumber,
             o.TradeOrderHash
         )
