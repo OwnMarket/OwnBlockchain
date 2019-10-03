@@ -72,7 +72,7 @@ module Helpers =
         (nonce : int64)
         (expirationTime : int64)
         (actionFee : decimal)
-        (actions : obj list)
+        (actions : TxActionDto list)
         =
 
         let json =
@@ -99,7 +99,7 @@ module Helpers =
         (Nonce nonce)
         (Timestamp expirationTime)
         (ChxAmount actionFee)
-        (actions : obj list)
+        (actions : TxActionDto list)
         =
 
         let rawTx = newRawTxDto sender.Address nonce expirationTime actionFee actions

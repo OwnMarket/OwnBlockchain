@@ -94,7 +94,7 @@ module ValidatorTests =
                 {
                     ActionType = "CreateAccount"
                     ActionData = CreateAccountTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -185,7 +185,7 @@ module ValidatorTests =
                 {
                     ActionType = "CreateAccount"
                     ActionData = CreateAccountTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -303,7 +303,7 @@ module ValidatorTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx validatorWallet nonce (Timestamp 0L) actionFee
 

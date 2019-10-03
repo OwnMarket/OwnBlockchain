@@ -306,7 +306,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
@@ -324,7 +324,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
@@ -343,7 +343,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
@@ -366,7 +366,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
@@ -388,7 +388,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
@@ -410,7 +410,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
@@ -433,7 +433,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
@@ -455,7 +455,7 @@ module SerializationTests =
             }
 
         let serializedTx =
-            [ expectedTxAction |> box ]
+            [expectedTxAction]
             |> Helpers.newRawTxDto (BlockchainAddress "SomeAddress") 10L 0L 20m
 
         match Serialization.deserializeTx serializedTx with
