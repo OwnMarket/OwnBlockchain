@@ -7579,7 +7579,11 @@ module ProcessingTests =
         test <@ tradeOrderState.TrailingDelta = AssetAmount trailingDelta @>
         test <@ tradeOrderState.TrailingDeltaIsPercentage = trailingDeltaIsPercentage @>
         test <@ unionCaseName tradeOrderState.TimeInForce = timeInForceCaseName @>
-        test <@ tradeOrderChange = TradeOrderChange.Add @>
+        match tradeOrderState.TimeInForce with
+        | TradeOrderTimeInForce.GoodTilCancelled ->
+            test <@ tradeOrderChange = TradeOrderChange.Add @>
+        | TradeOrderTimeInForce.ImmediateOrCancel ->
+            test <@ tradeOrderChange = TradeOrderChange.Remove @>
 
     [<Fact>]
     let ``Processing.processChanges PlaceTradeOrder - Error: AccountNotFound`` () =

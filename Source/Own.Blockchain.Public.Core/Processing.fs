@@ -354,8 +354,7 @@ module Processing =
                     match existingChange, change with
                     | Some TradeOrderChange.Add, Some TradeOrderChange.Update ->
                         Some TradeOrderChange.Add
-                    | Some TradeOrderChange.Add, Some TradeOrderChange.Remove ->
-                        None
+                    | Some TradeOrderChange.Add, Some TradeOrderChange.Remove
                     | Some TradeOrderChange.Update, Some TradeOrderChange.Update
                     | Some TradeOrderChange.Update, Some TradeOrderChange.Remove
                     | None, Some _ ->

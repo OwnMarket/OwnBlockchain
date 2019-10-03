@@ -199,10 +199,12 @@ module Trading =
             |> Seq.takeWhile Option.isSome
             |> Seq.choose (Option.bind processTopOrders)
             |> Seq.tap (fun trade ->
-                Log.successf "TRADE: %s %M @ %M (%s/%s)"
+                Log.successf "TRADE: %s %M @ %M (%s/%s)\n\tBuy order: %s\n\tSell order: %s"
                     trade.Direction.CaseName
                     trade.Amount.Value
                     trade.Price.Value
+                    baseAssetHash.Value
+                    quoteAssetHash.Value
                     trade.BuyOrder.Value
                     trade.SellOrder.Value
 

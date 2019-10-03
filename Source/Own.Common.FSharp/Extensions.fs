@@ -93,7 +93,10 @@ module Map =
     let inline keys (map : Map<'Key, 'Value>) =
         Map.fold (fun keys key _ -> key :: keys) [] map
 
-    /// Produces a new Map by maping both key and value.
+    let inline values (map : Map<'Key, 'Value>) =
+        Map.fold (fun values _ value -> value :: values) [] map
+
+    /// Produces a new Map by mapping both key and value.
     let remap mapper =
         Map.toSeq >> Seq.map mapper >> Map.ofSeq
 

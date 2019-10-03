@@ -14,6 +14,7 @@
         <Compile Include="SerializationTests.fs" />
         <Compile Include="SubmissionTests.fs" />
         <Compile Include="ProcessingTests.fs" />
+        <Compile Include="TradingTests.fs" />
         <Compile Include="BlockTests.fs" />
         <Compile Include="ValidatorTests.fs" />
         <Compile Include="ConsensusTestHelpers.fs" />
