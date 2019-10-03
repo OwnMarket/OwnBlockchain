@@ -174,28 +174,15 @@ module Trading =
                 if s.Side = Buy && price >= s.StopPrice || s.Side = Sell && price <= s.StopPrice then
                     setTradeOrder (h, { s with IsExecutable = true }, TradeOrderChange.Update)
                 elif s.IsTrailingStopOrder then
-                    let expectedStopPrice, expectedLimitPrice =
+                    let expectedStopPrice  =
                         match s.Side with
-                        | Buy ->
-                            // TODO DSX: Handle trailing delta percentage
-                            let newStopPrice = price + s.TrailingDelta
-                            let newLimitPrice =
-                                match s.ExecOrderType with
-                                | ExecTradeOrderType.Market -> AssetAmount 0m
-                                | ExecTradeOrderType.Limit ->
-                                    let limitPriceDelta = s.LimitPrice - s.StopPrice
-                                    newStopPrice + limitPriceDelta
-                            newStopPrice, newLimitPrice
-                        | Sell ->
-                            // TODO DSX: Handle trailing delta percentage
-                            let newStopPrice = price - s.TrailingDelta
-                            let newLimitPrice =
-                                match s.ExecOrderType with
-                                | ExecTradeOrderType.Market -> AssetAmount 0m
-                                | ExecTradeOrderType.Limit ->
-                                    let limitPriceDelta = s.StopPrice - s.LimitPrice
-                                    newStopPrice - limitPriceDelta
-                            newStopPrice, newLimitPrice
+                        | Buy -> price + s.TrailingDelta
+                        | Sell -> price + s.TrailingDelta * -1m
+
+                    let expectedLimitPrice =
+                        match s.ExecOrderType with
+                        | ExecTradeOrderType.Market -> AssetAmount 0m
+                        | ExecTradeOrderType.Limit -> expectedStopPrice + (s.LimitPrice - s.StopPrice)
 
                     if s.Side = Buy && (expectedStopPrice < s.StopPrice || expectedLimitPrice < s.LimitPrice)
                         || s.Side = Sell && (expectedStopPrice > s.StopPrice || expectedLimitPrice > s.LimitPrice)
