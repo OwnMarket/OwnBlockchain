@@ -106,7 +106,21 @@ module TradingTests =
             |> List.map (initHolding senderWallet.Address)
             |> Map.ofList
 
+        let oldOrders = oldOrders |> List.map (fun o -> Helpers.randomHash () |> TradeOrderHash, o)
+        let oldOrderHashes = oldOrders |> List.map fst
         let oldOrders = oldOrders |> Map.ofList
+
+        let newOrderHashes =
+            newOrders
+            |> List.mapi (fun txIndex actions ->
+                let nonce = int64 txIndex + 1L
+                actions
+                |> List.mapi (fun actionIndex _ ->
+                    let actionNumber = Convert.ToInt16 actionIndex + 1s
+                    createTradeOrderHash senderWallet.Address nonce actionNumber
+                )
+            )
+            |> List.concat
 
         // PREPARE TX
         let actionFee = ChxAmount 0.01m
@@ -116,7 +130,7 @@ module TradingTests =
             |> List.mapi (fun i actions ->
                 let nonce = int64 i + 1L |> Nonce
                 actions
-                |> List.map (fun (_, action) -> { ActionType = "PlaceTradeOrder"; ActionData = action })
+                |> List.map (fun action -> { ActionType = "PlaceTradeOrder"; ActionData = action })
                 |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
             )
 
@@ -157,21 +171,23 @@ module TradingTests =
             |> Map.toList
             |> List.map Mapping.tradeOrderStateToInfo
 
-        { Helpers.processChangesMockedDeps with
-            GetTx = getTx
-            GetChxAddressStateFromStorage = getChxAddressState
-            GetAccountStateFromStorage = getAccountState
-            GetAssetStateFromStorage = getAssetState
-            GetHoldingStateFromStorage = getHoldingState
-            GetTradingPairStateFromStorage = getTradingPairState
-            GetTradeOrderStateFromStorage = getTradeOrderState
-            GetTradeOrdersFromStorage = getTradeOrdersFromStorage
-            ValidatorAddress = validatorWallet.Address
-            TxSet = txSet
-            BlockNumber = blockNumber
-        }
-        |> Helpers.processChanges
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetHoldingStateFromStorage = getHoldingState
+                GetTradingPairStateFromStorage = getTradingPairState
+                GetTradeOrderStateFromStorage = getTradeOrderState
+                GetTradeOrdersFromStorage = getTradeOrdersFromStorage
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+                BlockNumber = blockNumber
+            }
+            |> Helpers.processChanges
 
+        oldOrderHashes, newOrderHashes, output
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tests
@@ -186,7 +202,6 @@ module TradingTests =
         let baseAssetHash = Helpers.randomHash () |> AssetHash
         let quoteAssetHash = Helpers.randomHash () |> AssetHash
 
-        let createTradeOrderHash = createTradeOrderHash senderWallet.Address
         let createTradeOrderState = createTradeOrderState (baseAssetHash, quoteAssetHash)
         let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
 
@@ -198,28 +213,24 @@ module TradingTests =
 
         let oldOrders =
             [
-                Helpers.randomHash () |> TradeOrderHash,
-                    createTradeOrderState
-                        (1L, 1, 1s)
-                        accountHash1
-                        (TradeOrderSide.Sell, 100m, TradeOrderType.Limit, 5m, 0m, 0m, false,
-                            TradeOrderTimeInForce.GoodTilCancelled)
-                        (true, 0m, TradeOrderStatus.Open)
+                createTradeOrderState
+                    (1L, 1, 1s)
+                    accountHash1
+                    (TradeOrderSide.Sell, 100m, TradeOrderType.Limit, 5m, 0m, 0m, false,
+                        TradeOrderTimeInForce.GoodTilCancelled)
+                    (true, 0m, TradeOrderStatus.Open)
             ]
 
         let newOrders =
             [
                 [ // TX1
-                    createTradeOrderHash 1L 1s,
-                        placeOrder accountHash2.Value ("BUY", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
+                    placeOrder accountHash2.Value ("BUY", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
                 ]
             ]
 
-        let oldOrderHashes = oldOrders |> List.map fst
-        let newOrderHashes = newOrders |> List.concat |> List.map fst
-
         // ACT
-        let output = matchOrders (BlockNumber 2L) senderWallet holdings oldOrders newOrders
+        let oldOrderHashes, newOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings oldOrders newOrders
 
         // ASSERT
         test <@ output.TxResults.Count = newOrders.Length @>
@@ -229,9 +240,13 @@ module TradingTests =
         test <@ output.TradeOrders.Count = 2 @>
 
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[0]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
 
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[newOrderHashes.[0]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
