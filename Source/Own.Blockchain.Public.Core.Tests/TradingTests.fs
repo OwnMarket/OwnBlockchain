@@ -194,7 +194,7 @@ module TradingTests =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     [<Fact>]
-    let ``Trading.matchTradeOrders - LIMIT BUY`` () =
+    let ``Matching - LIMIT BUY`` () =
         // ARRANGE
         let senderWallet = Signing.generateWallet ()
         let accountHash1 = Helpers.randomHash () |> AccountHash
@@ -249,3 +249,124 @@ module TradingTests =
         test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        (* TODO DSX: Enable upon implementing settlement
+        test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 900m @>
+        test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 100m @>
+        test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 500m @>
+        test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1500m @>
+        *)
+
+    [<Fact>]
+    let ``Matching - Stop and Limit price in TRAILING orders follows price`` () =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let createTradeOrderState = createTradeOrderState (baseAssetHash, quoteAssetHash)
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 1000m, true
+                accountHash2, quoteAssetHash, 2000m, true
+            ]
+
+        let oldOrders =
+            [
+                createTradeOrderState
+                    (1L, 1, 1s)
+                    accountHash1
+                    (Sell, 100m, TradeOrderType.TrailingStopMarket, 0m, 3m, 1m, false, ImmediateOrCancel)
+                    (false, 0m, TradeOrderStatus.Open)
+                createTradeOrderState
+                    (1L, 2, 1s)
+                    accountHash1
+                    (Buy, 100m, TradeOrderType.TrailingStopMarket, 0m, 7m, 1m, false, ImmediateOrCancel)
+                    (false, 0m, TradeOrderStatus.Open)
+                createTradeOrderState
+                    (1L, 1, 1s)
+                    accountHash1
+                    (Sell, 100m, TradeOrderType.TrailingStopLimit, 2.5m, 3m, 1m, false, ImmediateOrCancel)
+                    (false, 0m, TradeOrderStatus.Open)
+                createTradeOrderState
+                    (1L, 2, 1s)
+                    accountHash1
+                    (Buy, 100m, TradeOrderType.TrailingStopLimit, 7.5m, 7m, 1m, false, ImmediateOrCancel)
+                    (false, 0m, TradeOrderStatus.Open)
+            ]
+
+        let newOrders =
+            [
+                [ // TX1
+                    placeOrder accountHash1.Value ("SELL", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
+                ]
+                [ // TX2
+                    placeOrder accountHash2.Value ("BUY", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
+                ]
+            ]
+
+        // ACT
+        let oldOrderHashes, newOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings oldOrders newOrders
+
+        // ASSERT
+        test <@ output.TxResults.Count = newOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradeOrders.Count = 6 @>
+
+        // Old orders
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[0]]
+        test <@ tradeOrderState.StopPrice.Value = 4m @>
+        test <@ tradeOrderState.IsExecutable = false @>
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Update @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[1]]
+        test <@ tradeOrderState.StopPrice.Value = 6m @>
+        test <@ tradeOrderState.IsExecutable = false @>
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Update @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[2]]
+        test <@ tradeOrderState.StopPrice.Value = 4m @>
+        test <@ tradeOrderState.LimitPrice.Value = 3.5m @>
+        test <@ tradeOrderState.IsExecutable = false @>
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Update @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[3]]
+        test <@ tradeOrderState.StopPrice.Value = 6m @>
+        test <@ tradeOrderState.LimitPrice.Value = 6.5m @>
+        test <@ tradeOrderState.IsExecutable = false @>
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Update @>
+
+        // New orders
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[newOrderHashes.[0]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[newOrderHashes.[1]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        (* TODO DSX: Enable upon implementing settlement
+        test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 900m @>
+        test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 100m @>
+        test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 500m @>
+        test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1500m @>
+        *)

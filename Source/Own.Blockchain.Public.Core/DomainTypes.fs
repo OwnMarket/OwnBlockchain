@@ -948,6 +948,14 @@ type TradeOrderState with
         | TradeOrderType.StopLimit
         | TradeOrderType.TrailingStopMarket
         | TradeOrderType.TrailingStopLimit -> true
+    member __.IsTrailingStopOrder =
+        match __.OrderType with
+        | TradeOrderType.Market
+        | TradeOrderType.Limit
+        | TradeOrderType.StopMarket
+        | TradeOrderType.StopLimit -> false
+        | TradeOrderType.TrailingStopMarket
+        | TradeOrderType.TrailingStopLimit -> true
     member __.AmountRemaining =
         __.Amount - __.AmountFilled
 

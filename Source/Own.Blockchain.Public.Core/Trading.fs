@@ -170,14 +170,31 @@ module Trading =
         =
 
         for h, s in getTradeOrders (baseAssetHash, quoteAssetHash) do
-            if not s.IsExecutable
-                && s.IsStopOrder
-                && (
-                    s.Side = Buy && price >= s.StopPrice
-                    || s.Side = Sell && price <= s.StopPrice
-                )
-            then
-                setTradeOrder (h, { s with IsExecutable = true }, TradeOrderChange.Update)
+            if not s.IsExecutable && s.IsStopOrder then
+                if s.Side = Buy && price >= s.StopPrice || s.Side = Sell && price <= s.StopPrice then
+                    setTradeOrder (h, { s with IsExecutable = true }, TradeOrderChange.Update)
+                elif s.IsTrailingStopOrder then
+                    let expectedStopPrice, expectedLimitPrice =
+                        match s.Side with
+                        | Buy ->
+                            // TODO DSX: Handle trailing delta percentage
+                            let newStopPrice = price + s.TrailingDelta
+                            let limitPriceDelta = s.LimitPrice - s.StopPrice
+                            newStopPrice, newStopPrice + limitPriceDelta
+                        | Sell ->
+                            // TODO DSX: Handle trailing delta percentage
+                            let newStopPrice = price - s.TrailingDelta
+                            let limitPriceDelta = s.StopPrice - s.LimitPrice
+                            newStopPrice, newStopPrice - limitPriceDelta
+
+                    if s.Side = Buy && (expectedStopPrice < s.StopPrice || expectedLimitPrice < s.LimitPrice)
+                        || s.Side = Sell && (expectedStopPrice > s.StopPrice || expectedLimitPrice > s.LimitPrice)
+                    then
+                        setTradeOrder (
+                            h,
+                            { s with StopPrice = expectedStopPrice; LimitPrice = expectedLimitPrice },
+                            TradeOrderChange.Update
+                        )
 
     let matchTradeOrders
         (getTradeOrders : AssetHash * AssetHash -> (TradeOrderHash * TradeOrderState) list)
