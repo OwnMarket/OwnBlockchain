@@ -179,13 +179,23 @@ module Trading =
                         | Buy ->
                             // TODO DSX: Handle trailing delta percentage
                             let newStopPrice = price + s.TrailingDelta
-                            let limitPriceDelta = s.LimitPrice - s.StopPrice
-                            newStopPrice, newStopPrice + limitPriceDelta
+                            let newLimitPrice =
+                                match s.ExecOrderType with
+                                | ExecTradeOrderType.Market -> AssetAmount 0m
+                                | ExecTradeOrderType.Limit ->
+                                    let limitPriceDelta = s.LimitPrice - s.StopPrice
+                                    newStopPrice + limitPriceDelta
+                            newStopPrice, newLimitPrice
                         | Sell ->
                             // TODO DSX: Handle trailing delta percentage
                             let newStopPrice = price - s.TrailingDelta
-                            let limitPriceDelta = s.StopPrice - s.LimitPrice
-                            newStopPrice, newStopPrice - limitPriceDelta
+                            let newLimitPrice =
+                                match s.ExecOrderType with
+                                | ExecTradeOrderType.Market -> AssetAmount 0m
+                                | ExecTradeOrderType.Limit ->
+                                    let limitPriceDelta = s.StopPrice - s.LimitPrice
+                                    newStopPrice - limitPriceDelta
+                            newStopPrice, newLimitPrice
 
                     if s.Side = Buy && (expectedStopPrice < s.StopPrice || expectedLimitPrice < s.LimitPrice)
                         || s.Side = Sell && (expectedStopPrice > s.StopPrice || expectedLimitPrice > s.LimitPrice)

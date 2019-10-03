@@ -322,6 +322,7 @@ module TradingTests =
 
         // Old orders
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[0]]
+        test <@ tradeOrderState.LimitPrice.Value = 0m @>
         test <@ tradeOrderState.StopPrice.Value = 4m @>
         test <@ tradeOrderState.IsExecutable = false @>
         test <@ tradeOrderState.AmountFilled.Value = 0m @>
@@ -329,6 +330,7 @@ module TradingTests =
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[1]]
+        test <@ tradeOrderState.LimitPrice.Value = 0m @>
         test <@ tradeOrderState.StopPrice.Value = 6m @>
         test <@ tradeOrderState.IsExecutable = false @>
         test <@ tradeOrderState.AmountFilled.Value = 0m @>
@@ -336,16 +338,16 @@ module TradingTests =
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[2]]
-        test <@ tradeOrderState.StopPrice.Value = 4m @>
         test <@ tradeOrderState.LimitPrice.Value = 3.5m @>
+        test <@ tradeOrderState.StopPrice.Value = 4m @>
         test <@ tradeOrderState.IsExecutable = false @>
         test <@ tradeOrderState.AmountFilled.Value = 0m @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[3]]
-        test <@ tradeOrderState.StopPrice.Value = 6m @>
         test <@ tradeOrderState.LimitPrice.Value = 6.5m @>
+        test <@ tradeOrderState.StopPrice.Value = 6m @>
         test <@ tradeOrderState.IsExecutable = false @>
         test <@ tradeOrderState.AmountFilled.Value = 0m @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
