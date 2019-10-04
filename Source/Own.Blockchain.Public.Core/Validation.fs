@@ -339,25 +339,25 @@ module Validation =
                 if action.StopPrice <> 0m then
                     yield AppError "StopPrice in non-STOP order types should not be set"
 
-            // TrailingDelta
+            // TrailingOffset
             if trailingOrderTypeCodes |> List.contains action.OrderType then
-                if action.TrailingDelta <= 0m then
-                    yield AppError "TrailingDelta in TRAILING order types must be greater than zero"
-                if action.TrailingDeltaIsPercentage then
-                    if action.TrailingDelta >= 100m then
-                        yield AppError "TrailingDelta percentage must be less than 100%"
-                    if not (Utils.isRounded2 action.TrailingDelta) then
-                        yield AppError "TrailingDelta percentage must have at most 2 decimals"
+                if action.TrailingOffset <= 0m then
+                    yield AppError "TrailingOffset in TRAILING order types must be greater than zero"
+                if action.TrailingOffsetIsPercentage then
+                    if action.TrailingOffset >= 100m then
+                        yield AppError "TrailingOffset percentage must be less than 100%"
+                    if not (Utils.isRounded2 action.TrailingOffset) then
+                        yield AppError "TrailingOffset percentage must have at most 2 decimals"
                 else
-                    if action.TrailingDelta > Utils.maxBlockchainNumeric then
-                        yield AppError (sprintf "TrailingDelta cannot be greater than %M" Utils.maxBlockchainNumeric)
-                    if not (Utils.isRounded7 action.TrailingDelta) then
-                        yield AppError "TrailingDelta must have at most 7 decimals"
+                    if action.TrailingOffset > Utils.maxBlockchainNumeric then
+                        yield AppError (sprintf "TrailingOffset cannot be greater than %M" Utils.maxBlockchainNumeric)
+                    if not (Utils.isRounded7 action.TrailingOffset) then
+                        yield AppError "TrailingOffset must have at most 7 decimals"
             else
-                if action.TrailingDelta <> 0m then
-                    yield AppError "TrailingDelta in non-TRAILING order types should not be set"
-                if action.TrailingDeltaIsPercentage then
-                    yield AppError "TrailingDeltaIsPercentage in non-TRAILING order types should not be set"
+                if action.TrailingOffset <> 0m then
+                    yield AppError "TrailingOffset in non-TRAILING order types should not be set"
+                if action.TrailingOffsetIsPercentage then
+                    yield AppError "TrailingOffsetIsPercentage in non-TRAILING order types should not be set"
 
             // TimeInForce
             if not (tradeOrderTimeInForceCodes |> List.contains action.TimeInForce) then

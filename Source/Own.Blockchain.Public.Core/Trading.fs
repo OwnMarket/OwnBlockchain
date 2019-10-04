@@ -176,16 +176,16 @@ module Trading =
                 if s.Side = Buy && price >= s.StopPrice || s.Side = Sell && price <= s.StopPrice then
                     setTradeOrder (h, { s with IsExecutable = true }, TradeOrderChange.Update)
                 elif s.IsTrailingStopOrder then
-                    let trailingDelta =
-                        if s.TrailingDeltaIsPercentage then
-                            s.TrailingDelta * price / 100m
+                    let trailingOffset =
+                        if s.TrailingOffsetIsPercentage then
+                            s.TrailingOffset * price / 100m
                         else
-                            s.TrailingDelta
+                            s.TrailingOffset
 
                     let expectedStopPrice =
                         match s.Side with
-                        | Buy -> price + trailingDelta
-                        | Sell -> price + trailingDelta * -1m
+                        | Buy -> price + trailingOffset
+                        | Sell -> price + trailingOffset * -1m
                     if expectedStopPrice.Value <= 0m then
                         failwithf "expectedStopPrice must be greater than zero: %M" expectedStopPrice.Value
 

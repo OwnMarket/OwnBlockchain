@@ -326,8 +326,8 @@ module BlockTests =
                 OrderType = TradeOrderType.TrailingStopLimit
                 LimitPrice = AssetAmount 5m
                 StopPrice = AssetAmount 6m
-                TrailingDelta = AssetAmount 3m
-                TrailingDeltaIsPercentage = true
+                TrailingOffset = AssetAmount 3m
+                TrailingOffsetIsPercentage = true
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
                 AmountFilled = AssetAmount 3m
@@ -348,8 +348,8 @@ module BlockTests =
                 "F" // OrderType
                 "...E............" // LimitPrice
                 "...F............" // StopPrice
-                "...C............" // TrailingDelta
-                "A" // TrailingDeltaIsPercentage
+                "...C............" // TrailingOffset
+                "A" // TrailingOffsetIsPercentage
                 "B" // TimeInForce
                 "A" // IsExecutable
                 "...C............" // AmountFilled
@@ -667,8 +667,8 @@ module BlockTests =
                             OrderType = TradeOrderType.Market
                             LimitPrice = AssetAmount 0m
                             StopPrice = AssetAmount 0m
-                            TrailingDelta = AssetAmount 0m
-                            TrailingDeltaIsPercentage = false
+                            TrailingOffset = AssetAmount 0m
+                            TrailingOffsetIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
@@ -690,8 +690,8 @@ module BlockTests =
                             OrderType = TradeOrderType.TrailingStopLimit
                             LimitPrice = AssetAmount 5m
                             StopPrice = AssetAmount 6m
-                            TrailingDelta = AssetAmount 3m
-                            TrailingDeltaIsPercentage = true
+                            TrailingOffset = AssetAmount 3m
+                            TrailingOffsetIsPercentage = true
                             TimeInForce = GoodTilCancelled
                             IsExecutable = false
                             AmountFilled = AssetAmount 1m
@@ -1196,8 +1196,8 @@ module BlockTests =
                             OrderType = TradeOrderType.Market
                             LimitPrice = AssetAmount 0m
                             StopPrice = AssetAmount 0m
-                            TrailingDelta = AssetAmount 0m
-                            TrailingDeltaIsPercentage = false
+                            TrailingOffset = AssetAmount 0m
+                            TrailingOffsetIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
@@ -1219,8 +1219,8 @@ module BlockTests =
                             OrderType = TradeOrderType.TrailingStopLimit
                             LimitPrice = AssetAmount 5m
                             StopPrice = AssetAmount 6m
-                            TrailingDelta = AssetAmount 3m
-                            TrailingDeltaIsPercentage = true
+                            TrailingOffset = AssetAmount 3m
+                            TrailingOffsetIsPercentage = true
                             TimeInForce = GoodTilCancelled
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
@@ -1649,8 +1649,8 @@ module BlockTests =
                             OrderType = TradeOrderType.Market
                             LimitPrice = AssetAmount 0m
                             StopPrice = AssetAmount 0m
-                            TrailingDelta = AssetAmount 0m
-                            TrailingDeltaIsPercentage = false
+                            TrailingOffset = AssetAmount 0m
+                            TrailingOffsetIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
@@ -1672,8 +1672,8 @@ module BlockTests =
                             OrderType = TradeOrderType.TrailingStopLimit
                             LimitPrice = AssetAmount 5m
                             StopPrice = AssetAmount 6m
-                            TrailingDelta = AssetAmount 3m
-                            TrailingDeltaIsPercentage = true
+                            TrailingOffset = AssetAmount 3m
+                            TrailingOffsetIsPercentage = true
                             TimeInForce = GoodTilCancelled
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m

@@ -7465,8 +7465,8 @@ module ProcessingTests =
             orderTypeCaseName : string,
             limitPrice : decimal,
             stopPrice : decimal,
-            trailingDelta : decimal,
-            trailingDeltaIsPercentage : bool,
+            trailingOffset : decimal,
+            trailingOffsetIsPercentage : bool,
             timeInForceCode : string,
             timeInForceCaseName : string
         )
@@ -7504,8 +7504,8 @@ module ProcessingTests =
                             OrderType = orderTypeCode
                             LimitPrice = limitPrice
                             StopPrice = stopPrice
-                            TrailingDelta = trailingDelta
-                            TrailingDeltaIsPercentage = trailingDeltaIsPercentage
+                            TrailingOffset = trailingOffset
+                            TrailingOffsetIsPercentage = trailingOffsetIsPercentage
                             TimeInForce = timeInForceCode
                         }
                 }
@@ -7576,8 +7576,8 @@ module ProcessingTests =
         test <@ unionCaseName tradeOrderState.OrderType = orderTypeCaseName @>
         test <@ tradeOrderState.LimitPrice = AssetAmount limitPrice @>
         test <@ tradeOrderState.StopPrice = AssetAmount stopPrice @>
-        test <@ tradeOrderState.TrailingDelta = AssetAmount trailingDelta @>
-        test <@ tradeOrderState.TrailingDeltaIsPercentage = trailingDeltaIsPercentage @>
+        test <@ tradeOrderState.TrailingOffset = AssetAmount trailingOffset @>
+        test <@ tradeOrderState.TrailingOffsetIsPercentage = trailingOffsetIsPercentage @>
         test <@ unionCaseName tradeOrderState.TimeInForce = timeInForceCaseName @>
 
         test <@ tradeOrderState.IsExecutable = not tradeOrderState.IsStopOrder @>
@@ -7621,8 +7621,8 @@ module ProcessingTests =
                             OrderType = "MARKET"
                             LimitPrice = 0m
                             StopPrice = 0m
-                            TrailingDelta = 0m
-                            TrailingDeltaIsPercentage = false
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
                             TimeInForce = "IOC"
                         }
                 }
@@ -7708,8 +7708,8 @@ module ProcessingTests =
                             OrderType = "MARKET"
                             LimitPrice = 0m
                             StopPrice = 0m
-                            TrailingDelta = 0m
-                            TrailingDeltaIsPercentage = false
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
                             TimeInForce = "IOC"
                         }
                 }
@@ -7794,8 +7794,8 @@ module ProcessingTests =
                             OrderType = "MARKET"
                             LimitPrice = 0m
                             StopPrice = 0m
-                            TrailingDelta = 0m
-                            TrailingDeltaIsPercentage = false
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
                             TimeInForce = "IOC"
                         }
                 }
@@ -7962,8 +7962,8 @@ module ProcessingTests =
                 OrderType = TradeOrderType.Market
                 LimitPrice = AssetAmount 0m
                 StopPrice = AssetAmount 0m
-                TrailingDelta = AssetAmount 0m
-                TrailingDeltaIsPercentage = false
+                TrailingOffset = AssetAmount 0m
+                TrailingOffsetIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
                 AmountFilled = AssetAmount 30m
@@ -8043,8 +8043,8 @@ module ProcessingTests =
                 OrderType = TradeOrderType.Market
                 LimitPrice = AssetAmount 0m
                 StopPrice = AssetAmount 0m
-                TrailingDelta = AssetAmount 0m
-                TrailingDeltaIsPercentage = false
+                TrailingOffset = AssetAmount 0m
+                TrailingOffsetIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
                 AmountFilled = AssetAmount 30m
@@ -8135,8 +8135,8 @@ module ProcessingTests =
                 OrderType = TradeOrderType.Market
                 LimitPrice = AssetAmount 0m
                 StopPrice = AssetAmount 0m
-                TrailingDelta = AssetAmount 0m
-                TrailingDeltaIsPercentage = false
+                TrailingOffset = AssetAmount 0m
+                TrailingOffsetIsPercentage = false
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
                 IsExecutable = true
                 AmountFilled = AssetAmount 30m
@@ -8177,7 +8177,7 @@ module ProcessingTests =
         test <@ tradeOrderState.OrderType = TradeOrderType.Market @>
         test <@ tradeOrderState.LimitPrice.Value = 0m @>
         test <@ tradeOrderState.StopPrice.Value = 0m @>
-        test <@ tradeOrderState.TrailingDelta.Value = 0m @>
-        test <@ tradeOrderState.TrailingDeltaIsPercentage = false @>
+        test <@ tradeOrderState.TrailingOffset.Value = 0m @>
+        test <@ tradeOrderState.TrailingOffsetIsPercentage = false @>
         test <@ tradeOrderState.TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>

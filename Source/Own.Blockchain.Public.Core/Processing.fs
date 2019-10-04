@@ -1042,8 +1042,8 @@ module Processing =
                                 OrderType = action.OrderType
                                 LimitPrice = action.LimitPrice
                                 StopPrice = action.StopPrice
-                                TrailingDelta = action.TrailingDelta
-                                TrailingDeltaIsPercentage = action.TrailingDeltaIsPercentage
+                                TrailingOffset = action.TrailingOffset
+                                TrailingOffsetIsPercentage = action.TrailingOffsetIsPercentage
                                 TimeInForce = action.TimeInForce
                                 IsExecutable =
                                     match action.OrderType with

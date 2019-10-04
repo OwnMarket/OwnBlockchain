@@ -46,7 +46,7 @@ module TradingTests =
         (baseAssetHash, quoteAssetHash)
         (blockNumber, txPosition, actionNumber)
         accountHash
-        (side, amount, orderType, limitPrice, stopPrice, trailingDelta, trailingDeltaIsPercentage, timeInForce)
+        (side, amount, orderType, limitPrice, stopPrice, trailingOffset, trailingOffsetIsPercentage, timeInForce)
         (isExecutable, amountFilled, orderStatus)
         =
 
@@ -62,8 +62,8 @@ module TradingTests =
             OrderType = orderType
             LimitPrice = AssetAmount limitPrice
             StopPrice = AssetAmount stopPrice
-            TrailingDelta = AssetAmount trailingDelta
-            TrailingDeltaIsPercentage = trailingDeltaIsPercentage
+            TrailingOffset = AssetAmount trailingOffset
+            TrailingOffsetIsPercentage = trailingOffsetIsPercentage
             TimeInForce = timeInForce
             IsExecutable = isExecutable
             AmountFilled = AssetAmount amountFilled
@@ -73,7 +73,7 @@ module TradingTests =
     let private placeOrder
         (baseAssetHash, quoteAssetHash)
         accountHash
-        (side, amount, orderType, limitPrice, stopPrice, trailingDelta, trailingDeltaIsPercentage, timeInForce)
+        (side, amount, orderType, limitPrice, stopPrice, trailingOffset, trailingOffsetIsPercentage, timeInForce)
         =
 
         {
@@ -85,8 +85,8 @@ module TradingTests =
             OrderType = orderType
             LimitPrice = limitPrice
             StopPrice = stopPrice
-            TrailingDelta = trailingDelta
-            TrailingDeltaIsPercentage = trailingDeltaIsPercentage
+            TrailingOffset = trailingOffset
+            TrailingOffsetIsPercentage = trailingOffsetIsPercentage
             TimeInForce = timeInForce
         }
 

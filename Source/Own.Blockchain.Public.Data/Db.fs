@@ -676,8 +676,8 @@ module Db =
                 order_type,
                 limit_price,
                 stop_price,
-                trailing_delta,
-                trailing_delta_is_percentage,
+                trailing_offset,
+                trailing_offset_is_percentage,
                 time_in_force,
                 is_executable,
                 amount_filled
@@ -720,8 +720,8 @@ module Db =
                 order_type,
                 limit_price,
                 stop_price,
-                trailing_delta,
-                trailing_delta_is_percentage,
+                trailing_offset,
+                trailing_offset_is_percentage,
                 time_in_force,
                 is_executable,
                 amount_filled
@@ -761,8 +761,8 @@ module Db =
                 order_type,
                 limit_price,
                 stop_price,
-                trailing_delta,
-                trailing_delta_is_percentage,
+                trailing_offset,
+                trailing_offset_is_percentage,
                 time_in_force,
                 is_executable,
                 amount_filled
@@ -802,8 +802,8 @@ module Db =
                 order_type,
                 limit_price,
                 stop_price,
-                trailing_delta,
-                trailing_delta_is_percentage,
+                trailing_offset,
+                trailing_offset_is_percentage,
                 time_in_force,
                 is_executable,
                 amount_filled
@@ -2574,8 +2574,8 @@ module Db =
                 order_type,
                 limit_price,
                 stop_price,
-                trailing_delta,
-                trailing_delta_is_percentage,
+                trailing_offset,
+                trailing_offset_is_percentage,
                 time_in_force,
                 is_executable,
                 amount_filled
@@ -2593,8 +2593,8 @@ module Db =
                 @orderType,
                 @limitPrice,
                 @stopPrice,
-                @trailingDelta,
-                @trailingDeltaIsPercentage,
+                @trailingOffset,
+                @trailingOffsetIsPercentage,
                 @timeInForce,
                 @isExecutable,
                 @amountFilled
@@ -2615,8 +2615,8 @@ module Db =
                 "@orderType", tradeOrderInfo.OrderType |> box
                 "@limitPrice", tradeOrderInfo.LimitPrice |> box
                 "@stopPrice", tradeOrderInfo.StopPrice |> box
-                "@trailingDelta", tradeOrderInfo.TrailingDelta |> box
-                "@trailingDeltaIsPercentage", tradeOrderInfo.TrailingDeltaIsPercentage |> box
+                "@trailingOffset", tradeOrderInfo.TrailingOffset |> box
+                "@trailingOffsetIsPercentage", tradeOrderInfo.TrailingOffsetIsPercentage |> box
                 "@timeInForce", tradeOrderInfo.TimeInForce |> box
                 "@isExecutable", tradeOrderInfo.IsExecutable |> box
                 "@amountFilled", tradeOrderInfo.AmountFilled |> box
@@ -2720,8 +2720,8 @@ module Db =
                         OrderType = state.OrderType
                         LimitPrice = state.LimitPrice
                         StopPrice = state.StopPrice
-                        TrailingDelta = state.TrailingDelta
-                        TrailingDeltaIsPercentage = state.TrailingDeltaIsPercentage
+                        TrailingOffset = state.TrailingOffset
+                        TrailingOffsetIsPercentage = state.TrailingOffsetIsPercentage
                         TimeInForce = state.TimeInForce
                         IsExecutable = state.IsExecutable
                         AmountFilled = state.AmountFilled

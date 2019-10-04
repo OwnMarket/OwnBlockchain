@@ -123,8 +123,8 @@ type TradeOrderInfo = {
     OrderType : TradeOrderType
     LimitPrice : AssetAmount
     StopPrice : AssetAmount
-    TrailingDelta : AssetAmount
-    TrailingDeltaIsPercentage : bool
+    TrailingOffset : AssetAmount
+    TrailingOffsetIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
     IsExecutable : bool
     AmountFilled : AssetAmount
@@ -258,8 +258,8 @@ type PlaceTradeOrderTxAction = {
     OrderType : TradeOrderType
     LimitPrice : AssetAmount
     StopPrice : AssetAmount
-    TrailingDelta : AssetAmount
-    TrailingDeltaIsPercentage : bool
+    TrailingOffset : AssetAmount
+    TrailingOffsetIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
 }
 
@@ -543,8 +543,8 @@ type TradeOrderState = {
     OrderType : TradeOrderType
     LimitPrice : AssetAmount
     StopPrice : AssetAmount
-    TrailingDelta : AssetAmount
-    TrailingDeltaIsPercentage : bool
+    TrailingOffset : AssetAmount
+    TrailingOffsetIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
 
     // Execution tracking fields

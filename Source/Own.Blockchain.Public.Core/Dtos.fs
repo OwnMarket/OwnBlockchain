@@ -134,8 +134,8 @@ type PlaceTradeOrderTxActionDto = {
     OrderType : string // MARKET, LIMIT, STOP_MARKET, STOP_LIMIT, TRAILING_STOP_MARKET, TRAILING_STOP_LIMIT
     LimitPrice : decimal
     StopPrice : decimal
-    TrailingDelta : decimal
-    TrailingDeltaIsPercentage : bool
+    TrailingOffset : decimal
+    TrailingOffsetIsPercentage : bool
     TimeInForce : string // GTC, IOC
 }
 
@@ -457,8 +457,8 @@ type TradeOrderStateDto = {
     OrderType : byte
     LimitPrice : decimal
     StopPrice : decimal
-    TrailingDelta : decimal
-    TrailingDeltaIsPercentage : bool
+    TrailingOffset : decimal
+    TrailingOffsetIsPercentage : bool
     TimeInForce : byte
     IsExecutable : bool
     AmountFilled : decimal
@@ -598,8 +598,8 @@ type TradeOrderInfoDto = {
     OrderType : byte
     LimitPrice : decimal
     StopPrice : decimal
-    TrailingDelta : decimal
-    TrailingDeltaIsPercentage : bool
+    TrailingOffset : decimal
+    TrailingOffsetIsPercentage : bool
     TimeInForce : byte
     IsExecutable : bool
     AmountFilled : decimal
@@ -861,8 +861,8 @@ type TradeOrderApiDto = {
     OrderType : string
     LimitPrice : decimal
     StopPrice : decimal
-    TrailingDelta : decimal
-    TrailingDeltaIsPercentage : bool
+    TrailingOffset : decimal
+    TrailingOffsetIsPercentage : bool
     TimeInForce : string
     IsExecutable : bool
     AmountFilled : decimal

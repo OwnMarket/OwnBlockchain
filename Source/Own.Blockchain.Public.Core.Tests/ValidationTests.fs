@@ -1128,8 +1128,8 @@ module ValidationTests =
                                 OrderType = ""
                                 LimitPrice = 0m
                                 StopPrice = 0m
-                                TrailingDelta = 0m
-                                TrailingDeltaIsPercentage = false
+                                TrailingOffset = 0m
+                                TrailingOffsetIsPercentage = false
                                 TimeInForce = ""
                             }
                     }
@@ -1179,8 +1179,8 @@ module ValidationTests =
                                 OrderType = "MARKET"
                                 LimitPrice = 1m
                                 StopPrice = 1m
-                                TrailingDelta = 1m
-                                TrailingDeltaIsPercentage = false
+                                TrailingOffset = 1m
+                                TrailingOffsetIsPercentage = false
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1202,7 +1202,7 @@ module ValidationTests =
             test <@ errors.Length = 3 @>
             test <@ errors.[0].Message = "LimitPrice in non-LIMIT order types should not be set" @>
             test <@ errors.[1].Message = "StopPrice in non-STOP order types should not be set" @>
-            test <@ errors.[2].Message = "TrailingDelta in non-TRAILING order types should not be set" @>
+            test <@ errors.[2].Message = "TrailingOffset in non-TRAILING order types should not be set" @>
 
     [<Fact>]
     let ``Validation.validateTx PlaceTradeOrder LimitPrice mandatory in LIMIT orders`` () =
@@ -1225,8 +1225,8 @@ module ValidationTests =
                                 OrderType = "LIMIT"
                                 LimitPrice = 0m
                                 StopPrice = 0m
-                                TrailingDelta = 0m
-                                TrailingDeltaIsPercentage = false
+                                TrailingOffset = 0m
+                                TrailingOffsetIsPercentage = false
                                 TimeInForce = "GTC"
                             }
                     }
@@ -1269,8 +1269,8 @@ module ValidationTests =
                                 OrderType = "STOP_MARKET"
                                 LimitPrice = 0m
                                 StopPrice = 0m
-                                TrailingDelta = 0m
-                                TrailingDeltaIsPercentage = false
+                                TrailingOffset = 0m
+                                TrailingOffsetIsPercentage = false
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1293,7 +1293,7 @@ module ValidationTests =
             test <@ errors.[0].Message = "StopPrice in STOP order types must be greater than zero" @>
 
     [<Fact>]
-    let ``Validation.validateTx PlaceTradeOrder TrailingDelta mandatory in TRAILING orders`` () =
+    let ``Validation.validateTx PlaceTradeOrder TrailingOffset mandatory in TRAILING orders`` () =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
@@ -1313,8 +1313,8 @@ module ValidationTests =
                                 OrderType = "TRAILING_STOP_MARKET"
                                 LimitPrice = 0m
                                 StopPrice = 1m
-                                TrailingDelta = 0m
-                                TrailingDeltaIsPercentage = false
+                                TrailingOffset = 0m
+                                TrailingOffsetIsPercentage = false
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1334,7 +1334,7 @@ module ValidationTests =
         | Ok _ -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
-            test <@ errors.[0].Message = "TrailingDelta in TRAILING order types must be greater than zero" @>
+            test <@ errors.[0].Message = "TrailingOffset in TRAILING order types must be greater than zero" @>
 
     [<Fact>]
     let ``Validation.validateTx PlaceTradeOrder numbers should not be greater than max`` () =
@@ -1357,8 +1357,8 @@ module ValidationTests =
                                 OrderType = "TRAILING_STOP_LIMIT"
                                 LimitPrice = Utils.maxBlockchainNumeric + 1m
                                 StopPrice = Utils.maxBlockchainNumeric + 1m
-                                TrailingDelta = Utils.maxBlockchainNumeric + 1m
-                                TrailingDeltaIsPercentage = false
+                                TrailingOffset = Utils.maxBlockchainNumeric + 1m
+                                TrailingOffsetIsPercentage = false
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1381,7 +1381,7 @@ module ValidationTests =
             test <@ errors.[0].Message.StartsWith("Amount cannot be greater than") @>
             test <@ errors.[1].Message.StartsWith("LimitPrice cannot be greater than") @>
             test <@ errors.[2].Message.StartsWith("StopPrice cannot be greater than") @>
-            test <@ errors.[3].Message.StartsWith("TrailingDelta cannot be greater than") @>
+            test <@ errors.[3].Message.StartsWith("TrailingOffset cannot be greater than") @>
 
     [<Fact>]
     let ``Validation.validateTx PlaceTradeOrder numbers must be rounded to allowed number of decimals`` () =
@@ -1404,8 +1404,8 @@ module ValidationTests =
                                 OrderType = "TRAILING_STOP_LIMIT"
                                 LimitPrice = 0.00000001m
                                 StopPrice = 0.00000001m
-                                TrailingDelta = 0.00000001m
-                                TrailingDeltaIsPercentage = false
+                                TrailingOffset = 0.00000001m
+                                TrailingOffsetIsPercentage = false
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1428,10 +1428,10 @@ module ValidationTests =
             test <@ errors.[0].Message = "Amount must have at most 7 decimals" @>
             test <@ errors.[1].Message = "LimitPrice must have at most 7 decimals" @>
             test <@ errors.[2].Message = "StopPrice must have at most 7 decimals" @>
-            test <@ errors.[3].Message = "TrailingDelta must have at most 7 decimals" @>
+            test <@ errors.[3].Message = "TrailingOffset must have at most 7 decimals" @>
 
     [<Fact>]
-    let ``Validation.validateTx PlaceTradeOrder TrailingDelta percentage must be rounded to 2 decimals`` () =
+    let ``Validation.validateTx PlaceTradeOrder TrailingOffset percentage must be rounded to 2 decimals`` () =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
@@ -1451,8 +1451,8 @@ module ValidationTests =
                                 OrderType = "TRAILING_STOP_LIMIT"
                                 LimitPrice = 1m
                                 StopPrice = 1m
-                                TrailingDelta = 0.001m
-                                TrailingDeltaIsPercentage = true
+                                TrailingOffset = 0.001m
+                                TrailingOffsetIsPercentage = true
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1472,10 +1472,10 @@ module ValidationTests =
         | Ok _ -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
-            test <@ errors.[0].Message = "TrailingDelta percentage must have at most 2 decimals" @>
+            test <@ errors.[0].Message = "TrailingOffset percentage must have at most 2 decimals" @>
 
     [<Fact>]
-    let ``Validation.validateTx PlaceTradeOrder TrailingDelta percentage must be less than 100`` () =
+    let ``Validation.validateTx PlaceTradeOrder TrailingOffset percentage must be less than 100`` () =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
@@ -1495,8 +1495,8 @@ module ValidationTests =
                                 OrderType = "TRAILING_STOP_LIMIT"
                                 LimitPrice = 1m
                                 StopPrice = 1m
-                                TrailingDelta = 100m
-                                TrailingDeltaIsPercentage = true
+                                TrailingOffset = 100m
+                                TrailingOffsetIsPercentage = true
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1516,10 +1516,10 @@ module ValidationTests =
         | Ok _ -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
-            test <@ errors.[0].Message = "TrailingDelta percentage must be less than 100%" @>
+            test <@ errors.[0].Message = "TrailingOffset percentage must be less than 100%" @>
 
     [<Fact>]
-    let ``Validation.validateTx PlaceTradeOrder TrailingDeltaIsPercentage valid only for TRAILING orders`` () =
+    let ``Validation.validateTx PlaceTradeOrder TrailingOffsetIsPercentage valid only for TRAILING orders`` () =
         let testTx = {
             SenderAddress = chAddress.Value
             Nonce = 10L
@@ -1539,8 +1539,8 @@ module ValidationTests =
                                 OrderType = "MARKET"
                                 LimitPrice = 0m
                                 StopPrice = 0m
-                                TrailingDelta = 0m
-                                TrailingDeltaIsPercentage = true
+                                TrailingOffset = 0m
+                                TrailingOffsetIsPercentage = true
                                 TimeInForce = "IOC"
                             }
                     }
@@ -1560,7 +1560,7 @@ module ValidationTests =
         | Ok _ -> failwith "Validation should fail in case of this test"
         | Error errors ->
             test <@ errors.Length = 1 @>
-            test <@ errors.[0].Message = "TrailingDeltaIsPercentage in non-TRAILING order types should not be set" @>
+            test <@ errors.[0].Message = "TrailingOffsetIsPercentage in non-TRAILING order types should not be set" @>
 
     [<Fact>]
     let ``Validation.validateTx CancelTradeOrder invalid action data`` () =

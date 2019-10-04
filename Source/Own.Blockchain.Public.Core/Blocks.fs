@@ -262,8 +262,8 @@ module Blocks =
             tradeOrderOrderTypeCodeBytes
             state.LimitPrice.Value |> decimalToBytes
             state.StopPrice.Value |> decimalToBytes
-            state.TrailingDelta.Value |> decimalToBytes
-            state.TrailingDeltaIsPercentage |> boolToBytes
+            state.TrailingOffset.Value |> decimalToBytes
+            state.TrailingOffsetIsPercentage |> boolToBytes
             tradeOrderTimeInForceCodeBytes
             state.IsExecutable |> boolToBytes
             state.AmountFilled.Value |> decimalToBytes
