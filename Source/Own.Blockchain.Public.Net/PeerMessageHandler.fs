@@ -14,8 +14,8 @@ module internal PeerMessageHandler =
         publicAddress
         bootstrapNodes
         allowPrivateNetworkPeers
-        maxConnectedPeers
         dnsResolverCacheExpirationTime
+        maxConnectedPeers
         gossipFanoutPercentage
         gossipDiscoveryIntervalMillis
         gossipIntervalMillis
