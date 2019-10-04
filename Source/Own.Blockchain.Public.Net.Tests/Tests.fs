@@ -954,6 +954,44 @@ module PeerTests =
         testGossipDiscoveryMaxPeers (nodeConfig1 :: nodeConfigList) nodeConfig1.MaxConnectedPeers 80
 
     [<Fact>]
+    let ``Network - GossipDiscovery 10 max peers 4 bootstrap 8 public`` () =
+        // ARRANGE
+        setupTest ()
+
+        let bootstrapAddresses =
+            [1..4]
+            |> List.map (fun port -> (sprintf "127.0.0.1:63%i" port))
+
+        let bootstrapNodes =
+            bootstrapAddresses
+            |> List.map (fun a ->
+                {
+                    nodeConfigBase with
+                        Identity = Conversion.stringToBytes a |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress a
+                        PublicAddress = NetworkAddress a |> Some
+                        BootstrapNodes = []
+                        MaxConnectedPeers = 10
+                }
+            )
+
+        // Total peers = 20.
+        let nodeConfigList =
+            [635..642]
+            |> List.map (fun port ->
+                {
+                    nodeConfigBase with
+                        Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
+                        PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
+                        BootstrapNodes = bootstrapAddresses |> List.map NetworkAddress
+                        MaxConnectedPeers = 10
+                }
+            )
+
+        testGossipDiscoveryMaxPeers (bootstrapNodes @ nodeConfigList) bootstrapNodes.[0].MaxConnectedPeers 80
+
+    [<Fact>]
     let ``Network - GossipDiscovery dead node rejoins network`` () =
         // ARRANGE
         setupTest ()
