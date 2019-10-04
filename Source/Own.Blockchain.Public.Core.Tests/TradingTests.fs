@@ -90,7 +90,7 @@ module TradingTests =
             TimeInForce = timeInForce
         }
 
-    let private matchOrders blockNumber senderWallet holdings oldOrders newOrders =
+    let private matchOrders blockNumber senderWallet holdings existingOrders incomingOrders =
         // INIT STATE
         let validatorWallet = Signing.generateWallet ()
 
@@ -106,12 +106,12 @@ module TradingTests =
             |> List.map (initHolding senderWallet.Address)
             |> Map.ofList
 
-        let oldOrders = oldOrders |> List.map (fun o -> Helpers.randomHash () |> TradeOrderHash, o)
-        let oldOrderHashes = oldOrders |> List.map fst
-        let oldOrders = oldOrders |> Map.ofList
+        let existingOrders = existingOrders |> List.map (fun o -> Helpers.randomHash () |> TradeOrderHash, o)
+        let existingOrderHashes = existingOrders |> List.map fst
+        let existingOrders = existingOrders |> Map.ofList
 
-        let newOrderHashes =
-            newOrders
+        let incomingOrderHashes =
+            incomingOrders
             |> List.mapi (fun txIndex actions ->
                 let nonce = int64 txIndex + 1L
                 actions
@@ -126,7 +126,7 @@ module TradingTests =
         let actionFee = ChxAmount 0.01m
 
         let txs =
-            newOrders
+            incomingOrders
             |> List.mapi (fun i actions ->
                 let nonce = int64 i + 1L |> Nonce
                 actions
@@ -163,11 +163,11 @@ module TradingTests =
             Some { TradingPairState.IsEnabled = true }
 
         let getTradeOrderState =
-            oldOrders
+            existingOrders
             |> flip Map.tryFind
 
         let getTradeOrdersFromStorage _ =
-            oldOrders
+            existingOrders
             |> Map.toList
             |> List.map Mapping.tradeOrderStateToInfo
 
@@ -187,7 +187,7 @@ module TradingTests =
             }
             |> Helpers.processChanges
 
-        oldOrderHashes, newOrderHashes, output
+        existingOrderHashes, incomingOrderHashes, output
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Tests
@@ -211,7 +211,7 @@ module TradingTests =
                 accountHash2, quoteAssetHash, 2000m, true
             ]
 
-        let oldOrders =
+        let existingOrders =
             [
                 createTradeOrderState
                     (1L, 1, 1s)
@@ -220,7 +220,7 @@ module TradingTests =
                     (true, 0m, TradeOrderStatus.Open)
             ]
 
-        let newOrders =
+        let incomingOrders =
             [
                 [ // TX1
                     placeOrder accountHash2.Value ("BUY", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
@@ -228,23 +228,23 @@ module TradingTests =
             ]
 
         // ACT
-        let oldOrderHashes, newOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings oldOrders newOrders
+        let existingOrderHashes, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
 
         // ASSERT
-        test <@ output.TxResults.Count = newOrders.Length @>
+        test <@ output.TxResults.Count = incomingOrders.Length @>
         for txResult in output.TxResults |> Map.values do
             test <@ txResult.Status = Success @>
 
         test <@ output.TradeOrders.Count = 2 @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[0]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[0]]
         test <@ tradeOrderState.IsExecutable = true @>
         test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[newOrderHashes.[0]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[0]]
         test <@ tradeOrderState.IsExecutable = true @>
         test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
@@ -275,7 +275,7 @@ module TradingTests =
                 accountHash2, quoteAssetHash, 2000m, true
             ]
 
-        let oldOrders =
+        let existingOrders =
             [
                 createTradeOrderState
                     (1L, 1, 1s)
@@ -309,7 +309,7 @@ module TradingTests =
                     (false, 0m, TradeOrderStatus.Open)
             ]
 
-        let newOrders =
+        let incomingOrders =
             [
                 [ // TX1
                     placeOrder accountHash1.Value ("SELL", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
@@ -320,18 +320,18 @@ module TradingTests =
             ]
 
         // ACT
-        let oldOrderHashes, newOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings oldOrders newOrders
+        let existingOrderHashes, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
 
         // ASSERT
-        test <@ output.TxResults.Count = newOrders.Length @>
+        test <@ output.TxResults.Count = incomingOrders.Length @>
         for txResult in output.TxResults |> Map.values do
             test <@ txResult.Status = Success @>
 
         test <@ output.TradeOrders.Count = 8 @>
 
         // Old orders
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[0]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[0]]
         test <@ tradeOrderState.LimitPrice.Value = 0m @>
         test <@ tradeOrderState.StopPrice.Value = 4m @>
         test <@ tradeOrderState.IsExecutable = false @>
@@ -339,7 +339,7 @@ module TradingTests =
         test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[1]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[1]]
         test <@ tradeOrderState.LimitPrice.Value = 0m @>
         test <@ tradeOrderState.StopPrice.Value = 6m @>
         test <@ tradeOrderState.IsExecutable = false @>
@@ -347,7 +347,7 @@ module TradingTests =
         test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[2]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[2]]
         test <@ tradeOrderState.LimitPrice.Value = 3.5m @>
         test <@ tradeOrderState.StopPrice.Value = 4m @>
         test <@ tradeOrderState.IsExecutable = false @>
@@ -355,7 +355,7 @@ module TradingTests =
         test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[3]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[3]]
         test <@ tradeOrderState.LimitPrice.Value = 6.5m @>
         test <@ tradeOrderState.StopPrice.Value = 6m @>
         test <@ tradeOrderState.IsExecutable = false @>
@@ -363,7 +363,7 @@ module TradingTests =
         test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[4]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[4]]
         test <@ tradeOrderState.LimitPrice.Value = 3.5m @>
         test <@ tradeOrderState.StopPrice.Value = 4m @>
         test <@ tradeOrderState.IsExecutable = false @>
@@ -371,7 +371,7 @@ module TradingTests =
         test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[5]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[5]]
         test <@ tradeOrderState.LimitPrice.Value = 6.5m @>
         test <@ tradeOrderState.StopPrice.Value = 6m @>
         test <@ tradeOrderState.IsExecutable = false @>
@@ -380,13 +380,13 @@ module TradingTests =
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
         // New orders
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[newOrderHashes.[0]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[0]]
         test <@ tradeOrderState.IsExecutable = true @>
         test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
 
-        let tradeOrderState, tradeOrderChange = output.TradeOrders.[newOrderHashes.[1]]
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[1]]
         test <@ tradeOrderState.IsExecutable = true @>
         test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>

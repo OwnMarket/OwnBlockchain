@@ -192,8 +192,9 @@ module Trading =
                     let expectedLimitPrice =
                         match s.ExecOrderType with
                         | ExecTradeOrderType.Market -> AssetAmount 0m
-                        | ExecTradeOrderType.Limit -> expectedStopPrice + (s.LimitPrice - s.StopPrice)
-
+                        | ExecTradeOrderType.Limit ->
+                            let limitOffset = s.LimitPrice - s.StopPrice
+                            expectedStopPrice + limitOffset
                     if expectedLimitPrice.Value <= 0m && s.ExecOrderType = ExecTradeOrderType.Limit then
                         failwithf "expectedLimitPrice must be greater than zero: %M" expectedLimitPrice.Value
 
