@@ -297,6 +297,16 @@ module TradingTests =
                     accountHash1
                     (Buy, 100m, TradeOrderType.TrailingStopLimit, 7.5m, 7m, 1m, false, ImmediateOrCancel)
                     (false, 0m, TradeOrderStatus.Open)
+                createTradeOrderState
+                    (1L, 1, 1s)
+                    accountHash1
+                    (Sell, 100m, TradeOrderType.TrailingStopLimit, 2.5m, 3m, 20m, true, ImmediateOrCancel)
+                    (false, 0m, TradeOrderStatus.Open)
+                createTradeOrderState
+                    (1L, 2, 1s)
+                    accountHash1
+                    (Buy, 100m, TradeOrderType.TrailingStopLimit, 7.5m, 7m, 20m, true, ImmediateOrCancel)
+                    (false, 0m, TradeOrderStatus.Open)
             ]
 
         let newOrders =
@@ -318,7 +328,7 @@ module TradingTests =
         for txResult in output.TxResults |> Map.values do
             test <@ txResult.Status = Success @>
 
-        test <@ output.TradeOrders.Count = 6 @>
+        test <@ output.TradeOrders.Count = 8 @>
 
         // Old orders
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[0]]
@@ -346,6 +356,22 @@ module TradingTests =
         test <@ tradeOrderChange = TradeOrderChange.Update @>
 
         let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[3]]
+        test <@ tradeOrderState.LimitPrice.Value = 6.5m @>
+        test <@ tradeOrderState.StopPrice.Value = 6m @>
+        test <@ tradeOrderState.IsExecutable = false @>
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Update @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[4]]
+        test <@ tradeOrderState.LimitPrice.Value = 3.5m @>
+        test <@ tradeOrderState.StopPrice.Value = 4m @>
+        test <@ tradeOrderState.IsExecutable = false @>
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Update @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[oldOrderHashes.[5]]
         test <@ tradeOrderState.LimitPrice.Value = 6.5m @>
         test <@ tradeOrderState.StopPrice.Value = 6m @>
         test <@ tradeOrderState.IsExecutable = false @>

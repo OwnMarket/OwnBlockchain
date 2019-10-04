@@ -169,20 +169,33 @@ module Trading =
         price
         =
 
-        for h, s in getTradeOrders (baseAssetHash, quoteAssetHash) do
+        getTradeOrders (baseAssetHash, quoteAssetHash)
+        |> List.toArray
+        |> Array.Parallel.iter (fun (h, s) ->
             if not s.IsExecutable && s.IsStopOrder then
                 if s.Side = Buy && price >= s.StopPrice || s.Side = Sell && price <= s.StopPrice then
                     setTradeOrder (h, { s with IsExecutable = true }, TradeOrderChange.Update)
                 elif s.IsTrailingStopOrder then
-                    let expectedStopPrice  =
+                    let trailingDelta =
+                        if s.TrailingDeltaIsPercentage then
+                            s.TrailingDelta * price / 100m
+                        else
+                            s.TrailingDelta
+
+                    let expectedStopPrice =
                         match s.Side with
-                        | Buy -> price + s.TrailingDelta
-                        | Sell -> price + s.TrailingDelta * -1m
+                        | Buy -> price + trailingDelta
+                        | Sell -> price + trailingDelta * -1m
+                    if expectedStopPrice.Value <= 0m then
+                        failwithf "expectedStopPrice must be greater than zero: %M" expectedStopPrice.Value
 
                     let expectedLimitPrice =
                         match s.ExecOrderType with
                         | ExecTradeOrderType.Market -> AssetAmount 0m
                         | ExecTradeOrderType.Limit -> expectedStopPrice + (s.LimitPrice - s.StopPrice)
+
+                    if expectedLimitPrice.Value <= 0m && s.ExecOrderType = ExecTradeOrderType.Limit then
+                        failwithf "expectedLimitPrice must be greater than zero: %M" expectedLimitPrice.Value
 
                     if s.Side = Buy && (expectedStopPrice < s.StopPrice || expectedLimitPrice < s.LimitPrice)
                         || s.Side = Sell && (expectedStopPrice > s.StopPrice || expectedLimitPrice > s.LimitPrice)
@@ -192,6 +205,7 @@ module Trading =
                             { s with StopPrice = expectedStopPrice; LimitPrice = expectedLimitPrice },
                             TradeOrderChange.Update
                         )
+        )
 
     let matchTradeOrders
         (getTradeOrders : AssetHash * AssetHash -> (TradeOrderHash * TradeOrderState) list)
@@ -225,8 +239,6 @@ module Trading =
                 updateStopOrders trade.Price
             )
             |> Seq.toList
-
-        // TODO DSX: Include trades in the block
 
         // Remove IOC orders
         getTradeOrders (baseAssetHash, quoteAssetHash)
