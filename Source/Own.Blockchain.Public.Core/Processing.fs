@@ -27,6 +27,7 @@ module Processing =
         getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option,
         getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
         getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
+        getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
         chxAddresses : ConcurrentDictionary<BlockchainAddress, ChxAddressState>,
@@ -40,12 +41,13 @@ module Processing =
         assetHashesByCode : ConcurrentDictionary<AssetCode, AssetHash option>,
         validators : ConcurrentDictionary<BlockchainAddress, ValidatorState option * ValidatorChange option>,
         stakes : ConcurrentDictionary<BlockchainAddress * BlockchainAddress, StakeState option>,
-        stakers : ConcurrentDictionary<BlockchainAddress, BlockchainAddress list>, // Not part of the blockchain state
-        totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not part of the blockchain state
+        stakers : ConcurrentDictionary<BlockchainAddress, BlockchainAddress list>, // Not blockchain state
+        totalChxStaked : ConcurrentDictionary<BlockchainAddress, ChxAmount>, // Not blockchain state
         stakingRewards : ConcurrentDictionary<BlockchainAddress, ChxAmount>,
         collectedReward : ChxAmount,
         tradingPairs : ConcurrentDictionary<AssetHash * AssetHash, TradingPairState option>,
-        tradeOrders : ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>
+        tradeOrders : ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>,
+        holdingInTradeOrders : ConcurrentDictionary<AccountHash * AssetHash, AssetAmount> // Not blockchain state
         ) =
 
         let getChxAddressState address =
@@ -68,7 +70,8 @@ module Processing =
             getTradingPairControllers : unit -> BlockchainAddress list,
             getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option,
             getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
-            getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list
+            getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
+            getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount
             ) =
             ProcessingState(
                 getChxAddressStateFromStorage,
@@ -87,6 +90,7 @@ module Processing =
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
+                getHoldingInTradeOrdersFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
                 ConcurrentDictionary<BlockchainAddress, ChxAddressState>(),
@@ -104,7 +108,8 @@ module Processing =
                 ConcurrentDictionary<BlockchainAddress, ChxAmount>(),
                 ChxAmount 0m,
                 ConcurrentDictionary<AssetHash * AssetHash, TradingPairState option>(),
-                ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>()
+                ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>(),
+                ConcurrentDictionary<AccountHash * AssetHash, AssetAmount>()
             )
 
         member val CollectedReward = collectedReward with get, set
@@ -127,6 +132,7 @@ module Processing =
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
+                getHoldingInTradeOrdersFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(equivocationProofResults),
                 ConcurrentDictionary(chxAddresses),
@@ -143,8 +149,9 @@ module Processing =
                 ConcurrentDictionary(totalChxStaked),
                 ConcurrentDictionary(stakingRewards),
                 __.CollectedReward,
-                ConcurrentDictionary<AssetHash * AssetHash, TradingPairState option>(tradingPairs),
-                ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>(tradeOrders)
+                ConcurrentDictionary(tradingPairs),
+                ConcurrentDictionary(tradeOrders),
+                ConcurrentDictionary(holdingInTradeOrders)
             )
 
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
@@ -271,6 +278,9 @@ module Processing =
         member __.GetTotalChxStaked address =
             totalChxStaked.GetOrAdd(address, getTotalChxStakedFromStorage)
 
+        member __.GetHoldingInTradeOrders (accountHash, assetHash) =
+            holdingInTradeOrders.GetOrAdd((accountHash, assetHash), getHoldingInTradeOrdersFromStorage)
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // State setters
         ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -375,6 +385,9 @@ module Processing =
         // Not part of the blockchain state
         member __.SetTotalChxStaked (address : BlockchainAddress, amount) =
             totalChxStaked.AddOrUpdate(address, amount, fun _ _ -> amount) |> ignore
+
+        member __.SetHoldingInTradeOrders (accountHash, assetHash, amount) =
+            holdingInTradeOrders.AddOrUpdate((accountHash, assetHash), amount, fun _ _ -> amount) |> ignore
 
         member __.SetTxResult (txHash : TxHash, txResult : TxResult) =
             txResults.AddOrUpdate(txHash, txResult, fun _ _ -> txResult) |> ignore
@@ -512,9 +525,6 @@ module Processing =
         | _, None ->
             Error TxErrorCode.DestinationAccountNotFound
         | Some fromAccountState, Some _ when fromAccountState.ControllerAddress = senderAddress ->
-            let fromState = state.GetHoldingOrDefault(action.FromAccountHash, action.AssetHash)
-            let toState = state.GetHoldingOrDefault(action.ToAccountHash, action.AssetHash)
-
             let isPrimaryEligible, isSecondaryEligible =
                 match state.GetAsset(action.AssetHash) with
                 | Some asset when asset.IsEligibilityRequired ->
@@ -526,7 +536,13 @@ module Processing =
                 | _ ->
                     true, true
 
-            if fromState.Balance < action.Amount then
+            let fromState = state.GetHoldingOrDefault(action.FromAccountHash, action.AssetHash)
+            let toState = state.GetHoldingOrDefault(action.ToAccountHash, action.AssetHash)
+
+            let holdingInTradeOrders = state.GetHoldingInTradeOrders(action.FromAccountHash, action.AssetHash)
+            let availableBalance = fromState.Balance - holdingInTradeOrders
+
+            if availableBalance < action.Amount then
                 Error TxErrorCode.InsufficientAssetHoldingBalance
             else
                 if fromState.IsEmission && not isPrimaryEligible then
@@ -1017,7 +1033,13 @@ module Processing =
                     match action.Side with
                     | Buy -> action.QuoteAssetHash, action.Amount * action.LimitPrice
                     | Sell -> action.BaseAssetHash, action.Amount
-                if state.GetHoldingOrDefault(action.AccountHash, assetHash).Balance < orderAmount then
+
+                let holdingInTradeOrders = state.GetHoldingInTradeOrders(action.AccountHash, assetHash)
+                let availableBalance =
+                    state.GetHoldingOrDefault(action.AccountHash, assetHash).Balance
+                    - holdingInTradeOrders
+
+                if availableBalance < orderAmount then
                     match action.Side with
                     | Buy -> Error TxErrorCode.InsufficientQuoteAssetBalance
                     | Sell -> Error TxErrorCode.InsufficientBaseAssetBalance
@@ -1054,6 +1076,7 @@ module Processing =
                                 Status = TradeOrderStatus.Open
                             }
                         state.SetTradeOrder(tradeOrderHash, tradeOrderState, TradeOrderChange.Add)
+                        state.SetHoldingInTradeOrders(action.AccountHash, assetHash, holdingInTradeOrders + orderAmount)
                         Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
@@ -1505,6 +1528,7 @@ module Processing =
         (getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option)
         (getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option)
         (getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list)
+        (getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount)
         getLockedAndBlacklistedValidators
         maxActionCountPerTx
         validatorDeposit
@@ -1589,7 +1613,8 @@ module Processing =
                 getTradingPairControllersFromStorage,
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
-                getTradeOrdersFromStorage
+                getTradeOrdersFromStorage,
+                getHoldingInTradeOrdersFromStorage
             )
 
         let txs = loadTxs txSet

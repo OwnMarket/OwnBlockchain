@@ -819,6 +819,44 @@ module Db =
         ]
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
 
+    let getHoldingInTradeOrders
+        dbEngineType
+        (dbConnectionString : string)
+        (AccountHash accountHash, AssetHash assetHash)
+        : AssetAmount
+        =
+
+        let sql =
+            """
+            SELECT
+                SUM(amount - amount_filled)
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            WHERE acc.account_hash = @accountHash
+            AND ba.asset_hash = @assetHash
+            AND side = 2 -- SELL
+
+            UNION
+
+            SELECT
+                SUM((amount - amount_filled) * limit_price)
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE acc.account_hash = @accountHash
+            AND qa.asset_hash = @assetHash
+            AND side = 1 -- BUY
+            """
+
+        [
+            "@accountHash", accountHash |> box
+            "@assetHash", assetHash |> box
+        ]
+        |> DbTools.query<decimal> dbEngineType dbConnectionString sql
+        |> List.sum
+        |> AssetAmount
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // State
     ////////////////////////////////////////////////////////////////////////////////////////////////////

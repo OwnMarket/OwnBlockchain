@@ -171,6 +171,9 @@ module TradingTests =
             |> Map.toList
             |> List.map Mapping.tradeOrderStateToInfo
 
+        let getHoldingInTradeOrdersFromStorage _ =
+            AssetAmount 0m
+
         let output =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
@@ -181,6 +184,7 @@ module TradingTests =
                 GetTradingPairStateFromStorage = getTradingPairState
                 GetTradeOrderStateFromStorage = getTradeOrderState
                 GetTradeOrdersFromStorage = getTradeOrdersFromStorage
+                GetHoldingInTradeOrdersFromStorage = getHoldingInTradeOrdersFromStorage
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
                 BlockNumber = blockNumber

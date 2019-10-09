@@ -115,6 +115,7 @@ module Composition =
     let getTradeOrders = Db.getTradeOrders Config.DbEngineType Config.DbConnectionString
     let getExecutableTradeOrders = Db.getExecutableTradeOrders Config.DbEngineType Config.DbConnectionString
     let getAccountTradeOrders = Db.getAccountTradeOrders Config.DbEngineType Config.DbConnectionString
+    let getHoldingInTradeOrders = Db.getHoldingInTradeOrders Config.DbEngineType Config.DbConnectionString
 
     let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
     let savePeerNode = Db.savePeerNode Config.DbEngineType Config.DbConnectionString
@@ -268,6 +269,7 @@ module Composition =
             getTradingPairState
             getTradeOrderState
             getTradeOrders
+            getHoldingInTradeOrders
             getValidatorsAtHeight
             getLockedAndBlacklistedValidators
             Hashing.deriveHash

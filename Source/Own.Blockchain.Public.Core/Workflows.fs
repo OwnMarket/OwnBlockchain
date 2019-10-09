@@ -323,6 +323,7 @@ module Workflows =
         getTradingPairStateFromStorage
         getTradeOrderStateFromStorage
         getTradeOrdersFromStorage
+        getHoldingInTradeOrdersFromStorage
         (getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list)
         getLockedAndBlacklistedValidators
         deriveHash
@@ -365,6 +366,7 @@ module Workflows =
         let getTradingPairState = memoize (getTradingPairStateFromStorage >> Option.map Mapping.tradingPairStateFromDto)
         let getTradeOrderState = memoize (getTradeOrderStateFromStorage >> Option.map Mapping.tradeOrderStateFromDto)
         let getTradeOrders = memoize (getTradeOrdersFromStorage >> List.map Mapping.tradeOrderInfoFromDto)
+        let getHoldingInTradeOrders = memoize getHoldingInTradeOrdersFromStorage
 
         let validators = getValidatorsAtHeight (blockNumber - 1)
 
@@ -412,6 +414,7 @@ module Workflows =
                 getTradingPairState
                 getTradeOrderState
                 getTradeOrders
+                getHoldingInTradeOrders
                 getLockedAndBlacklistedValidators
                 maxActionCountPerTx
                 validatorDeposit
