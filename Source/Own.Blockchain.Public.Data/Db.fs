@@ -25,6 +25,15 @@ module Db =
 
         (parameterNames, columnNames)
 
+    let private toItemTypeId (itemTypeCode : string) =
+        match itemTypeCode with
+        | "Tx" -> 0
+        | "TxResult" -> 1
+        | "EquivocationProof" -> 2
+        | "EquivocationProofResult" -> 3
+        | "Block" -> 4
+        | _ -> failwithf "%s not supported" itemTypeCode
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TX
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2402,3 +2411,117 @@ module Db =
         match getPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress) with
         | Some _ -> Ok ()
         | None -> insertPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Raw Data
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let getRawData dbEngineType dbConnectionString itemTypeCode itemKey =
+        let sql =
+            """
+            SELECT payload
+            FROM raw_data
+            WHERE item_type = @item_type AND item_key = @item_key
+            """
+
+        let sqlParams =
+            [
+                "@item_type", itemTypeCode |> toItemTypeId |> box
+                "@item_key", itemKey |> box
+            ]
+
+        match DbTools.query<byte[]> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | [a] -> a |> Some
+        | _ -> failwithf "Multiple entries found for %s %s" itemTypeCode itemKey
+
+    let rawDataExists dbEngineType dbConnectionString itemTypeCode itemKey =
+        let sql =
+            """
+            SELECT 1
+            FROM raw_data
+            WHERE item_type = @item_type AND item_key = @item_key
+            """
+
+        let sqlParams =
+            [
+                "@item_type", itemTypeCode |> toItemTypeId |> box
+                "@item_key", itemKey |> box
+            ]
+
+        match DbTools.query<int> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> false
+        | [_] -> true
+        | _ -> failwithf "Multiple entries found for %s %s" itemTypeCode itemKey
+
+    let private insertRawData
+        dbEngineType
+        dbConnectionString
+        itemTypeCode
+        itemKey
+        (payload : byte[])
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            INSERT INTO raw_data (item_type, item_key, payload)
+            VALUES (@item_type, @item_key, @payload)
+            """
+
+        let sqlParams =
+            [
+                "@item_type", itemTypeCode |> toItemTypeId |> box
+                "@item_key", itemKey |> box
+                "@payload", payload |> box
+            ]
+
+        try
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError (sprintf "Didn't insert %s %s" itemTypeCode itemKey)
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError (sprintf "Failed to insert %s %s" itemTypeCode itemKey)
+
+    let saveRawData
+        dbEngineType
+        dbConnectionString
+        itemTypeCode
+        itemKey
+        (payload : byte[])
+        : Result<unit, AppErrors>
+        =
+
+        match getRawData dbEngineType dbConnectionString itemTypeCode itemKey with
+        | Some _ -> Result.appError (sprintf "%s %s already exists" itemTypeCode itemKey)
+        | None -> insertRawData dbEngineType dbConnectionString itemTypeCode itemKey payload
+
+    let removeRawData
+        dbEngineType
+        dbConnectionString
+        itemTypeCode
+        itemKey
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            DELETE FROM raw_data
+            WHERE item_type = @item_type AND item_key = @item_key
+            """
+        let sqlParams =
+            [
+                "@item_type", itemTypeCode |> toItemTypeId |> box
+                "@item_key", itemKey |> box
+            ]
+        try
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 0
+            | 1 -> Ok ()
+            | _ -> Result.appError (sprintf "%s %s not found" itemTypeCode itemKey)
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError (sprintf "Failed to remove %s %s" itemTypeCode itemKey)
