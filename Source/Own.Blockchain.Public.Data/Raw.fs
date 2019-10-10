@@ -151,12 +151,7 @@ module Raw =
         : Result<unit, AppErrors>
         =
 
-        saveData
-            dbEngineType
-            dbConnectionString
-            Tx
-            txHash
-            txEnvelopeDto
+        saveData dbEngineType dbConnectionString Tx txHash txEnvelopeDto
 
     let getTx
         dbEngineType
@@ -170,11 +165,7 @@ module Raw =
             maxTxCacheSize
             (TxHash txHash)
             (fun (TxHash hash) ->
-                loadData<TxEnvelopeDto>
-                    dbEngineType
-                    dbConnectionString
-                    Tx
-                    hash)
+                loadData<TxEnvelopeDto> dbEngineType dbConnectionString Tx hash)
 
     let txExists
         dbEngineType
@@ -195,12 +186,7 @@ module Raw =
         =
 
         removeTxFromCache txHash
-        saveData
-            dbEngineType
-            dbConnectionString
-            TxResult
-            txHash.Value
-            txResultDto
+        saveData dbEngineType dbConnectionString TxResult txHash.Value txResultDto
 
     let getTxResult
         dbEngineType
@@ -209,11 +195,7 @@ module Raw =
         : Result<TxResultDto, AppErrors>
         =
 
-        loadData<TxResultDto>
-            dbEngineType
-            dbConnectionString
-            TxResult
-            txHash
+        loadData<TxResultDto> dbEngineType dbConnectionString TxResult txHash
 
     let txResultExists
         dbEngineType
@@ -231,11 +213,7 @@ module Raw =
         =
 
         removeTxFromCache txHash
-        deleteData
-            dbEngineType
-            dbConnectionString
-            TxResult
-            txHash.Value
+        deleteData dbEngineType dbConnectionString TxResult txHash.Value
 
     // EquivocationProof
     let saveEquivocationProof
@@ -246,12 +224,7 @@ module Raw =
         : Result<unit, AppErrors>
         =
 
-        saveData
-            dbEngineType
-            dbConnectionString
-            EquivocationProof
-            equivocationProofHash
-            equivocationProofDto
+        saveData dbEngineType dbConnectionString EquivocationProof equivocationProofHash equivocationProofDto
 
     let getEquivocationProof
         dbEngineType
@@ -272,11 +245,7 @@ module Raw =
         (EquivocationProofHash equivocationProofHash)
         =
 
-        Db.rawDataExists
-            dbEngineType
-            dbConnectionString
-            EquivocationProof.CaseName
-            equivocationProofHash
+        Db.rawDataExists dbEngineType dbConnectionString EquivocationProof.CaseName equivocationProofHash
 
     // EquivocationProofResult
     let saveEquivocationProofResult
@@ -313,11 +282,7 @@ module Raw =
         (EquivocationProofHash equivocationProofHash)
         =
 
-        Db.rawDataExists
-            dbEngineType
-            dbConnectionString
-            EquivocationProofResult.CaseName
-            equivocationProofHash
+        Db.rawDataExists dbEngineType dbConnectionString EquivocationProofResult.CaseName equivocationProofHash
 
     let deleteEquivocationProofResult
         dbEngineType
@@ -326,11 +291,7 @@ module Raw =
         : Result<unit, AppErrors>
         =
 
-        deleteData
-            dbEngineType
-            dbConnectionString
-            EquivocationProofResult
-            equivocationProofHash
+        deleteData dbEngineType dbConnectionString EquivocationProofResult equivocationProofHash
 
     // Block
     let saveBlock
@@ -355,11 +316,7 @@ module Raw =
             maxBlockCacheSize
             (BlockNumber blockNumber)
             (fun blockNr ->
-                loadData<BlockEnvelopeDto>
-                    dbEngineType
-                    dbConnectionString
-                    Block
-                    (string blockNr.Value))
+                loadData<BlockEnvelopeDto> dbEngineType dbConnectionString Block (string blockNr.Value))
 
     let blockExists
         dbEngineType
@@ -368,8 +325,4 @@ module Raw =
         =
 
         blockCache.ContainsKey blockNumber
-        || Db.rawDataExists
-            dbEngineType
-            dbConnectionString
-            Block.CaseName
-            (string blockNumber.Value)
+        || Db.rawDataExists dbEngineType dbConnectionString Block.CaseName (string blockNumber.Value)
