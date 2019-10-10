@@ -13,30 +13,30 @@ module Composition =
     // Raw storage
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let createMixedHashKey = Raw.createMixedHashKey Hashing.decode Hashing.encodeHex
     let startTxCacheMonitor () = Raw.startTxCacheMonitor Config.TxCacheExpirationTime
     let startBlockCacheMonitor () = Raw.startBlockCacheMonitor Config.BlockCacheExpirationTime
-    let saveTx = Raw.saveTx Config.DataDir createMixedHashKey
-    let getTx = Raw.getTx Config.DataDir Config.MaxTxCacheSize createMixedHashKey
-    let txExists = Raw.txExists Config.DataDir createMixedHashKey
+    let saveTx = Raw.saveTx Config.DbEngineType Config.DbConnectionString
+    let getTx = Raw.getTx Config.DbEngineType Config.DbConnectionString Config.MaxTxCacheSize
+    let txExists = Raw.txExists Config.DbEngineType Config.DbConnectionString
 
-    let saveTxResult = Raw.saveTxResult Config.DataDir createMixedHashKey
-    let getTxResult = Raw.getTxResult Config.DataDir createMixedHashKey
-    let txResultExists = Raw.txResultExists Config.DataDir createMixedHashKey
-    let deleteTxResult = Raw.deleteTxResult Config.DataDir createMixedHashKey
+    let saveTxResult = Raw.saveTxResult Config.DbEngineType Config.DbConnectionString
+    let getTxResult = Raw.getTxResult Config.DbEngineType Config.DbConnectionString
 
-    let saveEquivocationProof = Raw.saveEquivocationProof Config.DataDir createMixedHashKey
-    let getEquivocationProof = Raw.getEquivocationProof Config.DataDir createMixedHashKey
-    let equivocationProofExists = Raw.equivocationProofExists Config.DataDir createMixedHashKey
+    let txResultExists = Raw.txResultExists Config.DbEngineType Config.DbConnectionString
+    let deleteTxResult = Raw.deleteTxResult Config.DbEngineType Config.DbConnectionString
 
-    let saveEquivocationProofResult = Raw.saveEquivocationProofResult Config.DataDir createMixedHashKey
-    let getEquivocationProofResult = Raw.getEquivocationProofResult Config.DataDir createMixedHashKey
-    let equivocationProofResultExists = Raw.equivocationProofResultExists Config.DataDir createMixedHashKey
-    let deleteEquivocationProofResult = Raw.deleteEquivocationProofResult Config.DataDir createMixedHashKey
+    let saveEquivocationProof = Raw.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
+    let getEquivocationProof = Raw.getEquivocationProof Config.DbEngineType Config.DbConnectionString
+    let equivocationProofExists = Raw.equivocationProofExists Config.DbEngineType Config.DbConnectionString
 
-    let saveBlock = Raw.saveBlock Config.DataDir
-    let getBlock = Raw.getBlock Config.DataDir Config.MaxTxCacheSize
-    let blockExists = Raw.blockExists Config.DataDir
+    let saveEquivocationProofResult = Raw.saveEquivocationProofResult Config.DbEngineType Config.DbConnectionString
+    let getEquivocationProofResult = Raw.getEquivocationProofResult Config.DbEngineType Config.DbConnectionString
+    let equivocationProofResultExists = Raw.equivocationProofResultExists Config.DbEngineType Config.DbConnectionString
+    let deleteEquivocationProofResult = Raw.deleteEquivocationProofResult Config.DbEngineType Config.DbConnectionString
+
+    let saveBlock = Raw.saveBlock Config.DbEngineType Config.DbConnectionString
+    let getBlock = Raw.getBlock Config.DbEngineType Config.DbConnectionString Config.MaxTxCacheSize
+    let blockExists = Raw.blockExists Config.DbEngineType Config.DbConnectionString
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Database

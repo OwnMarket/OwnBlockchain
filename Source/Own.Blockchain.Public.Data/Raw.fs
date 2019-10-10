@@ -1,7 +1,6 @@
 namespace Own.Blockchain.Public.Data
 
 open System
-open System.IO
 open System.Collections.Concurrent
 open MessagePack
 open Own.Common.FSharp
@@ -31,88 +30,45 @@ module Raw =
             | EquivocationProofResult -> "EquivocationProofResult"
             | Block -> "Block"
 
-    let private createFileName (dataType : RawDataType) (key : string) =
-        sprintf "%s_%s" dataType.CaseName key
+    let private saveData
+        dbEngineType
+        (dbConnectionString : string)
+        (dataType : RawDataType)
+        (key : string)
+        data
+        : Result<unit, AppErrors>
+        =
 
-    let private extractHash (key : string) =
-        let index = key.LastIndexOf "_"
-        if index > 0 then
-            key.Substring(0, index)
-        else
-            key
+        data
+        |> LZ4MessagePackSerializer.Serialize
+        |> Db.saveRawData dbEngineType dbConnectionString dataType.CaseName key
 
-    let createMixedHashKey decode encodeHex (key : string) =
-        sprintf "%s_%s" key (key |> decode |> encodeHex)
+    let private loadData<'T>
+        dbEngineType
+        (dbConnectionString : string)
+        (dataType : RawDataType)
+        (key : string)
+        : Result<'T, AppErrors>
+        =
 
-    let private saveData (dataDir : string) (dataType : RawDataType) (key : string) data : Result<unit, AppErrors> =
-        let dataTypeName = dataType.CaseName
-        let fileName = createFileName dataType key
-        let path = Path.Combine(dataDir, fileName)
-
-        try
-            if not (Directory.Exists(dataDir)) then
-                Directory.CreateDirectory(dataDir) |> ignore
-
-            if File.Exists(path) then
-                Result.appError (sprintf "%s %s already exists" dataTypeName (extractHash key))
-            else
-                let bytes = data |> LZ4MessagePackSerializer.Serialize
-                use fs = File.Open(path, FileMode.CreateNew, FileAccess.Write, FileShare.None)
-                use bw = new BinaryWriter(fs)
-                bw.Write(bytes)
-                Ok ()
-        with
-        | ex ->
-            if ex.Message.EndsWith("already exists") then
-                Log.warning ex.AllMessages
-                Log.debug ex.AllMessagesAndStackTraces
-            else
-                Log.error ex.AllMessagesAndStackTraces
-
-            if (new FileInfo(path)).Length = 0L then
-                Log.warningf "Removing empty file: %s" path
-                File.Delete(path) // Remove empty file left after unsuccessful save.
-
-            Result.appError (sprintf "Saving %s %s failed" dataTypeName (extractHash key))
-
-    let private loadData<'T> (dataDir : string) (dataType : RawDataType) (key : string) : Result<'T, AppErrors> =
-        let dataTypeName = dataType.CaseName
-        try
-            let fileName = createFileName dataType key
-            let path = Path.Combine(dataDir, fileName)
-
-            if File.Exists(path) then
-                use fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read)
-                use br = new BinaryReader(fs)
-                br.ReadBytes (fs.Length |> Convert.ToInt32)
+        Db.getRawData dbEngineType dbConnectionString dataType.CaseName key
+        |> function
+            | Some bytes ->
+                bytes
                 |> LZ4MessagePackSerializer.Deserialize<'T>
                 |> Ok
-            else
-                Result.appError (sprintf "%s %s not found in storage" dataTypeName (extractHash key))
-        with
-        | ex ->
-            if ex.Message.EndsWith("used by another process.") then
-                Log.warning ex.AllMessages
-                Log.debug ex.AllMessagesAndStackTraces
-            else
-                Log.error ex.AllMessagesAndStackTraces
-            Result.appError (sprintf "Loading %s %s failed" dataTypeName (extractHash key))
+            | None ->
+                Result.appError (sprintf "%s %s not found" dataType.CaseName key)
 
-    let private deleteData (dataDir : string) (dataType : RawDataType) (key : string) : Result<unit, AppErrors> =
-        let dataTypeName = dataType.CaseName
-        try
-            let fileName = createFileName dataType key
-            let path = Path.Combine(dataDir, fileName)
+    let private deleteData
+        dbEngineType
+        (dbConnectionString : string)
+        (dataType : RawDataType)
+        (key : string)
+        : Result<unit, AppErrors>
+        =
 
-            if File.Exists(path) then
-                File.Delete path
-                Ok ()
-            else
-                Result.appError (sprintf "%s %s not found in storage" dataTypeName (extractHash key))
-        with
-        | ex ->
-            Log.error ex.AllMessagesAndStackTraces
-            Result.appError (sprintf "Deleting %s %s failed" dataTypeName (extractHash key))
+        Db.removeRawData dbEngineType dbConnectionString dataType.CaseName key
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Caching
@@ -188,20 +144,24 @@ module Raw =
 
     // TX
     let saveTx
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (TxHash txHash)
         (txEnvelopeDto : TxEnvelopeDto)
         : Result<unit, AppErrors>
         =
 
-        let key = createMixedHashKey txHash
-        saveData dataDir Tx key txEnvelopeDto
+        saveData
+            dbEngineType
+            dbConnectionString
+            Tx
+            txHash
+            txEnvelopeDto
 
     let getTx
-        (dataDir : string)
+        dbEngineType
+        (dbConnectionString : string)
         maxTxCacheSize
-        createMixedHashKey
         (TxHash txHash)
         : Result<TxEnvelopeDto, AppErrors>
         =
@@ -209,152 +169,183 @@ module Raw =
         getTxCached
             maxTxCacheSize
             (TxHash txHash)
-            (fun hash ->
-                let key = createMixedHashKey hash.Value
-                loadData<TxEnvelopeDto> dataDir Tx key)
+            (fun (TxHash hash) ->
+                loadData<TxEnvelopeDto>
+                    dbEngineType
+                    dbConnectionString
+                    Tx
+                    hash)
 
-    let txExists (dataDir : string) createMixedHashKey (txHash : TxHash) =
-        txHash.Value
-        |> string
-        |> createMixedHashKey
-        |> createFileName Tx
-        |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> fun key -> txCache.ContainsKey txHash || File.Exists key
+    let txExists
+        dbEngineType
+        (dbConnectionString : string)
+        (txHash : TxHash)
+        =
+
+        txCache.ContainsKey txHash
+        || Db.rawDataExists dbEngineType dbConnectionString Tx.CaseName txHash.Value
 
     // TxResult
     let saveTxResult
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         txHash
         (txResultDto : TxResultDto)
         : Result<unit, AppErrors>
         =
 
         removeTxFromCache txHash
-        let key = createMixedHashKey txHash.Value
-        saveData dataDir TxResult key txResultDto
+        saveData
+            dbEngineType
+            dbConnectionString
+            TxResult
+            txHash.Value
+            txResultDto
 
     let getTxResult
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (TxHash txHash)
         : Result<TxResultDto, AppErrors>
         =
 
-        let key = createMixedHashKey txHash
-        loadData<TxResultDto> dataDir TxResult key
+        loadData<TxResultDto>
+            dbEngineType
+            dbConnectionString
+            TxResult
+            txHash
 
-    let txResultExists (dataDir : string) createMixedHashKey (TxHash txHash) =
-        txHash
-        |> string
-        |> createMixedHashKey
-        |> createFileName TxResult
-        |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> File.Exists
+    let txResultExists
+        dbEngineType
+        (dbConnectionString : string)
+        (TxHash txHash)
+        =
+
+        Db.rawDataExists dbEngineType dbConnectionString TxResult.CaseName txHash
 
     let deleteTxResult
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         txHash
         : Result<unit, AppErrors>
         =
 
         removeTxFromCache txHash
-        let key = createMixedHashKey txHash.Value
-        deleteData dataDir TxResult key
+        deleteData
+            dbEngineType
+            dbConnectionString
+            TxResult
+            txHash.Value
 
     // EquivocationProof
     let saveEquivocationProof
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (EquivocationProofHash equivocationProofHash)
         (equivocationProofDto : EquivocationProofDto)
         : Result<unit, AppErrors>
         =
 
-        let key = createMixedHashKey equivocationProofHash
-        saveData dataDir EquivocationProof key equivocationProofDto
+        saveData
+            dbEngineType
+            dbConnectionString
+            EquivocationProof
+            equivocationProofHash
+            equivocationProofDto
 
     let getEquivocationProof
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (EquivocationProofHash equivocationProofHash)
         : Result<EquivocationProofDto, AppErrors>
         =
 
-        let key = createMixedHashKey equivocationProofHash
-        loadData<EquivocationProofDto> dataDir EquivocationProof key
+        loadData<EquivocationProofDto>
+            dbEngineType
+            dbConnectionString
+            EquivocationProof
+            equivocationProofHash
 
     let equivocationProofExists
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (EquivocationProofHash equivocationProofHash)
         =
 
-        equivocationProofHash
-        |> string
-        |> createMixedHashKey
-        |> createFileName EquivocationProof
-        |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> File.Exists
+        Db.rawDataExists
+            dbEngineType
+            dbConnectionString
+            EquivocationProof.CaseName
+            equivocationProofHash
 
     // EquivocationProofResult
     let saveEquivocationProofResult
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (EquivocationProofHash equivocationProofHash)
         (equivocationProofResultDto : EquivocationProofResultDto)
         : Result<unit, AppErrors>
         =
 
-        let key = createMixedHashKey equivocationProofHash
-        saveData dataDir EquivocationProofResult key equivocationProofResultDto
+        saveData
+            dbEngineType
+            dbConnectionString
+            EquivocationProofResult
+            equivocationProofHash
+            equivocationProofResultDto
 
     let getEquivocationProofResult
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (EquivocationProofHash equivocationProofHash)
         : Result<EquivocationProofResultDto, AppErrors>
         =
 
-        let key = createMixedHashKey equivocationProofHash
-        loadData<EquivocationProofResultDto> dataDir EquivocationProofResult key
+        loadData<EquivocationProofResultDto>
+            dbEngineType
+            dbConnectionString
+            EquivocationProofResult
+            equivocationProofHash
 
     let equivocationProofResultExists
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (EquivocationProofHash equivocationProofHash)
         =
 
-        equivocationProofHash
-        |> string
-        |> createMixedHashKey
-        |> createFileName EquivocationProofResult
-        |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> File.Exists
+        Db.rawDataExists
+            dbEngineType
+            dbConnectionString
+            EquivocationProofResult.CaseName
+            equivocationProofHash
 
     let deleteEquivocationProofResult
-        (dataDir : string)
-        createMixedHashKey
+        dbEngineType
+        (dbConnectionString : string)
         (EquivocationProofHash equivocationProofHash)
         : Result<unit, AppErrors>
         =
 
-        let key = createMixedHashKey equivocationProofHash
-        deleteData dataDir EquivocationProofResult key
+        deleteData
+            dbEngineType
+            dbConnectionString
+            EquivocationProofResult
+            equivocationProofHash
 
     // Block
     let saveBlock
-        (dataDir : string)
+        dbEngineType
+        (dbConnectionString : string)
         (BlockNumber blockNr)
         (blockEnvelopeDto : BlockEnvelopeDto)
         : Result<unit, AppErrors>
         =
 
-        saveData dataDir Block (string blockNr) blockEnvelopeDto
+        saveData dbEngineType dbConnectionString Block (string blockNr) blockEnvelopeDto
 
     let getBlock
-        (dataDir : string)
+        dbEngineType
+        (dbConnectionString : string)
         maxBlockCacheSize
         (BlockNumber blockNumber)
         : Result<BlockEnvelopeDto, AppErrors>
@@ -364,11 +355,21 @@ module Raw =
             maxBlockCacheSize
             (BlockNumber blockNumber)
             (fun blockNr ->
-                loadData<BlockEnvelopeDto> dataDir Block (string blockNr.Value))
+                loadData<BlockEnvelopeDto>
+                    dbEngineType
+                    dbConnectionString
+                    Block
+                    (string blockNr.Value))
 
-    let blockExists (dataDir : string) (blockNumber : BlockNumber) =
-        blockNumber.Value
-        |> string
-        |> createFileName Block
-        |> fun fileName -> Path.Combine (dataDir, fileName)
-        |> fun key -> blockCache.ContainsKey blockNumber || File.Exists key
+    let blockExists
+        dbEngineType
+        (dbConnectionString : string)
+        (blockNumber : BlockNumber)
+        =
+
+        blockCache.ContainsKey blockNumber
+        || Db.rawDataExists
+            dbEngineType
+            dbConnectionString
+            Block.CaseName
+            (string blockNumber.Value)
