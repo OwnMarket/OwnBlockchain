@@ -17,7 +17,7 @@ const actionFee = 0.001
 
 const outputDir = './Output'
 const preparationScriptFile = `${outputDir}/perfnet_test_prepare.sh`
-const nodeScriptFile = `${outputDir}/perfnet_test_run.sh`
+const nodeScriptFile = `${outputDir}/perfnet_test_run`
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -102,7 +102,7 @@ fs.chmodSync(preparationScriptFile, '777');
 
 let nodeNumber = 0
 for (const w of senderWallets) {
-    const runScriptFile = nodeScriptFile + `.${(++nodeNumber).toString().padStart(3, '0')}`
+    const runScriptFile = nodeScriptFile + `_${(++nodeNumber).toString().padStart(3, '0')}.sh`
     fs.writeFileSync(runScriptFile, `# Node: ${nodeNumber} / Sender: ${w.address}\n`)
     fs.chmodSync(runScriptFile, '777');
 
