@@ -585,6 +585,14 @@ type DbEngineType =
     | Firebird
     | Postgres
 
+[<RequireQualifiedAccess>]
+type RawDataType =
+    | Block
+    | Tx
+    | TxResult
+    | EquivocationProof
+    | EquivocationProofResult
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Domain Type Logic
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -799,3 +807,20 @@ type DbEngineType with
         match __ with
         | Firebird -> "Firebird"
         | Postgres -> "Postgres"
+
+type RawDataType with
+    member __.CaseName =
+        match __ with
+        | Block -> "Block"
+        | Tx -> "Tx"
+        | TxResult -> "TxResult"
+        | EquivocationProof -> "EquivocationProof"
+        | EquivocationProofResult -> "EquivocationProofResult"
+
+    member __.CaseId =
+        match __ with
+        | Block -> 1
+        | Tx -> 2
+        | TxResult -> 3
+        | EquivocationProof -> 4
+        | EquivocationProofResult -> 5
