@@ -251,6 +251,7 @@ module Blocks =
 
         [
             tradeOrderHash |> decodeHash
+            state.BlockTimestamp.Value |> int64ToBytes
             state.BlockNumber.Value |> int64ToBytes
             state.TxPosition |> int32ToBytes
             state.ActionNumber.Value |> int16ToBytes

@@ -1010,6 +1010,7 @@ module Processing =
 
     let processPlaceTradeOrderTxAction
         deriveHash
+        (blockTimestamp : Timestamp)
         (blockNumber : BlockNumber)
         (txPosition : int)
         (state : ProcessingState)
@@ -1053,6 +1054,7 @@ module Processing =
                     | None ->
                         let tradeOrderState =
                             {
+                                BlockTimestamp = blockTimestamp
                                 BlockNumber = blockNumber
                                 TxPosition = txPosition
                                 ActionNumber = actionNumber
@@ -1265,6 +1267,7 @@ module Processing =
     let processTxAction
         deriveHash
         validatorDeposit
+        blockTimestamp
         blockNumber
         txPosition
         (senderAddress : BlockchainAddress)
@@ -1296,12 +1299,13 @@ module Processing =
         | ConfigureTradingPair action -> processConfigureTradingPairTxAction state senderAddress action
         | PlaceTradeOrder action ->
             processPlaceTradeOrderTxAction
-                deriveHash blockNumber txPosition state senderAddress nonce actionNumber action
+                deriveHash blockTimestamp blockNumber txPosition state senderAddress nonce actionNumber action
         | CancelTradeOrder action -> processCancelTradeOrderTxAction state senderAddress action
 
     let processTxActions
         deriveHash
         validatorDeposit
+        blockTimestamp
         blockNumber
         txPosition
         (senderAddress : BlockchainAddress)
@@ -1317,7 +1321,16 @@ module Processing =
             >>= fun state ->
                 let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
                 processTxAction
-                    deriveHash validatorDeposit blockNumber txPosition senderAddress nonce actionNumber action state
+                    deriveHash
+                    validatorDeposit
+                    blockTimestamp
+                    blockNumber
+                    txPosition
+                    senderAddress
+                    nonce
+                    actionNumber
+                    action
+                    state
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
@@ -1544,7 +1557,7 @@ module Processing =
         (txSet : TxHash list)
         =
 
-        let processTxActions = processTxActions deriveHash validatorDeposit blockNumber
+        let processTxActions = processTxActions deriveHash validatorDeposit blockTimestamp blockNumber
 
         let loadTxs txHashes =
             txHashes

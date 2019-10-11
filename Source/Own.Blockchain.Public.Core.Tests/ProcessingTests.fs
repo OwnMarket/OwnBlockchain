@@ -8473,7 +8473,8 @@ module ProcessingTests =
 
         let getTradeOrderState _ =
             {
-                TradeOrderState.BlockNumber = BlockNumber 1L
+                TradeOrderState.BlockTimestamp = Timestamp 4L
+                BlockNumber = BlockNumber 1L
                 TxPosition = 2
                 ActionNumber = TxActionNumber 3s
                 AccountHash = Helpers.randomHash () |> AccountHash
@@ -8554,7 +8555,8 @@ module ProcessingTests =
 
         let getTradeOrderState _ =
             {
-                TradeOrderState.BlockNumber = BlockNumber 1L
+                TradeOrderState.BlockTimestamp = Timestamp 4L
+                BlockNumber = BlockNumber 1L
                 TxPosition = 2
                 ActionNumber = TxActionNumber 3s
                 AccountHash = Helpers.randomHash () |> AccountHash
@@ -8646,7 +8648,8 @@ module ProcessingTests =
 
         let getTradeOrderState _ =
             {
-                TradeOrderState.BlockNumber = BlockNumber 1L
+                TradeOrderState.BlockTimestamp = Timestamp 4L
+                BlockNumber = BlockNumber 1L
                 TxPosition = 2
                 ActionNumber = TxActionNumber 3s
                 AccountHash = Helpers.randomHash () |> AccountHash

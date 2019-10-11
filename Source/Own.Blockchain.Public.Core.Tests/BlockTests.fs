@@ -315,7 +315,8 @@ module BlockTests =
         let tradeOrderHash = TradeOrderHash "AAA"
         let state =
             {
-                TradeOrderState.BlockNumber = BlockNumber 7L
+                TradeOrderState.BlockTimestamp = Timestamp 6L
+                BlockNumber = BlockNumber 7L
                 TxPosition = 8
                 ActionNumber = TxActionNumber 9s
                 AccountHash = AccountHash "DA"
@@ -337,6 +338,7 @@ module BlockTests =
         let expectedHash =
             [
                 "AAA" // TradeOrderHash
+                ".......F" // BlockTimestamp
                 ".......G" // BlockNumber
                 "...H" // TxPosition
                 ".I" // ActionNumber
@@ -656,7 +658,8 @@ module BlockTests =
                 TradeOrderHash "AAA",
                     (
                         {
-                            TradeOrderState.BlockNumber = BlockNumber 6L
+                            TradeOrderState.BlockTimestamp = Timestamp 5L
+                            BlockNumber = BlockNumber 6L
                             TxPosition = 7
                             ActionNumber = TxActionNumber 8s
                             AccountHash = AccountHash "BA"
@@ -679,7 +682,8 @@ module BlockTests =
                 TradeOrderHash "BBB",
                     (
                         {
-                            TradeOrderState.BlockNumber = BlockNumber 7L
+                            TradeOrderState.BlockTimestamp = Timestamp 6L
+                            BlockNumber = BlockNumber 7L
                             TxPosition = 8
                             ActionNumber = TxActionNumber 9s
                             AccountHash = AccountHash "CA"
@@ -811,6 +815,7 @@ module BlockTests =
                 // Trade Order 1
                 [
                     "AAA"
+                    ".......E"
                     ".......F"
                     "...G"
                     ".H"
@@ -834,6 +839,7 @@ module BlockTests =
                 // Trade Order 2
                 [
                     "BBB"
+                    ".......F"
                     ".......G"
                     "...H"
                     ".I"
@@ -1185,7 +1191,8 @@ module BlockTests =
                 TradeOrderHash "AAA",
                     (
                         {
-                            TradeOrderState.BlockNumber = BlockNumber 6L
+                            TradeOrderState.BlockTimestamp = Timestamp 5L
+                            BlockNumber = BlockNumber 6L
                             TxPosition = 7
                             ActionNumber = TxActionNumber 8s
                             AccountHash = AccountHash "BA"
@@ -1208,7 +1215,8 @@ module BlockTests =
                 TradeOrderHash "BBB",
                     (
                         {
-                            TradeOrderState.BlockNumber = BlockNumber 7L
+                            TradeOrderState.BlockTimestamp = Timestamp 6L
+                            BlockNumber = BlockNumber 7L
                             TxPosition = 8
                             ActionNumber = TxActionNumber 9s
                             AccountHash = AccountHash "CA"
@@ -1638,7 +1646,8 @@ module BlockTests =
                 TradeOrderHash "AAA",
                     (
                         {
-                            TradeOrderState.BlockNumber = BlockNumber 6L
+                            TradeOrderState.BlockTimestamp = Timestamp 5L
+                            BlockNumber = BlockNumber 6L
                             TxPosition = 7
                             ActionNumber = TxActionNumber 8s
                             AccountHash = AccountHash "BA"
@@ -1661,7 +1670,8 @@ module BlockTests =
                 TradeOrderHash "BBB",
                     (
                         {
-                            TradeOrderState.BlockNumber = BlockNumber 7L
+                            TradeOrderState.BlockTimestamp = Timestamp 6L
+                            BlockNumber = BlockNumber 7L
                             TxPosition = 8
                             ActionNumber = TxActionNumber 9s
                             TradeOrderState.AccountHash = AccountHash "CA"

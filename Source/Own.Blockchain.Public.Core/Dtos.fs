@@ -446,6 +446,7 @@ type TradingPairStateDto = {
 
 [<CLIMutable>]
 type TradeOrderStateDto = {
+    BlockTimestamp : int64
     BlockNumber : int64
     TxPosition : int
     ActionNumber : int16
@@ -587,6 +588,7 @@ type TradingPairInfoDto = {
 [<CLIMutable>]
 type TradeOrderInfoDto = {
     TradeOrderHash : string
+    BlockTimestamp : int64
     BlockNumber : int64
     TxPosition : int
     ActionNumber : int16
@@ -850,6 +852,7 @@ type TradingPairApiDto = {
 
 type TradeOrderApiDto = {
     TradeOrderHash : string
+    BlockTimestamp : int64
     BlockNumber : int64
     TxPosition : int
     ActionNumber : int16

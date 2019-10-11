@@ -112,6 +112,7 @@ type TradeOrderChange =
 
 type TradeOrderInfo = {
     TradeOrderHash : TradeOrderHash
+    BlockTimestamp : Timestamp
     BlockNumber : BlockNumber
     TxPosition : int
     ActionNumber : TxActionNumber
@@ -532,6 +533,7 @@ type TradingPairState = {
 }
 
 type TradeOrderState = {
+    BlockTimestamp : Timestamp
     BlockNumber : BlockNumber
     TxPosition : int
     ActionNumber : TxActionNumber

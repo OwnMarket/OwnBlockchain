@@ -50,8 +50,16 @@ module TradingTests =
         (isExecutable, amountFilled, orderStatus)
         =
 
+        // Just a dummy timestamp
+        let blockTimestamp =
+            DateTimeOffset.FromUnixTimeMilliseconds(Utils.getMachineTimestamp())
+                .AddHours(-1.)
+                .AddMinutes(float blockNumber)
+                .ToUnixTimeMilliseconds()
+
         {
-            TradeOrderState.BlockNumber = BlockNumber blockNumber
+            TradeOrderState.BlockTimestamp = Timestamp blockTimestamp
+            BlockNumber = BlockNumber blockNumber
             TxPosition = txPosition
             ActionNumber = TxActionNumber actionNumber
             AccountHash = accountHash

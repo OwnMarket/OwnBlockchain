@@ -704,6 +704,7 @@ module Mapping =
 
     let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =
         {
+            BlockTimestamp = Timestamp dto.BlockTimestamp
             BlockNumber = BlockNumber dto.BlockNumber
             TxPosition = dto.TxPosition
             ActionNumber = TxActionNumber dto.ActionNumber
@@ -725,6 +726,7 @@ module Mapping =
 
     let tradeOrderStateToDto (state : TradeOrderState) : TradeOrderStateDto =
         {
+            BlockTimestamp = state.BlockTimestamp.Value
             BlockNumber = state.BlockNumber.Value
             TxPosition = state.TxPosition
             ActionNumber = state.ActionNumber.Value
@@ -745,6 +747,7 @@ module Mapping =
 
     let tradeOrderStateFromInfo (info : TradeOrderInfo) : TradeOrderState =
         {
+            BlockTimestamp = info.BlockTimestamp
             BlockNumber = info.BlockNumber
             TxPosition = info.TxPosition
             ActionNumber = info.ActionNumber
@@ -767,6 +770,7 @@ module Mapping =
     let tradeOrderStateToInfo (tradeOrderHash : TradeOrderHash, state : TradeOrderState) : TradeOrderInfo =
         {
             TradeOrderHash = tradeOrderHash
+            BlockTimestamp = state.BlockTimestamp
             BlockNumber = state.BlockNumber
             TxPosition = state.TxPosition
             ActionNumber = state.ActionNumber
@@ -795,6 +799,7 @@ module Mapping =
     let tradeOrderInfoFromDto (dto : TradeOrderInfoDto) : TradeOrderInfo =
         {
             TradeOrderHash = TradeOrderHash dto.TradeOrderHash
+            BlockTimestamp = Timestamp dto.BlockTimestamp
             BlockNumber = BlockNumber dto.BlockNumber
             TxPosition = dto.TxPosition
             ActionNumber = TxActionNumber dto.ActionNumber
@@ -997,6 +1002,7 @@ module Mapping =
     let tradeOrderInfoToTradeOrderApiDto (tradeOrderInfo : TradeOrderInfo) =
         {
             TradeOrderApiDto.TradeOrderHash = tradeOrderInfo.TradeOrderHash.Value
+            BlockTimestamp = tradeOrderInfo.BlockTimestamp.Value
             BlockNumber = tradeOrderInfo.BlockNumber.Value
             TxPosition = tradeOrderInfo.TxPosition
             ActionNumber = tradeOrderInfo.ActionNumber.Value

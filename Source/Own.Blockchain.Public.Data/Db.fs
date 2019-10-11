@@ -665,6 +665,7 @@ module Db =
         let sql =
             """
             SELECT
+                block_timestamp,
                 block_number,
                 tx_position,
                 action_number,
@@ -709,6 +710,7 @@ module Db =
             """
             SELECT
                 trade_order_hash,
+                block_timestamp,
                 block_number,
                 tx_position,
                 action_number,
@@ -750,6 +752,7 @@ module Db =
             """
             SELECT
                 trade_order_hash,
+                block_timestamp,
                 block_number,
                 tx_position,
                 action_number,
@@ -791,6 +794,7 @@ module Db =
         let sql =
             """
             SELECT
+                block_timestamp,
                 block_number,
                 tx_position,
                 action_number,
@@ -2601,6 +2605,7 @@ module Db =
             """
             INSERT INTO trade_order (
                 trade_order_hash,
+                block_timestamp,
                 block_number,
                 tx_position,
                 action_number,
@@ -2620,6 +2625,7 @@ module Db =
             )
             VALUES (
                 @tradeOrderHash,
+                @blockTimestamp,
                 @blockNumber,
                 @txPosition,
                 @actionNumber,
@@ -2642,6 +2648,7 @@ module Db =
         let sqlParams =
             [
                 "@tradeOrderHash", tradeOrderInfo.TradeOrderHash |> box
+                "@blockTimestamp", tradeOrderInfo.BlockTimestamp |> box
                 "@blockNumber", tradeOrderInfo.BlockNumber |> box
                 "@txPosition", tradeOrderInfo.TxPosition |> box
                 "@actionNumber", tradeOrderInfo.ActionNumber |> box
@@ -2747,6 +2754,7 @@ module Db =
                 let tradeOrderInfo =
                     {
                         TradeOrderInfoDto.TradeOrderHash = tradeOrderHash
+                        BlockTimestamp = state.BlockTimestamp
                         BlockNumber = state.BlockNumber
                         TxPosition = state.TxPosition
                         ActionNumber = state.ActionNumber
