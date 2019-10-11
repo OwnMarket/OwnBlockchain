@@ -258,7 +258,7 @@ module DbChanges =
                     """
             }
             {
-                Number = 7
+                Number = 8
                 Script =
                     """
                     CREATE TABLE trading_pair (
@@ -565,7 +565,7 @@ module DbChanges =
                     """
             }
             {
-                Number = 7
+                Number = 8
                 Script =
                     """
                     CREATE TABLE trading_pair (
