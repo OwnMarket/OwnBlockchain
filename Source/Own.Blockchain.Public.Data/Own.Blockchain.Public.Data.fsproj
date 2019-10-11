@@ -8,9 +8,9 @@
         <Compile Include="..\AssemblyInfo.fs" />
         <Compile Include="DbTools.fs" />
         <Compile Include="Db.fs" />
-        <Compile Include="Raw.fs" />
         <Compile Include="DbChanges.fs" />
         <Compile Include="DbInit.fs" />
+        <Compile Include="Raw.fs" />
     </ItemGroup>
 
     <ItemGroup>
