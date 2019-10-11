@@ -2566,7 +2566,7 @@ module Db =
 
         let sqlParams =
             [
-                "@item_type", itemType |> box
+                "@item_type", itemType.CaseCode |> box
                 "@item_key", itemKey |> box
             ]
 
