@@ -148,8 +148,7 @@ module Raw =
         getTxCached
             maxTxCacheSize
             (TxHash txHash)
-            (fun (TxHash hash) ->
-                loadData<TxEnvelopeDto> dbEngineType dbConnectionString RawDataType.Tx hash)
+            (fun (TxHash hash) -> loadData<TxEnvelopeDto> dbEngineType dbConnectionString RawDataType.Tx hash)
 
     let txExists
         dbEngineType
