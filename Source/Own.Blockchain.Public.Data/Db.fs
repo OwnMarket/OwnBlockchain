@@ -2407,6 +2407,29 @@ module Db =
     // Raw Data
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    type RawDataType =
+        | Block
+        | Tx
+        | TxResult
+        | EquivocationProof
+        | EquivocationProofResult
+
+        member __.CaseName =
+            match __ with
+            | Block -> "Block"
+            | Tx -> "Tx"
+            | TxResult -> "TxResult"
+            | EquivocationProof -> "EquivocationProof"
+            | EquivocationProofResult -> "EquivocationProofResult"
+
+        member __.CaseCode =
+            match __ with
+            | Block -> 1s
+            | Tx -> 2s
+            | TxResult -> 3s
+            | EquivocationProof -> 4s
+            | EquivocationProofResult -> 5s
+
     let getRawData dbEngineType dbConnectionString (itemType: RawDataType) itemKey =
         let sql =
             """
@@ -2417,7 +2440,7 @@ module Db =
 
         let sqlParams =
             [
-                "@item_type", itemType.CaseId |> box
+                "@item_type", itemType |> box
                 "@item_key", itemKey |> box
             ]
 
@@ -2436,7 +2459,7 @@ module Db =
 
         let sqlParams =
             [
-                "@item_type", itemType.CaseId |> box
+                "@item_type", itemType.CaseCode |> box
                 "@item_key", itemKey |> box
             ]
 
@@ -2462,7 +2485,7 @@ module Db =
 
         let sqlParams =
             [
-                "@item_type", itemType.CaseId |> box
+                "@item_type", itemType.CaseCode |> box
                 "@item_key", itemKey |> box
                 "@payload", payload |> box
             ]
@@ -2504,7 +2527,7 @@ module Db =
             """
         let sqlParams =
             [
-                "@item_type", itemType.CaseId |> box
+                "@item_type", itemType.CaseCode |> box
                 "@item_key", itemKey |> box
             ]
         try
