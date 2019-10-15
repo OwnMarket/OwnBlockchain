@@ -127,6 +127,7 @@ type TradeOrderInfo = {
     TrailingOffset : AssetAmount
     TrailingOffsetIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
+    ExpirationTimestamp : Timestamp
     IsExecutable : bool
     AmountFilled : AssetAmount
     Status : TradeOrderStatus
@@ -548,6 +549,7 @@ type TradeOrderState = {
     TrailingOffset : AssetAmount
     TrailingOffsetIsPercentage : bool
     TimeInForce : TradeOrderTimeInForce
+    ExpirationTimestamp : Timestamp
 
     // Execution tracking fields
     IsExecutable : bool
@@ -793,10 +795,6 @@ type EquivocationProofHash with
     member __.Value =
         __ |> fun (EquivocationProofHash v) -> v
 
-type Timestamp with
-    member __.Value =
-        __ |> fun (Timestamp v) -> v
-
 type BlockHash with
     member __.Value =
         __ |> fun (BlockHash v) -> v
@@ -816,6 +814,26 @@ type VoteHash with
 type VoteWeight with
     member __.Value =
         __ |> fun (VoteWeight v) -> v
+
+type Timestamp with
+    member __.Value =
+        __ |> fun (Timestamp v) -> v
+    static member Zero =
+        Timestamp 0L
+    static member One =
+        Timestamp 1L
+    static member (+) (Timestamp n1, Timestamp n2) =
+        Timestamp (n1 + n2)
+    static member (+) (Timestamp n1, n2) =
+        Timestamp (n1 + n2)
+    static member (+) (Timestamp n1, n2) =
+        Timestamp (n1 + int64 n2)
+    static member (-) (Timestamp n1, Timestamp n2) =
+        Timestamp (n1 - n2)
+    static member (-) (Timestamp n1, n2) =
+        Timestamp (n1 - n2)
+    static member (-) (Timestamp n1, n2) =
+        Timestamp (n1 - int64 n2)
 
 type BlockNumber with
     member __.Value =

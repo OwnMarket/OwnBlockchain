@@ -266,6 +266,7 @@ module Blocks =
             state.TrailingOffset.Value |> decimalToBytes
             state.TrailingOffsetIsPercentage |> boolToBytes
             tradeOrderTimeInForceCodeBytes
+            state.ExpirationTimestamp.Value |> int64ToBytes
             state.IsExecutable |> boolToBytes
             state.AmountFilled.Value |> decimalToBytes
             tradeOrderStatusCodeBytes

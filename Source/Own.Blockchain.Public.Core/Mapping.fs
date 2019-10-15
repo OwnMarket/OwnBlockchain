@@ -719,6 +719,7 @@ module Mapping =
             TrailingOffset = AssetAmount dto.TrailingOffset
             TrailingOffsetIsPercentage = dto.TrailingOffsetIsPercentage
             TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
+            ExpirationTimestamp = Timestamp dto.ExpirationTimestamp
             IsExecutable = dto.IsExecutable
             AmountFilled = AssetAmount dto.AmountFilled
             Status = TradeOrderStatus.Open
@@ -741,6 +742,7 @@ module Mapping =
             TrailingOffset = state.TrailingOffset.Value
             TrailingOffsetIsPercentage = state.TrailingOffsetIsPercentage
             TimeInForce = state.TimeInForce |> tradeOrderTimeInForceToCode
+            ExpirationTimestamp = state.ExpirationTimestamp.Value
             IsExecutable = state.IsExecutable
             AmountFilled = state.AmountFilled.Value
         }
@@ -762,6 +764,7 @@ module Mapping =
             TrailingOffset = info.TrailingOffset
             TrailingOffsetIsPercentage = info.TrailingOffsetIsPercentage
             TimeInForce = info.TimeInForce
+            ExpirationTimestamp = info.ExpirationTimestamp
             IsExecutable = info.IsExecutable
             AmountFilled = info.AmountFilled
             Status = info.Status
@@ -785,6 +788,7 @@ module Mapping =
             TrailingOffset = state.TrailingOffset
             TrailingOffsetIsPercentage = state.TrailingOffsetIsPercentage
             TimeInForce = state.TimeInForce
+            ExpirationTimestamp = state.ExpirationTimestamp
             IsExecutable = state.IsExecutable
             AmountFilled = state.AmountFilled
             Status = state.Status
@@ -814,6 +818,7 @@ module Mapping =
             TrailingOffset = AssetAmount dto.TrailingOffset
             TrailingOffsetIsPercentage = dto.TrailingOffsetIsPercentage
             TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
+            ExpirationTimestamp = Timestamp dto.ExpirationTimestamp
             IsExecutable = dto.IsExecutable
             AmountFilled = AssetAmount dto.AmountFilled
             Status = TradeOrderStatus.Open
@@ -1030,6 +1035,7 @@ module Mapping =
                 match tradeOrderInfo.TimeInForce with
                 | GoodTilCancelled -> "GTC"
                 | TradeOrderTimeInForce.ImmediateOrCancel -> "IOC"
+            ExpirationTimestamp = tradeOrderInfo.ExpirationTimestamp.Value
             IsExecutable = tradeOrderInfo.IsExecutable
             AmountFilled = tradeOrderInfo.AmountFilled.Value
             Status = "Open" // TODO DSX

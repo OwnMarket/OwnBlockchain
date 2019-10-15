@@ -461,6 +461,7 @@ type TradeOrderStateDto = {
     TrailingOffset : decimal
     TrailingOffsetIsPercentage : bool
     TimeInForce : byte
+    ExpirationTimestamp : int64
     IsExecutable : bool
     AmountFilled : decimal
 }
@@ -603,6 +604,7 @@ type TradeOrderInfoDto = {
     TrailingOffset : decimal
     TrailingOffsetIsPercentage : bool
     TimeInForce : byte
+    ExpirationTimestamp : int64
     IsExecutable : bool
     AmountFilled : decimal
 }
@@ -867,6 +869,7 @@ type TradeOrderApiDto = {
     TrailingOffset : decimal
     TrailingOffsetIsPercentage : bool
     TimeInForce : string
+    ExpirationTimestamp : int64
     IsExecutable : bool
     AmountFilled : decimal
     Status : string

@@ -57,6 +57,11 @@ module TradingTests =
                 .AddMinutes(float blockNumber)
                 .ToUnixTimeMilliseconds()
 
+        let expirationTimestamp =
+            DateTimeOffset.FromUnixTimeMilliseconds(blockTimestamp)
+                .AddHours(3.)
+                .ToUnixTimeMilliseconds()
+
         {
             TradeOrderState.BlockTimestamp = Timestamp blockTimestamp
             BlockNumber = BlockNumber blockNumber
@@ -73,6 +78,7 @@ module TradingTests =
             TrailingOffset = AssetAmount trailingOffset
             TrailingOffsetIsPercentage = trailingOffsetIsPercentage
             TimeInForce = timeInForce
+            ExpirationTimestamp = Timestamp expirationTimestamp
             IsExecutable = isExecutable
             AmountFilled = AssetAmount amountFilled
             Status = orderStatus

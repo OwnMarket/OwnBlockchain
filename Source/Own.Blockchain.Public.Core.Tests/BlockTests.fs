@@ -330,6 +330,7 @@ module BlockTests =
                 TrailingOffset = AssetAmount 3m
                 TrailingOffsetIsPercentage = true
                 TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                ExpirationTimestamp = Timestamp 9L
                 IsExecutable = true
                 AmountFilled = AssetAmount 3m
                 Status = TradeOrderStatus.Filled
@@ -353,6 +354,7 @@ module BlockTests =
                 "...C............" // TrailingOffset
                 "A" // TrailingOffsetIsPercentage
                 "B" // TimeInForce
+                ".......I" // ExpirationTimestamp
                 "A" // IsExecutable
                 "...C............" // AmountFilled
                 "A" // Status
@@ -673,6 +675,7 @@ module BlockTests =
                             TrailingOffset = AssetAmount 0m
                             TrailingOffsetIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                            ExpirationTimestamp = Timestamp 9L
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
                             Status = TradeOrderStatus.Filled
@@ -697,6 +700,7 @@ module BlockTests =
                             TrailingOffset = AssetAmount 3m
                             TrailingOffsetIsPercentage = true
                             TimeInForce = GoodTilCancelled
+                            ExpirationTimestamp = Timestamp 9L
                             IsExecutable = false
                             AmountFilled = AssetAmount 1m
                             Status = TradeOrderStatus.Open
@@ -830,6 +834,7 @@ module BlockTests =
                     "................"
                     "."
                     "B"
+                    ".......I"
                     "A"
                     "...C............"
                     "A"
@@ -854,6 +859,7 @@ module BlockTests =
                     "...C............"
                     "A"
                     "A"
+                    ".......I"
                     "."
                     "...A............"
                     "."
@@ -1206,6 +1212,7 @@ module BlockTests =
                             TrailingOffset = AssetAmount 0m
                             TrailingOffsetIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                            ExpirationTimestamp = Timestamp 9L
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
                             Status = TradeOrderStatus.Filled
@@ -1230,6 +1237,7 @@ module BlockTests =
                             TrailingOffset = AssetAmount 3m
                             TrailingOffsetIsPercentage = true
                             TimeInForce = GoodTilCancelled
+                            ExpirationTimestamp = Timestamp 9L
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
                             Status = TradeOrderStatus.Open
@@ -1661,6 +1669,7 @@ module BlockTests =
                             TrailingOffset = AssetAmount 0m
                             TrailingOffsetIsPercentage = false
                             TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+                            ExpirationTimestamp = Timestamp 9L
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
                             Status = TradeOrderStatus.Filled
@@ -1685,6 +1694,7 @@ module BlockTests =
                             TrailingOffset = AssetAmount 3m
                             TrailingOffsetIsPercentage = true
                             TimeInForce = GoodTilCancelled
+                            ExpirationTimestamp = Timestamp 9L
                             IsExecutable = true
                             AmountFilled = AssetAmount 3m
                             Status = TradeOrderStatus.Open

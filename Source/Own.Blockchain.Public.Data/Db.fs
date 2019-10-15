@@ -680,6 +680,7 @@ module Db =
                 trailing_offset,
                 trailing_offset_is_percentage,
                 time_in_force,
+                expiration_timestamp,
                 is_executable,
                 amount_filled
             FROM trade_order
@@ -725,6 +726,7 @@ module Db =
                 trailing_offset,
                 trailing_offset_is_percentage,
                 time_in_force,
+                expiration_timestamp,
                 is_executable,
                 amount_filled
             FROM trade_order
@@ -738,6 +740,47 @@ module Db =
         [
             "@baseAssetHash", baseAssetHash |> box
             "@quoteAssetHash", quoteAssetHash |> box
+        ]
+        |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
+
+    let getExpiredTradeOrders
+        dbEngineType
+        (dbConnectionString : string)
+        (Timestamp blockTimestamp)
+        : TradeOrderInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                trade_order_hash,
+                block_timestamp,
+                block_number,
+                tx_position,
+                action_number,
+                acc.account_hash,
+                ba.asset_hash AS base_asset_hash,
+                qa.asset_hash AS quote_asset_hash,
+                side,
+                amount,
+                order_type,
+                limit_price,
+                stop_price,
+                trailing_offset,
+                trailing_offset_is_percentage,
+                time_in_force,
+                expiration_timestamp,
+                is_executable,
+                amount_filled
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE expiration_timestamp <= @blockTimestamp
+            """
+
+        [
+            "@blockTimestamp", blockTimestamp |> box
         ]
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
 
@@ -767,6 +810,7 @@ module Db =
                 trailing_offset,
                 trailing_offset_is_percentage,
                 time_in_force,
+                expiration_timestamp,
                 is_executable,
                 amount_filled
             FROM trade_order
@@ -809,6 +853,7 @@ module Db =
                 trailing_offset,
                 trailing_offset_is_percentage,
                 time_in_force,
+                expiration_timestamp,
                 is_executable,
                 amount_filled
             FROM trade_order
@@ -857,7 +902,8 @@ module Db =
             "@accountHash", accountHash |> box
             "@assetHash", assetHash |> box
         ]
-        |> DbTools.query<decimal> dbEngineType dbConnectionString sql
+        |> DbTools.query<Nullable<decimal>> dbEngineType dbConnectionString sql
+        |> List.choose Option.ofNullable
         |> List.sum
         |> AssetAmount
 
@@ -2620,6 +2666,7 @@ module Db =
                 trailing_offset,
                 trailing_offset_is_percentage,
                 time_in_force,
+                expiration_timestamp,
                 is_executable,
                 amount_filled
             )
@@ -2640,6 +2687,7 @@ module Db =
                 @trailingOffset,
                 @trailingOffsetIsPercentage,
                 @timeInForce,
+                @expirationTimestamp,
                 @isExecutable,
                 @amountFilled
             )
@@ -2663,6 +2711,7 @@ module Db =
                 "@trailingOffset", tradeOrderInfo.TrailingOffset |> box
                 "@trailingOffsetIsPercentage", tradeOrderInfo.TrailingOffsetIsPercentage |> box
                 "@timeInForce", tradeOrderInfo.TimeInForce |> box
+                "@expirationTimestamp", tradeOrderInfo.ExpirationTimestamp |> box
                 "@isExecutable", tradeOrderInfo.IsExecutable |> box
                 "@amountFilled", tradeOrderInfo.AmountFilled |> box
             ]
@@ -2769,6 +2818,7 @@ module Db =
                         TrailingOffset = state.TrailingOffset
                         TrailingOffsetIsPercentage = state.TrailingOffsetIsPercentage
                         TimeInForce = state.TimeInForce
+                        ExpirationTimestamp = state.ExpirationTimestamp
                         IsExecutable = state.IsExecutable
                         AmountFilled = state.AmountFilled
                     }

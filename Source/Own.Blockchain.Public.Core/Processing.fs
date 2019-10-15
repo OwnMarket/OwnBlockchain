@@ -27,6 +27,7 @@ module Processing =
         getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option,
         getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
         getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
+        getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list,
         getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
@@ -71,6 +72,7 @@ module Processing =
             getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option,
             getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
             getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
+            getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list,
             getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount
             ) =
             ProcessingState(
@@ -90,6 +92,7 @@ module Processing =
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
+                getExpiredTradeOrdersFromStorage,
                 getHoldingInTradeOrdersFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
@@ -132,6 +135,7 @@ module Processing =
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
+                getExpiredTradeOrdersFromStorage,
                 getHoldingInTradeOrdersFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(equivocationProofResults),
@@ -270,6 +274,22 @@ module Processing =
             |> Seq.choose (fun o ->
                 match o.Value with
                 | Some s, _ when s.BaseAssetHash = baseAssetHash && s.QuoteAssetHash = quoteAssetHash -> Some (o.Key, s)
+                | _ -> None
+            )
+            |> Seq.toList
+
+        member __.LoadExpiredTradeOrders blockTimestamp =
+            for tradeOrderInfo in getExpiredTradeOrdersFromStorage blockTimestamp do
+                if not (tradeOrders.ContainsKey tradeOrderInfo.TradeOrderHash) then
+                    let state = tradeOrderInfo |> Mapping.tradeOrderStateFromInfo |> Some
+                    if not (tradeOrders.TryAdd(tradeOrderInfo.TradeOrderHash, (state, None))) then
+                        failwithf "Cannot add expired trade order to the state dictionary: %A" tradeOrderInfo
+
+        member __.GetExpiredTradeOrders blockTimestamp =
+            tradeOrders
+            |> Seq.choose (fun o ->
+                match o.Value with
+                | Some s, _ when s.ExpirationTimestamp <= blockTimestamp -> Some (o.Key, s)
                 | _ -> None
             )
             |> Seq.toList
@@ -1069,6 +1089,11 @@ module Processing =
                                 TrailingOffset = action.TrailingOffset
                                 TrailingOffsetIsPercentage = action.TrailingOffsetIsPercentage
                                 TimeInForce = action.TimeInForce
+                                ExpirationTimestamp =
+                                    (DateTimeOffset.FromUnixTimeMilliseconds blockTimestamp.Value)
+                                        .AddHours(3.) // TODO DSX: Use pair.MaxTradeOrderDuration
+                                        .ToUnixTimeMilliseconds()
+                                    |> Timestamp
                                 IsExecutable =
                                     match action.OrderType with
                                     | TradeOrderType.Market
@@ -1541,6 +1566,7 @@ module Processing =
         (getTradingPairFromStorage : AssetHash * AssetHash -> TradingPairState option)
         (getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option)
         (getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list)
+        (getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list)
         (getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount)
         getLockedAndBlacklistedValidators
         maxActionCountPerTx
@@ -1627,6 +1653,7 @@ module Processing =
                 getTradingPairFromStorage,
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
+                getExpiredTradeOrdersFromStorage,
                 getHoldingInTradeOrdersFromStorage
             )
 
@@ -1657,6 +1684,12 @@ module Processing =
         if blockchainConfiguration.IsSome then
             updateValidatorCounters getLockedAndBlacklistedValidators state
             lockValidatorDeposits validatorDepositLockTime blockNumber blockchainConfiguration state
+
+        state.LoadExpiredTradeOrders blockTimestamp
+        Trading.cancelExpiredTradeOrders
+            state.GetExpiredTradeOrders
+            state.SetTradeOrder
+            blockTimestamp
 
         for baseAssetHash, quoteAssetHash in state.GetLoadedTradingPairs () do
             state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)

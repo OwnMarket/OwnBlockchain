@@ -257,3 +257,21 @@ module Trading =
         )
 
         trades
+
+    let cancelExpiredTradeOrders
+        (getExpiredTradeOrders : Timestamp -> (TradeOrderHash * TradeOrderState) list)
+        (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
+        (blockTimestamp : Timestamp)
+        =
+
+        getExpiredTradeOrders blockTimestamp
+        |> List.filter (fun (_, s) -> s.TimeInForce = GoodTilCancelled && s.Status = TradeOrderStatus.Open)
+        |> List.iter (fun (h, s) ->
+            if s.ExpirationTimestamp > blockTimestamp then
+                failwithf "Trade order %s didn't expire yet (%i): %A" h.Value blockTimestamp.Value s
+            setTradeOrder (
+                h,
+                { s with Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.Expired },
+                TradeOrderChange.Remove
+            )
+        )

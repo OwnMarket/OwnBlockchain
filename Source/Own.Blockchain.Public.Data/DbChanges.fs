@@ -293,6 +293,7 @@ module DbChanges =
                         trailing_offset DECIMAL(18, 7) NOT NULL,
                         trailing_offset_is_percentage BOOLEAN NOT NULL,
                         time_in_force SMALLINT NOT NULL,
+                        expiration_timestamp BIGINT NOT NULL,
                         is_executable BOOLEAN NOT NULL,
                         amount_filled DECIMAL(18, 7) NOT NULL,
 
@@ -600,6 +601,7 @@ module DbChanges =
                         trailing_offset DECIMAL(18, 7) NOT NULL,
                         trailing_offset_is_percentage BOOLEAN NOT NULL,
                         time_in_force SMALLINT NOT NULL,
+                        expiration_timestamp BIGINT NOT NULL,
                         is_executable BOOLEAN NOT NULL,
                         amount_filled DECIMAL(18, 7) NOT NULL,
 
