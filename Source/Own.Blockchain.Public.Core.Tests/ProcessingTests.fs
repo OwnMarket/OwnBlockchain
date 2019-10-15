@@ -8708,4 +8708,5 @@ module ProcessingTests =
         test <@ tradeOrderState.TrailingOffset.Value = 0m @>
         test <@ tradeOrderState.TrailingOffsetIsPercentage = false @>
         test <@ tradeOrderState.TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByUser @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>

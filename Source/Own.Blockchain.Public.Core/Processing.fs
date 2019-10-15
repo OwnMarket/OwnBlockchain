@@ -1125,7 +1125,11 @@ module Processing =
                     tradeOrderState.AccountHash.Value
                     action.TradeOrderHash.Value
             | Some accountState when accountState.ControllerAddress = senderAddress ->
-                state.SetTradeOrder(action.TradeOrderHash, tradeOrderState, TradeOrderChange.Remove)
+                state.SetTradeOrder(
+                    action.TradeOrderHash,
+                    { tradeOrderState with Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByUser },
+                    TradeOrderChange.Remove
+                )
                 Ok state
             | _ ->
                 Error TxErrorCode.SenderIsNotSourceAccountController
