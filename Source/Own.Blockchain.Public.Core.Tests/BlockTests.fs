@@ -982,6 +982,7 @@ module BlockTests =
         test <@ block.Header.StateRoot = MerkleTreeRoot stateRoot @>
         test <@ block.Header.StakingRewardsRoot = MerkleTreeRoot stakingRewardRoot @>
         test <@ block.Header.ConfigurationRoot = MerkleTreeRoot configRoot @>
+        test <@ block.Header.TradesRoot = MerkleTreeRoot tradesRoot @>
         test <@ block.Header.Hash = BlockHash blockHash @>
         test <@ block.TxSet = [TxHash "AAA"; TxHash "BBB"; TxHash "CCC"] @>
 
@@ -1366,6 +1367,7 @@ module BlockTests =
         test <@ block.EquivocationProofs = equivocationProofs @>
         test <@ block.StakingRewards = stakingRewards @>
         test <@ block.Configuration = None @>
+        test <@ block.Trades = trades @>
 
         let txSetMerkleProofs =
             txSet
@@ -1805,21 +1807,6 @@ module BlockTests =
                 TradeOrders = tradeOrders
                 Trades = trades
             }
-
-        let assembledBlock =
-            Blocks.assembleBlock
-                Hashing.decode
-                Hashing.hash
-                Hashing.merkleTree
-                proposerWallet.Address
-                blockNumber
-                timestamp
-                previousBlockHash
-                configurationBlockNumber
-                txSet
-                equivocationProofs
-                processingOutput
-                None
 
         let testedBlock =
             Blocks.assembleBlock
