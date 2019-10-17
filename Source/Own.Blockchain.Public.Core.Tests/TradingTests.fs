@@ -52,7 +52,7 @@ module TradingTests =
 
         // Just a dummy timestamp
         let blockTimestamp =
-            DateTimeOffset.FromUnixTimeMilliseconds(Utils.getMachineTimestamp())
+            DateTimeOffset.FromUnixTimeMilliseconds(Utils.getMachineTimestamp ())
                 .AddHours(-1.)
                 .AddMinutes(float blockNumber)
                 .ToUnixTimeMilliseconds()
