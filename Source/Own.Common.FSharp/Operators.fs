@@ -17,3 +17,9 @@ module Operators =
             nullable.Value
         else
             defaultValue
+
+    let (|???) x defaultValue =
+        if isNull (box x) then
+            defaultValue
+        else
+            x

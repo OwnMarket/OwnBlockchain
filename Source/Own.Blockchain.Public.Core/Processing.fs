@@ -54,6 +54,7 @@ module Processing =
         let getChxAddressState address =
             getChxAddressStateFromStorage address
             |? {Nonce = Nonce 0L; Balance = ChxAmount 0m}
+
         new
             (
             getChxAddressStateFromStorage : BlockchainAddress -> ChxAddressState option,
@@ -160,7 +161,7 @@ module Processing =
 
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
         member __.MergeStateAfterFailedTx (otherState : ProcessingState) =
-            let otherOutput = otherState.ToProcessingOutput ()
+            let otherOutput = otherState.ToProcessingOutput []
             for other in otherOutput.ChxAddresses do
                 let current = __.GetChxAddress (other.Key)
                 __.SetChxAddress (other.Key, { current with Nonce = other.Value.Nonce })
@@ -422,7 +423,7 @@ module Processing =
                 fun _ _ -> failwithf "Staking reward already set for %s" stakerAddress.Value
             ) |> ignore
 
-        member __.ToProcessingOutput () : ProcessingOutput =
+        member __.ToProcessingOutput (trades : Trade list) : ProcessingOutput =
             {
                 TxResults = txResults |> Map.ofDict
                 EquivocationProofResults = equivocationProofResults |> Map.ofDict
@@ -487,6 +488,7 @@ module Processing =
                     |> Seq.choose (fun (h, (st, c)) -> st |> Option.map (fun s -> h, (s, c)))
                     |> Seq.choose (fun (h, (s, ch)) -> ch |> Option.map (fun c -> h, (s, c)))
                     |> Map.ofSeq
+                Trades = trades
             }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1695,13 +1697,13 @@ module Processing =
             state.SetTradeOrder
             blockTimestamp
 
-        for baseAssetHash, quoteAssetHash in state.GetLoadedTradingPairs () do
+        state.GetLoadedTradingPairs ()
+        |> List.collect (fun (baseAssetHash, quoteAssetHash) ->
             state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)
             Trading.matchTradeOrders
                 state.GetTradeOrdersForTradingPair
                 state.SetTradeOrder
                 state.GetHoldingOrDefault
                 (baseAssetHash, quoteAssetHash)
-            |> ignore // TODO DSX: Add trades to the block
-
-        state.ToProcessingOutput()
+        )
+        |> state.ToProcessingOutput

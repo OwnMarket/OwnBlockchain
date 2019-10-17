@@ -9,6 +9,81 @@ open Own.Blockchain.Public.Core.Dtos
 module Mapping =
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Trading
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let tradeOrderSideFromCode (tradeOrderSideCode : byte) : TradeOrderSide =
+        match tradeOrderSideCode with
+        | 1uy -> Buy
+        | 2uy -> Sell
+        | s -> failwithf "Invalid trade order side code: %i" s
+
+    let tradeOrderSideToCode (tradeOrderSide : TradeOrderSide) : byte =
+        match tradeOrderSide with
+        | Buy -> 1uy
+        | Sell -> 2uy
+
+    let tradeOrderTypeFromCode (tradeOrderTypeCode : byte) : TradeOrderType =
+        match tradeOrderTypeCode with
+        | 1uy -> TradeOrderType.Market
+        | 2uy -> TradeOrderType.Limit
+        | 3uy -> TradeOrderType.StopMarket
+        | 4uy -> TradeOrderType.StopLimit
+        | 5uy -> TradeOrderType.TrailingStopMarket
+        | 6uy -> TradeOrderType.TrailingStopLimit
+        | t -> failwithf "Invalid trade order type code: %i" t
+
+    let tradeOrderTypeToCode (tradeOrderType : TradeOrderType) : byte =
+        match tradeOrderType with
+        | TradeOrderType.Market -> 1uy
+        | TradeOrderType.Limit -> 2uy
+        | TradeOrderType.StopMarket -> 3uy
+        | TradeOrderType.StopLimit -> 4uy
+        | TradeOrderType.TrailingStopMarket -> 5uy
+        | TradeOrderType.TrailingStopLimit -> 6uy
+
+    let tradeOrderTimeInForceFromCode (tradeOrderTimeInForceCode : byte) : TradeOrderTimeInForce =
+        match tradeOrderTimeInForceCode with
+        | 1uy -> GoodTilCancelled
+        | 2uy -> TradeOrderTimeInForce.ImmediateOrCancel
+        | t -> failwithf "Invalid trade order time in force code: %i" t
+
+    let tradeOrderTimeInForceToCode (tradeOrderTimeInForce : TradeOrderTimeInForce) : byte =
+        match tradeOrderTimeInForce with
+        | GoodTilCancelled -> 1uy
+        | TradeOrderTimeInForce.ImmediateOrCancel -> 2uy
+
+    let tradeOrderStatusToCode (tradeOrderStatus : TradeOrderStatus) : byte =
+        match tradeOrderStatus with
+        | TradeOrderStatus.Open -> 0uy
+        | TradeOrderStatus.Filled -> 1uy
+        | TradeOrderStatus.Cancelled reason ->
+            match reason with
+            | TradeOrderCancelReason.TriggeredByUser -> 21uy
+            | TradeOrderCancelReason.TriggeredByTimeInForce -> 22uy
+            | TradeOrderCancelReason.Expired -> 23uy
+            | TradeOrderCancelReason.InsufficientQuoteAssetBalance -> 24uy
+            | TradeOrderCancelReason.NotEligible -> 25uy
+
+    let tradeToDto (trade : Trade) =
+        {
+            TradeDto.Direction = trade.Direction |> tradeOrderSideToCode
+            BuyOrderHash = trade.BuyOrderHash.Value
+            SellOrderHash = trade.SellOrderHash.Value
+            Amount = trade.Amount.Value
+            Price = trade.Price.Value
+        }
+
+    let tradeFromDto (dto : TradeDto) =
+        {
+            Trade.Direction = dto.Direction |> tradeOrderSideFromCode
+            BuyOrderHash = TradeOrderHash dto.BuyOrderHash
+            SellOrderHash = TradeOrderHash dto.SellOrderHash
+            Amount = AssetAmount dto.Amount
+            Price = AssetAmount dto.Price
+        }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TX
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -381,6 +456,7 @@ module Mapping =
             StateRoot = MerkleTreeRoot dto.StateRoot
             StakingRewardsRoot = MerkleTreeRoot dto.StakingRewardsRoot
             ConfigurationRoot = MerkleTreeRoot dto.ConfigurationRoot
+            TradesRoot = MerkleTreeRoot (dto.TradesRoot |??? "")
         }
 
     let blockHeaderToDto (block : BlockHeader) : BlockHeaderDto =
@@ -398,6 +474,7 @@ module Mapping =
             StateRoot = block.StateRoot.Value
             StakingRewardsRoot = block.StakingRewardsRoot.Value
             ConfigurationRoot = block.ConfigurationRoot.Value
+            TradesRoot = block.TradesRoot.Value
         }
 
     let validatorSnapshotFromDto (dto : ValidatorSnapshotDto) : ValidatorSnapshot =
@@ -461,6 +538,7 @@ module Mapping =
             EquivocationProofs = dto.EquivocationProofs |> List.map EquivocationProofHash
             StakingRewards = dto.StakingRewards |> List.map stakingRewardFromDto
             Configuration = config
+            Trades = dto.Trades |??? [] |> List.map tradeFromDto
         }
 
     let blockToDto (block : Block) : BlockDto =
@@ -473,6 +551,7 @@ module Mapping =
                 match block.Configuration with
                 | None -> Unchecked.defaultof<_>
                 | Some c -> blockchainConfigurationToDto c
+            Trades = block.Trades |> List.map tradeToDto
         }
 
     let blockEnvelopeFromDto (dto : BlockEnvelopeDto) : BlockEnvelope =
@@ -648,59 +727,6 @@ module Mapping =
         {
             TradingPairState.IsEnabled = dto.IsEnabled
         }
-
-    let tradeOrderSideFromCode (tradeOrderSideCode : byte) : TradeOrderSide =
-        match tradeOrderSideCode with
-        | 1uy -> Buy
-        | 2uy -> Sell
-        | s -> failwithf "Invalid trade order side code: %i" s
-
-    let tradeOrderSideToCode (tradeOrderSide : TradeOrderSide) : byte =
-        match tradeOrderSide with
-        | Buy -> 1uy
-        | Sell -> 2uy
-
-    let tradeOrderTypeFromCode (tradeOrderTypeCode : byte) : TradeOrderType =
-        match tradeOrderTypeCode with
-        | 1uy -> TradeOrderType.Market
-        | 2uy -> TradeOrderType.Limit
-        | 3uy -> TradeOrderType.StopMarket
-        | 4uy -> TradeOrderType.StopLimit
-        | 5uy -> TradeOrderType.TrailingStopMarket
-        | 6uy -> TradeOrderType.TrailingStopLimit
-        | t -> failwithf "Invalid trade order type code: %i" t
-
-    let tradeOrderTypeToCode (tradeOrderType : TradeOrderType) : byte =
-        match tradeOrderType with
-        | TradeOrderType.Market -> 1uy
-        | TradeOrderType.Limit -> 2uy
-        | TradeOrderType.StopMarket -> 3uy
-        | TradeOrderType.StopLimit -> 4uy
-        | TradeOrderType.TrailingStopMarket -> 5uy
-        | TradeOrderType.TrailingStopLimit -> 6uy
-
-    let tradeOrderTimeInForceFromCode (tradeOrderTimeInForceCode : byte) : TradeOrderTimeInForce =
-        match tradeOrderTimeInForceCode with
-        | 1uy -> GoodTilCancelled
-        | 2uy -> TradeOrderTimeInForce.ImmediateOrCancel
-        | t -> failwithf "Invalid trade order time in force code: %i" t
-
-    let tradeOrderTimeInForceToCode (tradeOrderTimeInForce : TradeOrderTimeInForce) : byte =
-        match tradeOrderTimeInForce with
-        | GoodTilCancelled -> 1uy
-        | TradeOrderTimeInForce.ImmediateOrCancel -> 2uy
-
-    let tradeOrderStatusToCode (tradeOrderStatus : TradeOrderStatus) : byte =
-        match tradeOrderStatus with
-        | TradeOrderStatus.Open -> 0uy
-        | TradeOrderStatus.Filled -> 1uy
-        | TradeOrderStatus.Cancelled reason ->
-            match reason with
-            | TradeOrderCancelReason.TriggeredByUser -> 21uy
-            | TradeOrderCancelReason.TriggeredByTimeInForce -> 22uy
-            | TradeOrderCancelReason.Expired -> 23uy
-            | TradeOrderCancelReason.InsufficientQuoteAssetBalance -> 24uy
-            | TradeOrderCancelReason.NotEligible -> 25uy
 
     let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =
         {
@@ -888,6 +914,10 @@ module Mapping =
             output.TradeOrders
             |> Map.remap (fun (TradeOrderHash h, (s, c)) -> h, (tradeOrderStateToDto s, tradeOrderChangeToCode c))
 
+        let trades =
+            output.Trades
+            |> List.map tradeToDto
+
         {
             ProcessingOutputDto.TxResults = txResults
             EquivocationProofResults = equivocationProofResults
@@ -902,6 +932,7 @@ module Mapping =
             Stakes = stakes
             TradingPairs = tradingPairs
             TradeOrders = tradeOrders
+            Trades = trades
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -927,6 +958,19 @@ module Mapping =
         }
 
     let blockEnvelopeDtoToGetBlockApiResponseDto (blockEnvelopeDto : BlockEnvelopeDto) =
+        let tradeDtoToApi (dto : TradeDto) =
+            {
+                TradeApiDto.Direction =
+                    match dto.Direction with
+                    | 1uy -> "BUY"
+                    | 2uy -> "SELL"
+                    | d -> failwithf "Unknown trade direction code: %i" d
+                BuyOrderHash = dto.BuyOrderHash
+                SellOrderHash = dto.SellOrderHash
+                Amount = dto.Amount
+                Price = dto.Price
+            }
+
         let blockDto = blockEnvelopeDto.Block
 
         {
@@ -943,10 +987,12 @@ module Mapping =
             StateRoot = blockDto.Header.StateRoot
             StakingRewardsRoot = blockDto.Header.StakingRewardsRoot
             ConfigurationRoot = blockDto.Header.ConfigurationRoot
+            TradesRoot = blockDto.Header.TradesRoot |??? ""
             TxSet = blockDto.TxSet
             EquivocationProofs = blockDto.EquivocationProofs
             StakingRewards = blockDto.StakingRewards
             Configuration = blockDto.Configuration
+            Trades = blockDto.Trades |??? [] |> List.map tradeDtoToApi
             ConsensusRound = blockEnvelopeDto.ConsensusRound
             Signatures = blockEnvelopeDto.Signatures
         }

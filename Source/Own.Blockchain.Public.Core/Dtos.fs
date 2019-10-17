@@ -1,4 +1,4 @@
-﻿namespace Own.Blockchain.Public.Core.Dtos
+﻿namespace rec Own.Blockchain.Public.Core.Dtos
 
 open System
 open MessagePack
@@ -238,6 +238,7 @@ type BlockHeaderDto = {
     [<Key(10)>] StateRoot : string
     [<Key(11)>] StakingRewardsRoot : string
     [<Key(12)>] ConfigurationRoot : string
+    [<Key(13)>] TradesRoot : string
 }
 
 [<CLIMutable>]
@@ -255,6 +256,7 @@ type BlockDto = {
     [<Key(2)>] EquivocationProofs : string list
     [<Key(3)>] StakingRewards : StakingRewardDto list
     [<Key(4)>] Configuration : BlockchainConfigurationDto
+    [<Key(5)>] Trades : TradeDto list
 }
 
 [<CLIMutable>]
@@ -472,6 +474,16 @@ type TradeOrderChangeCode =
     | Remove = 1uy
     | Update = 2uy
 
+[<CLIMutable>]
+[<MessagePackObject>]
+type TradeDto = {
+    [<Key(0)>] Direction : byte
+    [<Key(1)>] BuyOrderHash : string
+    [<Key(2)>] SellOrderHash : string
+    [<Key(3)>] Amount : decimal
+    [<Key(4)>] Price : decimal
+}
+
 type ProcessingOutputDto = {
     TxResults : Map<string, TxResultDto>
     EquivocationProofResults : Map<string, EquivocationProofResultDto>
@@ -486,6 +498,7 @@ type ProcessingOutputDto = {
     Stakes : Map<string * string, StakeStateDto>
     TradingPairs : Map<string * string, TradingPairStateDto>
     TradeOrders : Map<string, TradeOrderStateDto * TradeOrderChangeCode>
+    Trades : TradeDto list
 }
 
 [<CLIMutable>]
@@ -748,6 +761,15 @@ type GetEquivocationProofApiResponseDto = {
     IncludedInBlockNumber : Nullable<int64>
 }
 
+[<CLIMutable>]
+type TradeApiDto = {
+    Direction : string
+    BuyOrderHash : string
+    SellOrderHash : string
+    Amount : decimal
+    Price : decimal
+}
+
 type GetBlockApiResponseDto = {
     Number : int64
     Hash : string
@@ -762,10 +784,12 @@ type GetBlockApiResponseDto = {
     StateRoot : string
     StakingRewardsRoot : string
     ConfigurationRoot : string
+    TradesRoot : string
     TxSet : string list
     EquivocationProofs : string list
     StakingRewards : StakingRewardDto list
     Configuration : BlockchainConfigurationDto
+    Trades : TradeApiDto list
     ConsensusRound : int
     Signatures : string list
 }

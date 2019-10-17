@@ -17,18 +17,19 @@ module ConsensusTestHelpers =
             Block.Header =
                 {
                     BlockHeader.Number = blockNumber
-                    Hash = Helpers.randomString () |> BlockHash
-                    PreviousHash = Helpers.randomString () |> BlockHash
+                    Hash = Helpers.randomHash () |> BlockHash
+                    PreviousHash = Helpers.randomHash () |> BlockHash
                     ConfigurationBlockNumber = BlockNumber 0L
                     Timestamp = Utils.getNetworkTimestamp () |> Timestamp
                     ProposerAddress = proposerAddress
-                    TxSetRoot = Helpers.randomString () |> MerkleTreeRoot
-                    TxResultSetRoot = Helpers.randomString () |> MerkleTreeRoot
-                    EquivocationProofsRoot = Helpers.randomString () |> MerkleTreeRoot
-                    EquivocationProofResultsRoot = Helpers.randomString () |> MerkleTreeRoot
-                    StateRoot = Helpers.randomString () |> MerkleTreeRoot
-                    StakingRewardsRoot = Helpers.randomString () |> MerkleTreeRoot
-                    ConfigurationRoot = Helpers.randomString () |> MerkleTreeRoot
+                    TxSetRoot = Helpers.randomHash () |> MerkleTreeRoot
+                    TxResultSetRoot = Helpers.randomHash () |> MerkleTreeRoot
+                    EquivocationProofsRoot = Helpers.randomHash () |> MerkleTreeRoot
+                    EquivocationProofResultsRoot = Helpers.randomHash () |> MerkleTreeRoot
+                    StateRoot = Helpers.randomHash () |> MerkleTreeRoot
+                    StakingRewardsRoot = Helpers.randomHash () |> MerkleTreeRoot
+                    ConfigurationRoot = Helpers.randomHash () |> MerkleTreeRoot
+                    TradesRoot = Helpers.randomHash () |> MerkleTreeRoot
                 }
             TxSet =
                 [
@@ -37,6 +38,7 @@ module ConsensusTestHelpers =
             EquivocationProofs = []
             StakingRewards = []
             Configuration = None
+            Trades = []
         }
 
     let isPropose (_, consensusMessageEnvelope : ConsensusMessageEnvelope) =

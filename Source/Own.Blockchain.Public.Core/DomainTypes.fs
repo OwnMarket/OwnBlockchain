@@ -154,8 +154,8 @@ type TradeOrderStatus =
 
 type Trade = {
     Direction : TradeOrderSide
-    BuyOrder : TradeOrderHash
-    SellOrder : TradeOrderHash
+    BuyOrderHash : TradeOrderHash
+    SellOrderHash : TradeOrderHash
     Amount : AssetAmount
     Price : AssetAmount
 }
@@ -351,6 +351,7 @@ type BlockHeader = {
     StateRoot : MerkleTreeRoot
     StakingRewardsRoot : MerkleTreeRoot
     ConfigurationRoot : MerkleTreeRoot
+    TradesRoot : MerkleTreeRoot
 }
 
 type StakingReward = {
@@ -364,6 +365,7 @@ type Block = {
     EquivocationProofs : EquivocationProofHash list
     StakingRewards : StakingReward list
     Configuration : BlockchainConfiguration option
+    Trades : Trade list
 }
 
 type BlockEnvelope = {
@@ -572,6 +574,7 @@ type ProcessingOutput = {
     StakingRewards : Map<BlockchainAddress, ChxAmount>
     TradingPairs : Map<AssetHash * AssetHash, TradingPairState>
     TradeOrders : Map<TradeOrderHash, TradeOrderState * TradeOrderChange>
+    Trades : Trade list
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

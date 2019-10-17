@@ -275,6 +275,22 @@ module Blocks =
         |> Array.concat
         |> createHash
 
+    let createTradeHash
+        decodeHash
+        createHash
+        (trade : Trade)
+        =
+
+        [
+            [| trade.Direction |> Mapping.tradeOrderSideToCode |]
+            trade.BuyOrderHash.Value |> decodeHash
+            trade.SellOrderHash.Value |> decodeHash
+            trade.Amount.Value |> decimalToBytes
+            trade.Price.Value |> decimalToBytes
+        ]
+        |> Array.concat
+        |> createHash
+
     let createConfigurationMerkleRoot
         decodeHash
         createHash
@@ -320,6 +336,7 @@ module Blocks =
         (MerkleTreeRoot stateRoot)
         (MerkleTreeRoot stakingRewardsRoot)
         (MerkleTreeRoot configurationRoot)
+        (MerkleTreeRoot tradesRoot)
         =
 
         [
@@ -335,6 +352,7 @@ module Blocks =
             stateRoot |> decodeHash
             stakingRewardsRoot |> decodeHash
             configurationRoot |> decodeHash
+            tradesRoot |> decodeHash
         ]
         |> Array.concat
         |> createHash
@@ -505,6 +523,11 @@ module Blocks =
             blockchainConfiguration
             |> createConfigurationMerkleRoot decodeHash createHash createMerkleTree
 
+        let tradesRoot =
+            output.Trades
+            |> List.map (createTradeHash decodeHash createHash)
+            |> createMerkleTree
+
         let blockHash =
             createBlockHash
                 decodeHash
@@ -521,6 +544,7 @@ module Blocks =
                 stateRoot
                 stakingRewardsRoot
                 configurationRoot
+                tradesRoot
 
         let blockHeader =
             {
@@ -537,6 +561,7 @@ module Blocks =
                 StateRoot = stateRoot
                 StakingRewardsRoot = stakingRewardsRoot
                 ConfigurationRoot = configurationRoot
+                TradesRoot = tradesRoot
             }
 
         {
@@ -545,6 +570,7 @@ module Blocks =
             EquivocationProofs = equivocationProofs
             StakingRewards = stakingRewards
             Configuration = blockchainConfiguration
+            Trades = output.Trades
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -585,6 +611,7 @@ module Blocks =
             StakingRewards = Map.empty
             TradingPairs = Map.empty
             TradeOrders = Map.empty
+            Trades = []
         }
 
     let assembleGenesisBlock
@@ -706,6 +733,11 @@ module Blocks =
                 createMerkleTree
                 block.Configuration
 
+        let tradesRoot =
+            block.Trades
+            |> List.map (createTradeHash decodeHash createHash)
+            |> createMerkleTree
+
         let blockHash =
             createBlockHash
                 decodeHash
@@ -722,6 +754,7 @@ module Blocks =
                 block.Header.StateRoot
                 stakingRewardsRoot
                 configurationRoot
+                tradesRoot
 
         block.Header.Hash = blockHash
 

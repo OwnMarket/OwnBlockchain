@@ -41,11 +41,13 @@ type ConsensusTests(output : ITestOutputHelper) =
                         StateRoot = MerkleTreeRoot ""
                         StakingRewardsRoot = MerkleTreeRoot ""
                         ConfigurationRoot = MerkleTreeRoot ""
+                        TradesRoot = MerkleTreeRoot ""
                     }
                 TxSet = []
                 EquivocationProofs = []
                 StakingRewards = []
                 Configuration = None
+                Trades = []
             }
 
         let consensusMessage = Propose (block, consensusRound)

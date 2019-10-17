@@ -155,8 +155,8 @@ module Trading =
 
             {
                 Trade.Direction = if buyOrder.Time > sellOrder.Time then Buy else Sell
-                BuyOrder = buyOrderHash
-                SellOrder = sellOrderHash
+                BuyOrderHash = buyOrderHash
+                SellOrderHash = sellOrderHash
                 Amount = amountToFill
                 Price = price
             }
@@ -234,8 +234,8 @@ module Trading =
                     trade.Price.Value
                     baseAssetHash.Value
                     quoteAssetHash.Value
-                    trade.BuyOrder.Value
-                    trade.SellOrder.Value
+                    trade.BuyOrderHash.Value
+                    trade.SellOrderHash.Value
 
                 updateStopOrders trade.Price
             )

@@ -373,6 +373,23 @@ module BlockTests =
         test <@ stateHash = expectedHash @>
 
     [<Fact>]
+    let ``Blocks.createTradeHash`` () =
+        let trade =
+            {
+                Trade.Direction = TradeOrderSide.Buy
+                BuyOrderHash = TradeOrderHash "B"
+                SellOrderHash = TradeOrderHash "C"
+                Amount = AssetAmount 4m
+                Price = AssetAmount 5m
+            }
+
+        // ACT
+        let tradeHash = Blocks.createTradeHash DummyHash.decode DummyHash.create trade
+
+        // ASSERT
+        test <@ tradeHash = "ABC...D...............E............" @>
+
+    [<Fact>]
     let ``Blocks.createBlockHash`` () =
         let blockNumber = BlockNumber 1L
         let previousBlockHash = BlockHash "B"
@@ -386,6 +403,7 @@ module BlockTests =
         let stateRoot = MerkleTreeRoot "I"
         let stakingRewardsRoot = MerkleTreeRoot "A"
         let configurationRoot = MerkleTreeRoot "B"
+        let tradesRoot = MerkleTreeRoot "C"
 
         // ACT
         let (BlockHash blockHash) =
@@ -404,9 +422,10 @@ module BlockTests =
                 stateRoot
                 stakingRewardsRoot
                 configurationRoot
+                tradesRoot
 
         // ASSERT
-        test <@ blockHash = ".......AB...............CDEFGHIAB" @>
+        test <@ blockHash = ".......AB...............CDEFGHIABC" @>
 
     [<Fact>]
     let ``Blocks.assembleBlock`` () =
@@ -710,6 +729,24 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let trades =
+            [
+                {
+                    Trade.Direction = TradeOrderSide.Buy
+                    BuyOrderHash = TradeOrderHash "B"
+                    SellOrderHash = TradeOrderHash "C"
+                    Amount = AssetAmount 4m
+                    Price = AssetAmount 5m
+                }
+                {
+                    Trade.Direction = TradeOrderSide.Sell
+                    BuyOrderHash = TradeOrderHash "F"
+                    SellOrderHash = TradeOrderHash "G"
+                    Amount = AssetAmount 8m
+                    Price = AssetAmount 9m
+                }
+            ]
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -726,6 +763,7 @@ module BlockTests =
                 StakingRewards = stakingRewards
                 TradingPairs = tradingPairs
                 TradeOrders = tradeOrders
+                Trades = trades
             }
 
         // Blockchain Configuration
@@ -891,6 +929,13 @@ module BlockTests =
             ]
             |> String.Concat
 
+        let tradesRoot =
+            [
+                "ABC...D...............E............" // Trade 1
+                "BFG...H...............I............" // Trade 2
+            ]
+            |> String.Concat
+
         let blockHash =
             [
                 ".......A" // blockNumber
@@ -905,6 +950,7 @@ module BlockTests =
                 stateRoot
                 stakingRewardRoot
                 configRoot
+                tradesRoot
             ]
             |> String.Concat
 
@@ -1247,6 +1293,24 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let trades =
+            [
+                {
+                    Trade.Direction = TradeOrderSide.Buy
+                    BuyOrderHash = TradeOrderHash "B"
+                    SellOrderHash = TradeOrderHash "C"
+                    Amount = AssetAmount 4m
+                    Price = AssetAmount 5m
+                }
+                {
+                    Trade.Direction = TradeOrderSide.Sell
+                    BuyOrderHash = TradeOrderHash "F"
+                    SellOrderHash = TradeOrderHash "G"
+                    Amount = AssetAmount 8m
+                    Price = AssetAmount 9m
+                }
+            ]
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -1263,6 +1327,7 @@ module BlockTests =
                 StakingRewards = stakingRewards
                 TradingPairs = tradingPairs
                 TradeOrders = tradeOrders
+                Trades = trades
             }
 
         // ACT
@@ -1704,6 +1769,24 @@ module BlockTests =
             ]
             |> Map.ofList
 
+        let trades =
+            [
+                {
+                    Trade.Direction = TradeOrderSide.Buy
+                    BuyOrderHash = TradeOrderHash "B"
+                    SellOrderHash = TradeOrderHash "C"
+                    Amount = AssetAmount 4m
+                    Price = AssetAmount 5m
+                }
+                {
+                    Trade.Direction = TradeOrderSide.Sell
+                    BuyOrderHash = TradeOrderHash "F"
+                    SellOrderHash = TradeOrderHash "G"
+                    Amount = AssetAmount 8m
+                    Price = AssetAmount 9m
+                }
+            ]
+
         let processingOutput =
             {
                 ProcessingOutput.TxResults = txResults
@@ -1720,6 +1803,7 @@ module BlockTests =
                 StakingRewards = stakingRewards
                 TradingPairs = tradingPairs
                 TradeOrders = tradeOrders
+                Trades = trades
             }
 
         let assembledBlock =
