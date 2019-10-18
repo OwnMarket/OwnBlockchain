@@ -1593,7 +1593,7 @@ module Processing =
 
         let loadTxs txHashes =
             txHashes
-            |> Array.AsyncParallel.map (fun txHash ->
+            |> List.map (fun txHash ->
                 getTxBody
                     getTx
                     createHash
@@ -1608,7 +1608,6 @@ module Processing =
                         Log.appErrors err
                         failwithf "Cannot load TX %s" txHash.Value // TODO: Remove invalid tx from the pool?
             )
-            |> Array.toList
 
         let processValidatorReward (state : ProcessingState) (tx : Tx) =
             match processValidatorReward validatorDeposit tx validatorAddress state with
