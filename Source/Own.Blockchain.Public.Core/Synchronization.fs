@@ -183,8 +183,8 @@ module Synchronization =
         |> Result.iter (fun blockEnvelopeDto ->
             result {
                 let block = Blocks.extractBlockFromEnvelopeDto blockEnvelopeDto
-                if block.TxSet |> Array.AsyncParallel.forall txExists
-                    && block.EquivocationProofs |> Array.AsyncParallel.forall equivocationProofExists
+                if block.TxSet |> List.forall txExists
+                    && block.EquivocationProofs |> List.forall equivocationProofExists
                     && block.TxSet |> List.forall txExistsInDb
                     && block.EquivocationProofs |> List.forall equivocationProofExistsInDb
                 then
