@@ -891,8 +891,8 @@ module Workflows =
             let! output = applyBlockToCurrentState block
 
             #if DEBUG
-            let outputFileName = sprintf "Data/Block_%i_output_apply" block.Header.Number.Value
-            System.IO.File.WriteAllText(outputFileName, sprintf "%A" output)
+            sprintf "Data/Block_%i_output_apply" block.Header.Number.Value
+            |> fun outputFileName -> System.IO.File.WriteAllText(outputFileName, sprintf "%A" output)
             #endif
 
             let outputDto = Mapping.outputToDto output
