@@ -281,6 +281,52 @@ module Raw =
 
         deleteData dbEngineType dbConnectionString Db.RawDataType.EquivocationProofResult equivocationProofHash
 
+    // ClosedTradeOrder
+    let saveClosedTradeOrder
+        dbEngineType
+        (dbConnectionString : string)
+        (TradeOrderHash tradeOrderHash)
+        (tradeOrderDto : ClosedTradeOrderDto)
+        : Result<unit, AppErrors>
+        =
+
+        saveData
+            dbEngineType
+            dbConnectionString
+            Db.RawDataType.ClosedTradeOrder
+            tradeOrderHash
+            tradeOrderDto
+
+    let getClosedTradeOrder
+        dbEngineType
+        (dbConnectionString : string)
+        (TradeOrderHash tradeOrderHash)
+        : Result<ClosedTradeOrderDto, AppErrors>
+        =
+
+        loadData<ClosedTradeOrderDto>
+            dbEngineType
+            dbConnectionString
+            Db.RawDataType.ClosedTradeOrder
+            tradeOrderHash
+
+    let closedTradeOrderExists
+        dbEngineType
+        (dbConnectionString : string)
+        (TradeOrderHash tradeOrderHash)
+        =
+
+        Db.rawDataExists dbEngineType dbConnectionString Db.RawDataType.ClosedTradeOrder tradeOrderHash
+
+    let deleteClosedTradeOrder
+        dbEngineType
+        (dbConnectionString : string)
+        (TradeOrderHash tradeOrderHash)
+        : Result<unit, AppErrors>
+        =
+
+        deleteData dbEngineType dbConnectionString Db.RawDataType.ClosedTradeOrder tradeOrderHash
+
     // Block
     let saveBlock
         dbEngineType

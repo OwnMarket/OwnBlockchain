@@ -820,6 +820,29 @@ module Mapping =
             Status = state.Status
         }
 
+    let tradeOrderStateToClosedTradeOrderDto (state : TradeOrderState) : ClosedTradeOrderDto =
+        {
+            BlockTimestamp = state.BlockTimestamp.Value
+            BlockNumber = state.BlockNumber.Value
+            TxPosition = state.TxPosition
+            ActionNumber = state.ActionNumber.Value
+            AccountHash = state.AccountHash.Value
+            BaseAssetHash = state.BaseAssetHash.Value
+            QuoteAssetHash = state.QuoteAssetHash.Value
+            Side = state.Side |> tradeOrderSideToCode
+            Amount = state.Amount.Value
+            OrderType = state.OrderType |> tradeOrderTypeToCode
+            LimitPrice = state.LimitPrice.Value
+            StopPrice = state.StopPrice.Value
+            TrailingOffset = state.TrailingOffset.Value
+            TrailingOffsetIsPercentage = state.TrailingOffsetIsPercentage
+            TimeInForce = state.TimeInForce |> tradeOrderTimeInForceToCode
+            ExpirationTimestamp = state.ExpirationTimestamp.Value
+            IsExecutable = state.IsExecutable
+            AmountFilled = state.AmountFilled.Value
+            Status = state.Status |> tradeOrderStatusToCode
+        }
+
     let tradeOrderChangeToCode (change : TradeOrderChange) =
         match change with
         | TradeOrderChange.Add -> TradeOrderChangeCode.Add
@@ -914,6 +937,11 @@ module Mapping =
             output.TradeOrders
             |> Map.remap (fun (TradeOrderHash h, (s, c)) -> h, (tradeOrderStateToDto s, tradeOrderChangeToCode c))
 
+        let closedTradeOrders =
+            output.TradeOrders
+            |> Map.filter (fun _ (_, c) -> c = TradeOrderChange.Remove)
+            |> Map.remap (fun (TradeOrderHash h, (s, _)) -> h, tradeOrderStateToClosedTradeOrderDto s)
+
         let trades =
             output.Trades
             |> List.map tradeToDto
@@ -932,6 +960,7 @@ module Mapping =
             Stakes = stakes
             TradingPairs = tradingPairs
             TradeOrders = tradeOrders
+            ClosedTradeOrders = closedTradeOrders
             Trades = trades
         }
 

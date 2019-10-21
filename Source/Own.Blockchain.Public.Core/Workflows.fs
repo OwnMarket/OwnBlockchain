@@ -682,15 +682,11 @@ module Workflows =
     let persistTxResults saveTxResult txResults =
         txResults
         |> Map.toList
-        |> List.map (fun (txHash, txResult) ->
-            Log.noticef "Saving TxResult %s" txHash
-            saveTxResult (TxHash txHash) txResult
-        )
-        |> List.choose (function Error e -> Some e | _ -> None)
-        |> List.concat
-        |> function
-        | [] -> Ok ()
-        | appErrors -> Error appErrors
+        |> List.fold (fun result (txHash, txResult) ->
+            result >>= fun _ ->
+                Log.noticef "Saving TxResult %s" txHash
+                saveTxResult (TxHash txHash) txResult
+        ) (Ok ())
 
     let removeOrphanTxResults getAllPendingTxHashes txResultExists deleteTxResult =
         let pendingTxHashes = getAllPendingTxHashes ()
@@ -720,6 +716,23 @@ module Workflows =
             if equivocationProofResultExists h then
                 Log.warningf "Deleting orphan EquivocationProofResult: %s" h.Value
                 deleteEquivocationProofResult h
+                |> Result.iterError Log.appErrors
+
+    let persistClosedTradeOrders saveClosedTradeOrder closedTradeOrders =
+        closedTradeOrders
+        |> Map.toList
+        |> List.fold (fun result (tradeOrderHash, closedTradeOrder) ->
+            result >>= fun _ ->
+                Log.noticef "Saving closed trade order %s" tradeOrderHash
+                saveClosedTradeOrder (TradeOrderHash tradeOrderHash) closedTradeOrder
+        ) (Ok ())
+
+    let removeOrphanClosedTradeOrders getAllOpenTradeOrderHashes closedTradeOrderExists deleteClosedTradeOrder =
+        let openTradeOrderHashes = getAllOpenTradeOrderHashes ()
+        for (h : TradeOrderHash) in openTradeOrderHashes do
+            if closedTradeOrderExists h then
+                Log.warningf "Deleting orphan closed trade order: %s" h.Value
+                deleteClosedTradeOrder h
                 |> Result.iterError Log.appErrors
 
     let applyBlockToCurrentState
@@ -837,6 +850,7 @@ module Workflows =
         applyBlockToCurrentState
         persistTxResults
         persistEquivocationProofResults
+        persistClosedTradeOrders
         persistStateChanges
         blockNumber
         =
@@ -856,6 +870,7 @@ module Workflows =
             let outputDto = Mapping.outputToDto output
             do! persistTxResults outputDto.TxResults
             do! persistEquivocationProofResults outputDto.EquivocationProofResults
+            do! persistClosedTradeOrders outputDto.ClosedTradeOrders
             do! persistStateChanges blockNumber outputDto
         }
 

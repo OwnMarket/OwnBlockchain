@@ -34,6 +34,11 @@ module Composition =
     let equivocationProofResultExists = Raw.equivocationProofResultExists Config.DbEngineType Config.DbConnectionString
     let deleteEquivocationProofResult = Raw.deleteEquivocationProofResult Config.DbEngineType Config.DbConnectionString
 
+    let saveClosedTradeOrder = Raw.saveClosedTradeOrder Config.DbEngineType Config.DbConnectionString
+    let getClosedTradeOrder = Raw.getClosedTradeOrder Config.DbEngineType Config.DbConnectionString
+    let closedTradeOrderExists = Raw.closedTradeOrderExists Config.DbEngineType Config.DbConnectionString
+    let deleteClosedTradeOrder = Raw.deleteClosedTradeOrder Config.DbEngineType Config.DbConnectionString
+
     let saveBlock = Raw.saveBlock Config.DbEngineType Config.DbConnectionString
     let getBlock = Raw.getBlock Config.DbEngineType Config.DbConnectionString Config.MaxTxCacheSize
     let blockExists = Raw.blockExists Config.DbEngineType Config.DbConnectionString
@@ -117,6 +122,7 @@ module Composition =
     let getExecutableTradeOrders = Db.getExecutableTradeOrders Config.DbEngineType Config.DbConnectionString
     let getAccountTradeOrders = Db.getAccountTradeOrders Config.DbEngineType Config.DbConnectionString
     let getHoldingInTradeOrders = Db.getHoldingInTradeOrders Config.DbEngineType Config.DbConnectionString
+    let getOpenTradeOrderHashes () = Db.getOpenTradeOrderHashes Config.DbEngineType Config.DbConnectionString
 
     let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
     let savePeerNode = Db.savePeerNode Config.DbEngineType Config.DbConnectionString
@@ -346,6 +352,16 @@ module Composition =
             equivocationProofResultExists
             deleteEquivocationProofResult
 
+    let persistClosedTradeOrders =
+        Workflows.persistClosedTradeOrders
+            saveClosedTradeOrder
+
+    let removeOrphanClosedTradeOrders () =
+        Workflows.removeOrphanClosedTradeOrders
+            getOpenTradeOrderHashes
+            closedTradeOrderExists
+            deleteClosedTradeOrder
+
     let isValidSuccessorBlock =
         Blocks.isValidSuccessorBlock
             Hashing.decode
@@ -368,6 +384,7 @@ module Composition =
             applyBlockToCurrentState
             persistTxResults
             persistEquivocationProofResults
+            persistClosedTradeOrders
             persistStateChanges
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,6 +437,7 @@ module Composition =
             equivocationProofExistsInDb
             removeOrphanTxResults
             removeOrphanEquivocationProofResults
+            removeOrphanClosedTradeOrders
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Consensus

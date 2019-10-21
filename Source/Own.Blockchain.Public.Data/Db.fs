@@ -868,6 +868,21 @@ module Db =
         ]
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
 
+    let getOpenTradeOrderHashes
+        dbEngineType
+        (dbConnectionString : string)
+        : TradeOrderHash list
+        =
+
+        let sql =
+            """
+            SELECT trade_order_hash
+            FROM trade_order
+            """
+
+        DbTools.query<string> dbEngineType dbConnectionString sql []
+        |> List.map TradeOrderHash
+
     let getHoldingInTradeOrders
         dbEngineType
         (dbConnectionString : string)
@@ -2995,6 +3010,7 @@ module Db =
         | TxResult
         | EquivocationProof
         | EquivocationProofResult
+        | ClosedTradeOrder
 
         member __.CaseName =
             match __ with
@@ -3003,6 +3019,7 @@ module Db =
             | TxResult -> "TxResult"
             | EquivocationProof -> "EquivocationProof"
             | EquivocationProofResult -> "EquivocationProofResult"
+            | ClosedTradeOrder -> "ClosedTradeOrder"
 
         member __.CaseCode =
             match __ with
@@ -3011,6 +3028,7 @@ module Db =
             | TxResult -> 3s
             | EquivocationProof -> 4s
             | EquivocationProofResult -> 5s
+            | ClosedTradeOrder -> 6s
 
     let getRawData dbEngineType dbConnectionString (itemType: RawDataType) itemKey =
         let sql =

@@ -498,6 +498,7 @@ type ProcessingOutputDto = {
     Stakes : Map<string * string, StakeStateDto>
     TradingPairs : Map<string * string, TradingPairStateDto>
     TradeOrders : Map<string, TradeOrderStateDto * TradeOrderChangeCode>
+    ClosedTradeOrders : Map<string, ClosedTradeOrderDto>
     Trades : TradeDto list
 }
 
@@ -620,6 +621,30 @@ type TradeOrderInfoDto = {
     ExpirationTimestamp : int64
     IsExecutable : bool
     AmountFilled : decimal
+}
+
+[<CLIMutable>]
+[<MessagePackObject>]
+type ClosedTradeOrderDto = {
+    [<Key(0)>] BlockTimestamp : int64
+    [<Key(1)>] BlockNumber : int64
+    [<Key(2)>] TxPosition : int
+    [<Key(3)>] ActionNumber : int16
+    [<Key(4)>] AccountHash : string
+    [<Key(5)>] BaseAssetHash : string
+    [<Key(6)>] QuoteAssetHash : string
+    [<Key(7)>] Side : byte
+    [<Key(8)>] Amount : decimal
+    [<Key(9)>] OrderType : byte
+    [<Key(10)>] LimitPrice : decimal
+    [<Key(11)>] StopPrice : decimal
+    [<Key(12)>] TrailingOffset : decimal
+    [<Key(13)>] TrailingOffsetIsPercentage : bool
+    [<Key(14)>] TimeInForce : byte
+    [<Key(15)>] ExpirationTimestamp : int64
+    [<Key(16)>] IsExecutable : bool
+    [<Key(17)>] AmountFilled : decimal
+    [<Key(18)>] Status : byte
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

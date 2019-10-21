@@ -175,6 +175,7 @@ module Synchronization =
         equivocationProofExistsInDb
         removeOrphanTxResults
         removeOrphanEquivocationProofResults
+        removeOrphanClosedTradeOrders
         publishEvent
         =
 
@@ -201,5 +202,6 @@ module Synchronization =
                     Log.appErrors errors
                     removeOrphanTxResults ()
                     removeOrphanEquivocationProofResults ()
+                    removeOrphanClosedTradeOrders ()
                 )
         )
