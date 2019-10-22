@@ -1860,3 +1860,24 @@ module Workflows =
             o.TradeOrderHash
         )
         |> List.map Mapping.tradeOrderInfoToTradeOrderApiDto
+
+    let getTradeOrderApi
+        getTradeOrderState
+        getClosedTradeOrder
+        (tradeOrderHash : TradeOrderHash)
+        : Result<TradeOrderApiDto, AppErrors>
+        =
+
+        // If the trade order is still open, we return it and ignore closed trade order.
+        // This avoids the lag in the state changes, when closed trade order is persisted,
+        // but state not yet updated (order not yet removed from the order book).
+        match getTradeOrderState tradeOrderHash with
+        | Some dto ->
+            dto
+            |> Mapping.tradeOrderStateFromDto
+            |> fun o -> Mapping.tradeOrderStateToInfo (tradeOrderHash, o)
+            |> Ok
+        | None ->
+            getClosedTradeOrder tradeOrderHash
+            |> Result.map (fun o -> Mapping.tradeOrderInfoFromClosedTradeOrderDto (tradeOrderHash, o))
+        |> Result.map Mapping.tradeOrderInfoToTradeOrderApiDto

@@ -12,6 +12,17 @@ module Mapping =
     // Trading
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let tradeOrderSideFromRawValue (tradeOrderSideRawValue : string) : TradeOrderSide =
+        match tradeOrderSideRawValue with
+        | "BUY" -> Buy
+        | "SELL" -> Sell
+        | v -> failwithf "Invalid TradeOrderSide value: %s" v
+
+    let tradeOrderSideToRawValue (tradeOrderSide : TradeOrderSide) : string =
+        match tradeOrderSide with
+        | Buy -> "BUY"
+        | Sell -> "SELL"
+
     let tradeOrderSideFromCode (tradeOrderSideCode : byte) : TradeOrderSide =
         match tradeOrderSideCode with
         | 1uy -> Buy
@@ -22,6 +33,25 @@ module Mapping =
         match tradeOrderSide with
         | Buy -> 1uy
         | Sell -> 2uy
+
+    let tradeOrderTypeFromRawValue (tradeOrderTypeRawValue : string) : TradeOrderType =
+        match tradeOrderTypeRawValue with
+        | "MARKET" -> TradeOrderType.Market
+        | "LIMIT" -> TradeOrderType.Limit
+        | "STOP_MARKET" -> TradeOrderType.StopMarket
+        | "STOP_LIMIT" -> TradeOrderType.StopLimit
+        | "TRAILING_STOP_MARKET" -> TradeOrderType.TrailingStopMarket
+        | "TRAILING_STOP_LIMIT" -> TradeOrderType.TrailingStopLimit
+        | v -> failwithf "Invalid TradeOrderType value: %s" v
+
+    let tradeOrderTypeToRawValue (tradeOrderType : TradeOrderType) : string =
+        match tradeOrderType with
+        | TradeOrderType.Market -> "MARKET"
+        | TradeOrderType.Limit -> "LIMIT"
+        | TradeOrderType.StopMarket -> "STOP_MARKET"
+        | TradeOrderType.StopLimit -> "STOP_LIMIT"
+        | TradeOrderType.TrailingStopMarket -> "TRAILING_STOP_MARKET"
+        | TradeOrderType.TrailingStopLimit -> "TRAILING_STOP_LIMIT"
 
     let tradeOrderTypeFromCode (tradeOrderTypeCode : byte) : TradeOrderType =
         match tradeOrderTypeCode with
@@ -42,16 +72,38 @@ module Mapping =
         | TradeOrderType.TrailingStopMarket -> 5uy
         | TradeOrderType.TrailingStopLimit -> 6uy
 
+    let tradeOrderTimeInForceFromRawValue (tradeOrderTimeInForceCode : string) : TradeOrderTimeInForce =
+        match tradeOrderTimeInForceCode with
+        | "GTC" -> GoodTilCancelled
+        | "IOC" -> ImmediateOrCancel
+        | v -> failwithf "Invalid TradeOrderTimeInForce value: %s" v
+
+    let tradeOrderTimeInForceToRawValue (tradeOrderTimeInForce : TradeOrderTimeInForce) : string =
+        match tradeOrderTimeInForce with
+        | GoodTilCancelled -> "GTC"
+        | ImmediateOrCancel -> "IOC"
+
     let tradeOrderTimeInForceFromCode (tradeOrderTimeInForceCode : byte) : TradeOrderTimeInForce =
         match tradeOrderTimeInForceCode with
         | 1uy -> GoodTilCancelled
-        | 2uy -> TradeOrderTimeInForce.ImmediateOrCancel
+        | 2uy -> ImmediateOrCancel
         | t -> failwithf "Invalid trade order time in force code: %i" t
 
     let tradeOrderTimeInForceToCode (tradeOrderTimeInForce : TradeOrderTimeInForce) : byte =
         match tradeOrderTimeInForce with
         | GoodTilCancelled -> 1uy
-        | TradeOrderTimeInForce.ImmediateOrCancel -> 2uy
+        | ImmediateOrCancel -> 2uy
+
+    let tradeOrderStatusFromCode (tradeOrderStatusCode : byte) : TradeOrderStatus =
+        match tradeOrderStatusCode with
+        | 0uy -> TradeOrderStatus.Open
+        | 1uy -> TradeOrderStatus.Filled
+        | 21uy -> TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByUser
+        | 22uy -> TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce
+        | 23uy -> TradeOrderStatus.Cancelled TradeOrderCancelReason.Expired
+        | 24uy -> TradeOrderStatus.Cancelled TradeOrderCancelReason.InsufficientQuoteAssetBalance
+        | 25uy -> TradeOrderStatus.Cancelled TradeOrderCancelReason.NotEligible
+        | s -> failwithf "Invalid trade order status code: %i" s
 
     let tradeOrderStatusToCode (tradeOrderStatus : TradeOrderStatus) : byte =
         match tradeOrderStatus with
@@ -240,30 +292,14 @@ module Mapping =
                 PlaceTradeOrderTxAction.AccountHash = AccountHash a.AccountHash
                 BaseAssetHash = AssetHash a.BaseAssetHash
                 QuoteAssetHash = AssetHash a.QuoteAssetHash
-                Side =
-                    match a.Side with
-                    | "BUY" -> Buy
-                    | "SELL" -> Sell
-                    | v -> failwithf "Invalid TradeOrderSide value: %s" v
+                Side = a.Side |> tradeOrderSideFromRawValue
                 Amount = AssetAmount a.Amount
-                OrderType =
-                    match a.OrderType with
-                    | "MARKET" -> TradeOrderType.Market
-                    | "LIMIT" -> TradeOrderType.Limit
-                    | "STOP_MARKET" -> TradeOrderType.StopMarket
-                    | "STOP_LIMIT" -> TradeOrderType.StopLimit
-                    | "TRAILING_STOP_MARKET" -> TradeOrderType.TrailingStopMarket
-                    | "TRAILING_STOP_LIMIT" -> TradeOrderType.TrailingStopLimit
-                    | v -> failwithf "Invalid TradeOrderType value: %s" v
+                OrderType = a.OrderType |> tradeOrderTypeFromRawValue
                 LimitPrice = AssetAmount a.LimitPrice
                 StopPrice = AssetAmount a.StopPrice
                 TrailingOffset = AssetAmount a.TrailingOffset
                 TrailingOffsetIsPercentage = a.TrailingOffsetIsPercentage
-                TimeInForce =
-                    match a.TimeInForce with
-                    | "GTC" -> GoodTilCancelled
-                    | "IOC" -> TradeOrderTimeInForce.ImmediateOrCancel
-                    | v -> failwithf "Invalid TradeOrderTimeInForce value: %s" v
+                TimeInForce = a.TimeInForce |> tradeOrderTimeInForceFromRawValue
             }
             |> PlaceTradeOrder
         | :? CancelTradeOrderTxActionDto as a ->
@@ -843,6 +879,34 @@ module Mapping =
             Status = state.Status |> tradeOrderStatusToCode
         }
 
+    let tradeOrderInfoFromClosedTradeOrderDto
+        (tradeOrderHash : TradeOrderHash, dto : ClosedTradeOrderDto)
+        : TradeOrderInfo
+        =
+
+        {
+            TradeOrderHash = tradeOrderHash
+            BlockTimestamp = Timestamp dto.BlockTimestamp
+            BlockNumber = BlockNumber dto.BlockNumber
+            TxPosition = dto.TxPosition
+            ActionNumber = TxActionNumber dto.ActionNumber
+            AccountHash = AccountHash dto.AccountHash
+            BaseAssetHash = AssetHash dto.BaseAssetHash
+            QuoteAssetHash = AssetHash dto.QuoteAssetHash
+            Side = dto.Side |> tradeOrderSideFromCode
+            Amount = AssetAmount dto.Amount
+            OrderType = dto.OrderType |> tradeOrderTypeFromCode
+            LimitPrice = AssetAmount dto.LimitPrice
+            StopPrice = AssetAmount dto.StopPrice
+            TrailingOffset = AssetAmount dto.TrailingOffset
+            TrailingOffsetIsPercentage = dto.TrailingOffsetIsPercentage
+            TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
+            ExpirationTimestamp = Timestamp dto.ExpirationTimestamp
+            IsExecutable = dto.IsExecutable
+            AmountFilled = AssetAmount dto.AmountFilled
+            Status = dto.Status |> tradeOrderStatusFromCode
+        }
+
     let tradeOrderChangeToCode (change : TradeOrderChange) =
         match change with
         | TradeOrderChange.Add -> TradeOrderChangeCode.Add
@@ -1089,31 +1153,18 @@ module Mapping =
             AccountHash = tradeOrderInfo.AccountHash.Value
             BaseAssetHash = tradeOrderInfo.BaseAssetHash.Value
             QuoteAssetHash = tradeOrderInfo.QuoteAssetHash.Value
-            Side =
-                match tradeOrderInfo.Side with
-                | Buy -> "BUY"
-                | Sell -> "SELL"
+            Side = tradeOrderInfo.Side |> tradeOrderSideToRawValue
             Amount = tradeOrderInfo.Amount.Value
-            OrderType =
-                match tradeOrderInfo.OrderType with
-                | TradeOrderType.Market -> "MARKET"
-                | TradeOrderType.Limit -> "LIMIT"
-                | TradeOrderType.StopMarket -> "STOP_MARKET"
-                | TradeOrderType.StopLimit -> "STOP_LIMIT"
-                | TradeOrderType.TrailingStopMarket -> "TRAILING_STOP_MARKET"
-                | TradeOrderType.TrailingStopLimit -> "TRAILING_STOP_LIMIT"
+            OrderType = tradeOrderInfo.OrderType |> tradeOrderTypeToRawValue
             LimitPrice = tradeOrderInfo.LimitPrice.Value
             StopPrice = tradeOrderInfo.StopPrice.Value
             TrailingOffset = tradeOrderInfo.TrailingOffset.Value
             TrailingOffsetIsPercentage = tradeOrderInfo.TrailingOffsetIsPercentage
-            TimeInForce =
-                match tradeOrderInfo.TimeInForce with
-                | GoodTilCancelled -> "GTC"
-                | TradeOrderTimeInForce.ImmediateOrCancel -> "IOC"
+            TimeInForce = tradeOrderInfo.TimeInForce |> tradeOrderTimeInForceToRawValue
             ExpirationTimestamp = tradeOrderInfo.ExpirationTimestamp.Value
             IsExecutable = tradeOrderInfo.IsExecutable
             AmountFilled = tradeOrderInfo.AmountFilled.Value
-            Status = "Open" // TODO DSX
+            Status = tradeOrderInfo.Status.ToString()
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

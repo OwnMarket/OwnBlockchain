@@ -287,6 +287,15 @@ module Api =
             return! response next ctx
         }
 
+    let getTradeOrderHandler (tradeOrderHash : string) : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTradeOrderApi (TradeOrderHash tradeOrderHash)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getRootHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -345,6 +354,7 @@ module Api =
                 // Trading
                 routef "/trade-order-book/%s/%s" getTradeOrderBookHandler
                 routef "/account/%s/trade-orders" getAccountTradeOrdersHandler
+                routef "/trade-order/%s" getTradeOrderHandler
 
                 // Entity state
                 routef "/address/%s/accounts" getAddressAccountsHandler

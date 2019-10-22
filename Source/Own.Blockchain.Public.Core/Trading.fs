@@ -244,7 +244,7 @@ module Trading =
         // Remove IOC orders
         getTradeOrders (baseAssetHash, quoteAssetHash)
         |> List.filter (fun (_, s) ->
-            s.TimeInForce = TradeOrderTimeInForce.ImmediateOrCancel
+            s.TimeInForce = ImmediateOrCancel
             && s.IsExecutable
             && s.Status = TradeOrderStatus.Open
         )
