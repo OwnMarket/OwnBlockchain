@@ -7884,6 +7884,117 @@ module ProcessingTests =
 
         test <@ output.TradeOrders.Count = 0 @>
 
+    [<Theory>]
+    [<InlineData("BUY")>]
+    [<InlineData("SELL")>]
+    let ``Processing.processChanges PlaceTradeOrder - Error: NotEligibleInSecondary`` (tradeOrderSide : string) =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = Helpers.randomHash ()
+                            BaseAssetHash = baseAssetHash.Value
+                            QuoteAssetHash = quoteAssetHash.Value
+                            Side = tradeOrderSide
+                            Amount = 100m
+                            OrderType = "MARKET"
+                            LimitPrice = 0m
+                            StopPrice = 0m
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
+                            TimeInForce = "IOC"
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = true}
+
+        let getEligibilityState (_, assetHash) =
+            {
+                EligibilityState.KycControllerAddress = senderWallet.Address
+                Eligibility =
+                    {
+                        IsPrimaryEligible = false
+                        IsSecondaryEligible =
+                            // Not eligible for asset being acquired
+                            tradeOrderSide = "BUY" && assetHash = quoteAssetHash
+                            || tradeOrderSide = "SELL" && assetHash = baseAssetHash
+                    }
+            }
+            |> Some
+
+        let getTradingPairState _ =
+            {
+                TradingPairState.IsEnabled = true
+            }
+            |> Some
+
+        let getTradeOrders _ =
+            []
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetTradingPairStateFromStorage = getTradingPairState
+                GetTradeOrdersFromStorage = getTradeOrders
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus =
+            (TxActionNumber 1s, TxErrorCode.NotEligibleInSecondary) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 0 @>
+
     [<Fact>]
     let ``Processing.processChanges PlaceTradeOrder SELL then TransferAsset - InsufficientAssetHoldingBalance`` () =
         // INIT STATE

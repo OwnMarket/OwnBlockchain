@@ -173,6 +173,17 @@ module TradingTests =
             |> flip Map.tryFind
             >> Option.map (fun v -> v.HoldingState)
 
+        let getEligibilityState _ =
+            {
+                EligibilityState.KycControllerAddress = senderWallet.Address
+                Eligibility =
+                    {
+                        IsPrimaryEligible = true
+                        IsSecondaryEligible = true
+                    }
+            }
+            |> Some
+
         let getTradingPairState _ =
             Some { TradingPairState.IsEnabled = true }
 
@@ -195,6 +206,7 @@ module TradingTests =
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
                 GetHoldingStateFromStorage = getHoldingState
+                GetEligibilityStateFromStorage = getEligibilityState
                 GetTradingPairStateFromStorage = getTradingPairState
                 GetTradeOrderStateFromStorage = getTradeOrderState
                 GetTradeOrdersFromStorage = getTradeOrdersFromStorage

@@ -1052,61 +1052,81 @@ module Processing =
                 Error TxErrorCode.TradingPairNotFound
             | Some pair ->
                 // TODO DSX: Check trading pair conditions
-                let assetHash, orderAmount =
-                    match action.Side with
-                    | Buy -> action.QuoteAssetHash, action.Amount * action.LimitPrice
-                    | Sell -> action.BaseAssetHash, action.Amount
 
-                let holdingInTradeOrders = state.GetHoldingInTradeOrders(action.AccountHash, assetHash)
-                let availableBalance =
-                    state.GetHoldingOrDefault(action.AccountHash, assetHash).Balance
-                    - holdingInTradeOrders
+                // Check eligibility
+                let isEligible =
+                    let assetHash =
+                        match action.Side with
+                        | Buy -> action.BaseAssetHash
+                        | Sell -> action.QuoteAssetHash
+                    match state.GetAsset assetHash with
+                    | None -> failwithf "Asset not found: %s" assetHash.Value
+                    | Some s ->
+                        not s.IsEligibilityRequired
+                        || (
+                            state.GetAccountEligibility(action.AccountHash, assetHash)
+                            |> Option.map (fun e -> e.Eligibility.IsSecondaryEligible)
+                            |? false
+                        )
 
-                if availableBalance < orderAmount then
-                    match action.Side with
-                    | Buy -> Error TxErrorCode.InsufficientQuoteAssetBalance
-                    | Sell -> Error TxErrorCode.InsufficientBaseAssetBalance
+                if not isEligible then
+                    Error TxErrorCode.NotEligibleInSecondary
                 else
-                    let tradeOrderHash =
-                        deriveHash senderAddress nonce actionNumber
-                        |> TradeOrderHash
-                    match state.GetTradeOrder(tradeOrderHash) with
-                    | Some state ->
-                        failwithf "Trade order %s already exists: %A" tradeOrderHash.Value state
-                    | None ->
-                        let tradeOrderState =
-                            {
-                                BlockTimestamp = blockTimestamp
-                                BlockNumber = blockNumber
-                                TxPosition = txPosition
-                                ActionNumber = actionNumber
-                                AccountHash = action.AccountHash
-                                BaseAssetHash = action.BaseAssetHash
-                                QuoteAssetHash = action.QuoteAssetHash
-                                Side = action.Side
-                                Amount = action.Amount
-                                OrderType = action.OrderType
-                                LimitPrice = action.LimitPrice
-                                StopPrice = action.StopPrice
-                                TrailingOffset = action.TrailingOffset
-                                TrailingOffsetIsPercentage = action.TrailingOffsetIsPercentage
-                                TimeInForce = action.TimeInForce
-                                ExpirationTimestamp =
-                                    (DateTimeOffset.FromUnixTimeMilliseconds blockTimestamp.Value)
-                                        .AddHours(3.) // TODO DSX: Use pair.MaxTradeOrderDuration
-                                        .ToUnixTimeMilliseconds()
-                                    |> Timestamp
-                                IsExecutable =
-                                    match action.OrderType with
-                                    | TradeOrderType.Market
-                                    | TradeOrderType.Limit -> true
-                                    | _ -> false
-                                AmountFilled = AssetAmount 0m
-                                Status = TradeOrderStatus.Open
-                            }
-                        state.SetTradeOrder(tradeOrderHash, tradeOrderState, TradeOrderChange.Add)
-                        state.SetHoldingInTradeOrders(action.AccountHash, assetHash, holdingInTradeOrders + orderAmount)
-                        Ok state
+                    let assetHash, orderAmount =
+                        match action.Side with
+                        | Buy -> action.QuoteAssetHash, action.Amount * action.LimitPrice
+                        | Sell -> action.BaseAssetHash, action.Amount
+
+                    let holdingInTradeOrders = state.GetHoldingInTradeOrders(action.AccountHash, assetHash)
+                    let availableBalance =
+                        state.GetHoldingOrDefault(action.AccountHash, assetHash).Balance
+                        - holdingInTradeOrders
+
+                    if availableBalance < orderAmount then
+                        match action.Side with
+                        | Buy -> Error TxErrorCode.InsufficientQuoteAssetBalance
+                        | Sell -> Error TxErrorCode.InsufficientBaseAssetBalance
+                    else
+                        let tradeOrderHash =
+                            deriveHash senderAddress nonce actionNumber
+                            |> TradeOrderHash
+                        match state.GetTradeOrder(tradeOrderHash) with
+                        | Some state ->
+                            failwithf "Trade order %s already exists: %A" tradeOrderHash.Value state
+                        | None ->
+                            let tradeOrderState =
+                                {
+                                    BlockTimestamp = blockTimestamp
+                                    BlockNumber = blockNumber
+                                    TxPosition = txPosition
+                                    ActionNumber = actionNumber
+                                    AccountHash = action.AccountHash
+                                    BaseAssetHash = action.BaseAssetHash
+                                    QuoteAssetHash = action.QuoteAssetHash
+                                    Side = action.Side
+                                    Amount = action.Amount
+                                    OrderType = action.OrderType
+                                    LimitPrice = action.LimitPrice
+                                    StopPrice = action.StopPrice
+                                    TrailingOffset = action.TrailingOffset
+                                    TrailingOffsetIsPercentage = action.TrailingOffsetIsPercentage
+                                    TimeInForce = action.TimeInForce
+                                    ExpirationTimestamp =
+                                        (DateTimeOffset.FromUnixTimeMilliseconds blockTimestamp.Value)
+                                            .AddHours(3.) // TODO DSX: Use pair.MaxTradeOrderDuration
+                                            .ToUnixTimeMilliseconds()
+                                        |> Timestamp
+                                    IsExecutable =
+                                        match action.OrderType with
+                                        | TradeOrderType.Market
+                                        | TradeOrderType.Limit -> true
+                                        | _ -> false
+                                    AmountFilled = AssetAmount 0m
+                                    Status = TradeOrderStatus.Open
+                                }
+                            state.SetTradeOrder(tradeOrderHash, tradeOrderState, TradeOrderChange.Add)
+                            state.SetHoldingInTradeOrders(action.AccountHash, assetHash, holdingInTradeOrders + orderAmount)
+                            Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
 
