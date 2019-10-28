@@ -167,6 +167,7 @@ module Helpers =
             GetTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option
             GetTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list
             GetExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list
+            GetIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list
             GetHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount
             GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
             MaxActionCountPerTx : int
@@ -214,6 +215,7 @@ module Helpers =
             GetTradeOrderStateFromStorage = fun _ -> unexpectedInvocation "GetTradeOrderStateFromStorage"
             GetTradeOrdersFromStorage = fun _ -> unexpectedInvocation "GetTradeOrdersFromStorage"
             GetExpiredTradeOrdersFromStorage = fun _ -> []
+            GetIneligibleTradeOrdersFromStorage = fun _ -> unexpectedInvocation "GetIneligibleTradeOrdersFromStorage"
             GetHoldingInTradeOrdersFromStorage = fun _ -> unexpectedInvocation "GetHoldingInTradeOrdersFromStorage"
             GetLockedAndBlacklistedValidators = fun _ -> []
             MaxActionCountPerTx = maxActionCountPerTx
@@ -259,6 +261,7 @@ module Helpers =
             mockedDeps.GetTradeOrderStateFromStorage
             mockedDeps.GetTradeOrdersFromStorage
             mockedDeps.GetExpiredTradeOrdersFromStorage
+            mockedDeps.GetIneligibleTradeOrdersFromStorage
             mockedDeps.GetHoldingInTradeOrdersFromStorage
             mockedDeps.GetLockedAndBlacklistedValidators
             mockedDeps.MaxActionCountPerTx

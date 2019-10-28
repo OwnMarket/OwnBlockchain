@@ -324,6 +324,7 @@ module Workflows =
         getTradeOrderStateFromStorage
         getTradeOrdersFromStorage
         getExpiredTradeOrdersFromStorage
+        getIneligibleTradeOrdersFromStorage
         getHoldingInTradeOrdersFromStorage
         (getValidatorsAtHeight : BlockNumber -> ValidatorSnapshot list)
         getLockedAndBlacklistedValidators
@@ -368,6 +369,8 @@ module Workflows =
         let getTradeOrderState = memoize (getTradeOrderStateFromStorage >> Option.map Mapping.tradeOrderStateFromDto)
         let getTradeOrders = memoize (getTradeOrdersFromStorage >> List.map Mapping.tradeOrderInfoFromDto)
         let getExpiredTradeOrders = memoize (getExpiredTradeOrdersFromStorage >> List.map Mapping.tradeOrderInfoFromDto)
+        let getIneligibleTradeOrders =
+            memoize (getIneligibleTradeOrdersFromStorage >> List.map Mapping.tradeOrderInfoFromDto)
         let getHoldingInTradeOrders = memoize getHoldingInTradeOrdersFromStorage
 
         let validators = getValidatorsAtHeight (blockNumber - 1)
@@ -417,6 +420,7 @@ module Workflows =
                 getTradeOrderState
                 getTradeOrders
                 getExpiredTradeOrders
+                getIneligibleTradeOrders
                 getHoldingInTradeOrders
                 getLockedAndBlacklistedValidators
                 maxActionCountPerTx

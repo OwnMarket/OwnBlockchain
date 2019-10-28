@@ -121,6 +121,7 @@ module Composition =
     let getExpiredTradeOrders = Db.getExpiredTradeOrders Config.DbEngineType Config.DbConnectionString
     let getExecutableTradeOrders = Db.getExecutableTradeOrders Config.DbEngineType Config.DbConnectionString
     let getAccountTradeOrders = Db.getAccountTradeOrders Config.DbEngineType Config.DbConnectionString
+    let getIneligibleTradeOrders = Db.getIneligibleTradeOrders Config.DbEngineType Config.DbConnectionString
     let getHoldingInTradeOrders = Db.getHoldingInTradeOrders Config.DbEngineType Config.DbConnectionString
     let getOpenTradeOrderHashes () = Db.getOpenTradeOrderHashes Config.DbEngineType Config.DbConnectionString
 
@@ -277,6 +278,7 @@ module Composition =
             getTradeOrderState
             getTradeOrders
             getExpiredTradeOrders
+            getIneligibleTradeOrders
             getHoldingInTradeOrders
             getValidatorsAtHeight
             getLockedAndBlacklistedValidators

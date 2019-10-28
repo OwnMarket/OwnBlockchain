@@ -28,6 +28,7 @@ module Processing =
         getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
         getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
         getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list,
+        getIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list,
         getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
@@ -74,6 +75,7 @@ module Processing =
             getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
             getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
             getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list,
+            getIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list,
             getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount
             ) =
             ProcessingState(
@@ -94,6 +96,7 @@ module Processing =
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
                 getExpiredTradeOrdersFromStorage,
+                getIneligibleTradeOrdersFromStorage,
                 getHoldingInTradeOrdersFromStorage,
                 ConcurrentDictionary<TxHash, TxResult>(),
                 ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>(),
@@ -137,6 +140,7 @@ module Processing =
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
                 getExpiredTradeOrdersFromStorage,
+                getIneligibleTradeOrdersFromStorage,
                 getHoldingInTradeOrdersFromStorage,
                 ConcurrentDictionary(txResults),
                 ConcurrentDictionary(equivocationProofResults),
@@ -294,6 +298,31 @@ module Processing =
                 | _ -> None
             )
             |> Seq.toList
+
+        member __.RemoveTradeOrdersForIneligibleAccount (accountHash, assetHash) =
+            for tradeOrderInfo in getIneligibleTradeOrdersFromStorage (accountHash, assetHash) do
+                if not (tradeOrders.ContainsKey tradeOrderInfo.TradeOrderHash) then
+                    let state = tradeOrderInfo |> Mapping.tradeOrderStateFromInfo |> Some
+                    if not (tradeOrders.TryAdd(tradeOrderInfo.TradeOrderHash, (state, None))) then
+                        failwithf "Cannot add ineligible trade order to the state dictionary: %A" tradeOrderInfo
+            tradeOrders
+            |> Seq.choose (fun o ->
+                match o.Value with
+                | Some s, _ when
+                    s.AccountHash = accountHash
+                    && (s.Side = TradeOrderSide.Buy && s.BaseAssetHash = assetHash
+                        || s.Side = TradeOrderSide.Sell && s.QuoteAssetHash = assetHash
+                    )
+                    -> Some (o.Key, s)
+                | _ -> None
+            )
+            |> Seq.iter (fun (h, s) ->
+                __.SetTradeOrder(
+                    h,
+                    { s with Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.NotEligible },
+                    TradeOrderChange.Remove
+                )
+            )
 
         // Not part of the blockchain state
         member __.GetTotalChxStaked address =
@@ -901,6 +930,12 @@ module Processing =
                             action.AssetHash,
                             {eligibilityState with Eligibility = action.Eligibility}
                         )
+
+                        if eligibilityState.Eligibility.IsSecondaryEligible
+                            && not action.Eligibility.IsSecondaryEligible // Eligibility revoked
+                        then
+                            state.RemoveTradeOrdersForIneligibleAccount (action.AccountHash, action.AssetHash)
+
                         Ok state
                     else
                         Error TxErrorCode.SenderIsNotCurrentKycController
@@ -1593,6 +1628,7 @@ module Processing =
         (getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option)
         (getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list)
         (getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list)
+        (getIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list)
         (getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount)
         getLockedAndBlacklistedValidators
         maxActionCountPerTx
@@ -1679,6 +1715,7 @@ module Processing =
                 getTradeOrderStateFromStorage,
                 getTradeOrdersFromStorage,
                 getExpiredTradeOrdersFromStorage,
+                getIneligibleTradeOrdersFromStorage,
                 getHoldingInTradeOrdersFromStorage
             )
 

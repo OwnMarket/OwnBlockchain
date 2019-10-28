@@ -868,6 +868,51 @@ module Db =
         ]
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
 
+    let getIneligibleTradeOrders
+        dbEngineType
+        (dbConnectionString : string)
+        (AccountHash accountHash, AssetHash assetHash)
+        : TradeOrderInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                block_timestamp,
+                block_number,
+                tx_position,
+                action_number,
+                acc.account_hash,
+                ba.asset_hash AS base_asset_hash,
+                qa.asset_hash AS quote_asset_hash,
+                side,
+                amount,
+                order_type,
+                limit_price,
+                stop_price,
+                trailing_offset,
+                trailing_offset_is_percentage,
+                time_in_force,
+                expiration_timestamp,
+                is_executable,
+                amount_filled
+            FROM trade_order
+            JOIN account AS acc USING (account_id)
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE account_hash = @accountHash
+            AND (
+                side = 1 AND ba.asset_hash = @assetHash -- Acquiring base asset through BUY order
+                OR side = 2 AND qa.asset_hash = @assetHash -- Acquiring quote asset through SELL order
+            )
+            """
+
+        [
+            "@accountHash", accountHash |> box
+            "@assetHash", assetHash |> box
+        ]
+        |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
+
     let getOpenTradeOrderHashes
         dbEngineType
         (dbConnectionString : string)

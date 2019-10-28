@@ -3202,6 +3202,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getIneligibleTradeOrdersFromStorage _ =
+            []
+
         // ACT
         let output =
             { Helpers.processChangesMockedDeps with
@@ -3212,6 +3215,7 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
+                GetIneligibleTradeOrdersFromStorage = getIneligibleTradeOrdersFromStorage
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
