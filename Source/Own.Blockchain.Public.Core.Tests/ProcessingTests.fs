@@ -3617,6 +3617,9 @@ module ProcessingTests =
         let getAssetState _ =
             Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
 
+        let getIneligibleTradeOrdersFromStorage _ =
+            []
+
         // ACT
         let output =
             { Helpers.processChangesMockedDeps with
@@ -3627,6 +3630,7 @@ module ProcessingTests =
                 GetKycProvidersFromStorage = getKycProvidersState
                 GetAccountStateFromStorage = getAccountState
                 GetAssetStateFromStorage = getAssetState
+                GetIneligibleTradeOrdersFromStorage = getIneligibleTradeOrdersFromStorage
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
@@ -8827,7 +8831,7 @@ module ProcessingTests =
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
 
     [<Fact>]
-    let ``Processing.processChanges SetAccountEligibility to false - Order cancelled`` () =
+    let ``Processing.processChanges SetAccountEligibility to false - Trade order cancelled`` () =
         // INIT STATE
         let senderWallet = Signing.generateWallet ()
         let validatorWallet = Signing.generateWallet ()
@@ -8890,6 +8894,130 @@ module ProcessingTests =
                     }
                 KycControllerAddress = senderWallet.Address
             }
+
+        let getKycProvidersState _ =
+            [senderWallet.Address]
+
+        let getIneligibleTradeOrders _ =
+            [
+                {
+                    TradeOrderInfo.TradeOrderHash = tradeOrderHash
+                    BlockTimestamp = Timestamp 4L
+                    BlockNumber = BlockNumber 1L
+                    TxPosition = 2
+                    ActionNumber = TxActionNumber 3s
+                    AccountHash = accountHash
+                    BaseAssetHash = baseAssetHash
+                    QuoteAssetHash = Helpers.randomHash () |> AssetHash
+                    Side = Buy
+                    Amount = AssetAmount 100m
+                    OrderType = TradeOrderType.Limit
+                    LimitPrice = AssetAmount 1m
+                    StopPrice = AssetAmount 0m
+                    TrailingOffset = AssetAmount 0m
+                    TrailingOffsetIsPercentage = false
+                    TimeInForce = GoodTilCancelled
+                    ExpirationTimestamp = Timestamp 9L
+                    IsExecutable = true
+                    AmountFilled = AssetAmount 30m
+                    Status = TradeOrderStatus.Open
+                }
+            ]
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetKycProvidersFromStorage = getKycProvidersState
+                GetEligibilityStateFromStorage = getEligibilityState
+                GetIneligibleTradeOrdersFromStorage = getIneligibleTradeOrders
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 1 @>
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[tradeOrderHash]
+        test <@ tradeOrderState.Side = Buy @>
+        test <@ tradeOrderState.Amount.Value = 100m @>
+        test <@ tradeOrderState.OrderType = TradeOrderType.Limit @>
+        test <@ tradeOrderState.LimitPrice.Value = 1m @>
+        test <@ tradeOrderState.StopPrice.Value = 0m @>
+        test <@ tradeOrderState.TrailingOffset.Value = 0m @>
+        test <@ tradeOrderState.TrailingOffsetIsPercentage = false @>
+        test <@ tradeOrderState.TimeInForce = GoodTilCancelled @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.NotEligible @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+    [<Fact>]
+    let ``Processing.processChanges SetAssetEligibility to true - Trade order cancelled`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let tradeOrderHash = Helpers.randomHash () |> TradeOrderHash
+        let accountHash = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "SetAssetEligibility"
+                    ActionData =
+                        {
+                            AssetHash = baseAssetHash.Value
+                            IsEligibilityRequired = true
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {
+                AssetState.ControllerAddress = senderWallet.Address
+                AssetCode = None
+                IsEligibilityRequired = false
+            }
+
+        let getEligibilityState _ =
+            None
 
         let getKycProvidersState _ =
             [senderWallet.Address]

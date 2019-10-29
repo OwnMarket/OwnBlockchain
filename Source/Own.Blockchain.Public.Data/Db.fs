@@ -868,47 +868,55 @@ module Db =
         ]
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
 
+    /// Returns orders that are acquiring the specified asset, which could be potentially ineligible.
     let getIneligibleTradeOrders
         dbEngineType
         (dbConnectionString : string)
-        (AccountHash accountHash, AssetHash assetHash)
+        (accountHash : AccountHash option, AssetHash assetHash)
         : TradeOrderInfoDto list
         =
 
+        let accountHashCondition, accountHashParamValue =
+            match accountHash with
+            | Some h -> "AND account_hash = @accountHash", h.Value |> box
+            | None -> "", DBNull.Value |> box
+
         let sql =
-            """
-            SELECT
-                block_timestamp,
-                block_number,
-                tx_position,
-                action_number,
-                acc.account_hash,
-                ba.asset_hash AS base_asset_hash,
-                qa.asset_hash AS quote_asset_hash,
-                side,
-                amount,
-                order_type,
-                limit_price,
-                stop_price,
-                trailing_offset,
-                trailing_offset_is_percentage,
-                time_in_force,
-                expiration_timestamp,
-                is_executable,
-                amount_filled
-            FROM trade_order
-            JOIN account AS acc USING (account_id)
-            JOIN asset AS ba ON ba.asset_id = base_asset_id
-            JOIN asset AS qa ON qa.asset_id = quote_asset_id
-            WHERE account_hash = @accountHash
-            AND (
-                side = 1 AND ba.asset_hash = @assetHash -- Acquiring base asset through BUY order
-                OR side = 2 AND qa.asset_hash = @assetHash -- Acquiring quote asset through SELL order
-            )
-            """
+            sprintf
+                """
+                SELECT
+                    block_timestamp,
+                    block_number,
+                    tx_position,
+                    action_number,
+                    acc.account_hash,
+                    ba.asset_hash AS base_asset_hash,
+                    qa.asset_hash AS quote_asset_hash,
+                    side,
+                    amount,
+                    order_type,
+                    limit_price,
+                    stop_price,
+                    trailing_offset,
+                    trailing_offset_is_percentage,
+                    time_in_force,
+                    expiration_timestamp,
+                    is_executable,
+                    amount_filled
+                FROM trade_order
+                JOIN account AS acc USING (account_id)
+                JOIN asset AS ba ON ba.asset_id = base_asset_id
+                JOIN asset AS qa ON qa.asset_id = quote_asset_id
+                WHERE (
+                    side = 1 AND ba.asset_hash = @assetHash -- Acquiring base asset through BUY order
+                    OR side = 2 AND qa.asset_hash = @assetHash -- Acquiring quote asset through SELL order
+                )
+                %s
+                """
+                accountHashCondition
 
         [
-            "@accountHash", accountHash |> box
+            "@accountHash", accountHashParamValue
             "@assetHash", assetHash |> box
         ]
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql

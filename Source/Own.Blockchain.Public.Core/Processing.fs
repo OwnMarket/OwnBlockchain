@@ -28,7 +28,7 @@ module Processing =
         getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
         getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
         getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list,
-        getIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list,
+        getIneligibleTradeOrdersFromStorage : AccountHash option * AssetHash -> TradeOrderInfo list,
         getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount,
         txResults : ConcurrentDictionary<TxHash, TxResult>,
         equivocationProofResults : ConcurrentDictionary<EquivocationProofHash, EquivocationProofResult>,
@@ -75,7 +75,7 @@ module Processing =
             getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option,
             getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list,
             getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list,
-            getIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list,
+            getIneligibleTradeOrdersFromStorage : AccountHash option * AssetHash -> TradeOrderInfo list,
             getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount
             ) =
             ProcessingState(
@@ -300,7 +300,7 @@ module Processing =
             |> Seq.toList
 
         member __.RemoveTradeOrdersForIneligibleAccount (accountHash, assetHash) =
-            for tradeOrderInfo in getIneligibleTradeOrdersFromStorage (accountHash, assetHash) do
+            for tradeOrderInfo in getIneligibleTradeOrdersFromStorage (Some accountHash, assetHash) do
                 if not (tradeOrders.ContainsKey tradeOrderInfo.TradeOrderHash) then
                     let state = tradeOrderInfo |> Mapping.tradeOrderStateFromInfo |> Some
                     if not (tradeOrders.TryAdd(tradeOrderInfo.TradeOrderHash, (state, None))) then
@@ -322,6 +322,34 @@ module Processing =
                     { s with Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.NotEligible },
                     TradeOrderChange.Remove
                 )
+            )
+
+        member __.RemoveTradeOrdersForIneligibleAccounts assetHash =
+            for tradeOrderInfo in getIneligibleTradeOrdersFromStorage (None, assetHash) do
+                if not (tradeOrders.ContainsKey tradeOrderInfo.TradeOrderHash) then
+                    let state = tradeOrderInfo |> Mapping.tradeOrderStateFromInfo |> Some
+                    if not (tradeOrders.TryAdd(tradeOrderInfo.TradeOrderHash, (state, None))) then
+                        failwithf "Cannot add ineligible trade order to the state dictionary: %A" tradeOrderInfo
+            tradeOrders
+            |> Seq.choose (fun o ->
+                match o.Value with
+                | Some s, _ when
+                    s.Side = TradeOrderSide.Buy && s.BaseAssetHash = assetHash
+                    || s.Side = TradeOrderSide.Sell && s.QuoteAssetHash = assetHash
+                    -> Some (o.Key, s)
+                | _ -> None
+            )
+            |> Seq.iter (fun (h, s) ->
+                let isEligible =
+                    __.GetAccountEligibility (s.AccountHash, assetHash)
+                    |> Option.map (fun e -> e.Eligibility.IsSecondaryEligible)
+                    |? false
+                if not isEligible then
+                    __.SetTradeOrder(
+                        h,
+                        { s with Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.NotEligible },
+                        TradeOrderChange.Remove
+                    )
             )
 
         // Not part of the blockchain state
@@ -954,6 +982,8 @@ module Processing =
             Error TxErrorCode.AssetNotFound
         | Some assetState when assetState.ControllerAddress = senderAddress ->
             state.SetAsset(action.AssetHash, {assetState with IsEligibilityRequired = action.IsEligibilityRequired})
+            if not assetState.IsEligibilityRequired && action.IsEligibilityRequired then // Eligibility activated
+                state.RemoveTradeOrdersForIneligibleAccounts action.AssetHash
             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotAssetController
@@ -1628,7 +1658,7 @@ module Processing =
         (getTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option)
         (getTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list)
         (getExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list)
-        (getIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list)
+        (getIneligibleTradeOrdersFromStorage : AccountHash option * AssetHash -> TradeOrderInfo list)
         (getHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount)
         getLockedAndBlacklistedValidators
         maxActionCountPerTx

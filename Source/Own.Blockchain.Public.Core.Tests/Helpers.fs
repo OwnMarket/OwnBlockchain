@@ -167,7 +167,7 @@ module Helpers =
             GetTradeOrderStateFromStorage : TradeOrderHash -> TradeOrderState option
             GetTradeOrdersFromStorage : AssetHash * AssetHash -> TradeOrderInfo list
             GetExpiredTradeOrdersFromStorage : Timestamp -> TradeOrderInfo list
-            GetIneligibleTradeOrdersFromStorage : AccountHash * AssetHash -> TradeOrderInfo list
+            GetIneligibleTradeOrdersFromStorage : AccountHash option * AssetHash -> TradeOrderInfo list
             GetHoldingInTradeOrdersFromStorage : AccountHash * AssetHash -> AssetAmount
             GetLockedAndBlacklistedValidators : unit -> BlockchainAddress list
             MaxActionCountPerTx : int
