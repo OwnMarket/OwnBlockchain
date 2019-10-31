@@ -280,12 +280,10 @@ module TradingTests =
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
 
-        (* TODO DSX: Enable upon implementing settlement
         test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 900m @>
         test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 100m @>
         test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 500m @>
         test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1500m @>
-        *)
 
     [<Fact>]
     let ``Matching - Stop and Limit price in TRAILING orders follows price`` () =
@@ -422,9 +420,7 @@ module TradingTests =
         test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
 
-        (* TODO DSX: Enable upon implementing settlement
         test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 900m @>
         test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 100m @>
         test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 500m @>
         test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1500m @>
-        *)

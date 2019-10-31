@@ -1777,6 +1777,7 @@ module Processing =
             updateValidatorCounters getLockedAndBlacklistedValidators state
             lockValidatorDeposits validatorDepositLockTime blockNumber blockchainConfiguration state
 
+        // Trading
         state.LoadExpiredTradeOrders blockTimestamp
         Trading.cancelExpiredTradeOrders
             state.GetExpiredTradeOrders
@@ -1790,6 +1791,7 @@ module Processing =
                 state.GetTradeOrdersForTradingPair
                 state.SetTradeOrder
                 state.GetHoldingOrDefault
+                state.SetHolding
                 (baseAssetHash, quoteAssetHash)
         )
         |> state.ToProcessingOutput

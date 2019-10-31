@@ -87,8 +87,37 @@ module Trading =
 
         tradeOrderState
 
+    let settleTrade
+        (getHolding : AccountHash * AssetHash -> HoldingState)
+        (setHolding : AccountHash * AssetHash * HoldingState -> unit)
+        (buyerAccountHash, sellerAccountHash, baseAssetHash, quoteAssetHash, amount : AssetAmount, price : AssetAmount)
+        =
+
+        let baseAssetAmount = amount
+        let quoteAssetAmount = (amount * price).Rounded
+
+        [
+            sellerAccountHash, baseAssetHash, baseAssetAmount * -1m
+            buyerAccountHash, baseAssetHash, baseAssetAmount
+            buyerAccountHash, quoteAssetHash, quoteAssetAmount * -1m
+            sellerAccountHash, quoteAssetHash, quoteAssetAmount
+        ]
+        |> List.iter (fun (accountHash, assetHash, balanceChange) ->
+            let holding = getHolding (accountHash, assetHash)
+            let newBalance = holding.Balance + balanceChange
+
+            if newBalance.Value < 0m
+                || newBalance.Value > Utils.maxBlockchainNumeric
+                || not (Utils.isRounded7 newBalance.Value)
+            then
+                failwithf "Invalid asset holding balance (%A / %A): %A" accountHash assetHash newBalance
+
+            setHolding (accountHash, assetHash, { holding with Balance = newBalance })
+        )
+
     let processTopOrders
         (getHolding : AccountHash * AssetHash -> HoldingState)
+        (setHolding : AccountHash * AssetHash * HoldingState -> unit)
         (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
         ((buyOrderHash, buyOrder : TradeOrderState), (sellOrderHash, sellOrder : TradeOrderState))
         =
@@ -153,6 +182,19 @@ module Trading =
             let buyOrder = updateFilledOrder setTradeOrder (buyOrderHash, buyOrder, amountToFill)
             let sellOrder = updateFilledOrder setTradeOrder (sellOrderHash, sellOrder, amountToFill)
 
+            // Settle trade
+            settleTrade
+                getHolding
+                setHolding
+                (
+                    buyOrder.AccountHash,
+                    sellOrder.AccountHash,
+                    sellOrder.BaseAssetHash,
+                    sellOrder.QuoteAssetHash,
+                    amountToFill,
+                    price
+                )
+
             {
                 Trade.Direction = if buyOrder.Time > sellOrder.Time then Buy else Sell
                 BuyOrderHash = buyOrderHash
@@ -212,10 +254,11 @@ module Trading =
         (getTradeOrders : AssetHash * AssetHash -> (TradeOrderHash * TradeOrderState) list)
         (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
         (getHolding : AccountHash * AssetHash -> HoldingState)
+        (setHolding : AccountHash * AssetHash * HoldingState -> unit)
         (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
         =
 
-        let processTopOrders = processTopOrders getHolding setTradeOrder
+        let processTopOrders = processTopOrders getHolding setHolding setTradeOrder
         let updateStopOrders = updateStopOrders getTradeOrders setTradeOrder (baseAssetHash, quoteAssetHash)
 
         // Match orders
