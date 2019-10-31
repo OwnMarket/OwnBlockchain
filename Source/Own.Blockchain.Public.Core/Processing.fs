@@ -435,6 +435,7 @@ module Processing =
             tradingPairs.AddOrUpdate((baseAssetHash, quoteAssetHash), state, fun _ _ -> state) |> ignore
 
         member __.SetTradeOrder (tradeOrderHash, state, change) =
+            Log.debugf "%A %A: %A" change tradeOrderHash state
             let state, change = Some state, Some change
             let processingChange =
                 match tradeOrders.TryGetValue tradeOrderHash with
