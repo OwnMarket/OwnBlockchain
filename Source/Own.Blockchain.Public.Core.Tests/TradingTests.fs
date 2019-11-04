@@ -424,3 +424,74 @@ module TradingTests =
         test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 100m @>
         test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 500m @>
         test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1500m @>
+
+    [<Fact>]
+    let ``Matching - Fill MARKET order up to available quote asset balance`` () =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let createTradeOrderState = createTradeOrderState (baseAssetHash, quoteAssetHash)
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 1000m, true
+                accountHash2, quoteAssetHash, 2000m, true
+            ]
+
+        let existingOrders =
+            [
+                createTradeOrderState
+                    (1L, 1, 1s)
+                    accountHash1
+                    (Sell, 1000m, TradeOrderType.Limit, 5m, 0m, 0m, false, GoodTilCancelled)
+                    (true, 0m, TradeOrderStatus.Open)
+            ]
+
+        let incomingOrders =
+            [
+                [ // TX1
+                    placeOrder accountHash2.Value ("BUY", 1000m, "MARKET", 0m, 0m, 0m, false, "IOC")
+                ]
+            ]
+
+        // ACT
+        let existingOrderHashes, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+
+        // ASSERT
+        test <@ output.TxResults.Count = incomingOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradeOrders.Count = 2 @>
+
+        let amountFilled = 400m
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[0]]
+        test <@ tradeOrderState.AmountFilled.Value = amountFilled @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Update @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[0]]
+        test <@ tradeOrderState.AmountFilled.Value = amountFilled @>
+        TradeOrderStatus.Cancelled TradeOrderCancelReason.InsufficientQuoteAssetBalance
+        |> fun s -> test <@ tradeOrderState.Status = s @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        test <@ output.Trades.Length = 1 @>
+
+        test <@ output.Trades.[0].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[0].BuyOrderHash = incomingOrderHashes.[0] @>
+        test <@ output.Trades.[0].SellOrderHash = existingOrderHashes.[0] @>
+        test <@ output.Trades.[0].Amount.Value = amountFilled @>
+        test <@ output.Trades.[0].Price.Value = 5m @>
+
+        test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 600m @>
+        test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 400m @>
+        test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 2000m @>
+        test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 0m @>
