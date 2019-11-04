@@ -617,6 +617,27 @@ module Db =
     // Trading
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let getTradingPairs
+        dbEngineType
+        (dbConnectionString : string)
+        : TradingPairApiDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                ba.asset_hash AS base_asset_hash,
+                ba.asset_code AS base_asset_code,
+                qa.asset_hash AS quote_asset_hash,
+                qa.asset_code AS quote_asset_code,
+                is_enabled
+            FROM trading_pair
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            """
+
+        DbTools.query<TradingPairApiDto> dbEngineType dbConnectionString sql []
+
     let getTradingPairControllers
         dbEngineType
         (dbConnectionString : string)

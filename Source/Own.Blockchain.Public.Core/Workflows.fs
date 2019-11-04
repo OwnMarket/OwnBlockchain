@@ -1836,6 +1836,18 @@ module Workflows =
             }
             |> Ok
 
+    let getTradingPairsApi
+        (getTradingPairs : unit -> TradingPairApiDto list)
+        =
+
+        getTradingPairs ()
+        |> List.sortBy (fun p ->
+            p.BaseAssetCode |??? "",
+            p.QuoteAssetCode |??? "",
+            p.BaseAssetHash,
+            p.QuoteAssetHash
+        )
+
     let getTradeOrderBookApi
         (getExecutableTradeOrders : AssetHash * AssetHash -> TradeOrderInfoDto list)
         (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)

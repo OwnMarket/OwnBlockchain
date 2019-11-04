@@ -115,6 +115,7 @@ module Composition =
         | [] -> [BlockchainAddress Config.GenesisAddress]
         | cs -> cs
 
+    let getTradingPairs () = Db.getTradingPairs Config.DbEngineType Config.DbConnectionString
     let getTradingPairState = Db.getTradingPairState Config.DbEngineType Config.DbConnectionString
     let getTradeOrderState = Db.getTradeOrderState Config.DbEngineType Config.DbConnectionString
     let getTradeOrders = Db.getTradeOrders Config.DbEngineType Config.DbConnectionString
@@ -594,6 +595,8 @@ module Composition =
     let getAssetApi = Workflows.getAssetApi getAssetState
 
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getAssetKycProviders
+
+    let getTradingPairsApi () = Workflows.getTradingPairsApi getTradingPairs
 
     let getTradeOrderBookApi = Workflows.getTradeOrderBookApi getExecutableTradeOrders
 

@@ -895,9 +895,12 @@ type GetValidatorsApiDto = {
     Validators : GetValidatorInfoApiDto list
 }
 
+[<CLIMutable>]
 type TradingPairApiDto = {
     BaseAssetHash : string
+    BaseAssetCode : string
     QuoteAssetHash : string
+    QuoteAssetCode : string
     IsEnabled : bool
 }
 
