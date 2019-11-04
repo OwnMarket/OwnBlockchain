@@ -1191,7 +1191,11 @@ module Processing =
                                     Status = TradeOrderStatus.Open
                                 }
                             state.SetTradeOrder(tradeOrderHash, tradeOrderState, TradeOrderChange.Add)
-                            state.SetHoldingInTradeOrders(action.AccountHash, assetHash, holdingInTradeOrders + orderAmount)
+                            state.SetHoldingInTradeOrders(
+                                action.AccountHash,
+                                assetHash,
+                                holdingInTradeOrders + orderAmount
+                            )
                             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController

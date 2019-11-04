@@ -31,7 +31,7 @@ module Trading =
         sellOrders
         |> List.filter (fun (_, o) -> o.IsExecutable && o.Status = TradeOrderStatus.Open)
         |> List.sortBy (fun (_, o) ->
-            o.ExecOrderType <> ExecTradeOrderType.Market, // ...MARKET orders (false) on top
+            o.ExecOrderType <> ExecTradeOrderType.Market, // false: MARKET orders on top
             o.LimitPrice, // Lowest price on top
             o.Time // Oldest order on top
         )
@@ -40,7 +40,7 @@ module Trading =
             buyOrders
             |> List.filter (fun (_, o) -> o.IsExecutable && o.Status = TradeOrderStatus.Open)
             |> List.sortBy (fun (_, o) ->
-                o.ExecOrderType <> ExecTradeOrderType.Market, // ...MARKET orders (false) on top
+                o.ExecOrderType <> ExecTradeOrderType.Market, // false: MARKET orders on top
                 -o.LimitPrice.Value, // Highest price on top
                 o.Time // Oldest order on top
             )
