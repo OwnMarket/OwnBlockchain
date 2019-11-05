@@ -2696,8 +2696,8 @@ module Db =
         let sql =
             """
             UPDATE trading_pair
-            SET is_enabled = @isEnabled
-                last_price = @lastPrice
+            SET is_enabled = @isEnabled,
+                last_price = @lastPrice,
                 price_change = @priceChange
             WHERE base_asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash)
             AND quote_asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash)
