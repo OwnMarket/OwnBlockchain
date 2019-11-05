@@ -290,6 +290,8 @@ module BlockTests =
         let state =
             {
                 TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 4m
+                PriceChange = AssetAmount 1m
             }
 
         let expectedHash =
@@ -297,6 +299,8 @@ module BlockTests =
                 "BBB" // BaseAssetHash
                 "CCC" // QuoteAssetHash
                 "A" // IsExecutable
+                "...D............" // LastPrice
+                "...A............" // PriceChange
             ]
             |> String.Concat
 
@@ -669,8 +673,18 @@ module BlockTests =
 
         let tradingPairs =
             [
-                (AssetHash "AAA", AssetHash "BBB"), {TradingPairState.IsEnabled = true}
-                (AssetHash "CCC", AssetHash "DDD"), {TradingPairState.IsEnabled = false}
+                (AssetHash "AAA", AssetHash "BBB"),
+                    {
+                        TradingPairState.IsEnabled = true
+                        LastPrice = AssetAmount 2m
+                        PriceChange = AssetAmount 0m
+                    }
+                (AssetHash "CCC", AssetHash "DDD"),
+                    {
+                        TradingPairState.IsEnabled = false
+                        LastPrice = AssetAmount 4m
+                        PriceChange = AssetAmount 1m
+                    }
             ]
             |> Map.ofList
 
@@ -852,8 +866,8 @@ module BlockTests =
                 "CCCCCIII...C.............C.FA." // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
-                "AAABBBA" // Trading Pair 1
-                "CCCDDD." // Trading Pair 2
+                "AAABBBA...B............................" // Trading Pair 1
+                "CCCDDD....D...............A............" // Trading Pair 2
                 // Trade Order 1
                 [
                     "AAA"
@@ -1234,8 +1248,18 @@ module BlockTests =
 
         let tradingPairs =
             [
-                (AssetHash "AAA", AssetHash "BBB"), {TradingPairState.IsEnabled = true}
-                (AssetHash "CCC", AssetHash "DDD"), {TradingPairState.IsEnabled = false}
+                (AssetHash "AAA", AssetHash "BBB"),
+                    {
+                        TradingPairState.IsEnabled = true
+                        LastPrice = AssetAmount 4m
+                        PriceChange = AssetAmount 1m
+                    }
+                (AssetHash "CCC", AssetHash "DDD"),
+                    {
+                        TradingPairState.IsEnabled = false
+                        LastPrice = AssetAmount 4m
+                        PriceChange = AssetAmount 1m
+                    }
             ]
             |> Map.ofList
 
@@ -1711,8 +1735,18 @@ module BlockTests =
 
         let tradingPairs =
             [
-                (AssetHash "AAA", AssetHash "BBB"), {TradingPairState.IsEnabled = true}
-                (AssetHash "CCC", AssetHash "DDD"), {TradingPairState.IsEnabled = false}
+                (AssetHash "AAA", AssetHash "BBB"),
+                    {
+                        TradingPairState.IsEnabled = true
+                        LastPrice = AssetAmount 4m
+                        PriceChange = AssetAmount 1m
+                    }
+                (AssetHash "CCC", AssetHash "DDD"),
+                    {
+                        TradingPairState.IsEnabled = false
+                        LastPrice = AssetAmount 4m
+                        PriceChange = AssetAmount 1m
+                    }
             ]
             |> Map.ofList
 

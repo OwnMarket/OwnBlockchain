@@ -630,7 +630,9 @@ module Db =
                 ba.asset_code AS base_asset_code,
                 qa.asset_hash AS quote_asset_hash,
                 qa.asset_code AS quote_asset_code,
-                is_enabled
+                is_enabled,
+                last_price,
+                price_change
             FROM trading_pair
             JOIN asset AS ba ON ba.asset_id = base_asset_id
             JOIN asset AS qa ON qa.asset_id = quote_asset_id
@@ -657,7 +659,9 @@ module Db =
         let sql =
             """
             SELECT
-                is_enabled
+                is_enabled,
+                last_price,
+                price_change
             FROM trading_pair
             JOIN asset AS ba ON ba.asset_id = base_asset_id
             JOIN asset AS qa ON qa.asset_id = quote_asset_id
@@ -2651,12 +2655,16 @@ module Db =
             INSERT INTO trading_pair (
                 base_asset_id,
                 quote_asset_id,
-                is_enabled
+                is_enabled,
+                last_price,
+                price_change
             )
             VALUES (
                 (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash),
                 (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash),
-                @isEnabled
+                @isEnabled,
+                @lastPrice,
+                @priceChange
             )
             """
 
@@ -2665,6 +2673,8 @@ module Db =
                 "@baseAssetHash", tradingPairInfo.BaseAssetHash |> box
                 "@quoteAssetHash", tradingPairInfo.QuoteAssetHash |> box
                 "@isEnabled", tradingPairInfo.IsEnabled |> box
+                "@lastPrice", tradingPairInfo.LastPrice |> box
+                "@priceChange", tradingPairInfo.PriceChange |> box
             ]
 
         try
@@ -2687,6 +2697,8 @@ module Db =
             """
             UPDATE trading_pair
             SET is_enabled = @isEnabled
+                last_price = @lastPrice
+                price_change = @priceChange
             WHERE base_asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash)
             AND quote_asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash)
             """
@@ -2696,6 +2708,8 @@ module Db =
                 "@baseAssetHash", tradingPairInfo.BaseAssetHash |> box
                 "@quoteAssetHash", tradingPairInfo.QuoteAssetHash |> box
                 "@isEnabled", tradingPairInfo.IsEnabled |> box
+                "@lastPrice", tradingPairInfo.LastPrice |> box
+                "@priceChange", tradingPairInfo.PriceChange |> box
             ]
 
         try
@@ -2722,6 +2736,8 @@ module Db =
                     TradingPairInfoDto.BaseAssetHash = baseAssetHash
                     QuoteAssetHash = quoteAssetHash
                     IsEnabled = state.IsEnabled
+                    LastPrice = state.LastPrice
+                    PriceChange = state.PriceChange
                 }
                 |> updateTradingPair conn transaction
 

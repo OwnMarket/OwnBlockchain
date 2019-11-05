@@ -78,6 +78,8 @@ type TradingPairInfo = {
     BaseAssetHash : AssetHash
     QuoteAssetHash : AssetHash
     IsEnabled : bool
+    LastPrice : AssetAmount
+    PriceChange : AssetAmount
 }
 
 type TradeOrderHash = TradeOrderHash of string
@@ -533,6 +535,8 @@ type StakerInfo = {
 
 type TradingPairState = {
     IsEnabled : bool
+    LastPrice : AssetAmount
+    PriceChange : AssetAmount
 }
 
 type TradeOrderState = {

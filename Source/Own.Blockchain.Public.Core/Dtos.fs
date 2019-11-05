@@ -444,6 +444,8 @@ type StakeStateDto = {
 [<CLIMutable>]
 type TradingPairStateDto = {
     IsEnabled : bool
+    LastPrice : decimal
+    PriceChange : decimal
 }
 
 [<CLIMutable>]
@@ -598,6 +600,8 @@ type TradingPairInfoDto = {
     BaseAssetHash : string
     QuoteAssetHash : string
     IsEnabled : bool
+    LastPrice : decimal
+    PriceChange : decimal
 }
 
 [<CLIMutable>]
@@ -902,6 +906,8 @@ type TradingPairApiDto = {
     QuoteAssetHash : string
     QuoteAssetCode : string
     IsEnabled : bool
+    LastPrice : decimal
+    PriceChange : decimal
 }
 
 type TradeOrderApiDto = {

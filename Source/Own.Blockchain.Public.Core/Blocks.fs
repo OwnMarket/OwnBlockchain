@@ -233,6 +233,8 @@ module Blocks =
             baseAssetHash.Value |> decodeHash
             quoteAssetHash.Value |> decodeHash
             state.IsEnabled |> boolToBytes
+            state.LastPrice.Value |> decimalToBytes
+            state.PriceChange.Value |> decimalToBytes
         ]
         |> Array.concat
         |> createHash

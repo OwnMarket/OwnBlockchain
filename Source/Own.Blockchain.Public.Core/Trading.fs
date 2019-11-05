@@ -119,6 +119,8 @@ module Trading =
         (getHolding : AccountHash * AssetHash -> HoldingState)
         (setHolding : AccountHash * AssetHash * HoldingState -> unit)
         (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
+        (getTradingPair : AssetHash * AssetHash -> TradingPairState option)
+        (setTradingPair : AssetHash * AssetHash * TradingPairState -> unit)
         ((buyOrderHash, buyOrder : TradeOrderState), (sellOrderHash, sellOrder : TradeOrderState))
         =
 
@@ -129,7 +131,7 @@ module Trading =
             match buyOrder.ExecOrderType, sellOrder.ExecOrderType with
             | ExecTradeOrderType.Market, ExecTradeOrderType.Market ->
                 // TODO DSX: Use the last trade price?
-                failwithf "Matching two MARKET orders not implemented yet: %A" [buyOrder; sellOrder]
+                failwithf "Matching two MARKET orders not supported: %A" [buyOrder; sellOrder]
             | ExecTradeOrderType.Market, ExecTradeOrderType.Limit ->
                 sellOrder.LimitPrice
             | ExecTradeOrderType.Limit, ExecTradeOrderType.Market ->
@@ -195,6 +197,21 @@ module Trading =
                     price
                 )
 
+            getTradingPair (buyOrder.BaseAssetHash, buyOrder.QuoteAssetHash)
+            |> function
+                | Some p ->
+                    setTradingPair (
+                        buyOrder.BaseAssetHash,
+                        buyOrder.QuoteAssetHash,
+                        { p with
+                            LastPrice = price
+                            PriceChange = price - p.LastPrice
+                        }
+                    )
+                | None ->
+                    failwithf "Cannot get trading pair state: %s / %s"
+                        buyOrder.BaseAssetHash.Value buyOrder.QuoteAssetHash.Value
+
             {
                 Trade.Direction = if buyOrder.Time > sellOrder.Time then Buy else Sell
                 BuyOrderHash = buyOrderHash
@@ -251,6 +268,8 @@ module Trading =
         )
 
     let matchTradeOrders
+        (getTradingPair : AssetHash * AssetHash -> TradingPairState option)
+        (setTradingPair : AssetHash * AssetHash * TradingPairState -> unit)
         (getTradeOrders : AssetHash * AssetHash -> (TradeOrderHash * TradeOrderState) list)
         (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
         (getHolding : AccountHash * AssetHash -> HoldingState)
@@ -258,7 +277,7 @@ module Trading =
         (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
         =
 
-        let processTopOrders = processTopOrders getHolding setHolding setTradeOrder
+        let processTopOrders = processTopOrders getHolding setHolding setTradeOrder getTradingPair setTradingPair
         let updateStopOrders = updateStopOrders getTradeOrders setTradeOrder (baseAssetHash, quoteAssetHash)
 
         // Match orders

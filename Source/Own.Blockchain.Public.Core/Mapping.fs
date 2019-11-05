@@ -757,11 +757,15 @@ module Mapping =
     let tradingPairStateToDto (state : TradingPairState) : TradingPairStateDto =
         {
             TradingPairStateDto.IsEnabled = state.IsEnabled
+            LastPrice = state.LastPrice.Value
+            PriceChange = state.PriceChange.Value
         }
 
     let tradingPairStateFromDto (dto : TradingPairStateDto) : TradingPairState =
         {
             TradingPairState.IsEnabled = dto.IsEnabled
+            LastPrice = AssetAmount dto.LastPrice
+            PriceChange = AssetAmount dto.PriceChange
         }
 
     let tradeOrderStateFromDto (dto : TradeOrderStateDto) : TradeOrderState =

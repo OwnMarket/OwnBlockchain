@@ -267,6 +267,8 @@ module DbChanges =
                         base_asset_id BIGINT NOT NULL,
                         quote_asset_id BIGINT NOT NULL,
                         is_enabled BOOLEAN NOT NULL,
+                        last_price DECIMAL(18, 7) NOT NULL,
+                        price_change DECIMAL(18, 7) NOT NULL,
 
                         CONSTRAINT trading_pair__pk PRIMARY KEY (trading_pair_id),
                         CONSTRAINT trading_pair__uk__asset_pair UNIQUE (base_asset_id, quote_asset_id),
@@ -576,6 +578,8 @@ module DbChanges =
                         base_asset_id BIGINT NOT NULL,
                         quote_asset_id BIGINT NOT NULL,
                         is_enabled BOOLEAN NOT NULL,
+                        last_price DECIMAL(18, 7) NOT NULL,
+                        price_change DECIMAL(18, 7) NOT NULL,
 
                         CONSTRAINT trading_pair__pk PRIMARY KEY (trading_pair_id),
                         CONSTRAINT trading_pair__uk__asset_pair UNIQUE (base_asset_id, quote_asset_id),

@@ -7583,6 +7583,8 @@ module ProcessingTests =
         let getTradingPairState _ =
             {
                 TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
             }
             |> Some
 
@@ -7695,6 +7697,8 @@ module ProcessingTests =
         let getTradingPairState _ =
             {
                 TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
             }
             |> Some
 
@@ -7967,6 +7971,8 @@ module ProcessingTests =
         let getTradingPairState _ =
             {
                 TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
             }
             |> Some
 
@@ -8079,7 +8085,11 @@ module ProcessingTests =
             AssetAmount 0m
 
         let getTradingPairStateFromStorage _ =
-            Some {TradingPairState.IsEnabled = true}
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
 
         let getTradeOrderStateFromStorage _ =
             None
@@ -8196,7 +8206,11 @@ module ProcessingTests =
             AssetAmount 0m
 
         let getTradingPairStateFromStorage _ =
-            Some {TradingPairState.IsEnabled = true}
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
 
         let getTradeOrderStateFromStorage _ =
             None
@@ -8320,7 +8334,11 @@ module ProcessingTests =
             AssetAmount 0m
 
         let getTradingPairStateFromStorage _ =
-            Some {TradingPairState.IsEnabled = true}
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
 
         let getTradeOrderStateFromStorage _ =
             None
@@ -8444,7 +8462,11 @@ module ProcessingTests =
             AssetAmount 0m
 
         let getTradingPairStateFromStorage _ =
-            Some {TradingPairState.IsEnabled = true}
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
 
         let getTradeOrderStateFromStorage _ =
             None

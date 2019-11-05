@@ -1082,6 +1082,8 @@ module Processing =
                         action.QuoteAssetHash,
                         {
                             IsEnabled = action.IsEnabled
+                            LastPrice = AssetAmount 0m
+                            PriceChange = AssetAmount 0m
                         }
                     )
                 | Some tradingPairState ->
@@ -1793,6 +1795,8 @@ module Processing =
         |> List.collect (fun (baseAssetHash, quoteAssetHash) ->
             state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)
             Trading.matchTradeOrders
+                state.GetTradingPair
+                state.SetTradingPair
                 state.GetTradeOrdersForTradingPair
                 state.SetTradeOrder
                 state.GetHoldingOrDefault

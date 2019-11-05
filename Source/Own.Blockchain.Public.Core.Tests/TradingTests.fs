@@ -185,7 +185,11 @@ module TradingTests =
             |> Some
 
         let getTradingPairState _ =
-            Some { TradingPairState.IsEnabled = true }
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
 
         let getTradeOrderState =
             existingOrders
@@ -495,3 +499,161 @@ module TradingTests =
         test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 400m @>
         test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 2000m @>
         test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 0m @>
+
+    [<Fact>]
+    let ``Matching - Last trade price and positive price change stored in trading pair`` () =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let createTradeOrderState = createTradeOrderState (baseAssetHash, quoteAssetHash)
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 1000m, true
+                accountHash2, quoteAssetHash, 2000m, true
+            ]
+
+        let existingOrders = []
+
+        let incomingOrders =
+            [
+                [ // TX1
+                    placeOrder accountHash1.Value ("SELL", 100m, "LIMIT", 5.5m, 0m, 0m, false, "GTC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
+                ]
+                [ // TX2
+                    placeOrder accountHash2.Value ("BUY", 120m, "MARKET", 0m, 0m, 0m, false, "IOC")
+                ]
+            ]
+
+        // ACT
+        let existingOrderHashes, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+
+        // ASSERT
+        test <@ output.TxResults.Count = incomingOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradeOrders.Count = 3 @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[0]]
+        test <@ tradeOrderState.AmountFilled.Value = 20m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Add @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[1]]
+        test <@ tradeOrderState.AmountFilled.Value = 100m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[2]]
+        test <@ tradeOrderState.AmountFilled.Value = 120m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        test <@ output.Trades.Length = 2 @>
+
+        test <@ output.Trades.[0].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[0].BuyOrderHash = incomingOrderHashes.[2] @>
+        test <@ output.Trades.[0].SellOrderHash = incomingOrderHashes.[1] @>
+        test <@ output.Trades.[0].Amount.Value = 100m @>
+        test <@ output.Trades.[0].Price.Value = 5m @>
+
+        test <@ output.Trades.[1].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[1].BuyOrderHash = incomingOrderHashes.[2] @>
+        test <@ output.Trades.[1].SellOrderHash = incomingOrderHashes.[0] @>
+        test <@ output.Trades.[1].Amount.Value = 20m @>
+        test <@ output.Trades.[1].Price.Value = 5.5m @>
+
+        test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 880m @>
+        test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 120m @>
+        test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 610m @>
+        test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1390m @>
+
+        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].LastPrice.Value = 5.5m @>
+        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].PriceChange.Value = 0.5m @>
+
+    [<Fact>]
+    let ``Matching - Last trade price and negative price change stored in trading pair`` () =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let createTradeOrderState = createTradeOrderState (baseAssetHash, quoteAssetHash)
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 1000m, true
+                accountHash2, quoteAssetHash, 2000m, true
+            ]
+
+        let existingOrders = []
+
+        let incomingOrders =
+            [
+                [ // TX1
+                    placeOrder accountHash2.Value ("BUY", 100m, "LIMIT", 4.5m, 0m, 0m, false, "GTC")
+                    placeOrder accountHash2.Value ("BUY", 100m, "LIMIT", 5m, 0m, 0m, false, "GTC")
+                ]
+                [ // TX2
+                    placeOrder accountHash1.Value ("SELL", 120m, "LIMIT", 4m, 0m, 0m, false, "GTC")
+                ]
+            ]
+
+        // ACT
+        let existingOrderHashes, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+
+        // ASSERT
+        test <@ output.TxResults.Count = incomingOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradeOrders.Count = 3 @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[0]]
+        test <@ tradeOrderState.AmountFilled.Value = 20m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Add @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[1]]
+        test <@ tradeOrderState.AmountFilled.Value = 100m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[2]]
+        test <@ tradeOrderState.AmountFilled.Value = 120m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        test <@ output.Trades.Length = 2 @>
+
+        test <@ output.Trades.[0].Direction = TradeOrderSide.Sell @>
+        test <@ output.Trades.[0].BuyOrderHash = incomingOrderHashes.[1] @>
+        test <@ output.Trades.[0].SellOrderHash = incomingOrderHashes.[2] @>
+        test <@ output.Trades.[0].Amount.Value = 100m @>
+        test <@ output.Trades.[0].Price.Value = 5m @>
+
+        test <@ output.Trades.[1].Direction = TradeOrderSide.Sell @>
+        test <@ output.Trades.[1].BuyOrderHash = incomingOrderHashes.[0] @>
+        test <@ output.Trades.[1].SellOrderHash = incomingOrderHashes.[2] @>
+        test <@ output.Trades.[1].Amount.Value = 20m @>
+        test <@ output.Trades.[1].Price.Value = 4.5m @>
+
+        test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 880m @>
+        test <@ output.Holdings.[accountHash2, baseAssetHash].Balance.Value = 120m @>
+        test <@ output.Holdings.[accountHash1, quoteAssetHash].Balance.Value = 590m @>
+        test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1410m @>
+
+        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].LastPrice.Value = 4.5m @>
+        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].PriceChange.Value = -0.5m @>
