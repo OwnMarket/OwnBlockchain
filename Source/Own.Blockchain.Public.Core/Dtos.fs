@@ -908,7 +908,13 @@ type TradingPairApiDto = {
     IsEnabled : bool
     LastPrice : decimal
     PriceChange : decimal
-}
+} with
+    member __.PriceChangePercent =
+        if __.PriceChange = 0m || __.LastPrice = __.PriceChange then
+            0m
+        else
+            __.PriceChange / (__.LastPrice - __.PriceChange) * 100m
+            |> fun n -> Decimal.Round(n, 2, MidpointRounding.AwayFromZero)
 
 type TradeOrderApiDto = {
     TradeOrderHash : string
