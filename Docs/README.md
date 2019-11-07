@@ -19,5 +19,6 @@
     - [Node Environment and Configuration](Nodes/NodeEnvironment.md)
     - [Validator Configuration](Nodes/ValidatorConfiguration.md)
 - Concepts
+    - [CHX token](Concepts/CHX.md)
     - [Asset Management Protocol](Concepts/AssetManagementProtocol.md)
     - [External System Integration](Concepts/Integration.md)
