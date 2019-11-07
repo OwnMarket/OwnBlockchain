@@ -20,11 +20,11 @@ More information about the CHX utility token can be found in this article: [What
 
 ## How can I manage my CHX?
 
-CHX is managed (sent/received/delegated) through the cryptographic wallet software, which is available in the form of a web application: [wallet.weown.com](https://wallet.weown.com)
+CHX is managed (sent/received/delegated) through the [cryptographic wallet](https://wallet.weown.com) software, which is available in the form of a client-side web application.
 
 The same wallet application, that is hosted on [wallet.weown.com](https://wallet.weown.com), can be used independently by [downloading](https://github.com/OwnMarket/OwnBlockchain/blob/master/Docs/Nodes/NodeSetup.md#simple-deployment) and running a blockchain node on your local machine.
 
-All blockchain history, including history of your CHX address, (with all submitted transactions, collected staking rewards, etc.) can be seen in Blockchain Explorer: [explorer.weown.com](https://explorer.weown.com)
+All blockchain history, including history of your CHX address, (with all submitted transactions, collected staking rewards, etc.) can be seen in the [blockchain explorer](https://explorer.weown.com).
 
 
 ## Where can I acquire CHX?
