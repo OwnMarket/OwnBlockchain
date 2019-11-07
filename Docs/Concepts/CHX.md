@@ -9,6 +9,12 @@ CHX is a utility token that powers [WeOwn](https://weown.com) blockchain and the
 - [Issuance Platform](https://fast.weown.com)
 - The upcoming decentralized exchange
 
+Primary purpose of the CHX is to:
+
+- incentivize validators to run the nodes and keep the network decentralized
+- protect the network from [DoS]() attacks
+- serve as the transaction prioritization mechanism
+
 More information about the CHX utility token can be found in this article: [What is CHX - and how can I use it?](https://medium.com/@ownmarket/what-is-chx-and-how-can-i-use-it-91bf3552f183).
 
 
