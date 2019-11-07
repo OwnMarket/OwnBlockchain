@@ -5,7 +5,7 @@
 
 CHX is a utility token that powers [WeOwn](https://weown.com) blockchain and the products built on top of it:
 
-- [Decentralized Share Register](http://dsr.weown.com)
+- [Decentralized Share Register](https://dsr.weown.com)
 - [Issuance Platform](https://fast.weown.com)
 - The upcoming decentralized exchange
 
