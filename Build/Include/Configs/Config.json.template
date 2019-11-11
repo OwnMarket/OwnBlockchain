@@ -4,7 +4,11 @@
     "NetworkBootstrapNodes": [
         "boot1.mainnet.weown.com:25718",
         "boot2.mainnet.weown.com:25718",
-        "boot3.mainnet.weown.com:25718"
+        "boot3.mainnet.weown.com:25718",
+        "boot1.mainnet.weownvalidators.com:25718",
+        "boot2.mainnet.weownvalidators.com:25718",
+        "boot3.mainnet.weownvalidators.com:25718"
     ],
-    "MaxBlockFetchQueue": 100
+    "MaxBlockFetchQueue": 100,
+    "MinTxActionFee": 0.1
 }
