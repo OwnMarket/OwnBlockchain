@@ -1,6 +1,15 @@
 # Changelog
 
 
+## 1.4.0 (2019-11-11)
+
+- Improved TX set preparation logic.
+- Upgraded NetMQ to latest stable version.
+- Improved async operations management in network layer.
+- Implemented network segregation avoidance logic.
+- Changed the calculation of available balance when deposit is slashed.
+
+
 ## 1.3.7 (2019-09-06)
 
 - Add UNIX timestamps to the `/stats` API endpoint.
