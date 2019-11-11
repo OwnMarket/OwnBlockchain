@@ -1,6 +1,11 @@
 {
     "NetworkBootstrapNodes": [
         "boot1.testnet.weown.com:25718",
-        "boot2.testnet.weown.com:25718"
-    ]
+        "boot2.testnet.weown.com:25718",
+        "boot3.testnet.weown.com:25718",
+        "boot1.testnet.weownvalidators.com:25718",
+        "boot2.testnet.weownvalidators.com:25718",
+        "boot3.testnet.weownvalidators.com:25718"
+    ],
+    "MinTxActionFee": 0.1
 }
