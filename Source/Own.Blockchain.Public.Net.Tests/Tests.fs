@@ -429,6 +429,36 @@ module PeerTests =
         }
         [nodeConfig0; nodeConfig1; nodeConfig2]
 
+    let create3NodesConfigDuplicateBoostrapNode (ports : int list) =
+        let addresses =
+            ports
+            |> List.map (sprintf "127.0.0.1:%i")
+
+        let nodeConfigs =
+            addresses
+            |> List.map (fun address ->
+                {
+                    nodeConfigBase with
+                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
+                        ListeningAddress = NetworkAddress address
+                        PublicAddress = NetworkAddress address|> Some
+                        BootstrapNodes = []
+                }
+            )
+
+        let nodeConfig0 = nodeConfigs.[0]
+
+        let nodeConfig1 = {
+            nodeConfigs.[1] with
+                BootstrapNodes = [NetworkAddress addresses.[0]; NetworkAddress addresses.[0]]
+        }
+        let nodeConfig2 = {
+            nodeConfigs.[2] with
+                BootstrapNodes = [NetworkAddress addresses.[0]; NetworkAddress addresses.[0]]
+        }
+
+        [nodeConfig0; nodeConfig1; nodeConfig2]
+
     let create5NodesConfig2BoostrapNodes (ports : int list) =
         let addresses =
             ports
@@ -881,6 +911,15 @@ module PeerTests =
         setupTest ()
 
         let nodeConfigList = [211; 212; 213] |> create3NodesConfigDifferentBoostrapNode
+
+        testGossipDiscovery nodeConfigList 5
+
+    [<Fact>]
+    let ``Network - GossipDiscovery 3 nodes duplicate bootstrap node`` () =
+        // ARRANGE
+        setupTest ()
+
+        let nodeConfigList = [211; 212; 213] |> create3NodesConfigDuplicateBoostrapNode
 
         testGossipDiscovery nodeConfigList 5
 
