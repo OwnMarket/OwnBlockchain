@@ -457,28 +457,22 @@ type NetworkNode
     member private __.InitializePeerList () =
         let publicAddress = nodeConfigPublicIPAddress |> optionToList
         getAllPeerNodes () @ nodeConfig.BootstrapNodes @ publicAddress
+        |> List.choose (fun a -> memoizedConvertToIpAddress a.Value)
         |> Set.ofList
-        |> Set.iter (fun a ->
-            a.Value
-            |> memoizedConvertToIpAddress
-            |> Option.iter (fun ip ->
-                let heartbeat = if isSelf ip then -2L else 0L
-                __.AddPeer { NetworkAddress = ip; Heartbeat = heartbeat }
-            )
+        |> Set.iter (fun ip ->
+            let heartbeat = if isSelf ip then -2L else 0L
+            __.AddPeer { NetworkAddress = ip; Heartbeat = heartbeat }
         )
 
     member private __.BootstrapNode () =
         let publicAddress = nodeConfigPublicIPAddress |> optionToList
         nodeConfig.BootstrapNodes @ publicAddress
+        |> List.choose (fun a -> memoizedConvertToIpAddress a.Value)
         |> Set.ofList
-        |> Set.iter (fun a ->
-            a.Value
-            |> memoizedConvertToIpAddress
-            |> Option.iter (fun ip ->
-                let found, _ = activePeers.TryGetValue ip
-                if not found then
-                    __.AddPeer { NetworkAddress = ip; Heartbeat = 0L }
-            )
+        |> Set.iter (fun ip ->
+            let found, _ = activePeers.TryGetValue ip
+            if not found then
+                __.AddPeer { NetworkAddress = ip; Heartbeat = 0L }
         )
 
     member private __.AddPeer peer =
