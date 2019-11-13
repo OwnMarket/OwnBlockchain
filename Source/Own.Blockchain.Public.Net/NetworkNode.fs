@@ -111,6 +111,13 @@ type NetworkNode
             deadPeer.Heartbeat >= peer.Heartbeat
         | _ -> false
 
+    let cancelPeerStateMonitoring peerAddress =
+        match peersStateMonitor.TryGetValue peerAddress with
+        | true, cts ->
+            cts.Cancel()
+            peersStateMonitor.TryRemove peerAddress |> ignore
+        | _ -> ()
+
     (*
         Once a peer has been declared dead and it hasn't recovered in
         2xTFail time is removed from the dead-peers list.
@@ -122,9 +129,8 @@ type NetworkNode
         async {
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
             let found, _ = activePeers.TryGetValue peerAddress
-            if not found then
+            if not (found || isWhitelisted peerAddress) then
                 Log.warningf "Peer marked as DEAD %s" peerAddress.Value
-
                 removePeerNode peerAddress
                 |> Result.handle
                     (fun _ ->
@@ -133,6 +139,8 @@ type NetworkNode
                         peerAddress.Value |> closeConnection
                     )
                     (fun _ -> Log.errorf "Error removing peer %A" peerAddress)
+            else if isWhitelisted peerAddress then
+                cancelPeerStateMonitoring peerAddress
         }
 
     let monitorPendingDeadPeer peerAddress =
@@ -170,19 +178,20 @@ type NetworkNode
     let setPendingDeadPeer (peerAddress : NetworkAddress) =
         async {
             do! Async.Sleep gossipConfig.MissedHeartbeatIntervalMillis
-            Log.verbosef "Peer potentially DEAD: %s" peerAddress.Value
-            match activePeers.TryGetValue peerAddress with
-            | true, activePeer ->
-                activePeers.TryRemove peerAddress |> ignore
-                deadPeers.AddOrUpdate (peerAddress, activePeer, fun _ _ -> activePeer) |> ignore
-                monitorPendingDeadPeer peerAddress
-            | _ -> ()
+            if (isWhitelisted peerAddress) then
+                cancelPeerStateMonitoring peerAddress
+            else
+                Log.verbosef "Peer potentially DEAD: %s" peerAddress.Value
+                match activePeers.TryGetValue peerAddress with
+                | true, activePeer ->
+                    activePeers.TryRemove peerAddress |> ignore
+                    deadPeers.AddOrUpdate (peerAddress, activePeer, fun _ _ -> activePeer) |> ignore
+                    monitorPendingDeadPeer peerAddress
+                | _ -> ()
         }
 
     let monitorActivePeer peerAddress =
-        match peersStateMonitor.TryGetValue peerAddress with
-        | true, cts -> cts.Cancel()
-        | _ -> ()
+        cancelPeerStateMonitoring peerAddress
 
         if not (isWhitelisted peerAddress) then
             let cts = new CancellationTokenSource()
