@@ -40,7 +40,7 @@ type NetworkNode
     let excludedPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let peersStateMonitor = new ConcurrentDictionary<NetworkAddress, CancellationTokenSource>()
 
-    let cacheValidators = new ConcurrentBag<NetworkAddress>()
+    let validatorsCache = new ConcurrentDictionary<NetworkAddress, _>()
 
     let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let peerSelectionSentRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
@@ -94,7 +94,7 @@ type NetworkNode
     let isWhitelisted networkAddress =
         isSelf networkAddress
         || nodeConfig.BootstrapNodes |> List.contains networkAddress
-        || cacheValidators |> Seq.contains networkAddress
+        || validatorsCache.ContainsKey networkAddress
 
     let optionToList = function | Some x -> [x] | None -> []
 
@@ -219,7 +219,7 @@ type NetworkNode
             Async.Start (loop (), cts.Token)
 
     let getGossipFanout () =
-        Math.Max (4, gossipConfig.FanoutPercentage * cacheValidators.Count / 100 + 1)
+        Math.Max (4, gossipConfig.FanoutPercentage * validatorsCache.Count / 100 + 1)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public
@@ -388,10 +388,22 @@ type NetworkNode
     member private __.StartValidatorsCache () =
         let rec loop () =
             async {
-                cacheValidators.Clear()
-                getCurrentValidators ()
-                |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
-                |> List.iter (fun a -> cacheValidators.Add a |> ignore)
+                let newValidators =
+                    getCurrentValidators ()
+                    |> List.choose (fun v -> v.NetworkAddress.Value |> memoizedConvertToIpAddress)
+
+                // Remove old validators.
+                validatorsCache
+                |> List.ofDict
+                |> List.iter (fun (v, _) ->
+                    if not (newValidators |> List.contains v) then
+                        validatorsCache.TryRemove v |> ignore
+                )
+
+                // Add new validators.
+                newValidators
+                |> List.filter (validatorsCache.ContainsKey >> not)
+                |> List.iter (fun v -> validatorsCache.AddOrUpdate (v, None, fun _ _ -> None) |> ignore)
 
                 do! Async.Sleep(30_000)
                 return! loop ()
