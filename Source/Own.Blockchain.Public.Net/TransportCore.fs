@@ -97,11 +97,12 @@ type internal TransportCore
                 msg
                 |> unpackMessage
                 |> Result.handle
-                    (List.iter (fun envelope ->
-                        if envelope.NetworkId <> networkId then
-                            Log.error "Peer message with invalid networkId ignored"
-                        else
-                            invokeReceivePeerMessage envelope
+                    (
+                        List.iter (fun envelope ->
+                            if envelope.NetworkId <> networkId then
+                                Log.error "Peer message with invalid networkId ignored"
+                            else
+                                invokeReceivePeerMessage envelope
                         )
                     )
                     Log.error
@@ -111,6 +112,7 @@ type internal TransportCore
         let dealerSocket = new DealerSocket("tcp://" + targetHost)
         dealerSocket.Options.IPv4Only <- false
         dealerSocket.Options.Identity <- peerIdentity
+        dealerSocket.Options.Backlog <- 1000
         dealerSocket.ReceiveReady
         |> Observable.subscribe (fun e ->
             let mutable msg = Array.empty<byte>
@@ -118,12 +120,13 @@ type internal TransportCore
                 msg
                 |> unpackMessage
                 |> Result.handle
-                    (List.iter (fun envelope ->
-                        if envelope.NetworkId <> networkId then
-                            Log.error "Peer message with invalid networkId ignored"
-                        else
-                            receivePeerMessage envelope
-                        )
+                    (
+                        List.iter (fun envelope ->
+                            if envelope.NetworkId <> networkId then
+                                Log.error "Peer message with invalid networkId ignored"
+                            else
+                                receivePeerMessage envelope
+                            )
                     )
                     Log.error
         )
@@ -258,6 +261,7 @@ type internal TransportCore
         | None ->
             let socket = new RouterSocket("@tcp://" + listeningAddress)
             socket.Options.IPv4Only <- false
+            socket.Options.Backlog <- 1000
             routerSocket <- socket |> Some
 
         routerSocket |> Option.iter (fun socket ->
