@@ -165,19 +165,50 @@ module Consensus =
             |> persistConsensusState
 
         member private __.RestoreState() =
-            restoreConsensusState ()
-            |> Option.iter (fun s ->
-                _blockNumber <- s.BlockNumber
-                _round <- s.ConsensusRound
-                _step <- s.ConsensusStep
-                _lockedBlock <- s.LockedBlock
-                _lockedRound <- s.LockedRound
-                _validBlock <- s.ValidBlock
-                _validRound <- s.ValidRound
-                _validBlockSignatures <- s.ValidBlockSignatures
-            )
+            let validValueCertificateVotes =
+                restoreConsensusState ()
+                |> Option.map (fun state ->
+                    Log.info "Restoring consensus state variables..."
+
+                    _blockNumber <- state.BlockNumber
+                    _round <- state.ConsensusRound
+                    _step <- state.ConsensusStep
+                    _lockedBlock <- state.LockedBlock
+                    _lockedRound <- state.LockedRound
+                    _validBlock <- state.ValidBlock
+                    _validRound <- state.ValidRound
+                    _validBlockSignatures <- state.ValidBlockSignatures
+
+                    // Restore votes from the valid value certificate.
+                    if not state.ValidBlockSignatures.IsEmpty then
+                        Log.info "Restoring votes from the valid value certificate..."
+                    state.ValidBlockSignatures
+                    |> List.toArray
+                    |> Array.Parallel.map (fun signature ->
+                        {
+                            ConsensusMessageEnvelope.BlockNumber = state.BlockNumber
+                            Round = state.ValidRound
+                            ConsensusMessage =
+                                state.ValidBlock
+                                |> Option.map (fun b -> b.Header.Hash)
+                                |> Vote
+                            Signature = signature
+                        }
+                        |> Mapping.consensusMessageEnvelopeToDto
+                        |> verifyConsensusMessage
+                    )
+                    |> Array.choose (function
+                        | Ok v -> Some v
+                        | Error e ->
+                            Log.appErrors e
+                            None
+                    )
+                    |> Array.toList
+                )
+                |? []
 
             restoreConsensusMessages ()
+            |> tee (fun ms -> if not ms.IsEmpty then Log.info "Restoring persisted consensus messages...")
             |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
             |> List.iter (fun envelope ->
                 let senderAddress =
@@ -200,6 +231,28 @@ module Consensus =
             )
 
             __.SetValidators(_blockNumber - 1)
+
+            if not validValueCertificateVotes.IsEmpty then
+                Log.info "Adding restored valid value certificate votes..."
+
+                let signers =
+                    validValueCertificateVotes
+                    |> List.map fst
+                    |> Set.ofList
+                    |> Set.intersect (_validators |> Set.ofList)
+
+                for s, e in validValueCertificateVotes do
+                    if signers.Contains s then
+                        let key = e.BlockNumber, e.Round, s
+                        match e.ConsensusMessage with
+                        | Vote h ->
+                            if not (_votes.TryAdd(key, (h, e.Signature))) && s <> validatorAddress then
+                                Log.warningf "Cannot add restored valid value certificate vote: %s / %i / %i / %A"
+                                    s.Value
+                                    e.BlockNumber.Value
+                                    e.Round.Value
+                                    h
+                        | m -> failwithf "Unexpected message created from the stored valid value certificate: %A" m
 
         member private __.StartStaleConsensusDetection() =
             let maxRoundDuration r =
