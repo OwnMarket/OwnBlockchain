@@ -133,12 +133,22 @@ module Consensus =
                                 scheduleMessage messageRetryingInterval (senderAddress, envelope)
                 | Vote blockHash ->
                     if _votes.TryAdd(key, (blockHash, envelope.Signature)) then
+                        Log.debugf "Vote added: %s / %i / %i / %A"
+                            senderAddress.Value
+                            envelope.BlockNumber.Value
+                            envelope.Round.Value
+                            blockHash
                         if updateState then
                             __.UpdateState()
                     else
                         __.DetectEquivocation(envelope, senderAddress)
                 | Commit blockHash ->
                     if _commits.TryAdd(key, (blockHash, envelope.Signature)) then
+                        Log.debugf "Commit added: %s / %i / %i / %A"
+                            senderAddress.Value
+                            envelope.BlockNumber.Value
+                            envelope.Round.Value
+                            blockHash
                         if updateState then
                             __.UpdateState()
                     else
@@ -360,6 +370,9 @@ module Consensus =
                             | Some b -> ensureBlockReady b
 
                         if not blockReady then
+                            validBlock
+                            |> Option.map (fun b -> b.Header.Hash.Value)
+                            |> Log.debugf "Block %A not ready for valid value certificate"
                             scheduleStateResponse messageRetryingInterval (_blockNumber, response)
                         else
                             response.ValidProposal
@@ -375,10 +388,24 @@ module Consensus =
                                     Log.appErrors
                             )
 
+                            votes
+                            |> Array.map (fun (_, e) -> e.BlockNumber, e.Round)
+                            |> Array.distinct
+                            |> Array.exactlyOne
+                            |> Log.debugf "Received certificate with %i votes for %A" votes.Length
+
                             for s, e in votes do
                                 if signers.Contains s then
                                     __.ProcessConsensusMessage(s, e, false)
                                     shouldUpdateState <- true
+                    else
+                        Log.warningf "Not enough valid value certificate signers (%i):\n%A" signers.Count signers
+                else
+                    Log.warningf "Incoming valid value certificate: %A / %A\nLocal state: %A / %A"
+                        response.ValidRound
+                        (validBlock |> Option.map (fun b -> b.Header.Hash))
+                        _validRound
+                        (_validBlock |> Option.map (fun b -> b.Header.Hash))
 
             if shouldUpdateState then
                 __.UpdateState()
@@ -579,20 +606,28 @@ module Consensus =
             __.GetProposal()
             |> Option.iter (fun ((_, _, senderAddress), (block, vr, _)) ->
                 if _step = ConsensusStep.Propose && vr.Value = -1 then
+                    Log.debug ">>>>>>>>>> A1"
                     _step <- ConsensusStep.Vote
                     if isValidBlock block && (_lockedRound.Value = -1 || _lockedBlock = Some block) then
+                        Log.debug ">>>>>>>>>> A2"
                         __.SendVote(_round, Some block.Header.Hash)
                     else
+                        Log.debug ">>>>>>>>>> A3"
                         __.SendVote(_round, None)
 
                 if _step = ConsensusStep.Propose && (vr.Value >= 0 && vr < _round) then
+                    Log.debug ">>>>>>>>>> B1"
                     if __.MajorityVoted(vr, Some block.Header.Hash) then
+                        Log.debug ">>>>>>>>>> B2"
                         _step <- ConsensusStep.Vote
                         if isValidBlock block && (_lockedRound <= vr || _lockedBlock = Some block) then
+                            Log.debug ">>>>>>>>>> B3"
                             __.SendVote(_round, Some block.Header.Hash)
                         else
+                            Log.debug ">>>>>>>>>> B4"
                             __.SendVote(_round, None)
                     else
+                        Log.debug ">>>>>>>>>> B5"
                         if isValidBlock block && (_lockedRound < vr || _lockedBlock = Some block) then
                             // We have a proposal which looks good, but we're missing the corresponding votes.
                             Log.warningf "Missing votes for Propose %s in valid round %i sent by %s"
@@ -605,49 +640,66 @@ module Consensus =
 
             // VOTE RULES
             if _step = ConsensusStep.Vote && __.MajorityVoted(_round) then
+                Log.debug ">>>>>>>>>> C1"
                 if _scheduledTimeouts.Add(_round, ConsensusStep.Vote) then
+                    Log.debug ">>>>>>>>>> C2"
                     scheduleTimeout (_blockNumber, _round, ConsensusStep.Vote)
 
             if _step >= ConsensusStep.Vote then
+                Log.debug ">>>>>>>>>> D1"
                 __.GetProposal()
                 |> Option.iter (fun ((_, _, _), (block, _, _)) ->
+                    Log.debug ">>>>>>>>>> D2"
                     let blockHash = Some block.Header.Hash
                     if __.MajorityVoted(_round, blockHash) && isValidBlock block then
+                        Log.debug ">>>>>>>>>> D3"
                         _validBlock <- Some block
                         _validRound <- _round
                         _validBlockSignatures <- __.GetVoteSignatures(_blockNumber, _round, blockHash)
                         if _step = ConsensusStep.Vote then
+                            Log.debug ">>>>>>>>>> D4"
                             _lockedBlock <- Some block
                             _lockedRound <- _round
                             _step <- ConsensusStep.Commit
                             __.SendCommit(_round, blockHash)
                         else
+                            Log.debug ">>>>>>>>>> D5"
                             __.PersistState()
                 )
 
             if _step = ConsensusStep.Vote && __.MajorityVoted(_round, None) then
+                Log.debug ">>>>>>>>>> E1"
                 _step <- ConsensusStep.Commit
                 __.SendCommit(_round, None)
 
             // COMMIT RULES
             if __.MajorityCommitted(_round, None) then
+                Log.debug ">>>>>>>>>> F1"
                 __.StartRound(_round + 1)
 
             if __.MajorityCommitted(_round) then
+                Log.debug ">>>>>>>>>> G1"
                 if _scheduledTimeouts.Add(_round, ConsensusStep.Commit) then
+                    Log.debug ">>>>>>>>>> G2"
                     scheduleTimeout (_blockNumber, _round, ConsensusStep.Commit)
 
             if not (_decisions.ContainsKey _blockNumber) then
+                Log.debug ">>>>>>>>>> H1"
                 __.GetProposalCommittedByMajority()
                 |> Option.iter (fun ((blockNumber, r, _), (block, _, _)) ->
+                    Log.debug ">>>>>>>>>> H2"
                     if (*__.MajorityCommitted(r, Some block.Header.Hash) &&*) isValidBlock block then
+                        Log.debug ">>>>>>>>>> H3"
                         _decisions.[blockNumber] <- block
                         __.SaveBlock(block, r)
                         __.Synchronize()
                 )
 
             __.LatestValidRound()
-            |> Option.iter (fun r -> if r > _round then __.StartRound(r))
+            |> Option.iter (fun r ->
+                Log.debugf ">>>>>>>>>> LatestValidRound vs current: %A / %A" r _round
+                if r > _round then __.StartRound(r)
+            )
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         // Timeout Handlers
