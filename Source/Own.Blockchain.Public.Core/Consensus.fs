@@ -291,6 +291,8 @@ module Consensus =
             |> Async.Start
 
         member private __.ApplyReceivedState(response) =
+            let mutable shouldUpdateState = false
+
             let messages =
                 response.Messages
                 |> List.toArray
@@ -303,6 +305,7 @@ module Consensus =
             if messages.Length > 0 then
                 for (s, e) in messages do
                     __.ProcessConsensusMessage(s, e, false)
+                    shouldUpdateState <- true
 
             let response = {response with Messages = []} // We're done with the messages - no need to keep them.
 
@@ -365,15 +368,20 @@ module Consensus =
                                 |> Mapping.consensusMessageEnvelopeToDto
                                 |> verifyConsensusMessage
                                 |> Result.handle
-                                    (fun (a, _) -> __.ProcessConsensusMessage(a, e, false))
+                                    (fun (a, _) ->
+                                        __.ProcessConsensusMessage(a, e, false)
+                                        shouldUpdateState <- true
+                                    )
                                     Log.appErrors
                             )
 
                             for s, e in votes do
                                 if signers.Contains s then
                                     __.ProcessConsensusMessage(s, e, false)
+                                    shouldUpdateState <- true
 
-            __.UpdateState()
+            if shouldUpdateState then
+                __.UpdateState()
 
         member private __.SendState(request, peerIdentity) =
             if not (_validators |> List.contains request.ValidatorAddress) then
