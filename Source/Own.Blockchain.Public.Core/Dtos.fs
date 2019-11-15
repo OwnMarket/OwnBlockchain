@@ -649,6 +649,7 @@ type ClosedTradeOrderDto = {
     [<Key(16)>] IsExecutable : bool
     [<Key(17)>] AmountFilled : decimal
     [<Key(18)>] Status : byte
+    [<Key(19)>] ClosedInBlockNumber : int64
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -937,4 +938,5 @@ type TradeOrderApiDto = {
     IsExecutable : bool
     AmountFilled : decimal
     Status : string
+    ClosedInBlockNumber : Nullable<int64>
 }

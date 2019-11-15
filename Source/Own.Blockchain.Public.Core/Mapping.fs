@@ -860,8 +860,13 @@ module Mapping =
             Status = state.Status
         }
 
-    let tradeOrderStateToClosedTradeOrderDto (state : TradeOrderState) : ClosedTradeOrderDto =
-        {
+    let tradeOrderStateToClosedTradeOrderDto
+        (blockNumber : BlockNumber)
+        (state : TradeOrderState)
+        : ClosedTradeOrderDto
+        =
+
+            {
             BlockTimestamp = state.BlockTimestamp.Value
             BlockNumber = state.BlockNumber.Value
             TxPosition = state.TxPosition
@@ -881,34 +886,36 @@ module Mapping =
             IsExecutable = state.IsExecutable
             AmountFilled = state.AmountFilled.Value
             Status = state.Status |> tradeOrderStatusToCode
+            ClosedInBlockNumber = blockNumber.Value
         }
 
-    let tradeOrderInfoFromClosedTradeOrderDto
+    let tradeOrderApiDtoFromClosedTradeOrderDto
         (tradeOrderHash : TradeOrderHash, dto : ClosedTradeOrderDto)
-        : TradeOrderInfo
+        : TradeOrderApiDto
         =
 
         {
-            TradeOrderHash = tradeOrderHash
-            BlockTimestamp = Timestamp dto.BlockTimestamp
-            BlockNumber = BlockNumber dto.BlockNumber
+            TradeOrderHash = tradeOrderHash.Value
+            BlockTimestamp = dto.BlockTimestamp
+            BlockNumber = dto.BlockNumber
             TxPosition = dto.TxPosition
-            ActionNumber = TxActionNumber dto.ActionNumber
-            AccountHash = AccountHash dto.AccountHash
-            BaseAssetHash = AssetHash dto.BaseAssetHash
-            QuoteAssetHash = AssetHash dto.QuoteAssetHash
-            Side = dto.Side |> tradeOrderSideFromCode
-            Amount = AssetAmount dto.Amount
-            OrderType = dto.OrderType |> tradeOrderTypeFromCode
-            LimitPrice = AssetAmount dto.LimitPrice
-            StopPrice = AssetAmount dto.StopPrice
-            TrailingOffset = AssetAmount dto.TrailingOffset
+            ActionNumber = dto.ActionNumber
+            AccountHash = dto.AccountHash
+            BaseAssetHash = dto.BaseAssetHash
+            QuoteAssetHash = dto.QuoteAssetHash
+            Side = dto.Side |> tradeOrderSideFromCode |> tradeOrderSideToRawValue
+            Amount = dto.Amount
+            OrderType = dto.OrderType |> tradeOrderTypeFromCode |> tradeOrderTypeToRawValue
+            LimitPrice = dto.LimitPrice
+            StopPrice = dto.StopPrice
+            TrailingOffset = dto.TrailingOffset
             TrailingOffsetIsPercentage = dto.TrailingOffsetIsPercentage
-            TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode
-            ExpirationTimestamp = Timestamp dto.ExpirationTimestamp
+            TimeInForce = dto.TimeInForce |> tradeOrderTimeInForceFromCode |> tradeOrderTimeInForceToRawValue
+            ExpirationTimestamp = dto.ExpirationTimestamp
             IsExecutable = dto.IsExecutable
-            AmountFilled = AssetAmount dto.AmountFilled
-            Status = dto.Status |> tradeOrderStatusFromCode
+            AmountFilled = dto.AmountFilled
+            Status = (dto.Status |> tradeOrderStatusFromCode).ToString()
+            ClosedInBlockNumber = dto.ClosedInBlockNumber |> Nullable
         }
 
     let tradeOrderChangeToCode (change : TradeOrderChange) =
@@ -941,7 +948,7 @@ module Mapping =
             Status = TradeOrderStatus.Open
         }
 
-    let outputToDto (output : ProcessingOutput) : ProcessingOutputDto =
+    let outputToDto (blockNumber : BlockNumber) (output : ProcessingOutput) : ProcessingOutputDto =
         let txResults =
             output.TxResults
             |> Map.remap (fun (TxHash h, s : TxResult) -> h, txResultToDto s)
@@ -1008,7 +1015,7 @@ module Mapping =
         let closedTradeOrders =
             output.TradeOrders
             |> Map.filter (fun _ (_, c) -> c = TradeOrderChange.Remove)
-            |> Map.remap (fun (TradeOrderHash h, (s, _)) -> h, tradeOrderStateToClosedTradeOrderDto s)
+            |> Map.remap (fun (TradeOrderHash h, (s, _)) -> h, tradeOrderStateToClosedTradeOrderDto blockNumber s)
 
         let trades =
             output.Trades
@@ -1169,6 +1176,7 @@ module Mapping =
             IsExecutable = tradeOrderInfo.IsExecutable
             AmountFilled = tradeOrderInfo.AmountFilled.Value
             Status = tradeOrderInfo.Status.ToString()
+            ClosedInBlockNumber = Nullable()
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

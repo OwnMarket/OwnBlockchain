@@ -184,7 +184,7 @@ module Workflows =
                         |> saveBlockToDb
 
                     do! genesisState
-                        |> Mapping.outputToDto
+                        |> Mapping.outputToDto genesisBlock.Header.Number
                         |> persistStateChanges genesisBlock.Header.Number
                 }
 
@@ -871,7 +871,7 @@ module Workflows =
             |> fun outputFileName -> System.IO.File.WriteAllText(outputFileName, sprintf "%A" output)
             #endif
 
-            let outputDto = Mapping.outputToDto output
+            let outputDto = Mapping.outputToDto blockNumber output
             do! persistTxResults outputDto.TxResults
             do! persistEquivocationProofResults outputDto.EquivocationProofResults
             do! persistClosedTradeOrders outputDto.ClosedTradeOrders
@@ -1892,8 +1892,8 @@ module Workflows =
             dto
             |> Mapping.tradeOrderStateFromDto
             |> fun o -> Mapping.tradeOrderStateToInfo (tradeOrderHash, o)
+            |> Mapping.tradeOrderInfoToTradeOrderApiDto
             |> Ok
         | None ->
             getClosedTradeOrder tradeOrderHash
-            |> Result.map (fun o -> Mapping.tradeOrderInfoFromClosedTradeOrderDto (tradeOrderHash, o))
-        |> Result.map Mapping.tradeOrderInfoToTradeOrderApiDto
+            |> Result.map (fun o -> Mapping.tradeOrderApiDtoFromClosedTradeOrderDto (tradeOrderHash, o))
