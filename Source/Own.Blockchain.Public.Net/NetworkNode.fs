@@ -90,11 +90,15 @@ type NetworkNode
 
     let isSelf networkAddress =
         nodeConfigPublicIPAddress = Some networkAddress
+    let isWhitelisted peerAddress =
+        let bootstrapNodesIps =
+            nodeConfig.BootstrapNodes
+            |> List.choose memoizedConvertToIpAddress
+            |> Set.ofList
 
-    let isWhitelisted networkAddress =
-        isSelf networkAddress
-        || nodeConfig.BootstrapNodes |> List.contains networkAddress
-        || validatorsCache.ContainsKey networkAddress
+        isSelf peerAddress
+        || Set.contains peerAddress bootstrapNodesIps
+        || validatorsCache.ContainsKey peerAddress
 
     let optionToList = function | Some x -> [x] | None -> []
 
