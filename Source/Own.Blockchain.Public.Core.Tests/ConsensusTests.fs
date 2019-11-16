@@ -1066,14 +1066,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.[0] |> isVoteForBlock @>
         test <@ net.Messages.[1] |> isCommitForBlock @>
 
-        test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 1) @>
-        test <@ net.States.[validators.[2]].MessageCounts = (1, 2, 2) @>
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 3, 1) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 3, 2) @>
         test <@ net.DecisionCount = 1 @> // No new decisions yet
 
         net.DeliverMessages() // Deliver V3's messages
 
-        test <@ net.States.[validators.[0]].MessageCounts = (1, 2, 2) @>
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 4, 2) @>
         test <@ net.States.[validators.[2]].MessageCounts = (0, 0, 0) @>
         test <@ net.States.[validators.[3]].MessageCounts = (0, 0, 0) @>
         test <@ net.DecisionCount = 3 @>
@@ -1122,7 +1122,7 @@ type ConsensusTests(output : ITestOutputHelper) =
         net.RecoverValidator validators.[3]
         test <@ net.Messages.Count = 0 @>
 
-        test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 1) @>
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 3, 1) @>
         test <@ net.States.[validators.[1]].MessageCounts = (0, 0, 0) @>
         test <@ net.States.[validators.[3]].MessageCounts = (0, 0, 0) @>
         test <@ net.DecisionCount = 2 @> // V3 got block through sync
@@ -1228,14 +1228,14 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.[1] |> isCommitForBlock @>
 
         test <@ net.States.[validators.[0]].MessageCounts = (1, 1, 0) @>
-        test <@ net.States.[validators.[2]].MessageCounts = (1, 2, 1) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 1) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 3, 1) @>
 
         net.DeliverMessages() // Deliver V3's messages
         test <@ net.Messages.Count = 0 @>
 
         test <@ net.States.[validators.[0]].MessageCounts = (1, 2, 1) @>
-        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 4, 2) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
         test <@ net.DecisionCount = 0 @>
 
@@ -1255,8 +1255,8 @@ type ConsensusTests(output : ITestOutputHelper) =
         test <@ net.Messages.[0] |> isCommitForBlock @>
         test <@ net.DecisionCount = 0 @>
 
-        test <@ net.States.[validators.[0]].MessageCounts = (1, 3, 2) @>
-        test <@ net.States.[validators.[2]].MessageCounts = (1, 3, 2) @>
+        test <@ net.States.[validators.[0]].MessageCounts = (1, 4, 2) @>
+        test <@ net.States.[validators.[2]].MessageCounts = (1, 4, 2) @>
         test <@ net.States.[validators.[3]].MessageCounts = (1, 4, 2) @>
         test <@ net.DecisionCount = 0 @>
 
