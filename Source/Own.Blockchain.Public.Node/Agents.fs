@@ -377,7 +377,7 @@ module Agents =
                     match state with
                     | Some s -> s.HandleConsensusCommand command
                     | None ->
-                        // WORKAROUND: Avoid log polution due to Synchronize being invoked upon applying the block.
+                        // WORKAROUND: Avoid log pollution due to Synchronize being invoked upon applying the block.
                         if command <> Synchronize then
                             Log.warning "Consensus command ignored (node is not configured as validator)"
                 }
