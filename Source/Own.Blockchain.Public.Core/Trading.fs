@@ -280,6 +280,13 @@ module Trading =
         let processTopOrders = processTopOrders getHolding setHolding setTradeOrder getTradingPair setTradingPair
         let updateStopOrders = updateStopOrders getTradeOrders setTradeOrder (baseAssetHash, quoteAssetHash)
 
+        // Sync included STOP orders upon inclusion in the order book
+        getTradingPair (baseAssetHash, quoteAssetHash)
+        |> Option.iter (fun p ->
+            if p.LastPrice.Value <> 0m then
+                updateStopOrders p.LastPrice
+        )
+
         // Match orders
         let trades =
             Seq.initInfinite (fun _ ->

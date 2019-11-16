@@ -104,7 +104,7 @@ module TradingTests =
             TimeInForce = timeInForce
         }
 
-    let private matchOrders blockNumber senderWallet holdings existingOrders incomingOrders =
+    let private matchOrders blockNumber senderWallet holdings existingOrders incomingOrders lastPrice =
         // INIT STATE
         let validatorWallet = Signing.generateWallet ()
 
@@ -187,7 +187,7 @@ module TradingTests =
         let getTradingPairState _ =
             Some {
                 TradingPairState.IsEnabled = true
-                LastPrice = AssetAmount 0m
+                LastPrice = lastPrice
                 PriceChange = AssetAmount 0m
             }
 
@@ -263,7 +263,7 @@ module TradingTests =
 
         // ACT
         let existingOrderHashes, incomingOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
 
         // ASSERT
         test <@ output.TxResults.Count = incomingOrders.Length @>
@@ -353,7 +353,7 @@ module TradingTests =
 
         // ACT
         let existingOrderHashes, incomingOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
 
         // ASSERT
         test <@ output.TxResults.Count = incomingOrders.Length @>
@@ -430,6 +430,103 @@ module TradingTests =
         test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1500m @>
 
     [<Fact>]
+    let ``Matching - Stop and Limit price updated upon including TRAILING order in the order book`` () =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 10000m, true
+            ]
+
+        let existingOrders =
+            [
+            ]
+
+        let incomingOrders =
+            [
+                [ // TX1
+                    // Orders for which stop price doesn't move upon inclusion in the book:
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_MARKET", 0m, 47m, 5m, false, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_MARKET", 0m, 47m, 10m, true, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_LIMIT", 40m, 47m, 5m, false, "GTC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_LIMIT", 40m, 47m, 10m, true, "GTC")
+
+                    // Orders for which stop price moves upon inclusion in the book:
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_MARKET", 0m, 44m, 5m, false, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_MARKET", 0m, 44m, 10m, true, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_LIMIT", 40m, 44m, 5m, false, "GTC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_LIMIT", 40m, 44m, 10m, true, "GTC")
+
+                    // Orders for which stop price moves and triggers upon inclusion in the book:
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_MARKET", 0m, 51m, 5m, false, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_MARKET", 0m, 51m, 10m, true, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_LIMIT", 49m, 51m, 5m, false, "GTC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "TRAILING_STOP_LIMIT", 49m, 51m, 10m, true, "GTC")
+
+                    // Orders for which stop price triggers upon inclusion in the book:
+                    placeOrder accountHash1.Value ("SELL", 100m, "STOP_MARKET", 0m, 51m, 0m, false, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 100m, "STOP_LIMIT", 49m, 51m, 0m, false, "GTC")
+                ]
+            ]
+
+        let lastPrice = AssetAmount 50m
+
+        // ACT
+        let _, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders lastPrice
+
+        // ASSERT
+        test <@ output.TxResults.Count = incomingOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradeOrders.Count = 14 @>
+
+        test <@ output.Holdings.[accountHash1, baseAssetHash].Balance.Value = 10000m @> // Unchanged
+
+        for h in incomingOrderHashes do
+            let tradeOrderState, _ = output.TradeOrders.[h]
+            test <@ tradeOrderState.AmountFilled.Value = 0m @>
+
+        [
+            // Unchanged
+            0, 0m, 47m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+            1, 0m, 47m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+            2, 40m, 47m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+            3, 40m, 47m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+
+            // Moved
+            4, 0m, 45m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+            5, 0m, 45m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+            6, 41m, 45m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+            7, 41m, 45m, false, TradeOrderStatus.Open, TradeOrderChange.Add
+
+            // Triggered
+            8, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce, TradeOrderChange.Remove
+            9, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce, TradeOrderChange.Remove
+            10, 49m, 51m, true, TradeOrderStatus.Open, TradeOrderChange.Add
+            11, 49m, 51m, true, TradeOrderStatus.Open, TradeOrderChange.Add
+
+            // Triggered
+            12, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce, TradeOrderChange.Remove
+            13, 49m, 51m, true, TradeOrderStatus.Open, TradeOrderChange.Add
+        ]
+        |> List.iter (fun (i, limitPrice, stopPrice, isExecutable, status, change) ->
+            let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[i]]
+            test <@ tradeOrderState.LimitPrice.Value = limitPrice @>
+            test <@ tradeOrderState.StopPrice.Value = stopPrice @>
+            test <@ tradeOrderState.IsExecutable = isExecutable @>
+            test <@ tradeOrderState.Status = status @>
+            test <@ tradeOrderChange = change @>
+        )
+
+    [<Fact>]
     let ``Matching - Fill MARKET order up to available quote asset balance`` () =
         // ARRANGE
         let senderWallet = Signing.generateWallet ()
@@ -465,7 +562,7 @@ module TradingTests =
 
         // ACT
         let existingOrderHashes, incomingOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
 
         // ASSERT
         test <@ output.TxResults.Count = incomingOrders.Length @>
@@ -533,7 +630,7 @@ module TradingTests =
 
         // ACT
         let existingOrderHashes, incomingOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
 
         // ASSERT
         test <@ output.TxResults.Count = incomingOrders.Length @>
@@ -612,7 +709,7 @@ module TradingTests =
 
         // ACT
         let existingOrderHashes, incomingOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
 
         // ASSERT
         test <@ output.TxResults.Count = incomingOrders.Length @>
