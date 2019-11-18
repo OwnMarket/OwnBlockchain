@@ -103,9 +103,10 @@ module Composition =
     let getStakers = Db.getStakers Config.DbEngineType Config.DbConnectionString
     let getTotalChxStaked = Db.getTotalChxStaked Config.DbEngineType Config.DbConnectionString
 
-    let getAllPeerNodes () = Db.getAllPeerNodes Config.DbEngineType Config.DbConnectionString
-    let savePeerNode = Db.savePeerNode Config.DbEngineType Config.DbConnectionString
-    let removePeerNode = Db.removePeerNode Config.DbEngineType Config.DbConnectionString
+    let getActivePeers () = Db.getActivePeers Config.DbEngineType Config.DbConnectionString
+    let getDeadPeers () = Db.getDeadPeers Config.DbEngineType Config.DbConnectionString
+    let savePeerToDb = Db.savePeer Config.DbEngineType Config.DbConnectionString
+    let removePeerFromDb = Db.removePeer Config.DbEngineType Config.DbConnectionString
 
     let persistStateChanges = Db.persistStateChanges Config.DbEngineType Config.DbConnectionString
 
@@ -619,9 +620,10 @@ module Composition =
             Config.NetworkSendoutRetryTimeout
             Config.PeerMessageMaxSize
             getNetworkId
-            getAllPeerNodes
-            savePeerNode
-            removePeerNode
+            getActivePeers
+            getDeadPeers
+            savePeerToDb
+            removePeerFromDb
             Transport.init
             Transport.sendGossipDiscoveryMessage
             Transport.sendGossipMessage

@@ -21,19 +21,36 @@ type internal TransportCore
     ) =
 
     let poller = new NetMQPoller()
-    let mutable routerSocket : RouterSocket option = None
+
     let dealerSockets = new ConcurrentDictionary<string, DealerSocket>()
-    let multicastMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
-    let discoveryMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
-    let gossipMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
-    let requestsMessageQueue = new NetMQQueue<string * PeerMessageEnvelopeDto>()
-    let routerMessageQueue = new NetMQQueue<byte[] * PeerMessageEnvelopeDto>()
+    let multicastMessages, discoveryMessages, gossipMessages, requestsMessages =
+        new NetMQQueue<string * PeerMessageEnvelopeDto>(),
+        new NetMQQueue<string * PeerMessageEnvelopeDto>(),
+        new NetMQQueue<string * PeerMessageEnvelopeDto>(),
+        new NetMQQueue<string * PeerMessageEnvelopeDto>()
+
+    let mutable routerSocket : RouterSocket option = None
+    let routerMessages = new NetMQQueue<byte[] * PeerMessageEnvelopeDto>()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Private
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let mutable receivePeerMessageDispatcher : MailboxProcessor<PeerMessageEnvelopeDto> option = None
+    let composeMultipartMessage (identity : byte[] option) (msg : byte[]) =
+        let multipartMessage = new NetMQMessage()
+        identity |> Option.iter multipartMessage.Append
+        multipartMessage.Append msg
+        multipartMessage
+
+    let packMessage (identity : byte[] option) message =
+        message
+        |> Serialization.serializeBinary
+        |> composeMultipartMessage identity
+
+    let unpackMessage message =
+        message |> Serialization.deserializePeerMessageEnvelope
+
+    let mutable receivePeerMessageDispatcher : MailboxProcessor<byte[]> option = None
     let invokeReceivePeerMessage m =
         match receivePeerMessageDispatcher with
         | Some h -> h.Post m
@@ -44,13 +61,24 @@ type internal TransportCore
             failwith "ReceivePeerMessage agent is already started"
 
         receivePeerMessageDispatcher <-
-            Agent.start <| fun envelope ->
+            Agent.start <| fun msg ->
                 async {
-                    receivePeerMessage envelope
+                    msg
+                    |> unpackMessage
+                    |> Result.handle
+                        (
+                            List.iter (fun envelope ->
+                                if envelope.NetworkId <> networkId then
+                                    Log.error "Peer message with invalid networkId ignored"
+                                else
+                                    receivePeerMessage envelope
+                            )
+                        )
+                        Log.error
                 }
             |> Some
 
-    let netMQQueueToDict (queue : NetMQQueue<'T1 * PeerMessageEnvelopeDto>) =
+    let groupPeerMessageByTarget (queue : NetMQQueue<'T1 * PeerMessageEnvelopeDto>) =
         let mutable queueItem = Unchecked.defaultof<'T1>, Unchecked.defaultof<PeerMessageEnvelopeDto>
         let dict = new ConcurrentDictionary<'T1, HashSet<PeerMessageEnvelopeDto>>()
         let mutable peerMessageSize = 0
@@ -67,68 +95,33 @@ type internal TransportCore
                 dict.AddOrUpdate (target, peerMessages, fun _ _ -> peerMessages) |> ignore
         dict
 
-    let composeMultipartMessage (msg : byte[]) (identity : byte[] option) =
-        let multipartMessage = new NetMQMessage()
-        identity |> Option.iter (fun id -> multipartMessage.Append(id))
-        multipartMessage.Append(msg)
-        multipartMessage
-
     let extractMessageFromMultipart (multipartMessage : NetMQMessage) =
         if multipartMessage.FrameCount = 2 then
             let originatorIdentity = multipartMessage.[0] // TODO: use this instead of SenderIdentity
-            let msg = multipartMessage.[1].ToByteArray()
-            msg |> Some
+            multipartMessage.[1].ToByteArray()
+            |> Some
         else
             Log.errorf "Invalid message frame count (Expected 2, received %i)" multipartMessage.FrameCount
             None
 
-    let packMessage (identity : byte[] option) message =
-        let bytes = message |> Serialization.serializeBinary
-        composeMultipartMessage bytes identity
-
-    let unpackMessage message =
-        message |> Serialization.deserializePeerMessageEnvelope
-
     let receiveMessageCallback (eventArgs : NetMQSocketEventArgs) =
-        let mutable message = new NetMQMessage()
-        while eventArgs.Socket.TryReceiveMultipartMessage &message do
-            extractMessageFromMultipart message
-            |> Option.iter (fun msg ->
-                msg
-                |> unpackMessage
-                |> Result.handle
-                    (
-                        List.iter (fun envelope ->
-                            if envelope.NetworkId <> networkId then
-                                Log.error "Peer message with invalid networkId ignored"
-                            else
-                                invokeReceivePeerMessage envelope
-                        )
-                    )
-                    Log.error
-            )
+        let mutable msg = new NetMQMessage()
+        while eventArgs.Socket.TryReceiveMultipartMessage &msg do
+            msg
+            |> extractMessageFromMultipart
+            |> Option.iter invokeReceivePeerMessage
 
     let createDealerSocket targetHost =
         let dealerSocket = new DealerSocket("tcp://" + targetHost)
         dealerSocket.Options.IPv4Only <- false
         dealerSocket.Options.Identity <- peerIdentity
         dealerSocket.Options.Backlog <- 1000
+        // dealerSocket.Options.ReceiveHighWatermark <- 10000
         dealerSocket.ReceiveReady
         |> Observable.subscribe (fun e ->
             let mutable msg = Array.empty<byte>
             while e.Socket.TryReceiveFrameBytes &msg do
-                msg
-                |> unpackMessage
-                |> Result.handle
-                    (
-                        List.iter (fun envelope ->
-                            if envelope.NetworkId <> networkId then
-                                Log.error "Peer message with invalid networkId ignored"
-                            else
-                                receivePeerMessage envelope
-                            )
-                    )
-                    Log.error
+                invokeReceivePeerMessage msg
         )
         |> ignore
 
@@ -138,28 +131,34 @@ type internal TransportCore
     // Dealer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let dealerEnqueueMessage (queue: NetMQQueue<_>) msg targetAddress =
+    let dealerEnqueueMessage (peerMessages: NetMQQueue<_>) msg targetAddress =
         let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
             try
-                let dealerSocket = createDealerSocket targetAddress
-                poller.Add dealerSocket
-                dealerSockets.AddOrUpdate (targetAddress, dealerSocket, fun _ _ -> dealerSocket) |> ignore
+                targetAddress
+                |> createDealerSocket
+                |> fun socket ->
+                    (targetAddress, socket, fun _ _ -> socket)
+                    |> dealerSockets.AddOrUpdate
+                    |> poller.Add
             with
             | :? ObjectDisposedException ->
                 Log.error "Poller was disposed while adding socket"
-        queue.Enqueue (targetAddress, msg)
+        peerMessages.Enqueue (targetAddress, msg)
 
-    let dealerSendAsync (queue : NetMQQueue<_>) =
-        queue
-        |> netMQQueueToDict
+    let dealerSendAsync (peerMessages : NetMQQueue<_>) =
+        peerMessages
+        |> groupPeerMessageByTarget
         |> Seq.ofDict
         |> Seq.iter (fun (targetAddress, payload) ->
             match dealerSockets.TryGetValue targetAddress with
             | true, socket ->
-                let msg = payload |> List.ofSeq
-                let multipartMessage = packMessage None msg
-                let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
+                let multipartMessage =
+                    payload
+                    |> List.ofSeq
+                    |> packMessage None
+
+                let timeout = TimeSpan.FromMilliseconds(float networkSendoutRetryTimeout)
                 if not (socket.TrySendMultipartMessage(timeout, multipartMessage)) then
                     Stats.increment Stats.Counter.FailedMessageSendouts
                     Log.errorf "Could not send message to %s" targetAddress
@@ -175,50 +174,50 @@ type internal TransportCore
         )
 
     let handleMulticastSendout () =
-        dealerSendAsync multicastMessageQueue
+        dealerSendAsync multicastMessages
 
     let handleDiscoverySendout () =
         handleMulticastSendout ()
-        dealerSendAsync discoveryMessageQueue
+        dealerSendAsync discoveryMessages
 
     let handleRequestsSendout () =
         handleDiscoverySendout ()
-        dealerSendAsync requestsMessageQueue
+        dealerSendAsync requestsMessages
 
     let handleGossipSendout () =
         handleRequestsSendout ()
-        dealerSendAsync gossipMessageQueue
+        dealerSendAsync gossipMessages
 
     let wireDealerMessageQueueEvents () =
-        multicastMessageQueue.ReceiveReady
+        multicastMessages.ReceiveReady
         |> Observable.subscribe (fun _ ->
             handleMulticastSendout ()
         )
         |> ignore
 
-        discoveryMessageQueue.ReceiveReady
+        discoveryMessages.ReceiveReady
         |> Observable.subscribe (fun _ ->
             handleDiscoverySendout ()
         )
         |> ignore
 
-        requestsMessageQueue.ReceiveReady
+        requestsMessages.ReceiveReady
         |> Observable.subscribe (fun _ ->
             handleRequestsSendout ()
         )
         |> ignore
 
-        gossipMessageQueue.ReceiveReady
+        gossipMessages.ReceiveReady
         |> Observable.subscribe (fun _ ->
             handleGossipSendout ()
         )
         |> ignore
 
         [
-            multicastMessageQueue
-            discoveryMessageQueue
-            requestsMessageQueue
-            gossipMessageQueue
+            multicastMessages
+            discoveryMessages
+            requestsMessages
+            gossipMessages
         ]
         |> List.iter poller.Add
 
@@ -227,19 +226,22 @@ type internal TransportCore
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let routerEnqueueMessage msg =
-        routerMessageQueue.Enqueue msg
+        routerMessages.Enqueue msg
 
     let wireRouterMessageQueueEvents () =
-        routerMessageQueue.ReceiveReady |> Observable.subscribe (fun e ->
+        routerMessages.ReceiveReady |> Observable.subscribe (fun e ->
             handleRequestsSendout ()
             e.Queue
-            |> netMQQueueToDict
+            |> groupPeerMessageByTarget
             |> Seq.ofDict
             |> Seq.iter (fun (targetIdentity, payload) ->
-                let msg = payload |> List.ofSeq
-                let multipartMessage = packMessage (Some targetIdentity) msg
+                let multipartMessage =
+                    payload
+                    |> List.ofSeq
+                    |> packMessage (Some targetIdentity)
+
                 routerSocket |> Option.iter (fun socket ->
-                    let timeout = TimeSpan.FromMilliseconds(networkSendoutRetryTimeout |> float)
+                    let timeout = TimeSpan.FromMilliseconds(float networkSendoutRetryTimeout)
                     if not (socket.TrySendMultipartMessage(timeout, multipartMessage)) then
                         Stats.increment Stats.Counter.FailedMessageSendouts
                         Log.errorf "Could not send response message"
@@ -248,7 +250,7 @@ type internal TransportCore
         )
         |> ignore
 
-        poller.Add routerMessageQueue
+        poller.Add routerMessages
 
     member __.Init() =
         startReceivePeerMessageDispatcher ()
@@ -262,7 +264,8 @@ type internal TransportCore
             let socket = new RouterSocket("@tcp://" + listeningAddress)
             socket.Options.IPv4Only <- false
             socket.Options.Backlog <- 1000
-            routerSocket <- socket |> Some
+            // socket.Options.ReceiveHighWatermark <- 10000
+            routerSocket <- Some socket
 
         routerSocket |> Option.iter (fun socket ->
             poller.Add socket
@@ -277,28 +280,25 @@ type internal TransportCore
     // Send
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    member __.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
-        dealerEnqueueMessage discoveryMessageQueue gossipDiscoveryMessage targetAddress
+    member __.SendGossipDiscoveryMessage targetAddress peerMessage =
+        dealerEnqueueMessage discoveryMessages peerMessage targetAddress
 
-    member __.SendGossipMessage gossipMessage targetAddress =
-        dealerEnqueueMessage gossipMessageQueue gossipMessage targetAddress
+    member __.SendGossipMessage targetAddress peerMessage =
+        dealerEnqueueMessage gossipMessages peerMessage targetAddress
 
-    member __.SendRequestMessage requestMessage targetAddress =
-        dealerEnqueueMessage requestsMessageQueue requestMessage targetAddress
+    member __.SendRequestMessage targetAddress peerMessage =
+        dealerEnqueueMessage requestsMessages peerMessage targetAddress
 
-    member __.SendResponseMessage responseMessage (targetIdentity : byte[]) =
-        let msg = targetIdentity, responseMessage
-        routerEnqueueMessage msg
+    member __.SendResponseMessage (targetIdentity : byte[]) peerMessage =
+        routerEnqueueMessage (targetIdentity, peerMessage)
 
-    member __.SendMulticastMessage multicastMessage multicastAddresses =
+    member __.SendMulticastMessage multicastAddresses peerMessage =
         match multicastAddresses with
         | [] -> ()
         | _ ->
             multicastAddresses
             |> Seq.shuffle
-            |> Seq.iter (fun networkAddress ->
-                dealerEnqueueMessage multicastMessageQueue multicastMessage networkAddress
-            )
+            |> Seq.iter (dealerEnqueueMessage multicastMessages peerMessage)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Cleanup
@@ -320,14 +320,14 @@ type internal TransportCore
         )
         dealerSockets.Clear()
 
-        routerSocket |> Option.iter (fun socket -> poller.RemoveAndDispose socket)
+        routerSocket |> Option.iter poller.RemoveAndDispose
         routerSocket <- None
 
         [
-            multicastMessageQueue
-            discoveryMessageQueue
-            requestsMessageQueue
-            gossipMessageQueue
+            multicastMessages
+            discoveryMessages
+            requestsMessages
+            gossipMessages
         ]
         |> List.iter (fun queue ->
             if not queue.IsDisposed then

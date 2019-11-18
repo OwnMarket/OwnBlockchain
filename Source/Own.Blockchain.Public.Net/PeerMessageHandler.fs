@@ -3,6 +3,8 @@
 open System
 open Own.Common.FSharp
 open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
+open Own.Blockchain.Public.Core.Dtos
 open Own.Blockchain.Public.Core.DomainTypes
 
 module internal PeerMessageHandler =
@@ -24,9 +26,10 @@ module internal PeerMessageHandler =
         networkSendoutRetryTimeout
         peerMessageMaxSize
         getNetworkId
-        getAllPeerNodes
-        (savePeerNode : NetworkAddress -> Result<unit, AppErrors>)
-        (removePeerNode : NetworkAddress -> Result<unit, AppErrors>)
+        getActivePeersFromDb
+        getDeadPeersFromDb
+        (savePeerToDb : GossipPeerInfoDto -> Result<unit, AppErrors>)
+        (removePeerFromDb : NetworkAddress -> Result<unit, AppErrors>)
         initTransport
         sendGossipDiscoveryMessage
         sendGossipMessage
@@ -54,6 +57,7 @@ module internal PeerMessageHandler =
             }
 
         let gossipConfig = {
+            SessionTimestamp = Utils.getMachineTimestamp ()
             FanoutPercentage = gossipFanoutPercentage
             GossipDiscoveryIntervalMillis = gossipDiscoveryIntervalMillis
             GossipIntervalMillis = gossipIntervalMillis
@@ -61,12 +65,17 @@ module internal PeerMessageHandler =
             PeerResponseThrottlingTime = peerResponseThrottingTime
         }
 
+        let savePeer = Mapping.gossipPeerInfoToDto >> savePeerToDb
+        let getDeadPeers () = getDeadPeersFromDb () |> List.map Mapping.gossipPeerInfoFromDto
+        let getActivePeers () = getActivePeersFromDb () |> List.map Mapping.gossipPeerInfoFromDto
+
         let n =
             NetworkNode (
                 getNetworkId,
-                getAllPeerNodes,
-                savePeerNode,
-                removePeerNode,
+                getActivePeers,
+                getDeadPeers,
+                savePeer,
+                removePeerFromDb,
                 Utils.resolveHostToIpAddress,
                 initTransport,
                 sendGossipDiscoveryMessage,

@@ -33,6 +33,7 @@ module PeerTests =
     }
 
     let gossipConfigBase = {
+        SessionTimestamp = Utils.getMachineTimestamp ()
         FanoutPercentage = 4
         GossipDiscoveryIntervalMillis = 100
         GossipIntervalMillis = 100
@@ -295,16 +296,18 @@ module PeerTests =
     let createNodesWithGossipConfig gossipConfig nodeConfigList =
         // ARRANGE
         let createNode (nodeConfig : NetworkNodeConfig) =
-            let getAllPeerNodes = DbMock.getAllPeerNodes nodeConfig.ListeningAddress
-            let savePeerNode = DbMock.savePeerNode nodeConfig.ListeningAddress
-            let removePeerNode = DbMock.removePeerNode nodeConfig.ListeningAddress
+            let getActivePeers = DbMock.getActivePeersFromDb nodeConfig.ListeningAddress
+            let getDeadPeers = DbMock.getDeadPeers
+            let savePeer = DbMock.savePeer nodeConfig.ListeningAddress
+            let removePeer = DbMock.removePeer nodeConfig.ListeningAddress
             let getValidators = DbMock.getValidators nodeConfig.ListeningAddress
 
             NetworkNode (
                 getNetworkId,
-                getAllPeerNodes,
-                savePeerNode,
-                removePeerNode,
+                getActivePeers,
+                getDeadPeers,
+                savePeer,
+                removePeer,
                 resolveHostToIpAddress,
                 TransportMock.init,
                 TransportMock.sendGossipDiscoveryMessage,

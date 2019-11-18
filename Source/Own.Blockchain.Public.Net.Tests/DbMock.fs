@@ -3,37 +3,44 @@
 open System.Collections.Concurrent
 open Own.Common.FSharp
 open Own.Blockchain.Public.Core.DomainTypes
+open Own.Blockchain.Public.Core.Dtos
 
 module DbMock =
 
-    let private peers = new ConcurrentDictionary<NetworkAddress, NetworkAddress list>()
+    let private peers = new ConcurrentDictionary<NetworkAddress, GossipPeerInfo list>()
 
-    let getAllPeerNodes localAddress () =
+    let getActivePeersFromDb localAddress () =
         match peers.TryGetValue localAddress with
         | true, peerNodes -> peerNodes
         | _ -> []
 
-    let savePeerNode localAddress networkAddress =
+    let getDeadPeers () =
+        []
+
+    let savePeer (localAddress : NetworkAddress) (peerInfo : GossipPeerInfo) =
         result {
-            let peerNodes = getAllPeerNodes localAddress ()
-            let newPeerNodes = networkAddress :: peerNodes |> List.distinct
+            let peerNodes = getActivePeersFromDb localAddress ()
+            let newPeerNodes =
+                peerInfo :: peerNodes
+                |> List.distinctBy (fun p -> p.NetworkAddress)
+
             peers.AddOrUpdate (localAddress, newPeerNodes, fun _ _ -> newPeerNodes) |> ignore
         }
 
-    let removePeerNode localAddress networkAddress =
+    let removePeer localAddress (networkAddress : NetworkAddress) =
         result {
 
-            let peerNodes = getAllPeerNodes localAddress ()
-            let newPeerNodes = peerNodes |> List.filter (fun a -> a <> networkAddress)
+            let peerNodes = getActivePeersFromDb localAddress ()
+            let newPeerNodes = peerNodes |> List.filter (fun a -> a.NetworkAddress <> networkAddress)
             peers.AddOrUpdate (localAddress, newPeerNodes, fun _ _ -> newPeerNodes) |> ignore
         }
 
     let getValidators localAddress () =
-        getAllPeerNodes localAddress ()
-        |> List.map (fun (NetworkAddress n) ->
+        getActivePeersFromDb localAddress ()
+        |> List.map (fun peer ->
             {
                 ValidatorSnapshot.ValidatorAddress = BlockchainAddress "CH"
-                NetworkAddress = NetworkAddress n
+                NetworkAddress = peer.NetworkAddress
                 SharedRewardPercent = 0m
                 TotalStake = ChxAmount 0m
             }

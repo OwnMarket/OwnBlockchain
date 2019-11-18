@@ -38,24 +38,24 @@ type internal TransportCoreMock
 
         messageQueue.AddOrUpdate (targetAddress, set, fun _ _ -> set) |> ignore
 
-    member __.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
+    member __.SendGossipDiscoveryMessage targetAddress gossipDiscoveryMessage =
         let msg = packMessage [gossipDiscoveryMessage]
         send msg targetAddress
 
-    member __.SendGossipMessage gossipMessage targetAddress =
+    member __.SendGossipMessage targetAddress gossipMessage =
         let msg = packMessage [gossipMessage]
         send msg targetAddress
 
-    member __.SendRequestMessage requestMessage targetAddress =
+    member __.SendRequestMessage targetAddress requestMessage =
         let msg = packMessage [requestMessage]
         send msg targetAddress
 
-    member __.SendResponseMessage responseMessage (targetIdentity : byte[]) =
+    member __.SendResponseMessage (targetIdentity : byte[]) responseMessage =
         let msg = packMessage [responseMessage]
         let targetAddress = Conversion.bytesToString targetIdentity
         send msg targetAddress
 
-    member __.SendMulticastMessage multicastMessage multicastAddresses =
+    member __.SendMulticastMessage multicastAddresses multicastMessage =
         match multicastAddresses with
         | [] -> ()
         | _ ->

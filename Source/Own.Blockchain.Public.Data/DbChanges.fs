@@ -242,6 +242,19 @@ module DbChanges =
                     );
                     """
             }
+            {
+                Number = 7
+                Script =
+                    """
+                    ALTER TABLE peer ADD session_timestamp BIGINT DEFAULT 0 NOT NULL;
+                    ALTER TABLE peer ALTER session_timestamp DROP DEFAULT;
+
+                    ALTER TABLE peer ADD is_dead BOOLEAN DEFAULT FALSE NOT NULL;
+                    ALTER TABLE peer ALTER is_dead DROP DEFAULT;
+
+                    ALTER TABLE peer ADD dead_timestamp BIGINT;
+                    """
+            }
         ]
 
     let internal postgresChanges : DbChange list =
@@ -478,6 +491,19 @@ module DbChanges =
                         CONSTRAINT consensus_state__pk PRIMARY KEY (consensus_state_id),
                         CONSTRAINT consensus_state__ck__id__is_0 CHECK (consensus_state_id = 0) -- Single row table
                     );
+                    """
+            }
+            {
+                Number = 7
+                Script =
+                    """
+                    ALTER TABLE peer ADD session_timestamp BIGINT DEFAULT 0 NOT NULL;
+                    ALTER TABLE peer ALTER session_timestamp DROP DEFAULT;
+
+                    ALTER TABLE peer ADD is_dead BOOLEAN DEFAULT FALSE NOT NULL;
+                    ALTER TABLE peer ALTER is_dead DROP DEFAULT;
+
+                    ALTER TABLE peer ADD dead_timestamp BIGINT;
                     """
             }
         ]

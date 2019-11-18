@@ -918,12 +918,33 @@ module Mapping =
         {
             NetworkAddress = NetworkAddress dto.NetworkAddress
             Heartbeat = dto.Heartbeat
+            SessionTimestamp = dto.SessionTimestamp
         }
 
-    let gossipPeerToDto (gossipMember : GossipPeer) : GossipPeerDto =
+    let gossipPeerToDto (peer : GossipPeer) : GossipPeerDto =
         {
-            NetworkAddress = gossipMember.NetworkAddress.Value
-            Heartbeat = gossipMember.Heartbeat
+            NetworkAddress = peer.NetworkAddress.Value
+            Heartbeat = peer.Heartbeat
+            SessionTimestamp = peer.SessionTimestamp
+        }
+
+    let gossipPeerInfoFromDto (dto: GossipPeerInfoDto) : GossipPeerInfo =
+        {
+            NetworkAddress = NetworkAddress dto.NetworkAddress
+            SessionTimestamp = dto.SessionTimestamp
+            IsDead = dto.IsDead
+            DeadTimestamp = if dto.DeadTimestamp.HasValue then Some dto.DeadTimestamp.Value else None
+        }
+
+    let gossipPeerInfoToDto (peerInfo : GossipPeerInfo) : GossipPeerInfoDto =
+        {
+            NetworkAddress = peerInfo.NetworkAddress.Value
+            SessionTimestamp = peerInfo.SessionTimestamp
+            IsDead = peerInfo.IsDead
+            DeadTimestamp =
+                match peerInfo.DeadTimestamp with
+                | None -> Nullable ()
+                | Some timestamp -> Nullable timestamp
         }
 
     let gossipDiscoveryMessageFromDto (dto : GossipDiscoveryMessageDto) : GossipDiscoveryMessage =
