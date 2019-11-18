@@ -29,7 +29,7 @@ module Db =
     // TX
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let saveTx dbEngineType (dbConnectionString : string) (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
+    let saveTx dbEngineType dbConnectionString (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
         try
             let txParams =
                 [
@@ -64,7 +64,7 @@ module Db =
 
     let getPendingTxs
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (ChxAmount minActionFee)
         (txsToSkip : TxHash list)
         (txCountToFetch : int)
@@ -115,7 +115,7 @@ module Db =
 
     let getAllPendingTxHashes
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         : TxHash list
         =
 
@@ -128,7 +128,7 @@ module Db =
         DbTools.query<string> dbEngineType dbConnectionString sql []
         |> List.map TxHash
 
-    let getTx dbEngineType (dbConnectionString : string) (TxHash txHash) : TxInfoDto option =
+    let getTx dbEngineType dbConnectionString (TxHash txHash) : TxInfoDto option =
         let sql =
             """
             SELECT tx_hash, sender_address, nonce, action_fee, action_count
@@ -148,7 +148,7 @@ module Db =
 
     let getTotalFeeForPendingTxs
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress senderAddress)
         : ChxAmount
         =
@@ -169,12 +169,7 @@ module Db =
         |? 0m
         |> ChxAmount
 
-    let getTxPoolInfo
-        dbEngineType
-        (dbConnectionString : string)
-        : GetTxPoolInfoApiDto
-        =
-
+    let getTxPoolInfo dbEngineType dbConnectionString : GetTxPoolInfoApiDto =
         let sql =
             """
             SELECT COUNT(*) AS pending_txs
@@ -185,7 +180,7 @@ module Db =
         | [info] -> info
         | _ -> failwithf "Couldn't get TX pool info from DB"
 
-    let txExists dbEngineType (dbConnectionString : string) (TxHash txHash) : bool =
+    let txExists dbEngineType dbConnectionString (TxHash txHash) : bool =
         let sql =
             """
             SELECT 1
@@ -209,7 +204,7 @@ module Db =
 
     let saveEquivocationProof
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (equivocationInfoDto : EquivocationInfoDto)
         : Result<unit, AppErrors>
         =
@@ -248,7 +243,7 @@ module Db =
 
     let getPendingEquivocationProofs
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockNumber blockNumber)
         : EquivocationInfoDto list
         =
@@ -271,7 +266,7 @@ module Db =
 
     let getAllPendingEquivocationProofHashes
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         : EquivocationProofHash list
         =
 
@@ -286,7 +281,7 @@ module Db =
 
     let getEquivocationProof
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (EquivocationProofHash equivocationProofHash)
         : EquivocationInfoDto option
         =
@@ -315,7 +310,7 @@ module Db =
 
     let equivocationProofExists
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (EquivocationProofHash equivocationProofHash)
         : bool
         =
@@ -341,7 +336,7 @@ module Db =
     // Block
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let saveBlock dbEngineType (dbConnectionString : string) (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
+    let saveBlock dbEngineType dbConnectionString (blockInfo : BlockInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
             INSERT INTO block (block_number, block_hash, block_timestamp, is_config_block, is_applied)
@@ -365,7 +360,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert block"
 
-    let getLastAppliedBlockNumber dbEngineType (dbConnectionString : string) : BlockNumber option =
+    let getLastAppliedBlockNumber dbEngineType dbConnectionString : BlockNumber option =
         let sql =
             """
             SELECT block_number
@@ -378,7 +373,7 @@ module Db =
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
         | numbers -> failwithf "Multiple applied block entries found: %A" numbers
 
-    let getLastAppliedBlockTimestamp dbEngineType (dbConnectionString : string) : Timestamp option =
+    let getLastAppliedBlockTimestamp dbEngineType dbConnectionString : Timestamp option =
         let sql =
             """
             SELECT block_timestamp
@@ -391,7 +386,7 @@ module Db =
         | [blockTimestamp] -> blockTimestamp |> Timestamp |> Some
         | timestamps -> failwithf "Multiple applied block entries found: %A" timestamps
 
-    let getLastStoredBlockNumber dbEngineType (dbConnectionString : string) : BlockNumber option =
+    let getLastStoredBlockNumber dbEngineType dbConnectionString : BlockNumber option =
         let sql =
             match dbEngineType with
             | Firebird ->
@@ -415,7 +410,7 @@ module Db =
         | [blockNumber] -> blockNumber |> BlockNumber |> Some
         | _ -> failwith "getLastStoredBlockNumber query retrieved multiple rows"
 
-    let getStoredBlockNumbers dbEngineType (dbConnectionString : string) : BlockNumber list =
+    let getStoredBlockNumbers dbEngineType dbConnectionString : BlockNumber list =
         let sql =
             """
             SELECT block_number
@@ -432,7 +427,7 @@ module Db =
 
     let saveConsensusMessage
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (consensusMessageInfoDto : ConsensusMessageInfoDto)
         : Result<unit, AppErrors>
         =
@@ -466,7 +461,7 @@ module Db =
 
     let getConsensusMessages
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         : ConsensusMessageInfoDto list
         =
 
@@ -479,7 +474,7 @@ module Db =
 
     let saveConsensusState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (consensusStateInfoDto : ConsensusStateInfoDto)
         : Result<unit, AppErrors>
         =
@@ -591,7 +586,7 @@ module Db =
 
     let getConsensusState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         : ConsensusStateInfoDto option
         =
 
@@ -1006,7 +1001,7 @@ module Db =
 
     let getChxAddressState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress address)
         : ChxAddressStateDto option
         =
@@ -1030,7 +1025,7 @@ module Db =
 
     let getAddressAccounts
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress address)
         =
 
@@ -1050,7 +1045,7 @@ module Db =
 
     let getAddressAssets
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress address)
         =
 
@@ -1069,7 +1064,7 @@ module Db =
 
     let getAddressStakes
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress address)
         =
 
@@ -1087,7 +1082,7 @@ module Db =
 
     let getValidatorStakes
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress address)
         =
 
@@ -1103,7 +1098,7 @@ module Db =
         ]
         |> DbTools.query<ValidatorStakeInfoDto> dbEngineType dbConnectionString sql
 
-    let getAccountState dbEngineType (dbConnectionString : string) (AccountHash accountHash) : AccountStateDto option =
+    let getAccountState dbEngineType dbConnectionString (AccountHash accountHash) : AccountStateDto option =
         let sql =
             """
             SELECT controller_address
@@ -1123,7 +1118,7 @@ module Db =
 
     let getAccountHoldings
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (AccountHash accountHash)
         (assetHash : AssetHash option)
         : AccountHoldingDto list
@@ -1162,7 +1157,7 @@ module Db =
 
     let getAccountVotes
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (AccountHash accountHash)
         (assetHash : AssetHash option)
         : AccountVoteDto list
@@ -1202,7 +1197,7 @@ module Db =
 
     let getAccountEligibilities
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (AccountHash accountHash)
         : AccountEligibilityInfoDto list
         =
@@ -1225,7 +1220,7 @@ module Db =
 
     let getHoldingState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (AccountHash accountHash, AssetHash assetHash)
         : HoldingStateDto option
         =
@@ -1252,7 +1247,7 @@ module Db =
 
     let getVoteState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (voteId : VoteId)
         : VoteStateDto option
         =
@@ -1287,7 +1282,7 @@ module Db =
 
     let getEligibilityState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (AccountHash accountHash, AssetHash assetHash)
         : EligibilityStateDto option
         =
@@ -1319,7 +1314,7 @@ module Db =
 
     let getAssetKycProviders
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (AssetHash assetHash)
         : BlockchainAddress list
         =
@@ -1340,7 +1335,7 @@ module Db =
 
     let getAccountKycProviders
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (AccountHash accountHash)
         : BlockchainAddress list
         =
@@ -1358,7 +1353,7 @@ module Db =
         |> DbTools.query<string> dbEngineType dbConnectionString sql
         |> List.map BlockchainAddress
 
-    let getAssetState dbEngineType (dbConnectionString : string) (AssetHash assetHash) : AssetStateDto option =
+    let getAssetState dbEngineType dbConnectionString (AssetHash assetHash) : AssetStateDto option =
         let sql =
             """
             SELECT asset_code, controller_address, is_eligibility_required
@@ -1376,7 +1371,7 @@ module Db =
         | [assetState] -> Some assetState
         | _ -> failwithf "Multiple assets found for asset hash %A" assetHash
 
-    let getAssetHashByCode dbEngineType (dbConnectionString : string) (AssetCode assetCode) : AssetHash option =
+    let getAssetHashByCode dbEngineType dbConnectionString (AssetCode assetCode) : AssetHash option =
         let sql =
             """
             SELECT asset_hash
@@ -1396,7 +1391,7 @@ module Db =
 
     let getAllValidators
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         : GetValidatorInfoApiDto list
         =
 
@@ -1411,7 +1406,7 @@ module Db =
 
     let getValidatorState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress validatorAddress)
         : ValidatorStateDto option
         =
@@ -1435,7 +1430,7 @@ module Db =
 
     let getTopValidatorsByStake
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (topCount : int)
         (ChxAmount threshold)
         (ChxAmount deposit)
@@ -1501,7 +1496,7 @@ module Db =
 
     let getBlacklistedValidators
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         : BlockchainAddress list
         =
 
@@ -1517,7 +1512,7 @@ module Db =
 
     let getLockedAndBlacklistedValidators
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         : BlockchainAddress list
         =
 
@@ -1534,7 +1529,7 @@ module Db =
 
     let getTopStakersByStake
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (topCount : int)
         (BlockchainAddress validatorAddress)
         : StakerInfoDto list
@@ -1568,7 +1563,7 @@ module Db =
 
     let getStakeState
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress stakerAddress, BlockchainAddress validatorAddress)
         : StakeStateDto option
         =
@@ -1594,7 +1589,7 @@ module Db =
 
     let getStakers
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress validatorAddress)
         : BlockchainAddress list
         =
@@ -1614,7 +1609,7 @@ module Db =
 
     let getTotalChxStaked
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (BlockchainAddress stakerAddress)
         : ChxAmount
         =
@@ -2943,7 +2938,7 @@ module Db =
 
     let persistStateChanges
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (blockNumber : BlockNumber)
         (stateChanges : ProcessingOutputDto)
         : Result<unit, AppErrors>
@@ -2992,19 +2987,29 @@ module Db =
     // Network
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let getAllPeerNodes dbEngineType (dbConnectionString : string) : NetworkAddress list =
+    let private getPeers dbEngineType dbConnectionString isDead =
         let sql =
             """
-            SELECT network_address
+            SELECT network_address, session_timestamp, is_dead, dead_timestamp
             FROM peer
+            where is_dead = @isDead
             """
+        let sqlParams =
+            [
+                "@isDead", isDead |> box
+            ]
 
-        DbTools.query<string> dbEngineType dbConnectionString sql []
-        |> List.map (fun a -> NetworkAddress a)
+        DbTools.query<GossipPeerInfoDto> dbEngineType dbConnectionString sql sqlParams
 
-    let removePeerNode
+    let getActivePeers dbEngineType dbConnectionString =
+        getPeers dbEngineType dbConnectionString false
+
+    let getDeadPeers dbEngineType dbConnectionString =
+        getPeers dbEngineType dbConnectionString true
+
+    let removePeer
         dbEngineType
-        (dbConnectionString : string)
+        dbConnectionString
         (NetworkAddress networkAddress)
         : Result<unit, AppErrors>
         =
@@ -3028,16 +3033,16 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove peer"
 
-    let private getPeerNode
+    let private peerExists
         dbEngineType
-        (dbConnectionString : string)
-        (NetworkAddress networkAddress)
-        : NetworkAddress option
+        dbConnectionString
+        (networkAddress : string)
+        : bool
         =
 
         let sql =
             """
-            SELECT network_address
+            SELECT 1
             FROM peer
             WHERE network_address = @networkAddress
             """
@@ -3047,27 +3052,30 @@ module Db =
                 "@networkAddress", networkAddress |> box
             ]
 
-        match DbTools.query<string> dbEngineType dbConnectionString sql sqlParams with
-        | [] -> None
-        | [a] -> a |> NetworkAddress |> Some
-        | _ -> failwithf "Multiple entries found for address %A" networkAddress
+        match DbTools.query<int> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> false
+        | [_] -> true
+        | _ -> failwithf "Multiple peers found for address %A" networkAddress
 
-    let private insertPeerNode
+    let private insertNewPeer
         dbEngineType
-        (dbConnectionString : string)
-        (NetworkAddress networkAddress)
+        dbConnectionString
+        (peerInfo : GossipPeerInfoDto)
         : Result<unit, AppErrors>
         =
 
         let sql =
             """
-            INSERT INTO peer (network_address)
-            VALUES (@networkAddress)
+            INSERT INTO peer (network_address, session_timestamp, is_dead, dead_timestamp)
+            VALUES (@networkAddress, @sessionTimestamp, @isDead, @deadTimestamp)
             """
 
         let sqlParams =
             [
-                "@networkAddress", networkAddress |> box
+                "@networkAddress", peerInfo.NetworkAddress |> box
+                "@sessionTimestamp", peerInfo.SessionTimestamp |> box
+                "@isDead", peerInfo.IsDead |> box
+                "@deadTimestamp", peerInfo.DeadTimestamp |> boxNullable
             ]
 
         try
@@ -3079,17 +3087,51 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert peer"
 
-    let savePeerNode
+    let private updatePeer
         dbEngineType
-        (dbConnectionString : string)
-        (NetworkAddress networkAddress)
+        dbConnectionString
+        (peerInfo : GossipPeerInfoDto)
         : Result<unit, AppErrors>
         =
 
-        match getPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress) with
-        | Some _ -> Ok ()
-        | None -> insertPeerNode dbEngineType dbConnectionString (NetworkAddress networkAddress)
+        let sql =
+            """
+            UPDATE peer
+            SET network_address = @networkAddress,
+                session_timestamp = @sessionTimestamp,
+                is_dead = @isDead,
+                dead_timestamp = @deadTimestamp
+            WHERE network_address = @networkAddress
+            """
 
+        let sqlParams =
+            [
+                "@networkAddress", peerInfo.NetworkAddress |> box
+                "@isDead", peerInfo.IsDead |> box
+                "@sessionTimestamp", peerInfo.SessionTimestamp |> box
+                "@deadTimestamp", peerInfo.DeadTimestamp |> boxNullable
+            ]
+
+        try
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update peer"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update peer"
+            
+    let savePeer
+        dbEngineType
+        dbConnectionString
+        (peerInfo : GossipPeerInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        match peerExists dbEngineType dbConnectionString peerInfo.NetworkAddress with
+        | true -> updatePeer dbEngineType dbConnectionString peerInfo
+        | false -> insertNewPeer dbEngineType dbConnectionString peerInfo
+            
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Raw Data
     ////////////////////////////////////////////////////////////////////////////////////////////////////

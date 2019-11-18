@@ -661,6 +661,15 @@ type ClosedTradeOrderDto = {
 type GossipPeerDto = {
     [<Key(0)>] NetworkAddress : string
     [<Key(1)>] Heartbeat : int64
+    [<Key(2)>] SessionTimestamp : int64
+}
+
+[<CLIMutable>]
+type GossipPeerInfoDto = {
+    NetworkAddress : string
+    SessionTimestamp : int64
+    IsDead : bool
+    DeadTimestamp : Nullable<int64>
 }
 
 [<CLIMutable>]

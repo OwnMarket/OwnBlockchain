@@ -688,6 +688,7 @@ type NetworkNodeConfig = {
 }
 
 type GossipNetworkConfig = {
+    SessionTimestamp : int64
     FanoutPercentage : int
     GossipDiscoveryIntervalMillis : int
     GossipIntervalMillis : int
@@ -698,6 +699,14 @@ type GossipNetworkConfig = {
 type GossipPeer = {
     NetworkAddress : NetworkAddress
     Heartbeat : int64
+    SessionTimestamp : int64
+}
+
+type GossipPeerInfo = {
+    NetworkAddress : NetworkAddress
+    SessionTimestamp : int64
+    IsDead : bool
+    DeadTimestamp : int64 option
 }
 
 type GossipDiscoveryMessage = {

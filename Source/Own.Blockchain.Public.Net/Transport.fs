@@ -19,29 +19,29 @@ module Transport =
     // Send
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let sendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress =
+    let sendGossipDiscoveryMessage targetAddress gossipDiscoveryMessage =
         match transportCore with
-        | Some transport -> transport.SendGossipDiscoveryMessage gossipDiscoveryMessage targetAddress
+        | Some transport -> transport.SendGossipDiscoveryMessage targetAddress gossipDiscoveryMessage
         | None -> failwith "Please initialize transport first"
 
-    let sendGossipMessage gossipMessage targetAddress =
+    let sendGossipMessage targetAddress gossipMessage =
         match transportCore with
-        | Some transport -> transport.SendGossipMessage gossipMessage targetAddress
+        | Some transport -> transport.SendGossipMessage targetAddress gossipMessage
         | None -> failwith "Please initialize transport first"
 
-    let sendRequestMessage requestMessage targetAddress =
+    let sendRequestMessage targetAddress requestMessage =
         match transportCore with
-        | Some transport -> transport.SendRequestMessage requestMessage targetAddress
+        | Some transport -> transport.SendRequestMessage targetAddress requestMessage
         | None -> failwith "Please initialize transport first"
 
-    let sendResponseMessage responseMessage (targetIdentity : byte[]) =
+    let sendResponseMessage (targetIdentity : byte[]) responseMessage =
         match transportCore with
-        | Some transport -> transport.SendResponseMessage responseMessage targetIdentity
+        | Some transport -> transport.SendResponseMessage targetIdentity responseMessage
         | None -> failwith "Please initialize transport first"
 
-    let sendMulticastMessage multicastMessage multicastAddresses =
+    let sendMulticastMessage multicastAddresses multicastMessage =
         match transportCore with
-        | Some transport -> transport.SendMulticastMessage multicastMessage multicastAddresses
+        | Some transport -> transport.SendMulticastMessage multicastAddresses multicastMessage
         | None -> failwith "Please initialize transport first"
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
