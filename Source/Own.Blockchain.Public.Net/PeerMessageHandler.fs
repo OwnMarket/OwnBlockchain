@@ -25,6 +25,7 @@ module internal PeerMessageHandler =
         peerResponseThrottingTime
         networkSendoutRetryTimeout
         peerMessageMaxSize
+        deadPeerExpirationTime
         getNetworkId
         getActivePeersFromDb
         getDeadPeersFromDb
@@ -54,6 +55,7 @@ module internal PeerMessageHandler =
                 DnsResolverCacheExpirationTime = dnsResolverCacheExpirationTime
                 NetworkSendoutRetryTimeout = networkSendoutRetryTimeout
                 PeerMessageMaxSize = peerMessageMaxSize
+                DeadPeerExpirationTime = deadPeerExpirationTime
             }
 
         let gossipConfig = {

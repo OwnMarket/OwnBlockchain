@@ -619,6 +619,7 @@ module Composition =
             Config.PeerResponseThrottlingTime
             Config.NetworkSendoutRetryTimeout
             Config.PeerMessageMaxSize
+            Config.DeadPeerExpirationTime
             getNetworkId
             getActivePeers
             getDeadPeers
