@@ -450,7 +450,6 @@ module Processing =
                         change
                     | Some _, Some TradeOrderChange.Add
                     | Some TradeOrderChange.Remove, Some _
-                    | Some TradeOrderChange.Remove, Some _
                     | _, None ->
                         failwithf "Cannot apply change [%A -> %A] to trade order %s: %A"
                             existingChange change tradeOrderHash.Value state
