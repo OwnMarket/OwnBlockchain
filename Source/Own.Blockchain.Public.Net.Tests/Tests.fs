@@ -30,6 +30,7 @@ module PeerTests =
         DnsResolverCacheExpirationTime = 600
         NetworkSendoutRetryTimeout = 500
         PeerMessageMaxSize = 1_000_000
+        DeadPeerExpirationTime = 24
     }
 
     let gossipConfigBase = {

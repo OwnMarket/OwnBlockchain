@@ -486,7 +486,10 @@ type NetworkNode
             let rec loop () =
                 async {
                     let newDeadPeers = getDeadPeersFromDb ()
-                    let lastValidTimestamp = DateTimeOffset.UtcNow.AddHours(-24.).ToUnixTimeMilliseconds();
+                    let lastValidTimestamp =
+                        DateTimeOffset.UtcNow
+                            .AddHours(-float (nodeConfig.DeadPeerExpirationTime))
+                            .ToUnixTimeMilliseconds()
 
                     // Remove expired dead peers.
                     deadPeersInfoCache

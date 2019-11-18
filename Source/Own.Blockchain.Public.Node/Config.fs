@@ -200,6 +200,12 @@ type Config () =
             | true, size when size >= 0 -> size
             | _ -> 1_000_000
 
+    static member DeadPeerExpirationTime // Hours
+        with get () =
+            match Int32.TryParse config.["DeadPeerExpirationTime"] with
+            | true, time when time >= 0 -> time
+            | _ -> 24
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Synchronization
     ////////////////////////////////////////////////////////////////////////////////////////////////////
