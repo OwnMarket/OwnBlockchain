@@ -2893,6 +2893,7 @@ module Db =
     let private updateTradeOrders
         (conn : DbConnection)
         (transaction : DbTransaction)
+        (blockNumber : BlockNumber)
         (tradeOrders : Map<string, TradeOrderStateDto * TradeOrderChangeCode>)
         : Result<unit, AppErrors>
         =
@@ -2928,7 +2929,11 @@ module Db =
                 | TradeOrderChangeCode.Update ->
                     updateTradeOrder conn transaction tradeOrderInfo
                 | TradeOrderChangeCode.Remove ->
-                    removeTradeOrder conn transaction tradeOrderHash
+                    if state.BlockNumber = blockNumber.Value then
+                        Ok () // Trade order, which came in current block, doesn't exist in the state DB.
+                    else
+                        removeTradeOrder conn transaction tradeOrderHash
+
                 | _ -> Result.appError (sprintf "Invalid trade order change : %A" change)
             )
 
@@ -2965,7 +2970,7 @@ module Db =
                 do! updateKycProviders conn transaction stateChanges.KycProviders
                 do! updateEligibilities conn transaction stateChanges.Eligibilities
                 do! updateTradingPairs conn transaction stateChanges.TradingPairs
-                do! updateTradeOrders conn transaction stateChanges.TradeOrders
+                do! updateTradeOrders conn transaction blockNumber stateChanges.TradeOrders
                 do! updateBlock conn transaction blockNumber
                 do! removePreviousBlock conn transaction blockNumber
                 do! removeOldConsensusMessages conn transaction blockNumber
