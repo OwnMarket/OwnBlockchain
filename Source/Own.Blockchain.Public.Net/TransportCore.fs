@@ -131,7 +131,7 @@ type internal TransportCore
     // Dealer
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let dealerEnqueueMessage (peerMessages: NetMQQueue<_>) msg targetAddress =
+    let dealerEnqueueMessage (peerMessages : NetMQQueue<_>) msg targetAddress =
         let found, _ = dealerSockets.TryGetValue targetAddress
         if not found then
             try

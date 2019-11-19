@@ -448,6 +448,7 @@ type NetworkNode
                         |> sendMulticastMessage multicastAddresses
 
                 | GossipMessage m -> __.Throttle sentGossipMessages [ m.MessageId ] (fun _ -> __.SendGossipMessage m)
+
                 | _ -> ()
             }
         Async.Start (sendMessageTask, cts.Token)
@@ -584,11 +585,11 @@ type NetworkNode
                 else
                     0L, peerInfo.SessionTimestamp
                 |> fun (heartbeat, sessionTimestamp) ->
-                {
-                    NetworkAddress = peerInfo.NetworkAddress
-                    Heartbeat = heartbeat
-                    SessionTimestamp = sessionTimestamp
-                }
+                    {
+                        NetworkAddress = peerInfo.NetworkAddress
+                        Heartbeat = heartbeat
+                        SessionTimestamp = sessionTimestamp
+                    }
             )
 
         nodeConfig.BootstrapNodes @ publicAddress
@@ -607,7 +608,7 @@ type NetworkNode
         |> List.choose (fun peer ->
             peer.NetworkAddress
             |> memoizedConvertToIpAddress
-            |> Option.bind (fun ip -> Some { peer with NetworkAddress = ip})
+            |> Option.map (fun ip -> {peer with NetworkAddress = ip})
         )
         |> List.distinctBy (fun peer -> peer.NetworkAddress)
         |> Set.ofList
@@ -667,7 +668,7 @@ type NetworkNode
                     // Update the heartbeat.
                     __.UpdatePeer { localPeer with Heartbeat = peer.Heartbeat }
 
-                else if localPeer.SessionTimestamp < peer.SessionTimestamp then
+                elif localPeer.SessionTimestamp < peer.SessionTimestamp then
                     Log.debugf "Peer %s has been restarted" peer.NetworkAddress.Value
                     // Update heartbeat and session.
                     __.UpdatePeer peer
