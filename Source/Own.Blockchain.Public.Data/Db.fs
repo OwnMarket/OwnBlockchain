@@ -3230,11 +3230,13 @@ module Db =
             DELETE FROM raw_data
             WHERE item_type = @item_type AND item_key = @item_key
             """
+
         let sqlParams =
             [
                 "@item_type", itemType.CaseCode |> box
                 "@item_key", itemKey |> box
             ]
+
         try
             match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
             | 0
