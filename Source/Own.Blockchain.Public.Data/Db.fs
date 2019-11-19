@@ -2997,7 +2997,7 @@ module Db =
             """
             SELECT network_address, session_timestamp, is_dead, dead_timestamp
             FROM peer
-            where is_dead = @isDead
+            WHERE is_dead = @isDead
             """
         let sqlParams =
             [

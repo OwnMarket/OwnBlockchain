@@ -1348,7 +1348,7 @@ module Mapping =
             NetworkAddress = NetworkAddress dto.NetworkAddress
             SessionTimestamp = dto.SessionTimestamp
             IsDead = dto.IsDead
-            DeadTimestamp = if dto.DeadTimestamp.HasValue then Some dto.DeadTimestamp.Value else None
+            DeadTimestamp = dto.DeadTimestamp |> Option.ofNullable
         }
 
     let gossipPeerInfoToDto (peerInfo : GossipPeerInfo) : GossipPeerInfoDto =
