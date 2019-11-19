@@ -2346,6 +2346,94 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove peer"
 
+    let private peerExists
+        dbEngineType
+        dbConnectionString
+        (networkAddress : string)
+        : bool
+        =
+
+        let sql =
+            """
+            SELECT 1
+            FROM peer
+            WHERE network_address = @networkAddress
+            """
+
+        let sqlParams =
+            [
+                "@networkAddress", networkAddress |> box
+            ]
+
+        match DbTools.query<int> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> false
+        | [_] -> true
+        | _ -> failwithf "Multiple peers found for address %A" networkAddress
+
+    let private insertNewPeer
+        dbEngineType
+        dbConnectionString
+        (peerInfo : GossipPeerInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            INSERT INTO peer (network_address, session_timestamp, is_dead, dead_timestamp)
+            VALUES (@networkAddress, @sessionTimestamp, @isDead, @deadTimestamp)
+            """
+
+        let sqlParams =
+            [
+                "@networkAddress", peerInfo.NetworkAddress |> box
+                "@sessionTimestamp", peerInfo.SessionTimestamp |> box
+                "@isDead", peerInfo.IsDead |> box
+                "@deadTimestamp", peerInfo.DeadTimestamp |> boxNullable
+            ]
+
+        try
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert peer"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to insert peer"
+
+    let private updatePeer
+        dbEngineType
+        dbConnectionString
+        (peerInfo : GossipPeerInfoDto)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            UPDATE peer
+            SET network_address = @networkAddress,
+                session_timestamp = @sessionTimestamp,
+                is_dead = @isDead,
+                dead_timestamp = @deadTimestamp
+            WHERE network_address = @networkAddress
+            """
+
+        let sqlParams =
+            [
+                "@networkAddress", peerInfo.NetworkAddress |> box
+                "@isDead", peerInfo.IsDead |> box
+                "@sessionTimestamp", peerInfo.SessionTimestamp |> box
+                "@deadTimestamp", peerInfo.DeadTimestamp |> boxNullable
+            ]
+
+        try
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update peer"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update peer"
+
     let savePeer
         dbEngineType
         dbConnectionString
@@ -2353,62 +2441,6 @@ module Db =
         : Result<unit, AppErrors>
         =
 
-        try
-            let sql =
-                match dbEngineType with
-                | Firebird ->
-                    """
-                    UPDATE OR INSERT INTO peer
-                    (
-                        network_address,
-                        session_timestamp,
-                        is_dead,
-                        dead_timestamp
-                    )
-                    VALUES (
-                        @networkAddress,
-                        @sessionTimestamp,
-                        @isDead,
-                        @deadTimestamp
-                    )
-                    """
-                | Postgres ->
-                    """
-                    INSERT INTO peer (
-                        network_address,
-                        session_timestamp,
-                        is_dead,
-                        dead_timestamp
-                    )
-                    VALUES (
-                        @networkAddress,
-                        @sessionTimestamp,
-                        @isDead,
-                        @deadTimestamp
-                    )
-                    ON CONFLICT (network_address) DO UPDATE
-                    SET network_address = @networkAddress,
-                        session_timestamp = @sessionTimestamp,
-                        is_dead = @isDead,
-                        dead_timestamp = @deadTimestamp
-                    """
-
-            let result =
-                [
-                    "@networkAddress", peerInfo.NetworkAddress |> box
-                    "@isDead", peerInfo.IsDead |> box
-                    "@sessionTimestamp", peerInfo.SessionTimestamp |> box
-                    "@deadTimestamp", peerInfo.DeadTimestamp |> boxNullable
-                ]
-                |> DbTools.execute dbEngineType dbConnectionString sql
-
-            if result = 1 then
-                Ok ()
-            else
-                sprintf "Didn't insert peer (%i): %s" result peerInfo.NetworkAddress
-                |> Result.appError
-        with
-        | ex ->
-            Log.error ex.AllMessagesAndStackTraces
-            sprintf "Failed to insert peer: %s" peerInfo.NetworkAddress
-            |> Result.appError
+        match peerExists dbEngineType dbConnectionString peerInfo.NetworkAddress with
+        | true -> updatePeer dbEngineType dbConnectionString peerInfo
+        | false -> insertNewPeer dbEngineType dbConnectionString peerInfo
