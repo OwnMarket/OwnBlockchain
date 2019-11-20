@@ -3038,31 +3038,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to remove peer"
 
-    let private peerExists
-        dbEngineType
-        dbConnectionString
-        (networkAddress : string)
-        : bool
-        =
-
-        let sql =
-            """
-            SELECT 1
-            FROM peer
-            WHERE network_address = @networkAddress
-            """
-
-        let sqlParams =
-            [
-                "@networkAddress", networkAddress |> box
-            ]
-
-        match DbTools.query<int> dbEngineType dbConnectionString sql sqlParams with
-        | [] -> false
-        | [_] -> true
-        | _ -> failwithf "Multiple peers found for address %A" networkAddress
-
-    let private insertNewPeer
+    let private addPeer
         dbEngineType
         dbConnectionString
         (peerInfo : GossipPeerInfoDto)
@@ -3092,7 +3068,7 @@ module Db =
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to insert peer"
 
-    let private updatePeer
+    let savePeer
         dbEngineType
         dbConnectionString
         (peerInfo : GossipPeerInfoDto)
@@ -3119,24 +3095,14 @@ module Db =
 
         try
             match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 0 -> addPeer dbEngineType dbConnectionString peerInfo
             | 1 -> Ok ()
             | _ -> Result.appError "Didn't update peer"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
             Result.appError "Failed to update peer"
-            
-    let savePeer
-        dbEngineType
-        dbConnectionString
-        (peerInfo : GossipPeerInfoDto)
-        : Result<unit, AppErrors>
-        =
 
-        match peerExists dbEngineType dbConnectionString peerInfo.NetworkAddress with
-        | true -> updatePeer dbEngineType dbConnectionString peerInfo
-        | false -> insertNewPeer dbEngineType dbConnectionString peerInfo
-            
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Raw Data
     ////////////////////////////////////////////////////////////////////////////////////////////////////
