@@ -1618,7 +1618,6 @@ module Processing =
 
     let lockValidatorDeposits
         validatorDepositLockTime
-        (blockNumber : BlockNumber)
         (blockchainConfiguration : BlockchainConfiguration option)
         (state : ProcessingState)
         =
@@ -1781,7 +1780,7 @@ module Processing =
 
         if blockchainConfiguration.IsSome then
             updateValidatorCounters getLockedAndBlacklistedValidators state
-            lockValidatorDeposits validatorDepositLockTime blockNumber blockchainConfiguration state
+            lockValidatorDeposits validatorDepositLockTime blockchainConfiguration state
 
         // Trading
         state.LoadExpiredTradeOrders blockTimestamp
