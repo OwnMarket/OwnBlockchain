@@ -10,7 +10,7 @@ mkdir -p -m 777 "$SETUP_DIR"
 cd "$SETUP_DIR"
 
 # Download the package
-wget https://github.com/OwnMarket/OwnBlockchain/releases/download/v1.4.2/OwnPublicBlockchainNode_linux-x64.tar.gz
+wget https://github.com/OwnMarket/OwnBlockchain/releases/download/v1.4.3/OwnPublicBlockchainNode_linux-x64.tar.gz
 
 # Extract the package
 mkdir Package
