@@ -1032,6 +1032,56 @@ module Consensus =
     // Helpers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    let mutable private _consensusState : ConsensusState option = None
+
+    let setConsensusStateInstance consensusState =
+        if _consensusState.IsSome then
+            failwithf "Consensus state already set"
+        _consensusState <- Some consensusState
+
+    let getConsensusInfo () =
+        _consensusState
+        |> Option.map (fun s ->
+            {
+                BlockNumber = s.Variables.BlockNumber.Value
+                ConsensusRound = s.Variables.ConsensusRound.Value
+                ConsensusStep = s.Variables.ConsensusStep.CaseName
+                LockedBlock = s.Variables.LockedBlock |> Option.map (fun b -> b.Header.Hash.Value) |? "nil"
+                LockedRound = s.Variables.LockedRound.Value
+                ValidBlock = s.Variables.ValidBlock |> Option.map (fun b -> b.Header.Hash.Value) |? "nil"
+                ValidRound = s.Variables.ValidRound.Value
+                ValidBlockSignatures = s.Variables.ValidBlockSignatures |> List.map (fun s -> s.Value)
+                Proposals =
+                    s.Proposals
+                    |> List.map (fun ((bn, r, sender), (b, vr, signature)) ->
+                        sprintf "%i / %i / %s: %s, %i"
+                            bn.Value
+                            r.Value
+                            sender.Value
+                            b.Header.Hash.Value
+                            vr.Value
+                    )
+                Votes =
+                    s.Votes
+                    |> List.map (fun ((bn, r, sender), (bh, signature)) ->
+                        sprintf "%i / %i / %s: %s"
+                            bn.Value
+                            r.Value
+                            sender.Value
+                            (bh |> Option.map (fun h -> h.Value) |? "nil")
+                    )
+                Commits =
+                    s.Commits
+                    |> List.map (fun ((bn, r, sender), (bh, signature)) ->
+                        sprintf "%i / %i / %s: %s"
+                            bn.Value
+                            r.Value
+                            sender.Value
+                            (bh |> Option.map (fun h -> h.Value) |? "nil")
+                    )
+            }
+        )
+
     let consensusMessageDisplayFormat consensusMessage =
         match consensusMessage with
         | Propose (block, validRound) ->

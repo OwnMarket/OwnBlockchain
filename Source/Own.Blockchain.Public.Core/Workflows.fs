@@ -1463,6 +1463,11 @@ module Workflows =
             MinTxActionFee = minTxActionFee
         }
 
+    let getConsensusInfo () =
+        match Consensus.getConsensusInfo () with
+        | Some s -> Ok s
+        | None -> Result.appError "Consensus state does not exist"
+
     let getPeerListApi
         (getPeerList : unit -> GossipPeer list)
         : Result<GetPeerListApiDto, AppErrors>

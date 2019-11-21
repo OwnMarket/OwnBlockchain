@@ -756,6 +756,20 @@ type GetNodeInfoApiDto = {
     MinTxActionFee : decimal
 }
 
+type GetConsensusInfoApiDto = {
+    BlockNumber : int64
+    ConsensusRound : int
+    ConsensusStep : string
+    LockedBlock : string
+    LockedRound : int
+    ValidBlock : string
+    ValidRound : int
+    ValidBlockSignatures : string list
+    Proposals : string list
+    Votes : string list
+    Commits : string list
+}
+
 type GetPeerListApiDto = {
     Peers : string list
 }
