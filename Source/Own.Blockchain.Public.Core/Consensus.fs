@@ -1050,9 +1050,13 @@ module Consensus =
                 LockedRound = s.Variables.LockedRound.Value
                 ValidBlock = s.Variables.ValidBlock |> Option.map (fun b -> b.Header.Hash.Value) |? "nil"
                 ValidRound = s.Variables.ValidRound.Value
-                ValidBlockSignatures = s.Variables.ValidBlockSignatures |> List.map (fun s -> s.Value)
+                ValidBlockSignatures =
+                    s.Variables.ValidBlockSignatures
+                    |> List.sort
+                    |> List.map (fun s -> s.Value)
                 Proposals =
                     s.Proposals
+                    |> List.sort
                     |> List.map (fun ((bn, r, sender), (b, vr, signature)) ->
                         sprintf "%i / %i / %s: %s, %i"
                             bn.Value
@@ -1063,6 +1067,7 @@ module Consensus =
                     )
                 Votes =
                     s.Votes
+                    |> List.sort
                     |> List.map (fun ((bn, r, sender), (bh, signature)) ->
                         sprintf "%i / %i / %s: %s"
                             bn.Value
@@ -1072,6 +1077,7 @@ module Consensus =
                     )
                 Commits =
                     s.Commits
+                    |> List.sort
                     |> List.map (fun ((bn, r, sender), (bh, signature)) ->
                         sprintf "%i / %i / %s: %s"
                             bn.Value
