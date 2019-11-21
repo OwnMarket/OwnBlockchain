@@ -503,6 +503,9 @@ module Composition =
             Config.ValidatorPrivateKey
             Config.MinTxActionFee
 
+    let getConsensusInfo () =
+        Workflows.getConsensusInfo ()
+
     let getPeersApi () = Workflows.getPeerListApi Peers.getPeerList
 
     let submitTx =

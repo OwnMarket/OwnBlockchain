@@ -78,6 +78,15 @@ module Api =
             return! response next ctx
         }
 
+    let getConsensusInfoHandler : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getConsensusInfo ()
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let submitTxHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -308,6 +317,7 @@ module Api =
                 route "/network" >=> getNetworkStatsHandler
                 route "/peers" >=> getPeersHandler
                 route "/pool" >=> getTxPoolInfoHandler
+                route "/consensus" >=> getConsensusInfoHandler
 
                 // Canonical blockchain data
                 routef "/tx/%s/raw" getRawTxHandler
