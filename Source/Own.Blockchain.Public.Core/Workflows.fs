@@ -1369,11 +1369,12 @@ module Workflows =
                     | Error e -> Some e.Head.Message
                 )
 
-            {
-                PeerMessageEnvelope.NetworkId = getNetworkId ()
-                PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = responseItems}
-            }
-            |> respondToPeer senderIdentity
+            if not responseItems.IsEmpty then
+                {
+                    PeerMessageEnvelope.NetworkId = getNetworkId ()
+                    PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = responseItems}
+                }
+                |> respondToPeer senderIdentity
 
             match errors with
             | [] -> Ok None
