@@ -9108,3 +9108,566 @@ module ProcessingTests =
         test <@ tradeOrderState.TimeInForce = GoodTilCancelled @>
         test <@ tradeOrderState.Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.NotEligible @>
         test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+    [<Fact>]
+    let ``Processing.processChanges PlaceTradeOrder BUY MARKET filled, TransferAsset fails in same TX, reverted`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let assetHash1 = Helpers.randomHash () |> AssetHash
+        let assetHash2 = Helpers.randomHash () |> AssetHash
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (accountHash1, assetHash1), {HoldingState.Balance = AssetAmount 1000m; IsEmission = false}
+                (accountHash2, assetHash2), {HoldingState.Balance = AssetAmount 500m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "SELL"
+                            Amount = 100m
+                            OrderType = "LIMIT"
+                            LimitPrice = 3m
+                            StopPrice = 0m
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
+                            TimeInForce = "GTC"
+                        }
+                }
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash2.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "BUY"
+                            Amount = 100m
+                            OrderType = "MARKET"
+                            LimitPrice = 0m
+                            StopPrice = 0m
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
+                            TimeInForce = "IOC"
+                        }
+                }
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            TransferAssetTxActionDto.FromAccountHash = accountHash2.Value
+                            ToAccountHash = accountHash1.Value
+                            AssetHash = assetHash2.Value
+                            Amount = 201m
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        let getHoldingStateFromStorage key =
+            initialHoldingState |> Map.tryFind key
+
+        let getHoldingInTradeOrdersFromStorage _ =
+            AssetAmount 0m
+
+        let getTradingPairStateFromStorage _ =
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
+
+        let getTradeOrderStateFromStorage _ =
+            None
+
+        let getTradeOrdersFromStorage _ =
+            []
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetHoldingStateFromStorage = getHoldingStateFromStorage
+                GetHoldingInTradeOrdersFromStorage = getHoldingInTradeOrdersFromStorage
+                GetTradingPairStateFromStorage = getTradingPairStateFromStorage
+                GetTradeOrderStateFromStorage = getTradeOrderStateFromStorage
+                GetTradeOrdersFromStorage = getTradeOrdersFromStorage
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let totalFee = actionFee * 3m // Three actions
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - totalFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + totalFee
+        let expectedStatus =
+            (TxActionNumber 3s, TxErrorCode.InsufficientAssetHoldingBalance) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TradeOrders.Count = 0 @>
+        test <@ output.Trades.Length = 0 @>
+
+        test <@ output.Holdings.[accountHash1, assetHash1].Balance =
+            initialHoldingState.[accountHash1, assetHash1].Balance @>
+        test <@ output.Holdings.[accountHash2, assetHash2].Balance =
+            initialHoldingState.[accountHash2, assetHash2].Balance @>
+        test <@ output.Holdings.ContainsKey(accountHash1, assetHash2) = false @>
+        test <@ output.Holdings.ContainsKey(accountHash2, assetHash1) = false @>
+
+    [<Fact>]
+    let ``Processing.processChanges PlaceTradeOrder BUY MARKET filled, TransferAsset fails in separate TX`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let assetHash1 = Helpers.randomHash () |> AssetHash
+        let assetHash2 = Helpers.randomHash () |> AssetHash
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (accountHash1, assetHash1), {HoldingState.Balance = AssetAmount 1000m; IsEmission = false}
+                (accountHash2, assetHash2), {HoldingState.Balance = AssetAmount 500m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let actionFee = ChxAmount 1m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "SELL"
+                            Amount = 100m
+                            OrderType = "LIMIT"
+                            LimitPrice = 3m
+                            StopPrice = 0m
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
+                            TimeInForce = "GTC"
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash2.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "BUY"
+                            Amount = 100m
+                            OrderType = "MARKET"
+                            LimitPrice = 0m
+                            StopPrice = 0m
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
+                            TimeInForce = "IOC"
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
+
+        let txHash3, txEnvelope3 =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            TransferAssetTxActionDto.FromAccountHash = accountHash2.Value
+                            ToAccountHash = accountHash1.Value
+                            AssetHash = assetHash2.Value
+                            Amount = 201m
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet (Nonce 13L) (Timestamp 0L) actionFee
+
+        let txSet = [txHash1; txHash2; txHash3]
+
+        // COMPOSE
+        let getTx txHash =
+            [
+                txHash1, txEnvelope1
+                txHash2, txEnvelope2
+                txHash3, txEnvelope3
+            ]
+            |> Map.ofList
+            |> Map.find txHash
+            |> Ok
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        let getHoldingStateFromStorage key =
+            initialHoldingState |> Map.tryFind key
+
+        let getHoldingInTradeOrdersFromStorage _ =
+            AssetAmount 0m
+
+        let getTradingPairStateFromStorage _ =
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
+
+        let getTradeOrderStateFromStorage _ =
+            None
+
+        let getTradeOrdersFromStorage _ =
+            []
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetHoldingStateFromStorage = getHoldingStateFromStorage
+                GetHoldingInTradeOrdersFromStorage = getHoldingInTradeOrdersFromStorage
+                GetTradingPairStateFromStorage = getTradingPairStateFromStorage
+                GetTradeOrderStateFromStorage = getTradeOrderStateFromStorage
+                GetTradeOrdersFromStorage = getTradeOrdersFromStorage
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let totalFee = actionFee * 3m // Three TXs
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - totalFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + totalFee
+
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = Nonce 13L @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TxResults.Count = 3 @>
+        test <@ output.TxResults.[txHash1].Status = Success @>
+        test <@ output.TxResults.[txHash2].Status = Success @>
+        let expectedStatus3 =
+            (TxActionNumber 1s, TxErrorCode.InsufficientAssetHoldingBalance) |> TxActionError |> Failure
+        test <@ output.TxResults.[txHash3].Status = expectedStatus3 @>
+
+        // Verify trade orders
+        test <@ output.TradeOrders.Count = 2 @>
+
+        let tradeOrderHashes =
+            [
+                Hashing.deriveHash senderWallet.Address (Nonce 11L) (TxActionNumber 1s) |> TradeOrderHash
+                Hashing.deriveHash senderWallet.Address (Nonce 12L) (TxActionNumber 1s) |> TradeOrderHash
+            ]
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[tradeOrderHashes.[0]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[tradeOrderHashes.[1]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        // Verify trades
+        test <@ output.Trades.Length = 1 @>
+
+        test <@ output.Trades.[0].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[0].BuyOrderHash = tradeOrderHashes.[1] @>
+        test <@ output.Trades.[0].SellOrderHash = tradeOrderHashes.[0] @>
+        test <@ output.Trades.[0].Amount.Value = 100m @>
+        test <@ output.Trades.[0].Price.Value = 3m @>
+
+        // Verify holdings
+        test <@ output.Holdings.[accountHash1, assetHash1].Balance.Value = 900m @>
+        test <@ output.Holdings.[accountHash2, assetHash1].Balance.Value = 100m @>
+        test <@ output.Holdings.[accountHash1, assetHash2].Balance.Value = 300m @>
+        test <@ output.Holdings.[accountHash2, assetHash2].Balance.Value = 200m @>
+
+    [<Fact>]
+    let ``Processing.processChanges PlaceTradeOrder BUY MARKET filled, TransferAsset succeeds in separate TX`` () =
+        // INIT STATE
+        let senderWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let assetHash1 = Helpers.randomHash () |> AssetHash
+        let assetHash2 = Helpers.randomHash () |> AssetHash
+
+        let initialChxState =
+            [
+                senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        let initialHoldingState =
+            [
+                (accountHash1, assetHash1), {HoldingState.Balance = AssetAmount 1000m; IsEmission = false}
+                (accountHash2, assetHash2), {HoldingState.Balance = AssetAmount 500m; IsEmission = false}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let actionFee = ChxAmount 1m
+
+        let txHash1, txEnvelope1 =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash1.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "SELL"
+                            Amount = 100m
+                            OrderType = "LIMIT"
+                            LimitPrice = 3m
+                            StopPrice = 0m
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
+                            TimeInForce = "GTC"
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
+
+        let txHash2, txEnvelope2 =
+            [
+                {
+                    ActionType = "PlaceTradeOrder"
+                    ActionData =
+                        {
+                            PlaceTradeOrderTxActionDto.AccountHash = accountHash2.Value
+                            BaseAssetHash = assetHash1.Value
+                            QuoteAssetHash = assetHash2.Value
+                            Side = "BUY"
+                            Amount = 100m
+                            OrderType = "MARKET"
+                            LimitPrice = 0m
+                            StopPrice = 0m
+                            TrailingOffset = 0m
+                            TrailingOffsetIsPercentage = false
+                            TimeInForce = "IOC"
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
+
+        let txHash3, txEnvelope3 =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            TransferAssetTxActionDto.FromAccountHash = accountHash2.Value
+                            ToAccountHash = accountHash1.Value
+                            AssetHash = assetHash2.Value
+                            Amount = 201m
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet (Nonce 13L) (Timestamp 0L) actionFee
+
+        let txHash4, txEnvelope4 =
+            [
+                {
+                    ActionType = "TransferAsset"
+                    ActionData =
+                        {
+                            TransferAssetTxActionDto.FromAccountHash = accountHash2.Value
+                            ToAccountHash = accountHash1.Value
+                            AssetHash = assetHash2.Value
+                            Amount = 200m
+                        }
+                }
+            ]
+            |> Helpers.newTx senderWallet (Nonce 14L) (Timestamp 0L) actionFee
+
+        let txSet = [txHash1; txHash2; txHash3; txHash4]
+
+        // COMPOSE
+        let getTx txHash =
+            [
+                txHash1, txEnvelope1
+                txHash2, txEnvelope2
+                txHash3, txEnvelope3
+                txHash4, txEnvelope4
+            ]
+            |> Map.ofList
+            |> Map.find txHash
+            |> Ok
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getAccountState _ =
+            Some {AccountState.ControllerAddress = senderWallet.Address}
+
+        let getAssetState _ =
+            Some {AssetState.AssetCode = None; ControllerAddress = senderWallet.Address; IsEligibilityRequired = false}
+
+        let getHoldingStateFromStorage key =
+            initialHoldingState |> Map.tryFind key
+
+        let getHoldingInTradeOrdersFromStorage _ =
+            AssetAmount 0m
+
+        let getTradingPairStateFromStorage _ =
+            Some {
+                TradingPairState.IsEnabled = true
+                LastPrice = AssetAmount 0m
+                PriceChange = AssetAmount 0m
+            }
+
+        let getTradeOrderStateFromStorage _ =
+            None
+
+        let getTradeOrdersFromStorage _ =
+            []
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetAccountStateFromStorage = getAccountState
+                GetAssetStateFromStorage = getAssetState
+                GetHoldingStateFromStorage = getHoldingStateFromStorage
+                GetHoldingInTradeOrdersFromStorage = getHoldingInTradeOrdersFromStorage
+                GetTradingPairStateFromStorage = getTradingPairStateFromStorage
+                GetTradeOrderStateFromStorage = getTradeOrderStateFromStorage
+                GetTradeOrdersFromStorage = getTradeOrdersFromStorage
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let totalFee = actionFee * 4m // Three TXs
+        let senderChxBalance = initialChxState.[senderWallet.Address].Balance - totalFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + totalFee
+
+        test <@ output.ChxAddresses.[senderWallet.Address].Nonce = Nonce 14L @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        test <@ output.TxResults.Count = 4 @>
+        test <@ output.TxResults.[txHash1].Status = Success @>
+        test <@ output.TxResults.[txHash2].Status = Success @>
+        test <@ output.TxResults.[txHash4].Status = Success @>
+        let expectedStatus3 =
+            (TxActionNumber 1s, TxErrorCode.InsufficientAssetHoldingBalance) |> TxActionError |> Failure
+        test <@ output.TxResults.[txHash3].Status = expectedStatus3 @>
+
+        // Verify trade orders
+        test <@ output.TradeOrders.Count = 2 @>
+
+        let tradeOrderHashes =
+            [
+                Hashing.deriveHash senderWallet.Address (Nonce 11L) (TxActionNumber 1s) |> TradeOrderHash
+                Hashing.deriveHash senderWallet.Address (Nonce 12L) (TxActionNumber 1s) |> TradeOrderHash
+            ]
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[tradeOrderHashes.[0]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[tradeOrderHashes.[1]]
+        test <@ tradeOrderState.IsExecutable = true @>
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        // Verify trades
+        test <@ output.Trades.Length = 1 @>
+
+        test <@ output.Trades.[0].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[0].BuyOrderHash = tradeOrderHashes.[1] @>
+        test <@ output.Trades.[0].SellOrderHash = tradeOrderHashes.[0] @>
+        test <@ output.Trades.[0].Amount.Value = 100m @>
+        test <@ output.Trades.[0].Price.Value = 3m @>
+
+        // Verify holdings
+        test <@ output.Holdings.[accountHash1, assetHash1].Balance.Value = 900m @>
+        test <@ output.Holdings.[accountHash2, assetHash1].Balance.Value = 100m @>
+        test <@ output.Holdings.[accountHash1, assetHash2].Balance.Value = 500m @>
+        test <@ output.Holdings.[accountHash2, assetHash2].Balance.Value = 0m @>

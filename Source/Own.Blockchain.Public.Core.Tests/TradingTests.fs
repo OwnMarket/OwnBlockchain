@@ -754,3 +754,177 @@ module TradingTests =
 
         test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].LastPrice.Value = 4.5m @>
         test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].PriceChange.Value = -0.5m @>
+
+    [<Fact>]
+    let ``Matching - Sequential`` () =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let createTradeOrderState = createTradeOrderState (baseAssetHash, quoteAssetHash)
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 1000m, true
+                accountHash2, quoteAssetHash, 2000m, true
+            ]
+
+        let existingOrders =
+            [
+                createTradeOrderState
+                    (1L, 1, 1s)
+                    accountHash1
+                    (Sell, 100m, TradeOrderType.Limit, 5m, 0m, 0m, false, GoodTilCancelled)
+                    (true, 0m, TradeOrderStatus.Open)
+            ]
+
+        let incomingOrders =
+            [
+                [ // TX1
+                    placeOrder accountHash2.Value ("BUY", 150m, "MARKET", 0m, 0m, 0m, false, "IOC")
+                    placeOrder accountHash2.Value ("BUY", 50m, "MARKET", 0m, 0m, 0m, false, "IOC")
+                ]
+                [ // TX2
+                    placeOrder accountHash1.Value ("SELL", 50m, "LIMIT", 6m, 0m, 0m, false, "GTC")
+                ]
+            ]
+
+        // ACT
+        let existingOrderHashes, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
+
+        // ASSERT
+        test <@ output.TxResults.Count = incomingOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradeOrders.Count = 4 @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[existingOrderHashes.[0]]
+        test <@ tradeOrderState.AmountFilled = tradeOrderState.Amount @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Filled @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[0]]
+        test <@ tradeOrderState.AmountFilled.Value = 100m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[1]]
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce @>
+        test <@ tradeOrderChange = TradeOrderChange.Remove @>
+
+        let tradeOrderState, tradeOrderChange = output.TradeOrders.[incomingOrderHashes.[2]]
+        test <@ tradeOrderState.AmountFilled.Value = 0m @>
+        test <@ tradeOrderState.Status = TradeOrderStatus.Open @>
+        test <@ tradeOrderChange = TradeOrderChange.Add @>
+
+        test <@ output.Trades.Length = 1 @>
+
+        test <@ output.Trades.[0].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[0].BuyOrderHash = incomingOrderHashes.[0] @>
+        test <@ output.Trades.[0].SellOrderHash = existingOrderHashes.[0] @>
+        test <@ output.Trades.[0].Amount.Value = 100m @>
+        test <@ output.Trades.[0].Price.Value = 5m @>
+
+    [<Fact>]
+    let ``Matching - Sequential - B&B example`` () =
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let createTradeOrderState = createTradeOrderState (baseAssetHash, quoteAssetHash)
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 1000m, true
+                accountHash2, quoteAssetHash, 2000m, true
+            ]
+
+        let existingOrders =
+            [
+                1, accountHash1, Sell, 6m, 25m
+                2, accountHash1, Sell, 7m, 23m
+                3, accountHash1, Sell, 1m, 24m
+                4, accountHash1, Sell, 10m, 23m
+                5, accountHash1, Sell, 5m, 22m
+                6, accountHash2, Buy, 20m, 18m
+                7, accountHash2, Buy, 2m, 17m
+                8, accountHash2, Buy, 10m, 20m
+                9, accountHash2, Buy, 5m, 19m
+                10, accountHash2, Buy, 8m, 20m
+            ]
+            |> List.map (fun (txPosition, accountHash, side, amount, price) ->
+                createTradeOrderState
+                    (1L, txPosition, 1s)
+                    accountHash
+                    (side, amount, TradeOrderType.Limit, price, 0m, 0m, false, GoodTilCancelled)
+                    (true, 0m, TradeOrderStatus.Open)
+            )
+
+        let incomingOrders =
+            [
+                [ // TX1
+                    placeOrder accountHash2.Value ("BUY", 10m, "LIMIT", 22m, 0m, 0m, false, "GTC")
+                    placeOrder accountHash2.Value ("BUY", 3m, "LIMIT", 16m, 0m, 0m, false, "GTC")
+                ]
+                [ // TX2
+                    placeOrder accountHash1.Value ("SELL", 20m, "MARKET", 0m, 0m, 0m, false, "IOC")
+                    placeOrder accountHash1.Value ("SELL", 5m, "LIMIT", 24m, 0m, 0m, false, "GTC")
+                ]
+                [ // TX3
+                    placeOrder accountHash2.Value ("BUY", 5m, "MARKET", 0m, 0m, 0m, false, "IOC")
+                ]
+            ]
+
+        // ACT
+        let existingOrderHashes, incomingOrderHashes, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
+
+        // ASSERT
+        test <@ output.TxResults.Count = incomingOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradeOrders.Count = 9 @>
+
+        test <@ output.Trades.Length = 5 @>
+
+        test <@ output.Trades.[0].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[0].BuyOrderHash = incomingOrderHashes.[0] @>
+        test <@ output.Trades.[0].SellOrderHash = existingOrderHashes.[4] @>
+        test <@ output.Trades.[0].Amount.Value = 5m @>
+        test <@ output.Trades.[0].Price.Value = 22m @>
+
+        test <@ output.Trades.[1].Direction = TradeOrderSide.Sell @>
+        test <@ output.Trades.[1].BuyOrderHash = incomingOrderHashes.[0] @>
+        test <@ output.Trades.[1].SellOrderHash = incomingOrderHashes.[2] @>
+        test <@ output.Trades.[1].Amount.Value = 5m @>
+        test <@ output.Trades.[1].Price.Value = 22m @>
+
+        test <@ output.Trades.[2].Direction = TradeOrderSide.Sell @>
+        test <@ output.Trades.[2].BuyOrderHash = existingOrderHashes.[7] @>
+        test <@ output.Trades.[2].SellOrderHash = incomingOrderHashes.[2] @>
+        test <@ output.Trades.[2].Amount.Value = 10m @>
+        test <@ output.Trades.[2].Price.Value = 20m @>
+
+        test <@ output.Trades.[3].Direction = TradeOrderSide.Sell @>
+        test <@ output.Trades.[3].BuyOrderHash = existingOrderHashes.[9] @>
+        test <@ output.Trades.[3].SellOrderHash = incomingOrderHashes.[2] @>
+        test <@ output.Trades.[3].Amount.Value = 5m @>
+        test <@ output.Trades.[3].Price.Value = 20m @>
+
+        test <@ output.Trades.[4].Direction = TradeOrderSide.Buy @>
+        test <@ output.Trades.[4].BuyOrderHash = incomingOrderHashes.[4] @>
+        test <@ output.Trades.[4].SellOrderHash = existingOrderHashes.[1] @>
+        test <@ output.Trades.[4].Amount.Value = 5m @>
+        test <@ output.Trades.[4].Price.Value = 23m @>

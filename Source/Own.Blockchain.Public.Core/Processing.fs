@@ -49,7 +49,8 @@ module Processing =
         collectedReward : ChxAmount,
         tradingPairs : ConcurrentDictionary<AssetHash * AssetHash, TradingPairState option>,
         tradeOrders : ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>,
-        holdingInTradeOrders : ConcurrentDictionary<AccountHash * AssetHash, AssetAmount> // Not blockchain state
+        holdingInTradeOrders : ConcurrentDictionary<AccountHash * AssetHash, AssetAmount>, // Not blockchain state
+        trades : ResizeArray<Trade>
         ) =
 
         let getChxAddressState address =
@@ -116,7 +117,8 @@ module Processing =
                 ChxAmount 0m,
                 ConcurrentDictionary<AssetHash * AssetHash, TradingPairState option>(),
                 ConcurrentDictionary<TradeOrderHash, TradeOrderState option * TradeOrderChange option>(),
-                ConcurrentDictionary<AccountHash * AssetHash, AssetAmount>()
+                ConcurrentDictionary<AccountHash * AssetHash, AssetAmount>(),
+                ResizeArray<Trade>()
             )
 
         member val CollectedReward = collectedReward with get, set
@@ -160,12 +162,13 @@ module Processing =
                 __.CollectedReward,
                 ConcurrentDictionary(tradingPairs),
                 ConcurrentDictionary(tradeOrders),
-                ConcurrentDictionary(holdingInTradeOrders)
+                ConcurrentDictionary(holdingInTradeOrders),
+                ResizeArray<Trade>(trades)
             )
 
         /// Makes sure all involved data is loaded into the state unchanged, except CHX balance nonce which is updated.
         member __.MergeStateAfterFailedTx (otherState : ProcessingState) =
-            let otherOutput = otherState.ToProcessingOutput []
+            let otherOutput = otherState.ToProcessingOutput ()
             for other in otherOutput.ChxAddresses do
                 let current = __.GetChxAddress (other.Key)
                 __.SetChxAddress (other.Key, { current with Nonce = other.Value.Nonce })
@@ -460,6 +463,9 @@ module Processing =
                 fun _ _ -> (state, processingChange)
             ) |> ignore
 
+        member __.AddTrades =
+            List.iter trades.Add
+
         // Not part of the blockchain state
         member __.SetTotalChxStaked (address : BlockchainAddress, amount) =
             totalChxStaked.AddOrUpdate(address, amount, fun _ _ -> amount) |> ignore
@@ -480,7 +486,7 @@ module Processing =
                 fun _ _ -> failwithf "Staking reward already set for %s" stakerAddress.Value
             ) |> ignore
 
-        member __.ToProcessingOutput (trades : Trade list) : ProcessingOutput =
+        member __.ToProcessingOutput () : ProcessingOutput =
             {
                 TxResults = txResults |> Map.ofDict
                 EquivocationProofResults = equivocationProofResults |> Map.ofDict
@@ -545,7 +551,7 @@ module Processing =
                     |> Seq.choose (fun (h, (st, c)) -> st |> Option.map (fun s -> h, (s, c)))
                     |> Seq.choose (fun (h, (s, ch)) -> ch |> Option.map (fun c -> h, (s, c)))
                     |> Map.ofSeq
-                Trades = trades
+                Trades = trades |> Seq.toList
             }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1099,6 +1105,7 @@ module Processing =
 
     let processPlaceTradeOrderTxAction
         deriveHash
+        matchTradeOrders
         (blockTimestamp : Timestamp)
         (blockNumber : BlockNumber)
         (txPosition : int)
@@ -1197,6 +1204,10 @@ module Processing =
                                 assetHash,
                                 holdingInTradeOrders + orderAmount
                             )
+
+                            matchTradeOrders state (action.BaseAssetHash, action.QuoteAssetHash)
+                            |> state.AddTrades
+
                             Ok state
         | _ ->
             Error TxErrorCode.SenderIsNotSourceAccountController
@@ -1388,6 +1399,7 @@ module Processing =
 
     let processTxAction
         deriveHash
+        matchTradeOrders
         validatorDeposit
         blockTimestamp
         blockNumber
@@ -1421,11 +1433,21 @@ module Processing =
         | ConfigureTradingPair action -> processConfigureTradingPairTxAction state senderAddress action
         | PlaceTradeOrder action ->
             processPlaceTradeOrderTxAction
-                deriveHash blockTimestamp blockNumber txPosition state senderAddress nonce actionNumber action
+                deriveHash
+                matchTradeOrders
+                blockTimestamp
+                blockNumber
+                txPosition
+                state
+                senderAddress
+                nonce
+                actionNumber
+                action
         | CancelTradeOrder action -> processCancelTradeOrderTxAction state senderAddress action
 
     let processTxActions
         deriveHash
+        matchTradeOrders
         validatorDeposit
         blockTimestamp
         blockNumber
@@ -1444,6 +1466,7 @@ module Processing =
                 let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
                 processTxAction
                     deriveHash
+                    matchTradeOrders
                     validatorDeposit
                     blockTimestamp
                     blockNumber
@@ -1635,6 +1658,17 @@ module Processing =
                 | None -> failwithf "Cannot get validator state for %s" v.ValidatorAddress.Value
         )
 
+    let matchTradeOrders (state : ProcessingState) (baseAssetHash, quoteAssetHash) =
+        state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)
+        Trading.matchTradeOrders
+            state.GetTradingPair
+            state.SetTradingPair
+            state.GetTradeOrdersForTradingPair
+            state.SetTradeOrder
+            state.GetHoldingOrDefault
+            state.SetHolding
+            (baseAssetHash, quoteAssetHash)
+
     let processChanges
         getTx
         getEquivocationProof
@@ -1680,7 +1714,7 @@ module Processing =
         (txSet : TxHash list)
         =
 
-        let processTxActions = processTxActions deriveHash validatorDeposit blockTimestamp blockNumber
+        let processTxActions = processTxActions deriveHash matchTradeOrders validatorDeposit blockTimestamp blockNumber
 
         let loadTxs txHashes =
             txHashes
@@ -1760,6 +1794,9 @@ module Processing =
             txs
             |> List.fold processValidatorReward state
 
+        state.LoadExpiredTradeOrders blockTimestamp
+        Trading.cancelExpiredTradeOrders state.GetExpiredTradeOrders state.SetTradeOrder blockTimestamp
+
         let state =
             txs
             |> List.indexed
@@ -1782,23 +1819,4 @@ module Processing =
             updateValidatorCounters getLockedAndBlacklistedValidators state
             lockValidatorDeposits validatorDepositLockTime blockchainConfiguration state
 
-        // Trading
-        state.LoadExpiredTradeOrders blockTimestamp
-        Trading.cancelExpiredTradeOrders
-            state.GetExpiredTradeOrders
-            state.SetTradeOrder
-            blockTimestamp
-
-        state.GetLoadedTradingPairs ()
-        |> List.collect (fun (baseAssetHash, quoteAssetHash) ->
-            state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)
-            Trading.matchTradeOrders
-                state.GetTradingPair
-                state.SetTradingPair
-                state.GetTradeOrdersForTradingPair
-                state.SetTradeOrder
-                state.GetHoldingOrDefault
-                state.SetHolding
-                (baseAssetHash, quoteAssetHash)
-        )
-        |> state.ToProcessingOutput
+        state.ToProcessingOutput ()
