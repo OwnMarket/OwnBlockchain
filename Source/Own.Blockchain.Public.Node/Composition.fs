@@ -151,6 +151,12 @@ module Composition =
             getLastAppliedBlockNumber
             getBlock
 
+    let getRecentValidators () =
+        Validators.getRecentValidators
+            getLastStoredBlockNumber
+            getLastAppliedBlockNumber
+            getBlock
+
     let isValidator =
         Validators.isValidator
             getCurrentValidators
