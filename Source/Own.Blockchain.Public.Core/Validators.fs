@@ -40,6 +40,11 @@ module Validators =
         getLastAppliedBlockNumber ()
         |> getValidatorsAtHeight getBlock
 
+    let getRecentValidators getLastStoredBlockNumber getLastAppliedBlockNumber getBlock =
+        getLastStoredBlockNumber ()
+        |?> getLastAppliedBlockNumber
+        |> getValidatorsAtHeight getBlock
+
     let isValidator
         (getValidators : unit -> ValidatorSnapshot list)
         validatorAddress
