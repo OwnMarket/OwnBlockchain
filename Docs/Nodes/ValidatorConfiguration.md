@@ -8,6 +8,7 @@ This document describes the configuration of the validator node.
 Before configuring a validator node, make sure to:
 
 - have the node installed (please refer to the [node setup document](NodeSetup.md) for more information)
+- have the node synchronized to the latest block (**DO NOT CONFIGURE THE NODE AS VALIDATOR UNTIL IT IS FULLY IN SYNC WITH THE NETWORK!**)
 - have the node accessible from public network, which assumes
     - having (and being in control of) a DNS name for your validator
     - configuring DNS name as an [A record](https://en.wikipedia.org/wiki/List_of_DNS_record_types) pointing to the static IP address of the machine on which the node is running
