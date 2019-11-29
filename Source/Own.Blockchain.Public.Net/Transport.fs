@@ -4,9 +4,14 @@ module Transport =
 
     let mutable private transportCore : TransportCore option = None
 
-    let init networkId networkSendoutRetryTimeout peerMessageMaxSize receivePeerMessage =
+    let init networkId networkSendoutRetryTimeout socketConnectionTimeout peerMessageMaxSize receivePeerMessage =
         let transport =
-            TransportCore (networkId, networkSendoutRetryTimeout, peerMessageMaxSize, receivePeerMessage)
+            TransportCore (
+                networkId,
+                networkSendoutRetryTimeout,
+                socketConnectionTimeout,
+                peerMessageMaxSize,
+                receivePeerMessage)
         transport.Init ()
         transportCore <- transport |> Some
 

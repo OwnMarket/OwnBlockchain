@@ -194,6 +194,12 @@ type Config () =
             | true, timeout when timeout >= 0 -> timeout
             | _ -> 20
 
+    static member SocketConnectionTimeout // Seconds
+        with get () =
+            match Int32.TryParse config.["SocketConnectionTimeout"] with
+            | true, timeout when timeout >= 0 -> timeout
+            | _ -> 60
+
     static member PeerMessageMaxSize // Bytes
         with get () =
             match Int32.TryParse config.["PeerMessageMaxSize"] with

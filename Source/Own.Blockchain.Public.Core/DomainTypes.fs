@@ -518,6 +518,7 @@ type NetworkNodeConfig = {
     MaxConnectedPeers : int
     DnsResolverCacheExpirationTime : int
     NetworkSendoutRetryTimeout : int
+    SocketConnectionTimeout : int
     PeerMessageMaxSize : int
     DeadPeerExpirationTime : int
 }

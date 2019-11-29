@@ -9,6 +9,7 @@ module TransportMock =
     let init
         networkId
         networkSendoutRetryTimeout
+        socketConnectionTimeout
         peerMessageMaxSize
         receivePeerMessage
         =
@@ -17,6 +18,7 @@ module TransportMock =
             TransportCoreMock (
                 networkId,
                 networkSendoutRetryTimeout,
+                socketConnectionTimeout,
                 peerMessageMaxSize,
                 messageQueue,
                 receivePeerMessage

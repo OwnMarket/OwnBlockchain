@@ -627,6 +627,7 @@ module Composition =
             Config.GossipMaxMissedHeartbeats
             Config.PeerResponseThrottlingTime
             Config.NetworkSendoutRetryTimeout
+            Config.SocketConnectionTimeout
             Config.PeerMessageMaxSize
             Config.DeadPeerExpirationTime
             getNetworkId

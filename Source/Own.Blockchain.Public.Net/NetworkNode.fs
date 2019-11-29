@@ -347,6 +347,7 @@ type NetworkNode
         initTransport
             networkId.Value
             nodeConfig.NetworkSendoutRetryTimeout
+            nodeConfig.SocketConnectionTimeout
             nodeConfig.PeerMessageMaxSize
             (__.ReceivePeerMessage publishEvent)
         __.StartNode ()

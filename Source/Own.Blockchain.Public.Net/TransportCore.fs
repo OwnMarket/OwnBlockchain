@@ -23,6 +23,7 @@ type internal TransportCore
     (
     networkId,
     networkSendoutRetryTimeout,
+    socketConnectionTimeout,
     peerMessageMaxSize,
     receivePeerMessage
     ) =
@@ -388,7 +389,7 @@ type internal TransportCore
     let monitorOpenedConnections () =
         let rec loop () =
             async {
-                let lastValidTimestamp = DateTime.UtcNow.AddSeconds -30. // TODO:parametrize
+                let lastValidTimestamp = DateTime.UtcNow.AddSeconds (-float socketConnectionTimeout)
                 connectionPool
                 |> List.ofDict
                 |> List.filter (fun (_, (_, _, timestamp)) -> timestamp < lastValidTimestamp)
@@ -463,7 +464,6 @@ type internal TransportCore
         clientEnqueueMessage PeerMessagePriority.Request peerMessage targetAddress
 
     member __.SendResponseMessage peerMessage =
-        // TODO: fix string.empty
         clientEnqueueMessage PeerMessagePriority.Response peerMessage String.Empty
 
     member __.SendMulticastMessage multicastAddresses peerMessage =

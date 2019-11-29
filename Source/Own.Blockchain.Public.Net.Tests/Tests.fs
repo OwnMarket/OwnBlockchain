@@ -28,6 +28,7 @@ module PeerTests =
         MaxConnectedPeers = 200
         DnsResolverCacheExpirationTime = 600
         NetworkSendoutRetryTimeout = 500
+        SocketConnectionTimeout = 1
         PeerMessageMaxSize = 1_000_000
         DeadPeerExpirationTime = 24
     }

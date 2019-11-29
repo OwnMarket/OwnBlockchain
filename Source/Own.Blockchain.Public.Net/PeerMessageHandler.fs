@@ -23,6 +23,7 @@ module internal PeerMessageHandler =
         gossipMaxMissedHeartbeats
         peerResponseThrottingTime
         networkSendoutRetryTimeout
+        socketConnectionTimeout
         peerMessageMaxSize
         deadPeerExpirationTime
         getNetworkId
@@ -51,6 +52,7 @@ module internal PeerMessageHandler =
                 MaxConnectedPeers = maxConnectedPeers
                 DnsResolverCacheExpirationTime = dnsResolverCacheExpirationTime
                 NetworkSendoutRetryTimeout = networkSendoutRetryTimeout
+                SocketConnectionTimeout = socketConnectionTimeout
                 PeerMessageMaxSize = peerMessageMaxSize
                 DeadPeerExpirationTime = deadPeerExpirationTime
             }
