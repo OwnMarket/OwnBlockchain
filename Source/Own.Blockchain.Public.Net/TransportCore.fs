@@ -29,7 +29,7 @@ type internal TransportCore
     ) =
 
     let mutable cts = new CancellationTokenSource()
-    let bufferSize = 8192
+    let bufferSize = peerMessageMaxSize
 
     // Thread signal.
     let tcpClientConnectedEvent = new ManualResetEvent(false)
@@ -90,7 +90,7 @@ type internal TransportCore
                     async {
                         let count = Math.Min(data.Length - sentBytes, bufferSize)
                         if count > 0 then
-                            do! sm.WriteAsync(data, sentBytes, count) |> Async.AwaitTask
+                            do! sm.AsyncWrite(data, sentBytes, count)
                             sentBytes <- sentBytes + count
                             if sentBytes < data.Length then
                                 return! sendAllBytes sm
@@ -113,7 +113,7 @@ type internal TransportCore
                         // TODO: can it be done better?
                         match envelope.PeerMessage.MessageType with
                         | "ResponseDataMessage" ->
-                            // Close connection with remove client once response is received.
+                            // Close connection with remote client once response is received.
                             envelope.PeerMessageId
                             |> Option.iter closeConnection
                         | "RequestDataMessage" ->
@@ -140,7 +140,7 @@ type internal TransportCore
     let rec readAllBytes (sm: NetworkStream) (memStream : MemoryStream) bufferSize =
         let mutable data = Array.zeroCreate<byte> bufferSize
         async {
-            let! bytesRead = sm.ReadAsync (data, 0, data.Length) |> Async.AwaitTask
+            let! bytesRead = sm.AsyncRead (data, 0, data.Length)
             if bytesRead > 0 then
                 memStream.Write(data, 0, bytesRead)
                 if (sm.DataAvailable) then
@@ -150,6 +150,7 @@ type internal TransportCore
             else
                 return memStream
         }
+
     // TODO: add timeout, manage client handles (close) when peerMessage
     // is no request or in case of timeout
     let readFromClientAsync (client : TcpClient) bufferSize =
@@ -192,7 +193,12 @@ type internal TransportCore
         try
             targetHost
             |> Utils.resolveToIpPortPair
-            |> Option.map (fun (host, port) -> new TcpClient(host, port))
+            |> Option.map (fun (host, port) ->
+                let client = new TcpClient(host, port)
+                client.SendBufferSize <- bufferSize
+                client.ReceiveBufferSize <- bufferSize
+                client
+            )
         with
         | _ -> None
 
@@ -393,11 +399,7 @@ type internal TransportCore
                 connectionPool
                 |> List.ofDict
                 |> List.filter (fun (_, (_, _, timestamp)) -> timestamp < lastValidTimestamp)
-                |> List.iter (fun (connectionId, (tcpClient, cts, _)) ->
-                    cts.Cancel ()
-                    connectionPool.TryRemove connectionId |> ignore
-                    tcpClient.Close()
-                )
+                |> List.iter (fun (connectionId, _) -> closeConnection connectionId)
 
                 do! Async.Sleep 100
                 return! loop ()
@@ -430,10 +432,11 @@ type internal TransportCore
             )
 
         listenerSocket |> Option.iter (fun server ->
-            // Start listening for client requests.
             async {
                 try
+                    // Start listening for client requests.
                     server.Start()
+
                     while true do
                         tcpClientConnectedEvent.Reset() |> ignore
                         Log.verbose "Waiting for connection..."
