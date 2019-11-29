@@ -556,7 +556,7 @@ type GossipMessageDto = {
 type MulticastMessageDto = {
     [<Key(0)>] MessageType : string
     [<Key(1)>] MessageId : string
-    [<Key(2)>] SenderIdentity : byte[]
+    [<Key(2)>] SenderAddress : string option
     [<Key(3)>] Data : byte[]
 }
 
@@ -571,7 +571,6 @@ type NetworkMessageItemDto = {
 [<MessagePackObject>]
 type RequestDataMessageDto = {
     [<Key(0)>] Items : NetworkMessageItemDto list
-    [<Key(1)>] SenderIdentity : byte[]
 }
 
 [<CLIMutable>]
@@ -601,6 +600,7 @@ type PeerMessageEnvelopeDto = {
     [<Key(0)>] NetworkId : byte[]
     [<Key(1)>] ProtocolVersion : int16
     [<Key(2)>] PeerMessage : PeerMessageDto
+    [<Key(3)>] PeerMessageId : string option
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

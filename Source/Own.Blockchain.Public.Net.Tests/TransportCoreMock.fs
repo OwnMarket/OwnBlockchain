@@ -6,11 +6,11 @@ open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.Dtos
+open System
 
 type internal TransportCoreMock
     (
     networkId,
-    peerIdentity,
     networkSendoutRetryTimeout,
     peerMessageMaxSize,
     messageQueue : ConcurrentDictionary<string, ConcurrentQueue<byte[]>>,
@@ -46,14 +46,13 @@ type internal TransportCoreMock
         let msg = packMessage [gossipMessage]
         send msg targetAddress
 
-    member __.SendRequestMessage targetAddress requestMessage =
-        let msg = packMessage [requestMessage]
+    member __.SendRequestMessage targetAddress requestMessage senderAddress =
+        let msg = packMessage [{ requestMessage with PeerMessageId = senderAddress }]
         send msg targetAddress
 
-    member __.SendResponseMessage (targetIdentity : byte[]) responseMessage =
+    member __.SendResponseMessage responseMessage =
         let msg = packMessage [responseMessage]
-        let targetAddress = Conversion.bytesToString targetIdentity
-        send msg targetAddress
+        responseMessage.PeerMessageId |> Option.iter (send msg)
 
     member __.SendMulticastMessage multicastAddresses multicastMessage =
         match multicastAddresses with

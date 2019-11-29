@@ -29,7 +29,6 @@ type NetworkNode
     sendRequestMessage,
     sendResponseMessage,
     receiveMessage,
-    closeConnection,
     closeAllConnections : _ -> unit,
     getCurrentValidators : _ -> ValidatorSnapshot list,
     nodeConfig,
@@ -198,8 +197,6 @@ type NetworkNode
                         )
                         Log.error
 
-                closeConnection peerAddress.Value
-
             else if isWhitelisted peerAddress then
                 cancelPeerStateMonitoring peerAddress
         }
@@ -224,8 +221,6 @@ type NetworkNode
                 Log.debugf "Excluding %s peer" networkAddress.Value
 
             excludedPeers.TryRemove networkAddress |> ignore
-
-            closeConnection networkAddress.Value
 
             networkAddress
             |> removePeerFromDb
@@ -308,9 +303,6 @@ type NetworkNode
     member __.GetPublicAddress () =
         nodeConfigPublicIPAddress
 
-    member __.Identity =
-        nodeConfig.Identity
-
     member __.GetNetworkStats () =
         let receivesGossip = lastMessageReceivedTimestamp.AddSeconds(30.) >= DateTime.UtcNow
         {
@@ -351,11 +343,9 @@ type NetworkNode
 
     member __.StartGossip publishEvent =
         cts <- new CancellationTokenSource()
-        Log.debugf "Node identity is %s" (Conversion.bytesToString nodeConfig.Identity.Value)
         let networkId = getNetworkId ()
         initTransport
             networkId.Value
-            nodeConfig.Identity.Value
             nodeConfig.NetworkSendoutRetryTimeout
             nodeConfig.PeerMessageMaxSize
             (__.ReceivePeerMessage publishEvent)
@@ -424,7 +414,7 @@ type NetworkNode
         |> List.append existingPeers
         |> __.MergePeerList
 
-    member __.SendMessage message =
+    member __.SendMessage (targetAddress : NetworkAddress option) message =
         let sendMessageTask =
             async {
                 match message.PeerMessage with
@@ -438,8 +428,14 @@ type NetworkNode
                     )
 
                 | MulticastMessage _ ->
-                    getCurrentValidators ()
-                    |> List.choose (fun v -> memoizedConvertToIpAddress v.NetworkAddress)
+                    let targetAddresses =
+                        match targetAddress with
+                        | Some address -> [ address ]
+                        | None ->
+                            getCurrentValidators ()
+                            |> List.choose (fun v -> memoizedConvertToIpAddress v.NetworkAddress)
+
+                    targetAddresses
                     |> List.filter (isSelf >> not)
                     |> List.map (fun a -> a.Value)
                     |> fun multicastAddresses ->
@@ -567,8 +563,9 @@ type NetworkNode
                 {
                     PeerMessageEnvelope.NetworkId = getNetworkId ()
                     PeerMessage = GossipDiscoveryMessage { ActivePeers = self :: __.GetActivePeers() }
+                    PeerMessageId = None
                 }
-                |> __.SendMessage
+                |> __.SendMessage None
 
         | None -> __.SendRequestDataMessage [ NetworkMessageId.PeerList ] None
 
@@ -723,6 +720,7 @@ type NetworkNode
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage = GossipMessage gossipMessage
+                PeerMessageId = None
             }
             |> peerMessageEnvelopeToDto
             |> sendGossipMessage targetPeer.NetworkAddress.Value
@@ -809,6 +807,7 @@ type NetworkNode
                 {
                     PeerMessageEnvelope.NetworkId = getNetworkId ()
                     PeerMessage = GossipMessage gossipMessage
+                    PeerMessageId = None
                 }
                 |> PeerMessageReceived
 
@@ -830,8 +829,8 @@ type NetworkNode
             | MulticastMessage m ->
                 lastMessageReceivedTimestamp <- DateTime.UtcNow
                 __.ReceiveMulticastMessage publishEvent m
-            | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m
-            | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m
+            | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m peerMessageEnvelope.PeerMessageId
+            | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m peerMessageEnvelope.PeerMessageId
         with
         | ex when ex.Message.Contains("code is invalid") ->
             Log.warningf "Cannot deserialize peer message"
@@ -848,6 +847,7 @@ type NetworkNode
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = MulticastMessage multicastMessage
+            PeerMessageId = None
         }
         |> PeerMessageReceived
         |> publishEvent
@@ -905,10 +905,10 @@ type NetworkNode
                             PeerMessageEnvelope.NetworkId = getNetworkId ()
                             PeerMessage =
                                 {
-                                    Items = validRequestIds
-                                    SenderIdentity = nodeConfig.Identity
+                                    RequestDataMessage.Items = validRequestIds
                                 }
                                 |> RequestDataMessage
+                            PeerMessageId = None
                         }
                         |> peerMessageEnvelopeToDto
                         |> sendRequestMessage address.Value
@@ -936,41 +936,42 @@ type NetworkNode
             Async.Start (loop validRequestIds preferredPeer, cts.Token)
         )
 
-    member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
+    member __.SendResponseDataMessage peerMessageEnvelope =
         Stats.increment Stats.Counter.PeerResponses
         match peerMessageEnvelope.PeerMessage with
         | ResponseDataMessage responseMessage ->
-            Log.debugf "Sending response (to %A request) to %s"
+            Log.debugf "Sending response to %A request"
                 responseMessage.Items.Head.MessageId
-                (Conversion.bytesToString targetIdentity.Value)
 
             let sendResponse =
                 async {
                     peerMessageEnvelope
                     |> peerMessageEnvelopeToDto
-                    |> sendResponseMessage targetIdentity.Value
+                    |> sendResponseMessage
                 }
             Async.Start (sendResponse, cts.Token)
         | _ -> ()
 
-    member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) =
+    member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) requestId =
+        Log.verbosef "Receive request to %A" requestId
         __.Throttle receivedRequests [ requestDataMessage ] (fun _ ->
-            Log.debugf "Received request for %A from %s"
-                requestDataMessage.Items.Head
-                (Conversion.bytesToString requestDataMessage.SenderIdentity.Value)
+            Log.debugf "Received request for %A" requestDataMessage.Items.Head
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage = RequestDataMessage requestDataMessage
+                PeerMessageId = requestId
             }
             |> PeerMessageReceived
             |> publishEvent
         )
 
-    member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) =
+    member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) requestId =
+        Log.verbosef "Receive response to %A" requestId
         Log.debugf "Received response to %A request" responseDataMessage.Items.Head.MessageId
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = ResponseDataMessage responseDataMessage
+            PeerMessageId = requestId
         }
         |> PeerMessageReceived
         |> publishEvent

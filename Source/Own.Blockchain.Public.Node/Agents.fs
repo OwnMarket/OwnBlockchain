@@ -247,8 +247,8 @@ module Agents =
         | ConsensusMessageReceived c
         | ConsensusCommandInvoked c ->
             invokeValidator c
-        | ConsensusStateRequestReceived (request, peerIdentity) ->
-            ConsensusCommand.StateRequested (request, peerIdentity)
+        | ConsensusStateRequestReceived (request, peerAddress) ->
+            ConsensusCommand.StateRequested (request, peerAddress)
             |> invokeValidator
         | ConsensusStateResponseReceived state ->
             ConsensusCommand.StateReceived state

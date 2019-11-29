@@ -41,3 +41,21 @@ module Utils =
         | _ ->
             Log.verbosef "Invalid peer format: %s" networkAddress
             None
+
+    let resolveToIpPortPair (networkAddress : string) =
+        match networkAddress.LastIndexOf ":" with
+        | index when index > 0 ->
+            let port = networkAddress.Substring(index + 1)
+            match UInt16.TryParse port with
+            | true, 0us ->
+                Log.verbose "Received peer with port 0 discarded"
+                None
+            | true, portNumber ->
+                let host = networkAddress.Substring(0, index)
+                Some (host, int portNumber)
+            | _ ->
+                Log.verbosef "Invalid port value: %s" networkAddress
+                None
+        | _ ->
+            Log.verbosef "Invalid peer format: %s" networkAddress
+            None

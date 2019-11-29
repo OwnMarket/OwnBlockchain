@@ -26,7 +26,7 @@ module Consensus =
         verifyConsensusMessage :
             ConsensusMessageEnvelopeDto -> Result<BlockchainAddress * ConsensusMessageEnvelope, AppErrors>,
         sendConsensusMessage : BlockNumber -> ConsensusRound -> ConsensusStateInfo -> ConsensusMessage -> unit,
-        sendConsensusState : PeerNetworkIdentity -> ConsensusStateResponse -> unit,
+        sendConsensusState : NetworkAddress -> ConsensusStateResponse -> unit,
         requestConsensusState : ConsensusRound -> BlockchainAddress option -> unit,
         canParticipateInConsensus : BlockNumber -> bool option,
         publishEvent : AppEvent -> unit,
@@ -96,8 +96,8 @@ module Consensus =
                 | ConsensusStep.Propose -> __.OnTimeoutPropose(blockNumber, consensusRound)
                 | ConsensusStep.Vote -> __.OnTimeoutVote(blockNumber, consensusRound)
                 | ConsensusStep.Commit -> __.OnTimeoutCommit(blockNumber, consensusRound)
-            | StateRequested (stateRequest, peerIdentity) ->
-                __.SendState(stateRequest, peerIdentity)
+            | StateRequested (stateRequest, peerAddress) ->
+                __.SendState(stateRequest, peerAddress)
             | StateReceived stateResponse ->
                 __.ApplyReceivedState(stateResponse)
 
@@ -410,7 +410,7 @@ module Consensus =
             if shouldUpdateState then
                 __.UpdateState()
 
-        member private __.SendState(request, peerIdentity) =
+        member private __.SendState(request, peerAddress) =
             if not (_validators |> List.contains request.ValidatorAddress) then
                 Log.warningf "%s is not an active validator - consensus state request ignored"
                     request.ValidatorAddress.Value
@@ -495,7 +495,7 @@ module Consensus =
                     ValidProposal = validProposal
                     ValidVoteSignatures = validVoteSignatures
                 }
-                |> sendConsensusState peerIdentity
+                |> sendConsensusState peerAddress
 
         member private __.Synchronize() =
             let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -1295,13 +1295,14 @@ module Consensus =
                                 sprintf "Consensus_%s" consensusMessageHash
                                 |> ConsensusMessageId
                                 |> NetworkMessageId.Consensus
-                            SenderIdentity = None
+                            SenderAddress = None
                             Data =
                                 consensusMessageEnvelope
                                 |> Mapping.consensusMessageEnvelopeToDto
                                 |> Serialization.serializeBinary
                         }
                         |> MulticastMessage
+                    PeerMessageId = None
                 }
                 |> sendPeerMessage
 

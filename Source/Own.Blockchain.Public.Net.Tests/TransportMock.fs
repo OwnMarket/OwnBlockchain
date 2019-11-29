@@ -6,11 +6,16 @@ module TransportMock =
 
     let mutable private transportCoreMock : TransportCoreMock option = None
     let messageQueue = new ConcurrentDictionary<string, ConcurrentQueue<byte[]>>()
-    let init networkId identity networkSendoutRetryTimeout peerMessageMaxSize receivePeerMessage =
+    let init
+        networkId
+        networkSendoutRetryTimeout
+        peerMessageMaxSize
+        receivePeerMessage
+        =
+
         let transport =
             TransportCoreMock (
                 networkId,
-                identity,
                 networkSendoutRetryTimeout,
                 peerMessageMaxSize,
                 messageQueue,
@@ -33,14 +38,14 @@ module TransportMock =
         | Some transport -> transport.SendGossipMessage targetAddress gossipMessage
         | None -> failwith "Please initialize transport first"
 
-    let sendRequestMessage targetAddress requestMessage =
+    let sendRequestMessage senderAddress targetAddress requestMessage =
         match transportCoreMock with
-        | Some transport -> transport.SendRequestMessage targetAddress requestMessage
+        | Some transport -> transport.SendRequestMessage targetAddress requestMessage senderAddress
         | None -> failwith "Please initialize transport first"
 
-    let sendResponseMessage (targetIdentity : byte[]) responseMessage =
+    let sendResponseMessage responseMessage =
         match transportCoreMock with
-        | Some transport -> transport.SendResponseMessage targetIdentity responseMessage
+        | Some transport -> transport.SendResponseMessage responseMessage
         | None -> failwith "Please initialize transport first"
 
     let sendMulticastMessage multicastAddresses multicastMessage =

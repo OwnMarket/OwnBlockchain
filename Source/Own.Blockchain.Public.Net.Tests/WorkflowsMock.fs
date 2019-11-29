@@ -17,7 +17,7 @@ module WorkflowsMock =
         : Result<AppEvent option, AppError list> list option
         =
 
-        let processRequest address messageIds targetAddress =
+        let processRequest address messageIds requestId =
             let responseResult =
                 messageIds
                 |> List.map (fun messageId ->
@@ -50,7 +50,8 @@ module WorkflowsMock =
                         else
                             Result.appError (sprintf "Error Block %A not found" blockNr)
                     | Consensus _ -> Result.appError "Cannot request consensus message from Peer"
-                    | ConsensusState _ -> Result.appError "Cannot request consensus state from Peer"
+                    | ConsensusStateRequest
+                    | ConsensusStateResponse -> Result.appError "Cannot request consensus state from Peer"
                     | BlockchainHead ->
                         {
                             MessageId = messageId
@@ -88,8 +89,9 @@ module WorkflowsMock =
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = responseItems}
+                PeerMessageId = requestId
             }
-            |> respondToPeer targetAddress
+            |> respondToPeer
 
             match errors with
             | [] -> Ok None
@@ -119,7 +121,7 @@ module WorkflowsMock =
         | MulticastMessage m ->
             RawMock.savePeerData address m.MessageId
             None
-        | RequestDataMessage m -> [ processRequest address m.Items m.SenderIdentity ] |> Some
+        | RequestDataMessage m -> [ processRequest address m.Items peerMessageEnvelope.PeerMessageId] |> Some
         | ResponseDataMessage m ->
             processResponse address m.Items |> Some
         | _ ->

@@ -4,9 +4,9 @@ module Transport =
 
     let mutable private transportCore : TransportCore option = None
 
-    let init networkId identity networkSendoutRetryTimeout peerMessageMaxSize receivePeerMessage =
+    let init networkId networkSendoutRetryTimeout peerMessageMaxSize receivePeerMessage =
         let transport =
-            TransportCore (networkId, identity, networkSendoutRetryTimeout, peerMessageMaxSize, receivePeerMessage)
+            TransportCore (networkId, networkSendoutRetryTimeout, peerMessageMaxSize, receivePeerMessage)
         transport.Init ()
         transportCore <- transport |> Some
 
@@ -34,9 +34,9 @@ module Transport =
         | Some transport -> transport.SendRequestMessage targetAddress requestMessage
         | None -> failwith "Please initialize transport first"
 
-    let sendResponseMessage (targetIdentity : byte[]) responseMessage =
+    let sendResponseMessage responseMessage =
         match transportCore with
-        | Some transport -> transport.SendResponseMessage targetIdentity responseMessage
+        | Some transport -> transport.SendResponseMessage responseMessage
         | None -> failwith "Please initialize transport first"
 
     let sendMulticastMessage multicastAddresses multicastMessage =

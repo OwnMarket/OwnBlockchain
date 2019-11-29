@@ -21,7 +21,6 @@ module PeerTests =
     )
 
     let nodeConfigBase = {
-        Identity = Conversion.stringToBytes "" |> PeerNetworkIdentity
         ListeningAddress = NetworkAddress ""
         PublicAddress = NetworkAddress "" |> Some
         BootstrapNodes = []
@@ -65,13 +64,13 @@ module PeerTests =
         fun () -> networkId.Value
 
     let sendMessage peerMessage (node : NetworkNode) =
-        node.SendMessage peerMessage
+        node.SendMessage None peerMessage
 
     let requestFromPeer requestIds (node : NetworkNode) =
         node.SendRequestDataMessage requestIds None
 
-    let respondToPeer (node : NetworkNode) targetAddress peerMessageEnvelope =
-        node.SendResponseDataMessage targetAddress peerMessageEnvelope
+    let respondToPeer (node : NetworkNode) peerMessageEnvelope =
+        node.SendResponseDataMessage peerMessageEnvelope
 
     let getPeerList (node : NetworkNode) =
         fun () -> node.GetActivePeers()
@@ -85,18 +84,20 @@ module PeerTests =
         let peerMessageEnvelope = {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = gossipMessage
+            PeerMessageId = None
         }
         node |> sendMessage peerMessageEnvelope
 
     let multicastTx (node : NetworkNode) txHash =
         let multicastMessage = MulticastMessage {
             MessageId = Tx txHash
-            SenderIdentity = None
+            SenderAddress = None
             Data = "txEnvelope" |> Conversion.stringToBytes
         }
         let peerMessageEnvelope = {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = multicastMessage
+            PeerMessageId = None
         }
         node |> sendMessage peerMessageEnvelope
 
@@ -112,6 +113,7 @@ module PeerTests =
         let peerMessageEnvelope = {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = gossipMessage
+            PeerMessageId = None
         }
         node |> sendMessage peerMessageEnvelope
 
@@ -124,6 +126,7 @@ module PeerTests =
         let peerMessageEnvelope = {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = gossipMessage
+            PeerMessageId = None
         }
         node |> sendMessage peerMessageEnvelope
 
@@ -303,6 +306,11 @@ module PeerTests =
             let removePeer = DbMock.removePeer nodeConfig.ListeningAddress
             let getValidators = DbMock.getValidators nodeConfig.ListeningAddress
 
+            let sendRequestMessage =
+                nodeConfig.ListeningAddress
+                |> fun a -> Some a.Value
+                |> TransportMock.sendRequestMessage
+
             NetworkNode (
                 getNetworkId,
                 getActivePeers,
@@ -314,10 +322,9 @@ module PeerTests =
                 TransportMock.sendGossipDiscoveryMessage,
                 TransportMock.sendGossipMessage,
                 TransportMock.sendMulticastMessage,
-                TransportMock.sendRequestMessage,
+                sendRequestMessage,
                 TransportMock.sendResponseMessage,
                 TransportMock.receiveMessage,
-                TransportMock.closeConnection,
                 TransportMock.closeAllConnections,
                 getValidators,
                 nodeConfig,
@@ -341,7 +348,6 @@ module PeerTests =
                 nodeIndex <- nodeIndex + 1
                 {
                     nodeConfigBase with
-                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress (sprintf "127.0.0.1:100%i" nodeIndex)
                         PublicAddress = NetworkAddress address |> Some
                         BootstrapNodes = []
@@ -372,7 +378,6 @@ module PeerTests =
             |> List.map (fun address ->
                 {
                     nodeConfigBase with
-                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress address
                         PublicAddress = NetworkAddress address |> Some
                         BootstrapNodes = []
@@ -414,7 +419,6 @@ module PeerTests =
             |> List.map (fun address ->
                 {
                     nodeConfigBase with
-                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress address
                         PublicAddress = NetworkAddress address|> Some
                         BootstrapNodes = []
@@ -443,7 +447,6 @@ module PeerTests =
             |> List.map (fun address ->
                 {
                     nodeConfigBase with
-                        Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress address
                         PublicAddress = NetworkAddress address|> Some
                         BootstrapNodes = []
@@ -472,7 +475,6 @@ module PeerTests =
         |> List.map (fun address ->
             {
                 nodeConfigBase with
-                    Identity = Conversion.stringToBytes address |> PeerNetworkIdentity
                     ListeningAddress = NetworkAddress address
                     PublicAddress = NetworkAddress address|> Some
                     BootstrapNodes = addresses |> List.truncate 2 |> List.map NetworkAddress
@@ -487,21 +489,18 @@ module PeerTests =
 
         let nodeConfig1 = {
             nodeConfigBase with
-                Identity = Conversion.stringToBytes address1 |> PeerNetworkIdentity
                 ListeningAddress = NetworkAddress address1
                 PublicAddress = NetworkAddress address1 |> Some
                 BootstrapNodes = [NetworkAddress address2; NetworkAddress address3]
         }
         let nodeConfig2 = {
             nodeConfigBase with
-                Identity = Conversion.stringToBytes address2 |> PeerNetworkIdentity
                 ListeningAddress = NetworkAddress address2
                 PublicAddress = NetworkAddress address2 |> Some
                 BootstrapNodes = [NetworkAddress address1; NetworkAddress address3]
         }
         let nodeConfig3 = {
             nodeConfigBase with
-                Identity = Conversion.stringToBytes address3 |> PeerNetworkIdentity
                 ListeningAddress = NetworkAddress address3
                 PublicAddress = NetworkAddress address3 |> Some
                 BootstrapNodes = [NetworkAddress address1; NetworkAddress address2]
@@ -824,13 +823,13 @@ module PeerTests =
 
         System.Threading.Thread.Sleep (cycleCount * tCycle)
 
-        let txHash = TxHash "txHash"
-        requestTx nodeList.[0] txHash
-
         let nodeCount = nodeList.Length
+        let txHash = TxHash "txHash"
         if txExists then
             // Last node contains the tx.
             RawMock.savePeerData (nodeList.[nodeCount - 1].GetListenAddress()) (Tx txHash)
+
+        requestTx nodeList.[0] txHash
 
         // Worst case scenario : a single node contains the TX and it's the last contacted for it => (n-1) cycles
         System.Threading.Thread.Sleep (4 * (nodeCount - 1) * tCycle)
@@ -973,7 +972,6 @@ module PeerTests =
         // Max connected peers = 10.
         let nodeConfig1 = {
             nodeConfigBase with
-                Identity = Conversion.stringToBytes address611 |> PeerNetworkIdentity
                 ListeningAddress = NetworkAddress address611
                 PublicAddress = NetworkAddress address611 |> Some
                 BootstrapNodes = []
@@ -986,7 +984,6 @@ module PeerTests =
             |> List.map (fun port ->
                 {
                     nodeConfigBase with
-                        Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                         PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
                         BootstrapNodes = [NetworkAddress address611]
@@ -1010,7 +1007,6 @@ module PeerTests =
             |> List.map (fun a ->
                 {
                     nodeConfigBase with
-                        Identity = Conversion.stringToBytes a |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress a
                         PublicAddress = NetworkAddress a |> Some
                         BootstrapNodes = []
@@ -1024,7 +1020,6 @@ module PeerTests =
             |> List.map (fun port ->
                 {
                     nodeConfigBase with
-                        Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                         PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
                         BootstrapNodes = bootstrapAddresses |> List.map NetworkAddress
@@ -1072,7 +1067,6 @@ module PeerTests =
         let address311 = "127.0.0.1:311"
         let nodeConfig1 = {
             nodeConfigBase with
-                Identity = Conversion.stringToBytes address311 |> PeerNetworkIdentity
                 ListeningAddress = NetworkAddress address311
                 PublicAddress = NetworkAddress address311 |> Some
                 BootstrapNodes = []
@@ -1083,7 +1077,6 @@ module PeerTests =
             |> List.map (fun port ->
                 {
                     nodeConfigBase with
-                        Identity = (sprintf "127.0.0.1:%i" port) |> Conversion.stringToBytes |> PeerNetworkIdentity
                         ListeningAddress = NetworkAddress (sprintf "127.0.0.1:%i" port)
                         PublicAddress = NetworkAddress (sprintf "127.0.0.1:%i" port) |> Some
                         BootstrapNodes = [NetworkAddress address311]

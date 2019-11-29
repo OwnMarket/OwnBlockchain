@@ -4,7 +4,6 @@ open Own.Blockchain.Common
 
 type NetworkId = NetworkId of byte[] // Unencoded hash of the network code.
 type NetworkAddress = NetworkAddress of string
-type PeerNetworkIdentity = PeerNetworkIdentity of byte[]
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Wallet
@@ -475,7 +474,7 @@ type ConsensusCommand =
     | Message of BlockchainAddress * ConsensusMessageEnvelope
     | RetryPropose of BlockNumber * ConsensusRound
     | Timeout of BlockNumber * ConsensusRound * ConsensusStep
-    | StateRequested of ConsensusStateRequest * PeerNetworkIdentity
+    | StateRequested of ConsensusStateRequest * NetworkAddress
     | StateReceived of ConsensusStateResponse
 
 type ConsensusMessageId = ConsensusMessageId of string // Just for the network layer
@@ -506,12 +505,12 @@ type NetworkMessageId =
     | EquivocationProof of EquivocationProofHash
     | Block of BlockNumber
     | Consensus of ConsensusMessageId
-    | ConsensusState
+    | ConsensusStateRequest
+    | ConsensusStateResponse
     | BlockchainHead
     | PeerList
 
 type NetworkNodeConfig = {
-    Identity : PeerNetworkIdentity
     ListeningAddress : NetworkAddress
     PublicAddress : NetworkAddress option
     BootstrapNodes : NetworkAddress list
@@ -557,13 +556,12 @@ type GossipMessage = {
 
 type MulticastMessage = {
     MessageId : NetworkMessageId
-    SenderIdentity : PeerNetworkIdentity option
+    SenderAddress : NetworkAddress option
     Data : byte[]
 }
 
 type RequestDataMessage = {
     Items : NetworkMessageId list
-    SenderIdentity : PeerNetworkIdentity
 }
 
 type ResponseItemMessage = {
@@ -585,6 +583,7 @@ type PeerMessage =
 type PeerMessageEnvelope = {
     NetworkId : NetworkId
     PeerMessage : PeerMessage
+    PeerMessageId : string option
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -606,10 +605,6 @@ type NetworkId with
 type NetworkAddress with
     member __.Value =
         __ |> fun (NetworkAddress v) -> v
-
-type PeerNetworkIdentity with
-    member __.Value =
-        __ |> fun (PeerNetworkIdentity v) -> v
 
 type PrivateKey with
     member __.Value =

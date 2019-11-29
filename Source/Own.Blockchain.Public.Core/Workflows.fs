@@ -1036,11 +1036,12 @@ module Workflows =
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage =
                 {
-                    MessageId = Tx txHash
+                    GossipMessage.MessageId = Tx txHash
                     SenderAddress = publicAddress |> Option.map NetworkAddress
                     Data = Serialization.serializeBinary txEnvelopeDto
                 }
                 |> GossipMessage
+            PeerMessageId = None
         }
         |> sendMessageToPeers
 
@@ -1090,11 +1091,12 @@ module Workflows =
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage =
                     {
-                        MessageId = EquivocationProof equivocationProofHash
+                        GossipMessage.MessageId = EquivocationProof equivocationProofHash
                         SenderAddress = publicAddress |> Option.map NetworkAddress
                         Data = Serialization.serializeBinary equivocationProofDto
                     }
                     |> GossipMessage
+                PeerMessageId = None
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "EquivocationProof %s does not exist" equivocationProofHash.Value
@@ -1113,11 +1115,12 @@ module Workflows =
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage =
                     {
-                        MessageId = Block blockNumber
+                        GossipMessage.MessageId = Block blockNumber
                         SenderAddress = publicAddress |> Option.map NetworkAddress
                         Data = Serialization.serializeBinary blockEnvelopeDto
                     }
                     |> GossipMessage
+                PeerMessageId = None
             }
             |> sendMessageToPeers
         | _ -> Log.errorf "Block %i does not exist" blockNumber.Value
@@ -1125,7 +1128,7 @@ module Workflows =
     let requestConsensusState
         validatorPrivateKey
         getNetworkId
-        getIdentity
+        getPublicAddress
         sendMessageToPeers
         isValidator
         addressFromPrivateKey
@@ -1147,14 +1150,15 @@ module Workflows =
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage =
                     {
-                        MulticastMessage.MessageId = NetworkMessageId.ConsensusState
-                        SenderIdentity = getIdentity () |> Some
+                        MulticastMessage.MessageId = NetworkMessageId.ConsensusStateRequest
+                        SenderAddress = getPublicAddress ()
                         Data =
                             consensusStateRequest
                             |> Mapping.consensusStateRequestToDto
                             |> Serialization.serializeBinary
                     }
                     |> MulticastMessage
+                PeerMessageId = None
             }
             |> sendMessageToPeers
 
@@ -1162,25 +1166,26 @@ module Workflows =
 
     let sendConsensusState
         getNetworkId
-        respondToPeer
-        targetIdentity
+        sendUnicastMessage
+        targetAddress
         consensusStateResponse
         =
 
-        let responseItem =
-            {
-                ResponseItemMessage.MessageId = NetworkMessageId.ConsensusState
-                Data =
-                    consensusStateResponse
-                    |> Mapping.consensusStateResponseToDto
-                    |> Serialization.serializeBinary
-            }
-
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
-            PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = [ responseItem ]}
+            PeerMessage =
+                {
+                    MulticastMessage.MessageId = NetworkMessageId.ConsensusStateResponse
+                    SenderAddress = None
+                    Data =
+                        consensusStateResponse
+                        |> Mapping.consensusStateResponseToDto
+                        |> Serialization.serializeBinary
+                }
+                |> MulticastMessage
+            PeerMessageId = None
         }
-        |> respondToPeer targetIdentity
+        |> sendUnicastMessage targetAddress
 
     let processPeerMessage
         getTx
@@ -1239,7 +1244,7 @@ module Workflows =
             |> verifyConsensusMessage
             |> Result.map (ConsensusCommand.Message >> ConsensusMessageReceived >> Some)
 
-        let processConsensusStateFromPeer isResponse senderIdentity data =
+        let processConsensusStateFromPeer isResponse senderAddress data =
             if isResponse then
                 data
                 |> Serialization.deserializeBinary<ConsensusStateResponseDto>
@@ -1248,12 +1253,12 @@ module Workflows =
                 |> Some
                 |> Ok
             else
-                match senderIdentity with
-                | None -> failwith "SenderIdentity is missing from ConsensusStateRequest"
-                | Some identity ->
+                match senderAddress with
+                | None -> failwith "SenderAddress is missing from ConsensusStateRequest"
+                | Some address ->
                     data
                     |> Serialization.deserializeBinary<ConsensusStateRequestDto>
-                    |> fun request -> Mapping.consensusStateRequestFromDto request, identity
+                    |> fun request -> Mapping.consensusStateRequestFromDto request, address
                     |> ConsensusStateRequestReceived
                     |> Some
                     |> Ok
@@ -1276,17 +1281,18 @@ module Workflows =
                 |> Some
                 |> Ok
 
-        let processDataMessage isResponse messageId (senderIdentity : PeerNetworkIdentity option) (data : byte[]) =
+        let processDataMessage isResponse messageId (senderAddress: NetworkAddress option) (data : byte[]) =
             match messageId with
             | Tx txHash -> processTxFromPeer isResponse txHash data
             | EquivocationProof proofHash -> processEquivocationProofFromPeer isResponse proofHash data
             | Block blockNr -> processBlockFromPeer isResponse blockNr data
             | Consensus _ -> processConsensusMessageFromPeer data
-            | ConsensusState -> processConsensusStateFromPeer isResponse senderIdentity data
+            | ConsensusStateRequest -> processConsensusStateFromPeer false senderAddress data
+            | ConsensusStateResponse -> processConsensusStateFromPeer true senderAddress data
             | BlockchainHead -> processBlockchainHeadMessageFromPeer data
             | PeerList -> processPeerListMessageFromPeer data
 
-        let processRequestMessage messageIds senderIdentity =
+        let processRequestMessage messageIds requestId =
             let responseResult =
                 messageIds
                 |> List.map (fun messageId ->
@@ -1328,7 +1334,8 @@ module Workflows =
                             |> Ok
                         | _ -> Result.appError (sprintf "Requested block %i not found" blockNr.Value)
                     | Consensus _ -> Result.appError "Cannot request consensus message from Peer"
-                    | ConsensusState -> Result.appError "Cannot request consensus state from Peer"
+                    | ConsensusStateRequest
+                    | ConsensusStateResponse -> Result.appError "Cannot request consensus state from Peer"
                     | BlockchainHead ->
                         {
                             MessageId = messageId
@@ -1373,8 +1380,9 @@ module Workflows =
                 {
                     PeerMessageEnvelope.NetworkId = getNetworkId ()
                     PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = responseItems}
+                    PeerMessageId = requestId
                 }
-                |> respondToPeer senderIdentity
+                |> respondToPeer
 
             match errors with
             | [] -> Ok None
@@ -1387,8 +1395,8 @@ module Workflows =
         match peerMessageEnvelope.PeerMessage with
         | GossipDiscoveryMessage _ -> None
         | GossipMessage m -> [ processDataMessage false m.MessageId None m.Data ] |> Some
-        | MulticastMessage m -> [ processDataMessage false m.MessageId m.SenderIdentity m.Data ] |> Some
-        | RequestDataMessage m -> [ processRequestMessage m.Items m.SenderIdentity ] |> Some
+        | MulticastMessage m -> [ processDataMessage false m.MessageId m.SenderAddress m.Data ] |> Some
+        | RequestDataMessage m -> [ processRequestMessage m.Items peerMessageEnvelope.PeerMessageId ] |> Some
         | ResponseDataMessage m -> processResponseMessage m.Items |> Some
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

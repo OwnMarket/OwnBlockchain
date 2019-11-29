@@ -1,6 +1,5 @@
 ﻿namespace Own.Blockchain.Public.Net
 
-open System
 open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core
@@ -38,7 +37,6 @@ module internal PeerMessageHandler =
         sendRequestMessage
         sendResponseMessage
         receiveMessage
-        closeConnection
         closeAllConnections
         getCurrentValidators
         publishEvent
@@ -46,7 +44,6 @@ module internal PeerMessageHandler =
 
         let nodeConfig =
             {
-                Identity = Guid.NewGuid().ToString("N") |> Conversion.stringToBytes |> PeerNetworkIdentity
                 ListeningAddress = NetworkAddress listeningAddress
                 PublicAddress = publicAddress |> Option.map NetworkAddress
                 BootstrapNodes = bootstrapNodes |> List.map NetworkAddress
@@ -86,7 +83,6 @@ module internal PeerMessageHandler =
                 sendRequestMessage,
                 sendResponseMessage,
                 receiveMessage,
-                closeConnection,
                 closeAllConnections,
                 getCurrentValidators,
                 nodeConfig,
@@ -109,7 +105,12 @@ module internal PeerMessageHandler =
 
     let sendMessage message =
         match node with
-        | Some n -> n.SendMessage message
+        | Some n -> n.SendMessage None message
+        | None -> failwith "Please start gossip first"
+
+    let sendUnicastMessage targetAddress message =
+        match node with
+        | Some n -> n.SendMessage (Some targetAddress) message
         | None -> failwith "Please start gossip first"
 
     let requestFromPeer requestIds preferredPeer =
@@ -119,14 +120,14 @@ module internal PeerMessageHandler =
             n.SendRequestDataMessage validRequestIds preferredPeer
         | None -> failwith "Please start gossip first"
 
-    let respondToPeer targetIdentity peerMessageEnvelope =
+    let respondToPeer peerMessageEnvelope =
         match node with
-        | Some n -> n.SendResponseDataMessage targetIdentity peerMessageEnvelope
+        | Some n -> n.SendResponseDataMessage peerMessageEnvelope
         | None -> failwith "Please start gossip first"
 
-    let getIdentity () =
+    let getPublicAddress () =
         match node with
-        | Some n -> n.Identity
+        | Some n -> n.GetPublicAddress()
         | None -> failwith "Please start gossip first"
 
     let getPeerList () =

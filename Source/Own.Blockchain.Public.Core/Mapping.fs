@@ -899,7 +899,8 @@ module Mapping =
         | EquivocationProof (EquivocationProofHash proofHash) -> "EquivocationProof", proofHash
         | Block (BlockNumber blockNr) -> "Block", blockNr |> Convert.ToString
         | Consensus (ConsensusMessageId msgId) -> "Consensus", msgId
-        | ConsensusState -> "ConsensusState", ""
+        | ConsensusStateRequest -> "ConsensusStateRequest", ""
+        | ConsensusStateResponse -> "ConsensusStateResponse", ""
         | BlockchainHead -> "BlockchainHead", ""
         | PeerList -> "PeerList", ""
 
@@ -909,7 +910,8 @@ module Mapping =
         | "EquivocationProof" -> messageId |> EquivocationProofHash |> EquivocationProof
         | "Block" -> messageId |> Convert.ToInt64 |> BlockNumber |> Block
         | "Consensus" -> messageId |> ConsensusMessageId |> Consensus
-        | "ConsensusState" -> ConsensusState
+        | "ConsensusStateRequest" -> ConsensusStateRequest
+        | "ConsensusStateResponse" -> ConsensusStateResponse
         | "BlockchainHead" -> BlockchainHead
         | "PeerList" -> PeerList
         | _ -> failwithf "Invalid network message type %s" messageType
@@ -957,7 +959,7 @@ module Mapping =
             ActiveMembers = gossipDiscoveryMessage.ActivePeers |> List.map gossipPeerToDto
         }
 
-    let gossipMessageFromDto (dto : GossipMessageDto) =
+    let gossipMessageFromDto (dto : GossipMessageDto) : GossipMessage =
         let gossipMessageId = messageTypeToNetworkMessageId dto.MessageType dto.MessageId
 
         {
@@ -970,7 +972,7 @@ module Mapping =
             Data = dto.Data
         }
 
-    let gossipMessageToDto (gossipMessage : GossipMessage) =
+    let gossipMessageToDto (gossipMessage : GossipMessage) : GossipMessageDto =
         let messageType, messageId = networkMessageIdToIdTypeTuple gossipMessage.MessageId
 
         {
@@ -988,11 +990,7 @@ module Mapping =
 
         {
             MessageId = multicastMessageId
-            SenderIdentity =
-                if isNull (box dto.SenderIdentity) then
-                    None
-                else
-                    dto.SenderIdentity |> PeerNetworkIdentity |> Some
+            SenderAddress = dto.SenderAddress |> Option.map NetworkAddress
             Data = dto.Data
         }
 
@@ -1001,10 +999,7 @@ module Mapping =
         {
             MessageId = messageId
             MessageType = messageType
-            SenderIdentity =
-                match multicastMessage.SenderIdentity with
-                | None -> Unchecked.defaultof<_>
-                | Some id -> id.Value
+            SenderAddress = multicastMessage.SenderAddress |> Option.map (fun a -> a.Value)
             Data = multicastMessage.Data
         }
 
@@ -1016,10 +1011,9 @@ module Mapping =
             )
         {
             Items = requestItems
-            SenderIdentity = PeerNetworkIdentity dto.SenderIdentity
         }
 
-    let requestDataMessageToDto (requestDataMessage : RequestDataMessage) =
+    let requestDataMessageToDto (requestDataMessage : RequestDataMessage) : RequestDataMessageDto =
         let requestItems =
             requestDataMessage.Items
             |> List.map (fun request ->
@@ -1029,7 +1023,6 @@ module Mapping =
 
         {
             Items = requestItems
-            SenderIdentity = requestDataMessage.SenderIdentity.Value
         }
 
     let responseDataMessageFromDto (dto : ResponseDataMessageDto) : ResponseDataMessage =
@@ -1092,6 +1085,7 @@ module Mapping =
         {
             PeerMessageEnvelope.NetworkId = NetworkId dto.NetworkId
             PeerMessage = peerMessageFromDto deserialize dto.PeerMessage
+            PeerMessageId = dto.PeerMessageId
         }
 
     let peerMessageEnvelopeToDto (serialize : obj -> byte[]) (peerMessageEnvelope : PeerMessageEnvelope) =
@@ -1099,4 +1093,5 @@ module Mapping =
             NetworkId = peerMessageEnvelope.NetworkId.Value
             ProtocolVersion = 0s // TODO: Take from domain type upon implementing protocol versioning.
             PeerMessage = peerMessageToDto serialize peerMessageEnvelope.PeerMessage
+            PeerMessageId = peerMessageEnvelope.PeerMessageId
         }

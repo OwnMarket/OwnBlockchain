@@ -475,11 +475,7 @@ module ConsensusTestHelpers =
                     TargetValidatorAddress = targetValidatorAddress
                 }
 
-            let peerId =
-                validatorAddress.Value
-                |> Hashing.decode
-                |> PeerNetworkIdentity
-
+            let peerAddress = NetworkAddress validatorAddress.Value
             _stateRequests.RemoveAll (fun (v, r, _) -> v = validatorAddress && r = consensusRound) |> ignore
 
             for v in validators do
@@ -487,13 +483,12 @@ module ConsensusTestHelpers =
                     && _states.ContainsKey v
                     && (targetValidatorAddress.IsNone || targetValidatorAddress = Some v)
                 then
-                    ConsensusCommand.StateRequested (consensusStateRequest, peerId)
+                    ConsensusCommand.StateRequested (consensusStateRequest, peerAddress)
                     |> _states.[v].HandleConsensusCommand
 
-        member private __.SendConsensusState validatorAddress recipientPeerNetworkIdentity consensusStateResponse =
+        member private __.SendConsensusState validatorAddress recipientPeerAddress consensusStateResponse =
             let recipientValidatorAddress =
-                recipientPeerNetworkIdentity.Value
-                |> Hashing.encode
+                recipientPeerAddress.Value
                 |> BlockchainAddress
 
             if recipientValidatorAddress = validatorAddress then

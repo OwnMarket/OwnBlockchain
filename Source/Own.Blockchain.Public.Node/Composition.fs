@@ -431,7 +431,7 @@ module Composition =
         Workflows.requestConsensusState
             (PrivateKey Config.ValidatorPrivateKey)
             getNetworkId
-            Peers.getIdentity
+            Peers.getPublicAddress
             Peers.sendMessage
             isValidator
             addressFromPrivateKey
@@ -439,7 +439,7 @@ module Composition =
     let sendConsensusState =
         Workflows.sendConsensusState
             getNetworkId
-            Peers.respondToPeer
+            Peers.sendUnicastMessage
 
     let verifyConsensusMessage =
         Workflows.verifyConsensusMessage
@@ -641,7 +641,6 @@ module Composition =
             Transport.sendRequestMessage
             Transport.sendResponseMessage
             Transport.receiveMessage
-            Transport.closeConnection
             Transport.closeAllConnections
             getCurrentValidators
 

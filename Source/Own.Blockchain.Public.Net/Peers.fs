@@ -11,6 +11,12 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "SendPeerMessage agent is not started"
 
+    let mutable unicastMessageDispatcher : MailboxProcessor<NetworkAddress * PeerMessageEnvelope> option = None
+    let invokeSendUnicastMessage m =
+        match unicastMessageDispatcher with
+        | Some h -> h.Post m
+        | None -> Log.error "SendUnicastMessage agent is not started"
+
     let mutable requestFromPeerDispatcher : MailboxProcessor<NetworkMessageId list * NetworkAddress option> option =
         None
     let invokeRequestFromPeer m =
@@ -18,7 +24,7 @@ module Peers =
         | Some h -> h.Post m
         | None -> Log.error "RequestFromPeer agent is not started"
 
-    let mutable respondToPeerDispatcher : MailboxProcessor<PeerNetworkIdentity * PeerMessageEnvelope> option = None
+    let mutable respondToPeerDispatcher : MailboxProcessor<PeerMessageEnvelope> option = None
     let invokeRespondToPeer m =
         match respondToPeerDispatcher with
         | Some h -> h.Post m
@@ -32,6 +38,17 @@ module Peers =
             Agent.start <| fun peerMessageEnvelope ->
                 async {
                     PeerMessageHandler.sendMessage peerMessageEnvelope
+                }
+            |> Some
+
+    let private startSendUnicastMessageDispatcher () =
+        if unicastMessageDispatcher <> None then
+            failwith "SendUnicastMessage agent is already started"
+
+        unicastMessageDispatcher <-
+            Agent.start <| fun (targetAddress, peerMessageEnvelope) ->
+                async {
+                    PeerMessageHandler.sendUnicastMessage targetAddress peerMessageEnvelope
                 }
             |> Some
 
@@ -51,9 +68,9 @@ module Peers =
             failwith "RespondToPeer agent is already started"
 
         respondToPeerDispatcher <-
-            Agent.start <| fun (targetIdentity, peerMessageEnvelope) ->
+            Agent.start <| fun peerMessageEnvelope ->
                 async {
-                    PeerMessageHandler.respondToPeer targetIdentity peerMessageEnvelope
+                    PeerMessageHandler.respondToPeer peerMessageEnvelope
                 }
             |> Some
 
@@ -65,6 +82,9 @@ module Peers =
 
     let sendMessage peerMessageEnvelope =
         invokeSendPeerMessage peerMessageEnvelope
+
+    let sendUnicastMessage targetAddress peerMessageEnvelope =
+        invokeSendUnicastMessage (targetAddress, peerMessageEnvelope)
 
     let private requestFromRandomPeer messageIds =
         invokeRequestFromPeer (messageIds, None)
@@ -103,10 +123,10 @@ module Peers =
         |> List.map NetworkMessageId.EquivocationProof
         |> requestFromPreferredPeer preferredPeer
 
-    let respondToPeer targetIdentity peerMessage =
-        invokeRespondToPeer (targetIdentity, peerMessage)
+    let respondToPeer peerMessage =
+        invokeRespondToPeer peerMessage
 
-    let getIdentity () = PeerMessageHandler.getIdentity ()
+    let getPublicAddress () = PeerMessageHandler.getPublicAddress ()
 
     let getPeerList () = PeerMessageHandler.getPeerList ()
 
@@ -116,5 +136,6 @@ module Peers =
 
     let startNetworkAgents () =
         startSendPeerMessageDispatcher ()
+        startSendUnicastMessageDispatcher ()
         startRequestFromPeerDispatcher ()
         startRespondToPeerDispatcher ()
