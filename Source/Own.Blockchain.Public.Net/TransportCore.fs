@@ -82,19 +82,22 @@ type internal TransportCore
     // tcpClient.SendBufferSize = 8192 default
     let writeToClientAsync (client : TcpClient) bufferSize (data: byte[]) =
         async {
-            let stream = client.GetStream()
-            let mutable sentBytes = 0
-            let rec sendAllBytes (sm : NetworkStream) =
-                async {
-                    let count = Math.Min(data.Length - sentBytes, bufferSize)
-                    if count > 0 then
-                        do! sm.WriteAsync(data, sentBytes, count) |> Async.AwaitTask
-                        sentBytes <- sentBytes + count
-                        if sentBytes < data.Length then
-                            return! sendAllBytes sm
-                }
+            try
+                let stream = client.GetStream()
+                let mutable sentBytes = 0
+                let rec sendAllBytes (sm : NetworkStream) =
+                    async {
+                        let count = Math.Min(data.Length - sentBytes, bufferSize)
+                        if count > 0 then
+                            do! sm.WriteAsync(data, sentBytes, count) |> Async.AwaitTask
+                            sentBytes <- sentBytes + count
+                            if sentBytes < data.Length then
+                                return! sendAllBytes sm
+                    }
 
-            do! sendAllBytes stream
+                do! sendAllBytes stream
+            with
+            | _ -> Log.verbose "Cannot send data, connection was probably closed"
         }
 
     let processBytes client bytes =
@@ -385,7 +388,7 @@ type internal TransportCore
     let monitorOpenedConnections () =
         let rec loop () =
             async {
-                let lastValidTimestamp = DateTime.UtcNow.AddSeconds -8. // TODO:parametrize
+                let lastValidTimestamp = DateTime.UtcNow.AddSeconds -30. // TODO:parametrize
                 connectionPool
                 |> List.ofDict
                 |> List.filter (fun (_, (_, _, timestamp)) -> timestamp < lastValidTimestamp)
