@@ -390,7 +390,7 @@ type internal TransportCore
                 return! dequeue ()
             }
 
-        Async.Start (dequeue ())
+        Async.Start (dequeue (), cts.Token)
 
     let monitorOpenedConnections () =
         let rec loop () =
@@ -404,7 +404,7 @@ type internal TransportCore
                 do! Async.Sleep 100
                 return! loop ()
             }
-        Async.Start (loop ())
+        Async.Start (loop (), cts.Token)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Server
@@ -432,25 +432,26 @@ type internal TransportCore
             )
 
         listenerSocket |> Option.iter (fun server ->
-            async {
-                try
-                    // Start listening for client requests.
-                    server.Start()
+            let listen () =
+                async {
+                    try
+                        // Start listening for client requests.
+                        server.Start()
 
-                    while true do
-                        tcpClientConnectedEvent.Reset() |> ignore
-                        Log.verbose "Waiting for connection..."
+                        while true do
+                            tcpClientConnectedEvent.Reset() |> ignore
+                            Log.verbose "Waiting for connection..."
 
-                        // Accept the connection.
-                        server.BeginAcceptTcpClient(new AsyncCallback(acceptTcpClientCallback), server) |> ignore
+                            // Accept the connection.
+                            server.BeginAcceptTcpClient(new AsyncCallback(acceptTcpClientCallback), server) |> ignore
 
-                        // Wait until a connection is made and processed before
-                        // continuing.
-                        tcpClientConnectedEvent.WaitOne() |> ignore
-                finally
-                    server.Stop()
-            }
-            |> Async.Start
+                            // Wait until a connection is made and processed before
+                            // continuing.
+                            tcpClientConnectedEvent.WaitOne() |> ignore
+                    finally
+                        server.Stop()
+                }
+            Async.Start (listen(), cts.Token)
         )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -485,12 +486,15 @@ type internal TransportCore
         closeConnection requestId
 
     member __.CloseAllConnections () =
+        // Cancel server async operations.
         cts.Cancel()
 
         connectionPool
         |> List.ofDict
         |> List.iter (fun (_, (client, cts, _)) ->
+            // Cancel client async operations.
             cts.Cancel ()
+            // Cancel the socket.
             client.Close()
         )
         connectionPool.Clear()
