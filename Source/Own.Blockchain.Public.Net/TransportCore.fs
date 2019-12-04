@@ -99,7 +99,7 @@ type internal TransportCore
                 match connectionId with
                 | Some requestId -> closeConnection requestId
                 | _ -> client.Close()
-                Log.warningf "Cannot send data, connection was probably closed by the remote host"
+                Log.verbosef "Cannot send data, connection was probably closed by the remote host"
         }
 
     let processBytes client bytes =
