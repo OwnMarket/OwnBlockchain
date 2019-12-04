@@ -281,11 +281,11 @@ type internal TransportCore
         |> groupPeerMessageByTarget
         |> Seq.ofDict
         |> Seq.collect (fun (targetAddress, peerMessageEnvelopes) ->
-            targetAddress
-            |> createTcpClient
-            |> Option.map (fun client ->
-                peerMessageEnvelopes
-                |> Seq.map (fun envelope ->
+            peerMessageEnvelopes
+            |> Seq.map (fun envelope ->
+                targetAddress
+                |> createTcpClient
+                |> Option.map (fun client ->
                     async {
                         let requestId = Guid.NewGuid().ToString()
                         try
@@ -316,7 +316,7 @@ type internal TransportCore
                     }
                 )
             )
-            |? Seq.empty
+            |> Seq.choose id
         )
         |> Async.Parallel
         |> Async.Ignore
