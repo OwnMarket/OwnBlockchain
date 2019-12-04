@@ -78,10 +78,7 @@ type internal TransportCore
             client.Close()
         | _ -> ()
 
-    // TODO: You can achieve greater data throughput by ensuring that your network
-    // buffer is at least as large as your application buffer.
-    // tcpClient.SendBufferSize = 8192 default
-    let writeToClientAsync (client : TcpClient) bufferSize (data: byte[]) =
+    let writeToClientAsync connectionId (client : TcpClient) bufferSize (data: byte[]) =
         async {
             try
                 let stream = client.GetStream()
@@ -98,7 +95,11 @@ type internal TransportCore
 
                 do! sendAllBytes stream
             with
-            | _ -> Log.verbose "Cannot send data, connection was probably closed"
+            | _ ->
+                match connectionId with
+                | Some requestId -> closeConnection requestId
+                | _ -> client.Close()
+                Log.warningf "Cannot send data, connection was probably closed by the remote host"
         }
 
     let processBytes client bytes =
@@ -151,9 +152,7 @@ type internal TransportCore
                 return memStream
         }
 
-    // TODO: add timeout, manage client handles (close) when peerMessage
-    // is no request or in case of timeout
-    let readFromClientAsync (client : TcpClient) bufferSize =
+    let readFromClientAsync connectionId (client : TcpClient) bufferSize =
         async {
             try
                 // Get a stream object for reading and writing.
@@ -168,7 +167,10 @@ type internal TransportCore
                 if bytes.Length > 0 then
                     processBytes client bytes
             with
-            | _ -> ()
+            | _ ->
+                match connectionId with
+                | Some requestId -> closeConnection requestId
+                | _ -> client.Close()
         }
 
     let acceptTcpClientCallback (ar : IAsyncResult) =
@@ -186,7 +188,7 @@ type internal TransportCore
         tcpClientConnectedEvent.Set() |> ignore
 
         // Read all data from the client.
-        readFromClientAsync client bufferSize
+        readFromClientAsync None client bufferSize
         |> Async.Start
 
     let createTcpClient targetHost =
@@ -257,7 +259,7 @@ type internal TransportCore
                                 |> List.ofSeq
                                 |> Serialization.serializeBinary
 
-                            do! writeToClientAsync client bufferSize bytes
+                            do! writeToClientAsync None client bufferSize bytes
 
                         with
                         | :? ArgumentException
@@ -272,6 +274,7 @@ type internal TransportCore
         )
         |> Seq.choose id
         |> Async.Parallel
+        |> Async.Ignore
 
     let clientSendRequestAsync (requestMessages : ConcurrentQueue<string * PeerMessageEnvelopeDto>) =
         requestMessages
@@ -297,10 +300,10 @@ type internal TransportCore
                                 [ { envelope with PeerMessageId = Some requestId }]
                                 |> Serialization.serializeBinary
 
-                            do! writeToClientAsync client bufferSize bytes
+                            do! writeToClientAsync (Some requestId) client bufferSize bytes
                             Log.verbosef "Sent request to %A" requestId
 
-                            do! readFromClientAsync client bufferSize
+                            do! readFromClientAsync (Some requestId) client bufferSize
 
                         with
                         | :? ArgumentException
@@ -316,6 +319,7 @@ type internal TransportCore
             |? Seq.empty
         )
         |> Async.Parallel
+        |> Async.Ignore
 
     let clientSendResponseAsync (responseMessages : ConcurrentQueue<string * PeerMessageEnvelopeDto>) =
         responseMessages
@@ -333,7 +337,7 @@ type internal TransportCore
                                 try
                                     [ peerMessageEnvelope ]
                                     |> Serialization.serializeBinary
-                                    |> writeToClientAsync client bufferSize
+                                    |> writeToClientAsync (Some connectionId) client bufferSize
                                     |> Async.Start
                                     Log.verbosef "Sent response to %A" peerMessageEnvelope.PeerMessageId
 
@@ -357,6 +361,7 @@ type internal TransportCore
             )
         )
         |> Async.Parallel
+        |> Async.Ignore
 
     let wireMessageSendoutEvents () =
         let rec dequeue () =
@@ -364,29 +369,30 @@ type internal TransportCore
                 let mutable messages = new ConcurrentQueue<string * PeerMessageEnvelopeDto>()
                 if clientMessages.TryGetValue(PeerMessagePriority.Multicast, &messages)
                     && not messages.IsEmpty then
-                    let! _ = clientSendAsync messages
+                    clientSendAsync messages |> Async.Start
                     return! dequeue ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Discovery, &messages)
                     && not messages.IsEmpty then
-                    let! _ = clientSendAsync messages
+                    clientSendAsync messages |> Async.Start
                     return! dequeue ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Gossip, &messages)
                     && not messages.IsEmpty then
-                    let! _ = clientSendAsync messages
+                    clientSendAsync messages |> Async.Start
                     return! dequeue ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Request, &messages)
                     && not messages.IsEmpty then
-                    let! _ = clientSendRequestAsync messages
+                    clientSendRequestAsync messages |> Async.Start
                     return! dequeue ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Response, &messages)
                     && not messages.IsEmpty then
-                    let! _ = clientSendResponseAsync messages
+                    clientSendResponseAsync messages |> Async.Start
                     return! dequeue ()
 
+                do! Async.Sleep 200
                 return! dequeue ()
             }
 
@@ -451,7 +457,7 @@ type internal TransportCore
                     finally
                         server.Stop()
                 }
-            Async.Start (listen(), cts.Token)
+            Async.Start (listen (), cts.Token)
         )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
