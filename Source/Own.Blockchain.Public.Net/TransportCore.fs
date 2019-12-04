@@ -78,6 +78,7 @@ type internal TransportCore
             client.Close()
         | _ -> ()
 
+    // Writes data to the remote host in batches of bufferSize long.
     let writeToClientAsync connectionId (client : TcpClient) bufferSize (data: byte[]) =
         async {
             try
@@ -102,6 +103,7 @@ type internal TransportCore
                 Log.verbosef "Cannot send data, connection was probably closed by the remote host"
         }
 
+    // Deserializes data, performs necessary connection management and forwards task to application layer.
     let processBytes client bytes =
         bytes
         |> Serialization.deserializePeerMessageEnvelope
@@ -118,7 +120,7 @@ type internal TransportCore
                             envelope.PeerMessageId
                             |> Option.iter closeConnection
                         | "RequestDataMessage" ->
-                            // Persist connection for response handling.
+                            // Cache connection for response handling.
                             envelope.PeerMessageId
                             |> Option.iter (fun requestId ->
                                 let connectionInfo = (client, new CancellationTokenSource(), DateTime.UtcNow)
@@ -138,6 +140,7 @@ type internal TransportCore
             )
             Log.error
 
+    // Recursively read data from a network stream, returns a memory stream containing all data.
     let rec readAllBytes (sm: NetworkStream) (memStream : MemoryStream) bufferSize =
         let mutable data = Array.zeroCreate<byte> bufferSize
         async {
@@ -152,6 +155,7 @@ type internal TransportCore
                 return memStream
         }
 
+    // Reads data from client, deserializes it and forwards it to application layer.
     let readFromClientAsync connectionId (client : TcpClient) bufferSize =
         async {
             try
@@ -208,6 +212,7 @@ type internal TransportCore
     // Client
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Enqueue sendout messages based on priority.
     let clientEnqueueMessage (priority : PeerMessagePriority) msg targetAddress =
         let found, _ = clientMessages.TryGetValue priority
         if not found then
@@ -216,6 +221,7 @@ type internal TransportCore
 
         clientMessages.[priority].Enqueue (targetAddress, msg)
 
+    // Iterate over peer messages with an action.
     let peerMessageIter
         (action : string * PeerMessageEnvelopeDto -> unit)
         (peerMessages : ConcurrentQueue<string * PeerMessageEnvelopeDto>)
@@ -229,6 +235,7 @@ type internal TransportCore
             peerMessageSize <- peerMessageSize + peerMessageEnvelope.PeerMessage.MessageData.Length
             action (targetAddress, peerMessageEnvelope)
 
+    // Groups peer messages per target host.
     let groupPeerMessageByTarget (peerMessages : ConcurrentQueue<string * PeerMessageEnvelopeDto>) =
         let dict = new ConcurrentDictionary<string, HashSet<PeerMessageEnvelopeDto>>()
         peerMessages
@@ -259,6 +266,7 @@ type internal TransportCore
                                 |> List.ofSeq
                                 |> Serialization.serializeBinary
 
+                            // Send data to the remote host.
                             do! writeToClientAsync None client bufferSize bytes
 
                         with
@@ -297,12 +305,14 @@ type internal TransportCore
                                 fun _ _ -> connectionInfo) |> ignore
 
                             let bytes =
-                                [ { envelope with PeerMessageId = Some requestId }]
+                                [ { envelope with PeerMessageId = Some requestId } ]
                                 |> Serialization.serializeBinary
 
+                            // Send request to the remote host.
                             do! writeToClientAsync (Some requestId) client bufferSize bytes
                             Log.verbosef "Sent request to %A" requestId
 
+                            // Start listening for incoming response.
                             do! readFromClientAsync (Some requestId) client bufferSize
 
                         with
@@ -332,9 +342,11 @@ type internal TransportCore
                     try
                         match peerMessageEnvelope.PeerMessageId with
                         | Some connectionId ->
+                            // Find the connection on which the request was received.
                             match connectionPool.TryGetValue connectionId with
                             | true, (client, _, _) ->
                                 try
+                                    // Send the response to the remote host.
                                     [ peerMessageEnvelope ]
                                     |> Serialization.serializeBinary
                                     |> writeToClientAsync (Some connectionId) client bufferSize
@@ -354,7 +366,7 @@ type internal TransportCore
                             Log.error "Could not send response message"
                             Log.verbosef "Reason: Response message is missing the corresponding requestId"
                     finally
-                        // Ensure connection is closed
+                        // Ensure connection is closed.
                         peerMessageEnvelope.PeerMessageId
                         |> Option.iter closeConnection
                 }
@@ -364,40 +376,41 @@ type internal TransportCore
         |> Async.Ignore
 
     let wireMessageSendoutEvents () =
-        let rec dequeue () =
+        let rec dequeueMessages () =
             async {
                 let mutable messages = new ConcurrentQueue<string * PeerMessageEnvelopeDto>()
                 if clientMessages.TryGetValue(PeerMessagePriority.Multicast, &messages)
                     && not messages.IsEmpty then
                     clientSendAsync messages |> Async.Start
-                    return! dequeue ()
+                    return! dequeueMessages ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Discovery, &messages)
                     && not messages.IsEmpty then
                     clientSendAsync messages |> Async.Start
-                    return! dequeue ()
+                    return! dequeueMessages ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Gossip, &messages)
                     && not messages.IsEmpty then
                     clientSendAsync messages |> Async.Start
-                    return! dequeue ()
+                    return! dequeueMessages ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Request, &messages)
                     && not messages.IsEmpty then
                     clientSendRequestAsync messages |> Async.Start
-                    return! dequeue ()
+                    return! dequeueMessages ()
 
                 if clientMessages.TryGetValue(PeerMessagePriority.Response, &messages)
                     && not messages.IsEmpty then
                     clientSendResponseAsync messages |> Async.Start
-                    return! dequeue ()
+                    return! dequeueMessages ()
 
                 do! Async.Sleep 200
-                return! dequeue ()
+                return! dequeueMessages ()
             }
 
-        Async.Start (dequeue (), cts.Token)
+        Async.Start (dequeueMessages (), cts.Token)
 
+    // Garbage collection of 'expired' socket connections.
     let monitorOpenedConnections () =
         let rec loop () =
             async {
