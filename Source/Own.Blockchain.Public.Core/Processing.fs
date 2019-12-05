@@ -420,10 +420,10 @@ module Processing =
             let processingChange =
                 match validators.TryGetValue address with
                 | true, (_, existingChange) ->
-                    if existingChange = Some ValidatorChange.Add && change = Some ValidatorChange.Remove
-                        || existingChange = Some ValidatorChange.Remove && change = Some ValidatorChange.Add
-                    then
+                    if existingChange = Some ValidatorChange.Add && change = Some ValidatorChange.Remove then
                         None
+                    elif existingChange = Some ValidatorChange.Remove && change = Some ValidatorChange.Add then
+                        Some ValidatorChange.Update
                     else
                         change
                 | _ -> change
