@@ -12,6 +12,8 @@ open Own.Blockchain.Public.Core.Events
 
 type NetworkStats = {
     ReceivesGossip : bool
+    InboundConnections: int
+    OutboundConnections: int
 }
 
 type NetworkNode
@@ -23,6 +25,7 @@ type NetworkNode
     removePeerFromDb : _ -> Result<unit, AppErrors>,
     resolveHostToIpAddress,
     initTransport,
+    getConnectionsInfo,
     sendGossipDiscoveryMessage,
     sendGossipMessage,
     sendMulticastMessage,
@@ -304,9 +307,12 @@ type NetworkNode
         nodeConfigPublicIPAddress
 
     member __.GetNetworkStats () =
+        let inbound, outbound = getConnectionsInfo ()
         let receivesGossip = lastMessageReceivedTimestamp.AddSeconds(30.) >= DateTime.UtcNow
         {
             ReceivesGossip = receivesGossip
+            InboundConnections = inbound
+            OutboundConnections = outbound
         }
 
     member private __.Throttle (entries : ConcurrentDictionary<_, DateTime>) (entryBatch : _ list) func =

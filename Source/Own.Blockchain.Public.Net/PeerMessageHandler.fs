@@ -32,6 +32,7 @@ module internal PeerMessageHandler =
         (savePeerToDb : GossipPeerInfoDto -> Result<unit, AppErrors>)
         (removePeerFromDb : NetworkAddress -> Result<unit, AppErrors>)
         initTransport
+        getConnectionsInfo
         sendGossipDiscoveryMessage
         sendGossipMessage
         sendMulticastMessage
@@ -79,6 +80,7 @@ module internal PeerMessageHandler =
                 removePeerFromDb,
                 Utils.resolveHostToIpAddress,
                 initTransport,
+                getConnectionsInfo,
                 sendGossipDiscoveryMessage,
                 sendGossipMessage,
                 sendMulticastMessage,

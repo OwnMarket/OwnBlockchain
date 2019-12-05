@@ -19,6 +19,17 @@ type internal PeerMessagePriority =
     | Request
     | Response
 
+type internal ConnectionType =
+    | Inbound
+    | Outbound
+
+type internal ConnectionInfo = {
+    Socket : TcpClient
+    ConnectionType : ConnectionType
+    Cts : CancellationTokenSource
+    Timestamp : DateTime
+}
+
 type internal TransportCore
     (
     networkId,
@@ -37,7 +48,7 @@ type internal TransportCore
     // Opened connections:
     // by client on sending requests until a response is received
     // by server on receiving requests until a response is sent
-    let connectionPool = new ConcurrentDictionary<string, TcpClient * CancellationTokenSource * DateTime>()
+    let connectionPool = new ConcurrentDictionary<string, ConnectionInfo>()
 
     // Group client messages by priority
     let clientMessages =
@@ -72,14 +83,26 @@ type internal TransportCore
 
     let closeConnection connectionId =
         match connectionPool.TryRemove connectionId with
-        | true, (client, cts, _) ->
+        | true, conn ->
             Log.verbosef "Removing connection %s" connectionId
-            cts.Cancel ()
-            client.Close()
+            conn.Cts.Cancel ()
+            conn.Socket.Close()
         | _ -> ()
 
+    let addConnectionToPool connectionType connectionId client =
+        let connectionInfo = {
+            Socket = client
+            ConnectionType = connectionType
+            Cts = new CancellationTokenSource()
+            Timestamp = DateTime.UtcNow
+        }
+        connectionPool.AddOrUpdate (
+            connectionId,
+            connectionInfo,
+            fun _ _ -> connectionInfo) |> ignore
+
     // Writes data to the remote host in batches of bufferSize long.
-    let writeToClientAsync connectionId (client : TcpClient) bufferSize (data: byte[]) =
+    let writeToClientAsync connectionId (client : TcpClient) bufferSize (data : byte[]) =
         async {
             try
                 let stream = client.GetStream()
@@ -123,11 +146,7 @@ type internal TransportCore
                             // Cache connection for response handling.
                             envelope.PeerMessageId
                             |> Option.iter (fun requestId ->
-                                let connectionInfo = (client, new CancellationTokenSource(), DateTime.UtcNow)
-                                connectionPool.AddOrUpdate (
-                                    requestId,
-                                    connectionInfo,
-                                    fun _ _ -> connectionInfo) |> ignore
+                                addConnectionToPool ConnectionType.Inbound requestId client
                             )
                         | _ ->
                             // Close connection.
@@ -141,7 +160,7 @@ type internal TransportCore
             Log.error
 
     // Recursively read data from a network stream, returns a memory stream containing all data.
-    let rec readAllBytes (sm: NetworkStream) (memStream : MemoryStream) bufferSize =
+    let rec readAllBytes (sm : NetworkStream) (memStream : MemoryStream) bufferSize =
         let mutable data = Array.zeroCreate<byte> bufferSize
         async {
             let! bytesRead = sm.AsyncRead (data, 0, data.Length)
@@ -259,6 +278,8 @@ type internal TransportCore
             |> createTcpClient
             |> Option.map (fun client ->
                 async {
+                    let connectionId = Guid.NewGuid().ToString()
+                    addConnectionToPool ConnectionType.Outbound connectionId client
                     try
                         try
                             let bytes =
@@ -276,7 +297,7 @@ type internal TransportCore
                             Log.errorf "Could not send message to %s" targetAddress
                             Log.verbosef "Reason: %s" ex.AllMessages
                     finally
-                        client.Close()
+                        closeConnection connectionId
                 }
             )
         )
@@ -297,12 +318,7 @@ type internal TransportCore
                     async {
                         let requestId = Guid.NewGuid().ToString()
                         try
-                            let cts = new CancellationTokenSource()
-                            let connectionInfo = (client, cts, DateTime.UtcNow)
-                            connectionPool.AddOrUpdate (
-                                requestId,
-                                connectionInfo,
-                                fun _ _ -> connectionInfo) |> ignore
+                            addConnectionToPool ConnectionType.Outbound requestId client
 
                             let bytes =
                                 [ { envelope with PeerMessageId = Some requestId } ]
@@ -344,12 +360,12 @@ type internal TransportCore
                         | Some connectionId ->
                             // Find the connection on which the request was received.
                             match connectionPool.TryGetValue connectionId with
-                            | true, (client, _, _) ->
+                            | true, conn ->
                                 try
                                     // Send the response to the remote host.
                                     [ peerMessageEnvelope ]
                                     |> Serialization.serializeBinary
-                                    |> writeToClientAsync (Some connectionId) client bufferSize
+                                    |> writeToClientAsync (Some connectionId) conn.Socket bufferSize
                                     |> Async.Start
                                     Log.verbosef "Sent response to %A" peerMessageEnvelope.PeerMessageId
 
@@ -417,7 +433,7 @@ type internal TransportCore
                 let lastValidTimestamp = DateTime.UtcNow.AddSeconds (-float socketConnectionTimeout)
                 connectionPool
                 |> List.ofDict
-                |> List.filter (fun (_, (_, _, timestamp)) -> timestamp < lastValidTimestamp)
+                |> List.filter (fun (_, conn) -> conn.Timestamp < lastValidTimestamp)
                 |> List.iter (fun (connectionId, _) -> closeConnection connectionId)
 
                 do! Async.Sleep 100
@@ -474,6 +490,33 @@ type internal TransportCore
         )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Public API
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    member __.GetConnectionsInfo() =
+        let connectionStats =
+            connectionPool
+            |> Seq.ofDict
+            |> Seq.toList
+            |> List.countBy (fun (_, s) -> s.ConnectionType)
+
+        let inbound =
+            connectionStats
+            |> List.tryFind (fun (t, _) -> t = ConnectionType.Inbound)
+            |> function
+            | Some (_, c) -> c
+            | None -> 0
+
+        let outbound =
+            connectionStats
+            |> List.tryFind (fun (t, _) -> t = ConnectionType.Outbound)
+            |> function
+            | Some (_, c) -> c
+            | None -> 0
+
+        inbound, outbound
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Send
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -510,11 +553,11 @@ type internal TransportCore
 
         connectionPool
         |> List.ofDict
-        |> List.iter (fun (_, (client, cts, _)) ->
+        |> List.iter (fun (_, conn) ->
             // Cancel client async operations.
-            cts.Cancel ()
+            conn.Cts.Cancel ()
             // Cancel the socket.
-            client.Close()
+            conn.Socket.Close()
         )
         connectionPool.Clear()
 

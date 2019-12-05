@@ -30,6 +30,9 @@ module TransportMock =
         | Some transport -> transport.ReceiveMessage listeningAddress
         | None -> failwith "Please initialize transport first"
 
+    let getConnectionsInfo () =
+        0, 0
+
     let sendGossipDiscoveryMessage targetAddress gossipDiscoveryMessage =
         match transportCoreMock with
         | Some transport -> transport.SendGossipDiscoveryMessage targetAddress gossipDiscoveryMessage

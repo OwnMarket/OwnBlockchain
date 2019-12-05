@@ -320,6 +320,7 @@ module PeerTests =
                 removePeer,
                 resolveHostToIpAddress,
                 TransportMock.init,
+                TransportMock.getConnectionsInfo,
                 TransportMock.sendGossipDiscoveryMessage,
                 TransportMock.sendGossipMessage,
                 TransportMock.sendMulticastMessage,

@@ -636,6 +636,7 @@ module Composition =
             savePeerToDb
             removePeerFromDb
             Transport.init
+            Transport.getConnectionsInfo
             Transport.sendGossipDiscoveryMessage
             Transport.sendGossipMessage
             Transport.sendMulticastMessage
