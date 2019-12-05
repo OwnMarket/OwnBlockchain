@@ -7059,6 +7059,114 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[senderValidatorWallet.Address].Balance = senderChxBalance @>
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
+    [<Fact>]
+    let ``Processing.processChanges RemoveValidator followed by ConfigureValidator updates validator state`` () =
+        // INIT STATE
+        let senderValidatorWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+        let stakerAddress1, stakerAddress2 = BlockchainAddress "AAA", BlockchainAddress "BBB"
+        let oldNetworkAddress = NetworkAddress "old.validator.com:25718"
+        let newNetworkAddress = NetworkAddress "new.validator.com:25718"
+        let oldSharedRewardPercent = 5m
+        let newSharedRewardPercent = 20m
+
+        let initialChxState =
+            [
+                senderValidatorWallet.Address,
+                    {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address,
+                    {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "RemoveValidator"
+                    ActionData = RemoveValidatorTxActionDto()
+                }
+                {
+                    ActionType = "ConfigureValidator"
+                    ActionData =
+                        {
+                            ConfigureValidatorTxActionDto.NetworkAddress = newNetworkAddress.Value
+                            SharedRewardPercent = newSharedRewardPercent
+                            IsEnabled = false
+                        }
+                }
+            ]
+            |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getValidatorState _ =
+            {
+                ValidatorState.NetworkAddress = oldNetworkAddress
+                SharedRewardPercent = oldSharedRewardPercent
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 0s
+                IsEnabled = true
+            }
+            |> Some
+
+        let getStakeState (stakerAddress, _) =
+            if stakerAddress = stakerAddress1 then
+                {StakeState.Amount = ChxAmount 100m}
+            elif stakerAddress = stakerAddress2 then
+                {StakeState.Amount = ChxAmount 80m}
+            else
+                failwithf "getStakeState should not be called for %A" stakerAddress
+            |> Some
+
+        let getStakers _ =
+            [
+                stakerAddress1
+                stakerAddress2
+            ]
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetValidatorStateFromStorage = getValidatorState
+                GetStakeStateFromStorage = getStakeState
+                GetStakersFromStorage = getStakers
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Balance - actionFee * 2m
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee * 2m
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = Success @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+        let validatorState, validatorChange = output.Validators.[senderValidatorWallet.Address]
+        test <@ validatorState.NetworkAddress = newNetworkAddress @>
+        test <@ validatorState.SharedRewardPercent = newSharedRewardPercent @>
+        test <@ validatorState.IsEnabled = false @>
+        test <@ validatorChange = ValidatorChange.Update @>
+        test <@ output.Stakes.[(stakerAddress1, senderValidatorWallet.Address)].Amount = ChxAmount 0m @>
+        test <@ output.Stakes.[(stakerAddress2, senderValidatorWallet.Address)].Amount = ChxAmount 0m @>
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // DelegateStake
     ////////////////////////////////////////////////////////////////////////////////////////////////////
