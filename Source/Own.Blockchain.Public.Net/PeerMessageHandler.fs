@@ -40,7 +40,7 @@ module internal PeerMessageHandler =
         receiveMessage
         closeConnection
         closeAllConnections
-        getCurrentValidators
+        getRecentValidators
         publishEvent
         =
 
@@ -88,7 +88,7 @@ module internal PeerMessageHandler =
                 receiveMessage,
                 closeConnection,
                 closeAllConnections,
-                getCurrentValidators,
+                getRecentValidators,
                 nodeConfig,
                 gossipConfig
             )

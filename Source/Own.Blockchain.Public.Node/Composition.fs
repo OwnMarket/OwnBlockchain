@@ -643,7 +643,7 @@ module Composition =
             Transport.receiveMessage
             Transport.closeConnection
             Transport.closeAllConnections
-            getCurrentValidators
+            getRecentValidators
 
     let stopGossip () = Peers.stopGossip ()
 

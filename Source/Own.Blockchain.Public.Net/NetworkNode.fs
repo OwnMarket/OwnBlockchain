@@ -31,7 +31,7 @@ type NetworkNode
     receiveMessage,
     closeConnection,
     closeAllConnections : _ -> unit,
-    getCurrentValidators : _ -> ValidatorSnapshot list,
+    getRecentValidators : _ -> ValidatorSnapshot list,
     nodeConfig,
     gossipConfig : GossipNetworkConfig
     ) =
@@ -438,7 +438,7 @@ type NetworkNode
                     )
 
                 | MulticastMessage _ ->
-                    getCurrentValidators ()
+                    getRecentValidators ()
                     |> List.choose (fun v -> memoizedConvertToIpAddress v.NetworkAddress)
                     |> List.filter (isSelf >> not)
                     |> List.map (fun a -> a.Value)
@@ -464,7 +464,7 @@ type NetworkNode
         let rec loop () =
             async {
                 let newValidators =
-                    getCurrentValidators ()
+                    getRecentValidators ()
                     |> List.choose (fun v -> memoizedConvertToIpAddress v.NetworkAddress)
 
                 // Remove old validators.
