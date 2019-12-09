@@ -1505,6 +1505,7 @@ module Workflows =
         isValidHash
         isValidAddress
         createHash
+        (getChxAddressState : BlockchainAddress -> ChxAddressStateDto option)
         getAvailableChxBalance
         getTotalFeeForPendingTxs
         saveTx
@@ -1524,6 +1525,17 @@ module Workflows =
 
             let! txDto = Serialization.deserializeTx txEnvelope.RawTx
             let! tx = Validation.validateTx isValidHash isValidAddress maxActionCountPerTx senderAddress txHash txDto
+
+            let addressNonce =
+                getChxAddressState tx.Sender
+                |> Option.map (fun s -> s.Nonce)
+                |? 0L
+                |> Nonce
+            if tx.Nonce <= addressNonce then
+                return!
+                    addressNonce.Value
+                    |> sprintf "TX nonce must be greater than current address nonce: %i"
+                    |> Result.appError
 
             // TXs included in verified blocks are considered to be valid, hence shouldn't be rejected for fees.
             if not isIncludedInBlock then

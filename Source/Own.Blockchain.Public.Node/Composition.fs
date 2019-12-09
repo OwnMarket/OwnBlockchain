@@ -538,6 +538,7 @@ module Composition =
             Hashing.isValidHash
             Hashing.isValidBlockchainAddress
             Hashing.hash
+            getChxAddressState
             getAvailableChxBalance
             getTotalFeeForPendingTxs
             saveTx

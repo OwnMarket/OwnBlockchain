@@ -43,11 +43,21 @@ module SubmissionTests =
                         }
                 }
             ]
-            |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
+            |> Helpers.newTx senderWallet (nonce + 1L) (Timestamp 0L) actionFee
 
         let expectedResult : Result<TxHash * TxEnvelopeDto, AppErrors> = Error [AppError error]
 
         // COMPOSE
+        let getChxAddressState address =
+            if address = senderWallet.Address then
+                {
+                    ChxAddressStateDto.Balance = senderBalance.Value
+                    Nonce = nonce.Value
+                }
+                |> Some
+            else
+                failwithf "Unexpected address: %s" address.Value
+
         let getAvailableChxBalance =
             let data =
                 [
@@ -77,6 +87,7 @@ module SubmissionTests =
                 Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Hashing.hash
+                getChxAddressState
                 getAvailableChxBalance
                 getTotalFeeForPendingTxs
                 saveTx
@@ -130,6 +141,16 @@ module SubmissionTests =
         let expectedResult : Result<TxHash * TxEnvelopeDto, AppErrors> = Error [AppError expectedError]
 
         // COMPOSE
+        let getChxAddressState address =
+            if address = senderWallet.Address then
+                {
+                    ChxAddressStateDto.Balance = senderBalance.Value
+                    Nonce = nonce.Value
+                }
+                |> Some
+            else
+                failwithf "Unexpected address: %s" address.Value
+
         let getAvailableChxBalance _ =
             senderBalance
 
@@ -152,6 +173,7 @@ module SubmissionTests =
                 Hashing.isValidHash
                 Hashing.isValidBlockchainAddress
                 Hashing.hash
+                getChxAddressState
                 getAvailableChxBalance
                 getTotalFeeForPendingTxs
                 saveTx
