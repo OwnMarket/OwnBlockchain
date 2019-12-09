@@ -7088,7 +7088,7 @@ module ProcessingTests =
                 {
                     ActionType = "RemoveValidator"
                     ActionData = RemoveValidatorTxActionDto()
-                }
+                } :> obj
                 {
                     ActionType = "ConfigureValidator"
                     ActionData =
@@ -7097,7 +7097,7 @@ module ProcessingTests =
                             SharedRewardPercent = newSharedRewardPercent
                             IsEnabled = false
                         }
-                }
+                } :> obj
             ]
             |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
