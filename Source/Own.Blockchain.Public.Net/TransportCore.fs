@@ -19,10 +19,6 @@ type internal PeerMessagePriority =
     | Request
     | Response
 
-type ConnectionType =
-    | Inbound
-    | Outbound
-
 type ConnectionInfo = {
     Socket : TcpClient
     Timestamp : DateTime
@@ -87,11 +83,26 @@ type internal TransportCore
             conn.Socket.Close()
         | _ -> ()
 
+    let closeAllConnections (sockets : ConcurrentDictionary<_,_>) =
+        sockets
+        |> List.ofDict
+        |> List.iter (fun (_, conn) ->
+            // Cancel the socket.
+            conn.Socket.Close()
+        )
+        sockets.Clear()
+
     let closeClientConnection target =
         closeConnection clientSockets target
 
     let closeServerConnection target =
         closeConnection serverSockets target
+
+    let closeAllClientConnections () =
+        closeAllConnections clientSockets
+
+    let closeAllServerConnections () =
+        closeAllConnections serverSockets
 
     // Writes data to the remote host in batches of bufferSize long.
     let writeToClientAsync target (client : TcpClient) bufferSize (data : byte[]) =
@@ -116,7 +127,7 @@ type internal TransportCore
             | _ ->
                 closeClientConnection target
                 Log.warningf
-                    "Cannot send data to %s, connection was probably closed by the remote host" target
+                    "Connection to %s was probably forcibly closed by the remote host" target
         }
 
     // Deserializes data, performs necessary connection management and forwards task to application layer.
@@ -226,6 +237,7 @@ type internal TransportCore
         let endpoint = Utils.resolveToIpPortPair target
         match clientSockets.TryGetValue target with
         | true, conn ->
+            // Update connection timestamp.
             let connectionInfo = { conn with Timestamp = DateTime.UtcNow }
             clientSockets.AddOrUpdate (target, connectionInfo, fun _ _ -> connectionInfo) |> ignore
             Some conn.Socket
@@ -241,12 +253,15 @@ type internal TransportCore
                         Timestamp = DateTime.UtcNow
                     }
 
+                    // Double check there is no outgoing connection with the target.
                     match clientSockets.TryGetValue target with
                     | true, conn ->
                         client.Close ()
                         conn.Socket
                     | _ ->
                         clientSockets.AddOrUpdate (target, connectionInfo, fun _ _ -> connectionInfo) |> ignore
+
+                        // Waiting for replies on this connection.
                         let rec listen () =
                             async {
                                 let! ok = readFromClientAsync (Some target) client None bufferSize
@@ -507,12 +522,7 @@ type internal TransportCore
         // Cancel server async operations.
         cts.Cancel()
 
-        clientSockets
-        |> List.ofDict
-        |> List.iter (fun (_, conn) ->
-            // Cancel the socket.
-            conn.Socket.Close()
-        )
-        clientSockets.Clear()
+        closeAllClientConnections ()
+        closeAllServerConnections ()
 
         listenerSocket <- None
