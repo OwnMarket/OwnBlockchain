@@ -16,7 +16,7 @@ This document covers some frequent questions about operating nodes and validator
 - Restart the new node.
 
 
-## Why do I have to wait for at least one block to pass before starting a new node using the PK from the old node?
+## Why is it necessary to wait for at least one block to pass before starting a new node using the private key from the old node?
 
 A validator is participating in consensus protocol by sending consensus messages signed using its private key,
 which is configured in the `ValidatorPrivateKey` setting in the configuration file.
@@ -34,8 +34,8 @@ as well as penalizing such a behavior by slashing the validator's security depos
 Having all the above explained, let's apply it to the answer to the actual question:
 
 - Let's say the validator was in the process of voting for block 10, and it sent its vote for the corresponding block hash.
-- Operator stopps the old node and immediately starts the new one.
-- Since network is stil voting on block 10, new validator might send a different vote about block 10 than the old one,
+- Operator stops the old node and immediately starts the new one (using the same private key).
+- Since network is still voting on block 10, new validator might send a different vote about block 10 than the old one,
   which will result in the two conflicting messages for the same block from the same validator.
 - Other validators will detect two conflicting messages from the same validator and will slash its deposit.
 
