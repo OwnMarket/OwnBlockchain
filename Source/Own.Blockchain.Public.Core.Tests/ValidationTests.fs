@@ -1070,6 +1070,36 @@ module ValidationTests =
             test <@ e.Length = 2 @>
 
     [<Fact>]
+    let ``Validation.validateTx DelegateStake invalid action - amount less than allowed`` () =
+        let expected =
+            {
+                DelegateStakeTxActionDto.ValidatorAddress = "A"
+                Amount = -(Utils.maxBlockchainNumeric + 1m)
+            }
+
+        let tx = {
+            SenderAddress = chAddress.Value
+            Nonce = 10L
+            ExpirationTime = 0L
+            ActionFee = 1m
+            Actions =
+                [
+                    {
+                        ActionType = delegateStakeActionType
+                        ActionData = expected
+                    }
+                ]
+        }
+
+        match
+            Validation.validateTx isValidHashMock isValidAddressMock Helpers.maxActionCountPerTx chAddress txHash tx
+            with
+        | Ok t -> failwith "This test should fail"
+        | Error e ->
+            test <@ e.Length = 1 @>
+            test <@ e.Head.Message.Contains "cannot be less than" @>
+
+    [<Fact>]
     let ``Validation.validateEquivocationProof rejects proof with wrong order of hashes`` () =
         // ARRANGE
         let equivocationProofDto : EquivocationProofDto =
