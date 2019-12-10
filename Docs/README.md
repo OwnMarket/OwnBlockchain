@@ -19,6 +19,7 @@
     - [Node Environment and Configuration](Nodes/NodeEnvironment.md)
     - [Validator Configuration](Nodes/ValidatorConfiguration.md)
     - [Validator Deregistration](Nodes/ValidatorDeregistration.md)
+    - [FAQ](Nodes/NodeFAQ.md)
 - Concepts
     - [CHX token](Concepts/CHX.md)
     - [Asset Management Protocol](Concepts/AssetManagementProtocol.md)
