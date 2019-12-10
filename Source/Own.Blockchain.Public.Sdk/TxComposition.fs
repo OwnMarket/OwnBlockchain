@@ -35,7 +35,7 @@ type TxAction (actionType, actionData) =
 type Tx (senderAddress, nonce) =
     member val SenderAddress : string = senderAddress with get, set
     member val Nonce : int64 = nonce with get, set
-    member val ActionFee : decimal = 0.01m with get, set
+    member val ActionFee : decimal = 0.1m with get, set
     member val ExpirationTime : int64 = 0L with get, set
     member val Actions = new ResizeArray<TxAction>()
 

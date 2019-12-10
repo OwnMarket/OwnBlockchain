@@ -29,7 +29,7 @@ class Program
 
         // Compose a transaction with nonce = 1
         var tx = new Tx(wallet.Address, 1);
-        tx.ActionFee = 0.01m; // Set action fee.
+        tx.ActionFee = 0.1m; // Set action fee.
         tx.AddTransferChxAction("CHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 100); // Transfer 100 CHX to CHxxx... address.
 
         // Look at the raw transaction in JSON format

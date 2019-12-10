@@ -5,7 +5,7 @@
     "FaucetSupplyHolderAddress": "CHfctK1ru2ia3GtpF784agDo2RtKVcva9dw",
     "FaucetSupplyHolderAccountHash": "94hrdC39uzkByxMqN14W3anQzY9962rFAMCosVrbbjRd",
     "FaucetSupplyAssetHash": "GwrmeEWymiFDNkcNozJQHD9Teokd8ruHhTMN1CXCeko8",
-    "ActionFee": 0.01,
+    "ActionFee": 0.1,
     "MaxClaimableChxAmount": 10,
     "MaxClaimableAssetAmount": 5,
     "DistributionInterval": 10,
