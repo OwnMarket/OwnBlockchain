@@ -3,6 +3,8 @@
 This document describes how to remove Own public blockchain network node software from the system, using provided removal script.
 The process described here assumes that the node is installed using the setup scripts provided in the package.
 
+**IMPORTANT: If the node to be removed is a validator node, make sure that validator is marked as inactive before proceeding further.** Instructions on how to deactivate a validator are available in the [validator deregistration document](ValidatorDeregistration.md).
+
 
 ## Node Removal Process
 
