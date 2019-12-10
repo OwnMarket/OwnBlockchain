@@ -189,6 +189,8 @@ module Validation =
 
             if action.Amount > Utils.maxBlockchainNumeric then
                 yield AppError (sprintf "CHX amount cannot be greater than %M" Utils.maxBlockchainNumeric)
+            if action.Amount < -Utils.maxBlockchainNumeric then
+                yield AppError (sprintf "CHX amount cannot be less than %M" -Utils.maxBlockchainNumeric)
 
             if not (Utils.isRounded7 action.Amount) then
                 yield AppError "CHX amount must have at most 7 decimals"
