@@ -1,6 +1,6 @@
 # Own Public Blockchain Node Removal
 
-This document describes how to remove Own public blockchain network node from the system, using provided removal script.
+This document describes how to remove Own public blockchain network node software from the system, using provided removal script.
 The process described here assumes that the node is installed using the setup scripts provided in the package.
 
 
@@ -28,4 +28,4 @@ This process will remove:
 - configuration file
 - genesis file
 
-This process will NOT remove the installed PostgreSQL database server.
+This process will NOT uninstall the installed PostgreSQL database server.
