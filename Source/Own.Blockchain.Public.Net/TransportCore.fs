@@ -83,7 +83,7 @@ type internal TransportCore
             conn.Socket.Close()
         | _ -> ()
 
-    let closeAllConnections (sockets : ConcurrentDictionary<_,_>) =
+    let closeAllConnections (sockets : ConcurrentDictionary<_, _>) =
         sockets
         |> List.ofDict
         |> List.iter (fun (_, conn) ->
@@ -126,8 +126,7 @@ type internal TransportCore
             with
             | _ ->
                 closeClientConnection target
-                Log.warningf
-                    "Connection to %s was probably forcibly closed by the remote host" target
+                Log.warningf "Connection to %s was forcibly closed by the remote host" target
         }
 
     // Deserializes data, performs necessary connection management and forwards task to application layer.
@@ -182,7 +181,7 @@ type internal TransportCore
         }
 
     // Reads data from client, deserializes it and forwards it to application layer.
-    let readFromClientAsync remoteHost (client : TcpClient) cts bufferSize =
+    let readFromClientAsync remoteHost (client : TcpClient) bufferSize =
         async {
             try
                 // Get a stream object for reading and writing.
@@ -224,10 +223,9 @@ type internal TransportCore
         // Signal the calling thread to continue.
         tcpClientConnectedEvent.Set() |> ignore
 
-        let cts = new CancellationTokenSource()
         let rec listen () =
             async {
-                let! ok = readFromClientAsync None client (Some cts) bufferSize
+                let! ok = readFromClientAsync None client bufferSize
                 if ok then
                     return! listen ()
             }
@@ -264,7 +262,7 @@ type internal TransportCore
                         // Waiting for replies on this connection.
                         let rec listen () =
                             async {
-                                let! ok = readFromClientAsync (Some target) client None bufferSize
+                                let! ok = readFromClientAsync (Some target) client bufferSize
                                 if ok then
                                     return! listen ()
                             }
