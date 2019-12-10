@@ -48,9 +48,9 @@ module TransportMock =
         | Some transport -> transport.SendRequestMessage targetAddress requestMessage senderAddress
         | None -> failwith "Please initialize transport first"
 
-    let sendResponseMessage responseMessage =
+    let sendResponseMessage targetIdentity responseMessage =
         match transportCoreMock with
-        | Some transport -> transport.SendResponseMessage responseMessage
+        | Some transport -> transport.SendResponseMessage targetIdentity responseMessage
         | None -> failwith "Please initialize transport first"
 
     let sendMulticastMessage multicastAddresses multicastMessage =

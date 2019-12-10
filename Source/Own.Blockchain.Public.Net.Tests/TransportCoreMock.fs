@@ -51,9 +51,9 @@ type internal TransportCoreMock
         let msg = packMessage [{ requestMessage with PeerMessageId = senderAddress }]
         send msg targetAddress
 
-    member __.SendResponseMessage responseMessage =
+    member __.SendResponseMessage targetIdentity responseMessage =
         let msg = packMessage [responseMessage]
-        responseMessage.PeerMessageId |> Option.iter (send msg)
+        send msg targetIdentity
 
     member __.SendMulticastMessage multicastAddresses multicastMessage =
         match multicastAddresses with

@@ -1292,7 +1292,7 @@ module Workflows =
             | BlockchainHead -> processBlockchainHeadMessageFromPeer data
             | PeerList -> processPeerListMessageFromPeer data
 
-        let processRequestMessage messageIds requestId =
+        let processRequestMessage messageIds senderIdentity =
             let responseResult =
                 messageIds
                 |> List.map (fun messageId ->
@@ -1380,7 +1380,7 @@ module Workflows =
                 {
                     PeerMessageEnvelope.NetworkId = getNetworkId ()
                     PeerMessage = ResponseDataMessage {ResponseDataMessage.Items = responseItems}
-                    PeerMessageId = requestId
+                    PeerMessageId = senderIdentity
                 }
                 |> respondToPeer
 

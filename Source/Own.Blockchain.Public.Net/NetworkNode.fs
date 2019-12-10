@@ -38,6 +38,8 @@ type NetworkNode
     gossipConfig : GossipNetworkConfig
     ) =
 
+    let peerIdentity = Guid.NewGuid().ToString()
+
     let activePeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let pendingDeadPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
     let excludedPeers = new ConcurrentDictionary<NetworkAddress, GossipPeer>()
@@ -296,6 +298,13 @@ type NetworkNode
     let getGossipFanout () =
         Math.Max (4, gossipConfig.FanoutPercentage * validatorsCache.Count / 100 + 1)
 
+    let attachPeerIdentity (message : PeerMessageEnvelope) =
+        let identity =
+            match nodeConfigPublicIPAddress with
+            | Some (NetworkAddress address) -> address
+            | None -> peerIdentity
+        { message with PeerMessageId = Some identity }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Public
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -430,6 +439,7 @@ type NetworkNode
                     |> List.iter (fun m ->
                         Log.verbosef "Sending peerlist to: %s" m.NetworkAddress.Value
                         message
+                        |> attachPeerIdentity
                         |> peerMessageEnvelopeToDto
                         |> sendGossipDiscoveryMessage m.NetworkAddress.Value
                     )
@@ -447,6 +457,7 @@ type NetworkNode
                     |> List.map (fun a -> a.Value)
                     |> fun multicastAddresses ->
                         message
+                        |> attachPeerIdentity
                         |> peerMessageEnvelopeToDto
                         |> sendMulticastMessage multicastAddresses
 
@@ -572,6 +583,7 @@ type NetworkNode
                     PeerMessage = GossipDiscoveryMessage { ActivePeers = self :: __.GetActivePeers() }
                     PeerMessageId = None
                 }
+                |> attachPeerIdentity
                 |> __.SendMessage None
 
         | None -> __.SendRequestDataMessage [ NetworkMessageId.PeerList ] None
@@ -729,6 +741,7 @@ type NetworkNode
                 PeerMessage = GossipMessage gossipMessage
                 PeerMessageId = None
             }
+            |> attachPeerIdentity
             |> peerMessageEnvelopeToDto
             |> sendGossipMessage targetPeer.NetworkAddress.Value
         | _ -> ()
@@ -837,7 +850,7 @@ type NetworkNode
                 lastMessageReceivedTimestamp <- DateTime.UtcNow
                 __.ReceiveMulticastMessage publishEvent m
             | RequestDataMessage m -> __.ReceiveRequestMessage publishEvent m peerMessageEnvelope.PeerMessageId
-            | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m peerMessageEnvelope.PeerMessageId
+            | ResponseDataMessage m -> __.ReceiveResponseMessage publishEvent m
         with
         | ex when ex.Message.Contains("code is invalid") ->
             Log.warningf "Cannot deserialize peer message"
@@ -917,6 +930,7 @@ type NetworkNode
                                 |> RequestDataMessage
                             PeerMessageId = None
                         }
+                        |> attachPeerIdentity
                         |> peerMessageEnvelopeToDto
                         |> sendRequestMessage address.Value
 
@@ -940,7 +954,8 @@ type NetworkNode
                     | None -> ()
                 }
 
-            Async.Start (loop validRequestIds preferredPeer, cts.Token)
+            let preferredPeerIp = preferredPeer |> Option.bind memoizedConvertToIpAddress
+            Async.Start (loop validRequestIds preferredPeerIp, cts.Token)
         )
 
     member __.SendResponseDataMessage peerMessageEnvelope =
@@ -952,33 +967,35 @@ type NetworkNode
 
             let sendResponse =
                 async {
-                    peerMessageEnvelope
-                    |> peerMessageEnvelopeToDto
-                    |> sendResponseMessage
+                    match peerMessageEnvelope.PeerMessageId with
+                    | Some targetIdentity ->
+                        peerMessageEnvelope
+                        |> peerMessageEnvelopeToDto
+                        |> sendResponseMessage targetIdentity
+                    | None -> Log.error "Could not identify the source of the request"
                 }
             Async.Start (sendResponse, cts.Token)
         | _ -> ()
 
-    member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) requestId =
-        Log.verbosef "Receive request to %A" requestId
+    member private __.ReceiveRequestMessage publishEvent (requestDataMessage : RequestDataMessage) senderIdentity =
+        Log.verbosef "Receive request from %A" senderIdentity
         __.Throttle receivedRequests [ requestDataMessage ] (fun _ ->
             Log.debugf "Received request for %A" requestDataMessage.Items.Head
             {
                 PeerMessageEnvelope.NetworkId = getNetworkId ()
                 PeerMessage = RequestDataMessage requestDataMessage
-                PeerMessageId = requestId
+                PeerMessageId = senderIdentity
             }
             |> PeerMessageReceived
             |> publishEvent
         )
 
-    member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) requestId =
-        Log.verbosef "Receive response to %A" requestId
+    member private __.ReceiveResponseMessage publishEvent (responseDataMessage : ResponseDataMessage) =
         Log.debugf "Received response to %A request" responseDataMessage.Items.Head.MessageId
         {
             PeerMessageEnvelope.NetworkId = getNetworkId ()
             PeerMessage = ResponseDataMessage responseDataMessage
-            PeerMessageId = requestId
+            PeerMessageId = None
         }
         |> PeerMessageReceived
         |> publishEvent
