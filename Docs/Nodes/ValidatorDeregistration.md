@@ -27,7 +27,8 @@ This can be achieved in two ways:
 
 ### Step 2: Wait for validator deactivation
 
-After the deactivation is initiated, it is necessary to wait until the next configuration block for the deactivation to take effect and for validator to be marked as inactive.
+After the deactivation is initiated, it is necessary to wait until the next configuration block (every 10k blocks on MainNet)
+for the deactivation to take effect and for validator to be marked as inactive.
 
 
 ### Step 3: Uninstall node software
