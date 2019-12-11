@@ -933,7 +933,8 @@ type NetworkNode
                     | None -> ()
                 }
 
-            Async.Start (loop validRequestIds preferredPeer, cts.Token)
+            let preferredPeerIp = preferredPeer |> Option.bind memoizedConvertToIpAddress
+            Async.Start (loop validRequestIds preferredPeerIp, cts.Token)
         )
 
     member __.SendResponseDataMessage (targetIdentity : PeerNetworkIdentity) peerMessageEnvelope =
