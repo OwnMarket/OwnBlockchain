@@ -508,13 +508,16 @@ module TradingTests =
             7, 41m, 45m, false, TradeOrderStatus.Open, TradeOrderChange.Add
 
             // Triggered
-            8, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce, TradeOrderChange.Remove
-            9, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce, TradeOrderChange.Remove
+            8, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce,
+                TradeOrderChange.Remove
+            9, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce,
+                TradeOrderChange.Remove
             10, 49m, 51m, true, TradeOrderStatus.Open, TradeOrderChange.Add
             11, 49m, 51m, true, TradeOrderStatus.Open, TradeOrderChange.Add
 
             // Triggered
-            12, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce, TradeOrderChange.Remove
+            12, 0m, 51m, true, TradeOrderStatus.Cancelled TradeOrderCancelReason.TriggeredByTimeInForce,
+                TradeOrderChange.Remove
             13, 49m, 51m, true, TradeOrderStatus.Open, TradeOrderChange.Add
         ]
         |> List.iter (fun (i, limitPrice, stopPrice, isExecutable, status, change) ->
