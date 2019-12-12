@@ -1128,15 +1128,16 @@ module Db =
             if assetHash.IsNone then
                 ""
             else
-                "AND h.asset_hash = @assetHash"
+                "AND asset_hash = @assetHash"
 
         let sql =
             sprintf
                 """
-                SELECT h.asset_hash, h.balance
-                FROM account AS a
-                JOIN holding AS h USING (account_id)
-                WHERE a.account_hash = @accountHash
+                SELECT asset_hash, balance
+                FROM holding
+                JOIN account USING (account_id)
+                JOIN asset USING (asset_id)
+                WHERE account_hash = @accountHash
                 %s
                 """
                 filter
@@ -1167,16 +1168,17 @@ module Db =
             if assetHash.IsNone then
                 ""
             else
-                "AND h.asset_hash = @assetHash"
+                "AND asset_hash = @assetHash"
 
         let sql =
             sprintf
                 """
-                SELECT h.asset_hash, v.resolution_hash, v.vote_hash, v.vote_weight
-                FROM account AS a
-                JOIN holding AS h USING (account_id)
-                JOIN vote AS v USING (holding_id)
-                WHERE a.account_hash = @accountHash
+                SELECT asset_hash, resolution_hash, vote_hash, vote_weight
+                FROM vote
+                JOIN holding USING (holding_id)
+                JOIN account USING (account_id)
+                JOIN asset USING (asset_id)
+                WHERE account_hash = @accountHash
                 %s
                 """
                 filter
@@ -1204,11 +1206,11 @@ module Db =
 
         let sql =
             """
-            SELECT a.asset_hash, e.is_primary_eligible, e.is_secondary_eligible, e.kyc_controller_address
-            FROM eligibility AS e
-            JOIN account AS ac USING (account_id)
-            JOIN asset AS a USING (asset_id)
-            WHERE ac.account_hash = @accountHash
+            SELECT asset_hash, is_primary_eligible, is_secondary_eligible, kyc_controller_address
+            FROM eligibility
+            JOIN account USING (account_id)
+            JOIN asset USING (asset_id)
+            WHERE account_hash = @accountHash
             """
 
         let sqlParams =
@@ -1227,11 +1229,12 @@ module Db =
 
         let sql =
             """
-            SELECT h.balance, h.is_emission
-            FROM holding AS h
-            JOIN account AS a USING (account_id)
-            WHERE a.account_hash = @accountHash
-            AND h.asset_hash = @assetHash
+            SELECT balance, is_emission
+            FROM holding
+            JOIN account USING (account_id)
+            JOIN asset USING (asset_id)
+            WHERE account_hash = @accountHash
+            AND asset_hash = @assetHash
             """
 
         let sqlParams =
@@ -1258,6 +1261,7 @@ module Db =
             FROM vote
             JOIN holding USING (holding_id)
             JOIN account USING (account_id)
+            JOIN asset USING (asset_id)
             WHERE asset_hash = @assetHash
             AND account_hash = @accountHash
             AND resolution_hash = @resolutionHash
@@ -1871,10 +1875,11 @@ module Db =
     let private addHolding conn transaction (holdingInfo : HoldingInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
-            INSERT INTO holding (account_id, asset_hash, balance, is_emission)
-            SELECT account_id, @assetHash, @balance, @isEmission
-            FROM account
+            INSERT INTO holding (account_id, asset_id, balance, is_emission)
+            SELECT account_id, asset_id, @balance, @isEmission
+            FROM account, asset
             WHERE account_hash = @accountHash
+            AND asset_hash = @assetHash
             """
 
         let sqlParams =
@@ -1901,7 +1906,7 @@ module Db =
             SET balance = @balance,
                 is_emission = @isEmission
             WHERE account_id = (SELECT account_id FROM account WHERE account_hash = @accountHash)
-            AND asset_hash = @assetHash
+            AND asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @assetHash)
             """
 
         let sqlParams =
@@ -1954,6 +1959,7 @@ module Db =
             SELECT holding_id, @resolutionHash, @voteHash, @voteWeight
             FROM holding
             JOIN account USING (account_id)
+            JOIN asset USING (asset_id)
             WHERE asset_hash = @assetHash
             AND account_hash = @accountHash
             """
@@ -1986,6 +1992,7 @@ module Db =
                 SELECT holding_id
                 FROM holding
                 JOIN account USING (account_id)
+                JOIN asset USING (asset_id)
                 WHERE asset_hash = @assetHash
                 AND account_hash = @accountHash
             )
