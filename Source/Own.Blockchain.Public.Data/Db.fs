@@ -898,8 +898,8 @@ module Db =
 
         let accountHashCondition, accountHashParamValue =
             match accountHash with
-            | Some h -> "AND account_hash = @accountHash", h.Value |> box
-            | None -> "", DBNull.Value |> box
+            | Some h -> "AND account_hash = @accountHash", h.Value |> Some
+            | None -> "", None
 
         let sql =
             sprintf
@@ -936,9 +936,10 @@ module Db =
                 accountHashCondition
 
         [
-            "@accountHash", accountHashParamValue
-            "@assetHash", assetHash |> box
+            accountHashParamValue |> Option.map (fun v -> "@accountHash", v |> box)
+            Some ("@assetHash", assetHash |> box)
         ]
+        |> List.choose id
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
 
     let getOpenTradeOrderHashes
