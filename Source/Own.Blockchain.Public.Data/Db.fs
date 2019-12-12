@@ -1716,7 +1716,8 @@ module Db =
         let sql =
             """
             INSERT INTO eligibility (
-                account_id, asset_id, is_primary_eligible, is_secondary_eligible, kyc_controller_address)
+                account_id, asset_id, is_primary_eligible, is_secondary_eligible, kyc_controller_address
+            )
             SELECT account_id, asset_id, @isPrimaryEligible, @isSecondaryEligible, @kycControllerAddress
             FROM account, asset
             WHERE account_hash = @accountHash
@@ -1824,7 +1825,7 @@ module Db =
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "Failed to insert KYC povider"
+            Result.appError "Failed to insert KYC provider"
 
     let private removeKycProvider
         conn
