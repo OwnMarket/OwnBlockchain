@@ -15,7 +15,7 @@ module Agent =
 
             messageLoop ()
 
-        agent.Error.Add (fun ex -> Log.error ex.AllMessagesAndStackTraces)
+        agent.Error.Add (fun ex -> Log.errorf "AGENT: %s" ex.AllMessagesAndStackTraces)
 
         agent
 
@@ -30,6 +30,6 @@ module Agent =
 
             messageLoop initialState
 
-        agent.Error.Add (fun ex -> Log.error ex.AllMessagesAndStackTraces)
+        agent.Error.Add (fun ex -> Log.errorf "AGENT: %s" ex.AllMessagesAndStackTraces)
 
         agent
