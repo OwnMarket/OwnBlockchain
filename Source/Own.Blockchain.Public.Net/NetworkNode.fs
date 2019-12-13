@@ -523,7 +523,6 @@ type NetworkNode
                     // Wait 4x the time needed for a message to be propagated to all peers.
                     let propagationCycles = 100 / getGossipFanout ()
                     let gossipMessageExpirationTime = 4 * propagationCycles * gossipConfig.GossipIntervalMillis
-                    Log.warningf "Waiting %i" gossipMessageExpirationTime
                     let lastValidTimestamp = DateTime.UtcNow.AddMilliseconds (-float gossipMessageExpirationTime)
 
                     gossipMessages
