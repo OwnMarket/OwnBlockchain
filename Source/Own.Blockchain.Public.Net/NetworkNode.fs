@@ -44,7 +44,8 @@ type NetworkNode
     let validatorsCache = new ConcurrentDictionary<NetworkAddress, _>()
     let deadPeersInfoCache = new ConcurrentDictionary<NetworkAddress, GossipPeerInfo>()
 
-    let gossipMessages = new ConcurrentDictionary<NetworkMessageId, ConcurrentDictionary<NetworkAddress, _> * DateTime>()
+    let gossipMessages =
+        new ConcurrentDictionary<NetworkMessageId, ConcurrentDictionary<NetworkAddress, _> * DateTime>()
     let peerSelectionSentRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let mutable lastMessageReceivedTimestamp = DateTime.UtcNow
     let sentRequests = new ConcurrentDictionary<NetworkMessageId, DateTime>()
@@ -533,7 +534,7 @@ type NetworkNode
                     )
 
                     do! Async.Sleep 1000
-                    return! loop()
+                    return! loop ()
                 }
 
             Async.Start (loop (), cts.Token)
@@ -735,7 +736,7 @@ type NetworkNode
         | _ ->
             let dict = new ConcurrentDictionary<NetworkAddress, _>()
             networkAddresses |> List.iter (fun a -> dict.TryAdd (a, None) |> ignore)
-            gossipMessages.TryAdd  (gossipMessageId, (dict, DateTime.UtcNow)) |> ignore
+            gossipMessages.TryAdd (gossipMessageId, (dict, DateTime.UtcNow)) |> ignore
 
     member private __.SendGossipMessageToRecipient recipientAddress (gossipMessage : GossipMessage) =
         match activePeers.TryGetValue recipientAddress with
