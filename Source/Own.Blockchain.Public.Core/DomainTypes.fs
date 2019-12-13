@@ -795,6 +795,16 @@ type ConsensusMessage with
         | Vote _ -> "Vote"
         | Commit _ -> "Commit"
 
+type ConsensusCommand with
+    member __.CaseName =
+        match __ with
+        | Synchronize -> "Synchronize"
+        | Message _ -> "Message"
+        | RetryPropose _ -> "RetryPropose"
+        | Timeout _ -> "Timeout"
+        | StateRequested _ -> "StateRequested"
+        | StateReceived _ -> "StateReceived"
+
 type PeerMessage with
     member __.CaseName =
         match __ with
