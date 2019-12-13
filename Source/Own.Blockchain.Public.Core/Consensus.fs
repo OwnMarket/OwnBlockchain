@@ -43,6 +43,8 @@ module Consensus =
         validatorAddress : BlockchainAddress
         ) =
 
+        let mutable _consensusInitialized = false
+
         let mutable _validators = []
         let mutable _qualifiedMajority = 0
         let mutable _validQuorum = 0
@@ -83,23 +85,29 @@ module Consensus =
             __.Synchronize()
             __.StartStaleConsensusDetection()
 
+            Log.info "Consensus initialized"
+            _consensusInitialized <- true
+
         member __.HandleConsensusCommand(command : ConsensusCommand) =
-            match command with
-            | Synchronize ->
-                __.Synchronize()
-            | Message (senderAddress, envelope) ->
-                __.ProcessConsensusMessage(senderAddress, envelope, true)
-            | RetryPropose (blockNumber, consensusRound) ->
-                __.RetryPropose(blockNumber, consensusRound)
-            | Timeout (blockNumber, consensusRound, consensusStep) ->
-                match consensusStep with
-                | ConsensusStep.Propose -> __.OnTimeoutPropose(blockNumber, consensusRound)
-                | ConsensusStep.Vote -> __.OnTimeoutVote(blockNumber, consensusRound)
-                | ConsensusStep.Commit -> __.OnTimeoutCommit(blockNumber, consensusRound)
-            | StateRequested (stateRequest, peerIdentity) ->
-                __.SendState(stateRequest, peerIdentity)
-            | StateReceived stateResponse ->
-                __.ApplyReceivedState(stateResponse)
+            if not _consensusInitialized then
+                Log.warningf "Consensus not yet initialized - command ignored: %A" command.CaseName
+            else
+                match command with
+                | Synchronize ->
+                    __.Synchronize()
+                | Message (senderAddress, envelope) ->
+                    __.ProcessConsensusMessage(senderAddress, envelope, true)
+                | RetryPropose (blockNumber, consensusRound) ->
+                    __.RetryPropose(blockNumber, consensusRound)
+                | Timeout (blockNumber, consensusRound, consensusStep) ->
+                    match consensusStep with
+                    | ConsensusStep.Propose -> __.OnTimeoutPropose(blockNumber, consensusRound)
+                    | ConsensusStep.Vote -> __.OnTimeoutVote(blockNumber, consensusRound)
+                    | ConsensusStep.Commit -> __.OnTimeoutCommit(blockNumber, consensusRound)
+                | StateRequested (stateRequest, peerIdentity) ->
+                    __.SendState(stateRequest, peerIdentity)
+                | StateReceived stateResponse ->
+                    __.ApplyReceivedState(stateResponse)
 
         member private __.ProcessConsensusMessage(senderAddress, envelope : ConsensusMessageEnvelope, updateState) =
             if isValidatorBlacklisted (senderAddress, _blockNumber, envelope.BlockNumber) then

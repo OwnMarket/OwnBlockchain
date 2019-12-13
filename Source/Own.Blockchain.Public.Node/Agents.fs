@@ -74,7 +74,7 @@ module Agents =
     let private invokeValidator c =
         match validator with
         | Some v -> v.Post c
-        | None -> Log.error "Validator agent not started"
+        | None -> Log.warning "Validator agent not started"
 
     let private logEvent (event : AppEvent) =
         let formatMessage =
