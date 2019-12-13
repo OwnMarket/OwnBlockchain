@@ -18,6 +18,7 @@ module Cli =
         Composition.initBlockchainState ()
         Composition.rebuildBlockchainState ()
         Composition.startTxCacheMonitor ()
+        Composition.startBlockCacheMonitor ()
         Workers.startNetworkTimeSynchronizer ()
         Agents.startAgents ()
         Composition.startNetworkAgents ()
