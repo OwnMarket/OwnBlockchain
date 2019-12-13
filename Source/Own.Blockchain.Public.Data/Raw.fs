@@ -96,7 +96,7 @@ module Raw =
                 cache
                 |> List.ofDict
                 |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
-                |> List.iter (fun (txHash, _) -> removeCacheItem cache txHash)
+                |> List.iter (fun (cacheItem, _) -> removeCacheItem cache cacheItem)
 
                 do! Async.Sleep(1000);
                 return! loop ()
