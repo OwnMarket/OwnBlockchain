@@ -23,4 +23,4 @@ tar xzf ../OwnPublicBlockchainNode_linux-x64.tar.gz
 echo "Version hash: $(cat /opt/own/blockchain/public/node/Version)"
 
 sudo cp /opt/own/blockchain/public/node/Networks/Test/Genesis.json /var/lib/own/blockchain/public/node/ins1/Genesis.json
-sudo sed -i -- 's/\.mainnet\.weown\.com/\.testnet\.weown\.com/g' /var/lib/own/blockchain/public/node/ins1/Config.json
+sudo sed -i -- 's/\.mainnet\.weown/\.testnet\.weown/g' /var/lib/own/blockchain/public/node/ins1/Config.json
