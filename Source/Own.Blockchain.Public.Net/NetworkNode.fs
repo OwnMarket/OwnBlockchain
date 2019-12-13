@@ -44,7 +44,7 @@ type NetworkNode
     let validatorsCache = new ConcurrentDictionary<NetworkAddress, _>()
     let deadPeersInfoCache = new ConcurrentDictionary<NetworkAddress, GossipPeerInfo>()
 
-    let gossipMessages = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
+    let gossipMessages = new ConcurrentDictionary<NetworkMessageId, ConcurrentDictionary<NetworkAddress, _> * DateTime>()
     let peerSelectionSentRequests = new ConcurrentDictionary<NetworkMessageId, NetworkAddress list>()
     let mutable lastMessageReceivedTimestamp = DateTime.UtcNow
     let sentRequests = new ConcurrentDictionary<NetworkMessageId, DateTime>()
@@ -513,13 +513,35 @@ type NetworkNode
 
                     do! Async.Sleep(600_000) // Every 10 minutes
                     return! loop ()
-        }
-        Async.Start (loop (), cts.Token)
+                }
+            Async.Start (loop (), cts.Token)
+
+        member private __.StartMonitoringGossipMessages () =
+            let rec loop () =
+                async {
+                    // Wait 4x the time needed for a message to be propagated to all peers.
+                    let propagationCycles = 100 / getGossipFanout ()
+                    let gossipMessageExpirationTime = 4 * propagationCycles * gossipConfig.GossipIntervalMillis
+                    Log.warningf "Waiting %i" gossipMessageExpirationTime
+                    let lastValidTimestamp = DateTime.UtcNow.AddMilliseconds (-float gossipMessageExpirationTime)
+
+                    gossipMessages
+                    |> List.ofDict
+                    |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTimestamp)
+                    |> List.iter (fun (id, _) ->
+                        gossipMessages.TryRemove id |> ignore
+                    )
+
+                    do! Async.Sleep 1000
+                    return! loop()
+                }
+
+            Async.Start (loop (), cts.Token)
 
     member private __.StartDnsResolver () =
         let rec loop () =
             async {
-                let lastValidTime = DateTime.UtcNow.AddSeconds(-nodeConfig.DnsResolverCacheExpirationTime |> float)
+                let lastValidTime = DateTime.UtcNow.AddSeconds(-float nodeConfig.DnsResolverCacheExpirationTime)
                 dnsResolverCache
                 |> List.ofDict
                 |> List.filter (fun (_, (_, fetchedAt)) -> fetchedAt < lastValidTime)
@@ -537,6 +559,7 @@ type NetworkNode
         __.StartDnsResolver ()
         __.StartCachingValidators ()
         __.StartMonitoringDeadPeers ()
+        __.StartMonitoringGossipMessages ()
         __.StartMonitoringSentRequests ()
         __.StartMonitoringReceivedRequests ()
         __.StartMonitoringSentGossipMessages ()
@@ -705,13 +728,14 @@ type NetworkNode
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     member private __.UpdateGossipMessagesProcessingQueue networkAddresses gossipMessageId =
-        let found, processedAddresses = gossipMessages.TryGetValue gossipMessageId
-        let newProcessedAddresses = if found then networkAddresses @ processedAddresses else networkAddresses
-
-        gossipMessages.AddOrUpdate(
-            gossipMessageId,
-            newProcessedAddresses,
-            fun _ _ -> newProcessedAddresses) |> ignore
+        match gossipMessages.TryGetValue gossipMessageId with
+        | true, (processedAddresses, _) ->
+            networkAddresses
+            |> List.iter (fun a -> processedAddresses.TryAdd (a, None) |> ignore)
+        | _ ->
+            let dict = new ConcurrentDictionary<NetworkAddress, _>()
+            networkAddresses |> List.iter (fun a -> dict.TryAdd (a, None) |> ignore)
+            gossipMessages.TryAdd  (gossipMessageId, (dict, DateTime.UtcNow)) |> ignore
 
     member private __.SendGossipMessageToRecipient recipientAddress (gossipMessage : GossipMessage) =
         match activePeers.TryGetValue recipientAddress with
@@ -729,13 +753,9 @@ type NetworkNode
         | _ -> ()
 
     member private __.ProcessGossipMessage (gossipMessage : GossipMessage) recipientAddresses =
+        let recipientAddresses = recipientAddresses |> Set.toList
         match recipientAddresses with
-        // No recipients left to send message to, remove gossip message from the processing queue.
         | [] -> gossipMessages.TryRemove gossipMessage.MessageId |> ignore
-        // If two or more recipients left, select randomly a subset (fanout) of recipients to send the
-        // gossip message to.
-        // If gossip message was processed before, append the selected recipients to the processed recipients list.
-        // If not, add the gossip message (and the corresponding recipient) to the processing queue.
         | _ ->
             let fanoutRecipientAddresses =
                 recipientAddresses
@@ -759,18 +779,21 @@ type NetworkNode
                 let senderAddress = optionToList msg.SenderAddress
                 let processedAddresses =
                     match gossipMessages.TryGetValue msg.MessageId with
-                    | true, processedAddresses -> processedAddresses @ senderAddress
+                    | true, (processedAddresses, _) ->
+                        (processedAddresses.Keys |> Seq.toList) @ senderAddress
                     | _ -> senderAddress
+                    |> Set.ofList
 
                 let remainingRecipientAddresses =
                     __.GetActivePeers()
                     |> List.map (fun m -> m.NetworkAddress)
                     |> List.except processedAddresses
                     |> List.filter (isSelf >> not)
+                    |> Set.ofList
 
                 __.ProcessGossipMessage msg remainingRecipientAddresses
 
-                if remainingRecipientAddresses.Length >= gossipFanout then
+                if remainingRecipientAddresses.Count >= gossipFanout then
                     do! Async.Sleep(gossipConfig.GossipIntervalMillis)
                     return! loop msg
             }
@@ -779,14 +802,13 @@ type NetworkNode
 
     member private __.ReceiveGossipMessage publishEvent (gossipMessage : GossipMessage) =
         match gossipMessages.TryGetValue gossipMessage.MessageId with
-        | true, processedAddresses ->
-            gossipMessage.SenderAddress |> Option.iter (fun senderAddress ->
-                if not (processedAddresses |> List.contains senderAddress) then
-                    let addresses = senderAddress :: processedAddresses
-                    gossipMessages.AddOrUpdate(
-                        gossipMessage.MessageId,
-                        addresses,
-                        fun _ _ -> addresses) |> ignore
+        | true, (processedAddresses, _) ->
+            gossipMessage.SenderAddress
+            |> Option.bind memoizedConvertToIpAddress
+            |> Option.iter (fun senderAddress ->
+                let found, _ = processedAddresses.TryGetValue senderAddress
+                if not found then
+                    processedAddresses.TryAdd (senderAddress, None) |> ignore
             )
 
         | false, _ ->
@@ -800,10 +822,11 @@ type NetworkNode
                 fromMsg
 
             // Make sure the message is not processed twice.
+            let emptyRecipientAddresses = (new ConcurrentDictionary<NetworkAddress, _>(), DateTime.UtcNow)
             gossipMessages.AddOrUpdate(
                 gossipMessage.MessageId,
-                [],
-                fun _ _ -> []) |> ignore
+                emptyRecipientAddresses,
+                fun _ _ -> emptyRecipientAddresses) |> ignore
 
             let peerMessageReceivedEvent =
                 {
