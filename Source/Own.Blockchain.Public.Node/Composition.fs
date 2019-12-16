@@ -15,13 +15,13 @@ module Composition =
 
     let startTxCacheMonitor () = Raw.startTxCacheMonitor Config.TxCacheExpirationTime
     let startBlockCacheMonitor () = Raw.startBlockCacheMonitor Config.BlockCacheExpirationTime
+
     let saveTx = Raw.saveTx Config.DbEngineType Config.DbConnectionString
     let getTx = Raw.getTx Config.DbEngineType Config.DbConnectionString Config.MaxTxCacheSize
     let txExists = Raw.txExists Config.DbEngineType Config.DbConnectionString
 
     let saveTxResult = Raw.saveTxResult Config.DbEngineType Config.DbConnectionString
     let getTxResult = Raw.getTxResult Config.DbEngineType Config.DbConnectionString
-
     let txResultExists = Raw.txResultExists Config.DbEngineType Config.DbConnectionString
     let deleteTxResult = Raw.deleteTxResult Config.DbEngineType Config.DbConnectionString
 
