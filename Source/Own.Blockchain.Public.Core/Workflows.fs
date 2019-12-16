@@ -1637,6 +1637,8 @@ module Workflows =
                     NetworkAddress = v.NetworkAddress.Value
                     SharedRewardPercent = v.SharedRewardPercent
                     IsActive = true
+                    IsDepositLocked = true
+                    IsBlacklisted = false
                 }
             )
 

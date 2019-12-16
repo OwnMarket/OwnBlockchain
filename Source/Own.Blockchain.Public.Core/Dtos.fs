@@ -917,6 +917,8 @@ type GetValidatorInfoApiDto = {
     NetworkAddress : string
     SharedRewardPercent : decimal
     IsActive : bool
+    IsDepositLocked : bool
+    IsBlacklisted : bool
 }
 
 type GetValidatorsApiDto = {

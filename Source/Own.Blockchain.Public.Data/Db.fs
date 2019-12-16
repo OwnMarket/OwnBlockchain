@@ -1402,7 +1402,12 @@ module Db =
 
         let sql =
             """
-            SELECT validator_address, network_address, shared_reward_percent
+            SELECT
+                validator_address,
+                network_address,
+                shared_reward_percent,
+                (time_to_lock_deposit > 0 OR time_to_blacklist > 0) AS is_deposit_locked,
+                (time_to_blacklist > 0) AS is_blacklisted
             FROM validator
             ORDER by validator_address
             """
