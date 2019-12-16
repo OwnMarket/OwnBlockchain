@@ -198,6 +198,26 @@ module Db =
         | [_] -> true
         | _ -> failwithf "Multiple TXs found for hash %A" txHash
 
+    let deleteTxsBelowFee
+        dbEngineType
+        dbConnectionString
+        (ChxAmount minActionFee)
+        : TxHash list
+        =
+
+        let sql =
+            """
+            DELETE FROM tx
+            WHERE action_fee < @minActionFee
+            RETURNING tx_hash
+            """
+
+        [
+            "@minActionFee", minActionFee |> box
+        ]
+        |> DbTools.query<string> dbEngineType dbConnectionString sql
+        |> List.map TxHash
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // EquivocationProof
     ////////////////////////////////////////////////////////////////////////////////////////////////////

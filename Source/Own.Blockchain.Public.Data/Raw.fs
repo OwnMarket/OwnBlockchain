@@ -159,6 +159,16 @@ module Raw =
         txCache.ContainsKey txHash
         || Db.rawDataExists dbEngineType dbConnectionString Db.RawDataType.Tx txHash.Value
 
+    let deleteTx
+        dbEngineType
+        (dbConnectionString : string)
+        txHash
+        : Result<unit, AppErrors>
+        =
+
+        removeTxFromCache txHash
+        deleteData dbEngineType dbConnectionString Db.RawDataType.Tx txHash.Value
+
     // TxResult
     let saveTxResult
         dbEngineType

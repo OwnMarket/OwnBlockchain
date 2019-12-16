@@ -19,6 +19,7 @@ module Composition =
     let saveTx = Raw.saveTx Config.DbEngineType Config.DbConnectionString
     let getTx = Raw.getTx Config.DbEngineType Config.DbConnectionString Config.MaxTxCacheSize
     let txExists = Raw.txExists Config.DbEngineType Config.DbConnectionString
+    let deleteTx = Raw.deleteTx Config.DbEngineType Config.DbConnectionString
 
     let saveTxResult = Raw.saveTxResult Config.DbEngineType Config.DbConnectionString
     let getTxResult = Raw.getTxResult Config.DbEngineType Config.DbConnectionString
@@ -51,6 +52,7 @@ module Composition =
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
     let getTxPoolInfo () = Db.getTxPoolInfo Config.DbEngineType Config.DbConnectionString
     let txExistsInDb = Db.txExists Config.DbEngineType Config.DbConnectionString
+    let deleteTxsBelowFee = Db.deleteTxsBelowFee Config.DbEngineType Config.DbConnectionString
 
     let saveEquivocationProofToDb = Db.saveEquivocationProof Config.DbEngineType Config.DbConnectionString
     let getEquivocationInfo = Db.getEquivocationProof Config.DbEngineType Config.DbConnectionString
@@ -254,6 +256,13 @@ module Composition =
             Hashing.isValidHash
             Hashing.isValidBlockchainAddress
             Config.MaxActionCountPerTx
+
+    let deleteTxsBelowMinFee () =
+        Workflows.deleteTxsBelowMinFee
+            deleteTxsBelowFee
+            txResultExists
+            deleteTx
+            (ChxAmount Config.MinTxActionFee)
 
     let createBlock =
         Workflows.createBlock

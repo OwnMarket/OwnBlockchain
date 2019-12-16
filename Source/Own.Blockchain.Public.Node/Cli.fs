@@ -17,6 +17,7 @@ module Cli =
         Composition.initDb ()
         Composition.initBlockchainState ()
         Composition.rebuildBlockchainState ()
+        Composition.deleteTxsBelowMinFee ()
         Composition.startTxCacheMonitor ()
         Composition.startBlockCacheMonitor ()
         Workers.startNetworkTimeSynchronizer ()
