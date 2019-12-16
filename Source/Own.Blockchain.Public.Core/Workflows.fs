@@ -300,6 +300,22 @@ module Workflows =
             )
         )
 
+    let deleteTxsBelowMinFee
+        (deleteTxsBelowFee : ChxAmount -> TxHash list)
+        txResultExists
+        deleteTx
+        minTxActionFee
+        =
+
+        deleteTxsBelowFee minTxActionFee
+        |> List.iter (fun txHash ->
+            if txResultExists txHash then
+                failwithf "Cannot delete TX with existing result: %s" txHash.Value
+
+            deleteTx txHash
+            |> Result.iterError Log.appErrors
+        )
+
     let createBlock
         getTx
         getEquivocationProof
