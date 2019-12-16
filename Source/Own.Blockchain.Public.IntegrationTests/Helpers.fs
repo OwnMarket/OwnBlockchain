@@ -35,7 +35,8 @@ module Helpers =
         let removeAllTables =
             sprintf
                 """
-                DO $$ DECLARE
+                DO $$
+                DECLARE
                     v_table_name TEXT;
                 BEGIN
                     FOR v_table_name IN
