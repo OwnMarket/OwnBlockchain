@@ -493,7 +493,7 @@ module ValidatorTests =
         test <@ adversaryState.TimeToBlacklist = Helpers.validatorBlacklistTime @>
 
     [<Fact>]
-    let ``Processing.processChanges Equivocation Proof in the same block with validator TX`` () =
+    let ``Processing.processChanges Equivocation Proof does not collide with validator TX`` () =
         // INIT STATE
         let validatorWallet = Signing.generateWallet ()
         let adversaryWallet = Signing.generateWallet ()
