@@ -252,7 +252,7 @@ module Workflows =
                                 txHash
                             >>= (fun tx ->
                                 Log.debugf "Saving info for TX %s" txHash.Value
-                                tx |> Mapping.txToTxInfoDto |> saveTxToDb
+                                tx |> Mapping.txToTxInfoDto |> saveTxToDb true
                             )
                             >>= (fun _ ->
                                 if txResultExists txHash then
@@ -1483,7 +1483,7 @@ module Workflows =
             do! saveTx txHash txEnvelopeDto
             do! tx
                 |> Mapping.txToTxInfoDto
-                |> saveTxToDb
+                |> saveTxToDb isIncludedInBlock
 
             return (txHash, txEnvelopeDto)
         }

@@ -256,6 +256,14 @@ module DbChanges =
                     ALTER TABLE peer ADD dead_timestamp BIGINT;
                     """
             }
+            {
+                Number = 8
+                Script =
+                    """
+                    ALTER TABLE tx ADD is_fetched BOOLEAN DEFAULT FALSE NOT NULL;
+                    ALTER TABLE tx ALTER is_fetched DROP DEFAULT;
+                    """
+            }
         ]
 
     let internal postgresChanges : DbChange list =
@@ -506,6 +514,14 @@ module DbChanges =
                     ALTER TABLE peer ALTER is_dead DROP DEFAULT;
 
                     ALTER TABLE peer ADD dead_timestamp BIGINT;
+                    """
+            }
+            {
+                Number = 8
+                Script =
+                    """
+                    ALTER TABLE tx ADD is_fetched BOOLEAN DEFAULT FALSE NOT NULL;
+                    ALTER TABLE tx ALTER is_fetched DROP DEFAULT;
                     """
             }
         ]
