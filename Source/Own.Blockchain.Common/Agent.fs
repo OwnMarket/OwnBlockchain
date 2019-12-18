@@ -9,6 +9,26 @@ module Agent =
             let rec messageLoop () =
                 async {
                     let! message = inbox.Receive()
+
+                    try
+                        do! messageHandler message
+                    with
+                    | ex -> Log.error ex.AllMessagesAndStackTraces
+
+                    return! messageLoop ()
+                }
+
+            messageLoop ()
+
+        agent.Error.Add (fun ex -> Log.errorf "AGENT: %s" ex.AllMessagesAndStackTraces)
+
+        agent
+
+    let startPessimistic messageHandler =
+        let agent = MailboxProcessor.Start <| fun inbox ->
+            let rec messageLoop () =
+                async {
+                    let! message = inbox.Receive()
                     do! messageHandler message
                     return! messageLoop ()
                 }
