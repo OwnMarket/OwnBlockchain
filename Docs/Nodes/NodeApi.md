@@ -26,7 +26,7 @@ Endpoint | Verb | Description
 `/peers` | `GET` | List of peers
 `/stats` | `GET` | Various node statistics
 `/network` | `GET` | Various network statistics
-`/pool` | `GET` | Pending Tx count in the pool
+`/pool` | `GET` | Pending TX count in the pool
 `/pool/{blockchainAddress}` | `GET` | Pending TXs in the pool by the specified sender address
 `/node` | `GET` | General info about node
 
