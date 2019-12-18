@@ -159,6 +159,14 @@ type PendingTxInfoDto = {
 }
 
 [<CLIMutable>]
+type TxByAddressInfoDto = {
+    TxHash : string
+    Nonce : int64
+    ActionFee : decimal
+    ActionCount : int16
+}
+
+[<CLIMutable>]
 [<MessagePackObject>]
 type TxResultDto = {
     [<Key(0)>] Status : byte
@@ -646,6 +654,12 @@ type GetPeerListApiDto = {
 [<CLIMutable>]
 type GetTxPoolInfoApiDto = {
     PendingTxs : int64
+}
+
+type GetTxPoolByAddressApiDto = {
+    SenderAddress : string
+    PendingTxCount : int64
+    PendingTxs : TxByAddressInfoDto list
 }
 
 type SubmitTxResponseDto = {

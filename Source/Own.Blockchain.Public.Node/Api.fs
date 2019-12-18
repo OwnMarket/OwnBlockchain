@@ -68,6 +68,15 @@ module Api =
             return! response next ctx
         }
 
+    let getTxPoolByAddressHandler blockchainAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTxPoolByAddressApi (BlockchainAddress blockchainAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getTxPoolInfoHandler : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -334,6 +343,7 @@ module Api =
                 route "/stats" >=> getStatsHandler
                 route "/network" >=> getNetworkStatsHandler
                 route "/peers" >=> getPeersHandler
+                routef "/pool/%s" getTxPoolByAddressHandler
                 route "/pool" >=> getTxPoolInfoHandler
                 route "/consensus" >=> getConsensusInfoHandler
 

@@ -50,6 +50,7 @@ module Composition =
     let getPendingTxs = Db.getPendingTxs Config.DbEngineType Config.DbConnectionString
     let getAllPendingTxHashes () = Db.getAllPendingTxHashes Config.DbEngineType Config.DbConnectionString
     let getTotalFeeForPendingTxs = Db.getTotalFeeForPendingTxs Config.DbEngineType Config.DbConnectionString
+    let getTxPoolByAddress = Db.getTxPoolByAddress Config.DbEngineType Config.DbConnectionString
     let getTxPoolInfo () = Db.getTxPoolInfo Config.DbEngineType Config.DbConnectionString
     let txExistsInDb = Db.txExists Config.DbEngineType Config.DbConnectionString
     let deleteTxsBelowFee = Db.deleteTxsBelowFee Config.DbEngineType Config.DbConnectionString
@@ -556,6 +557,8 @@ module Composition =
             (ChxAmount Config.MinTxActionFee)
 
     let getTxApi = Workflows.getTxApi getTx getTxInfo getTxResult Hashing.hash verifySignature
+
+    let getTxPoolByAddressApi = Workflows.getTxPoolByAddressApi getTxPoolByAddress
 
     let getEquivocationProofApi =
         Workflows.getEquivocationProofApi

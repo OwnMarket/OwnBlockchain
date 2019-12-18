@@ -169,6 +169,26 @@ module Db =
         |? 0m
         |> ChxAmount
 
+    let getTxPoolByAddress
+        dbEngineType
+        dbConnectionString
+        (BlockchainAddress senderAddress)
+        : TxByAddressInfoDto list
+        =
+
+        let sql =
+            """
+            SELECT tx_hash, nonce, action_fee, action_count
+            FROM tx
+            WHERE sender_address = @senderAddress
+            ORDER BY nonce, action_fee DESC, tx_id
+            """
+
+        [
+            "@senderAddress", senderAddress |> box
+        ]
+        |> DbTools.query<TxByAddressInfoDto> dbEngineType dbConnectionString sql
+
     let getTxPoolInfo dbEngineType dbConnectionString : GetTxPoolInfoApiDto =
         let sql =
             """
