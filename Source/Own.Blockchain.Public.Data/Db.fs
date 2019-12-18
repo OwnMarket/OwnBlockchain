@@ -29,7 +29,7 @@ module Db =
     // TX
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    let saveTx dbEngineType dbConnectionString (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
+    let saveTx dbEngineType dbConnectionString isFetched (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
         try
             let txParams =
                 [
@@ -38,6 +38,7 @@ module Db =
                     "@nonce", txInfoDto.Nonce |> box
                     "@action_fee", txInfoDto.ActionFee |> box
                     "@action_count", txInfoDto.ActionCount |> box
+                    "@is_fetched", isFetched |> box
                 ]
 
             let paramData = createInsertParams txParams
@@ -89,6 +90,7 @@ module Db =
                         tx_hash, sender_address, nonce, action_fee, action_count, tx_id AS appearance_order
                     FROM tx
                     WHERE action_fee >= @minActionFee
+                    AND NOT is_fetched
                     %s
                     ORDER BY action_fee DESC, tx_id
                     """
@@ -99,6 +101,7 @@ module Db =
                     SELECT tx_hash, sender_address, nonce, action_fee, action_count, tx_id AS appearance_order
                     FROM tx
                     WHERE action_fee >= @minActionFee
+                    AND NOT is_fetched
                     %s
                     ORDER BY action_fee DESC, tx_id
                     LIMIT @txCountToFetch
