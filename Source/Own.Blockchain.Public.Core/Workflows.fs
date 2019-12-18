@@ -1497,6 +1497,21 @@ module Workflows =
         { GetPeerListApiDto.Peers = peers }
         |> Ok
 
+    let getTxPoolByAddressApi
+        (getTxPoolByAddress : BlockchainAddress -> TxByAddressInfoDto list)
+        (address : BlockchainAddress)
+        : Result<GetTxPoolByAddressApiDto, AppErrors>
+        =
+
+        let txs = getTxPoolByAddress address
+
+        {
+            GetTxPoolByAddressApiDto.SenderAddress = address.Value
+            PendingTxCount = int64 txs.Length
+            PendingTxs = txs
+        }
+        |> Ok
+
     let submitTx
         verifySignature
         isValidHash

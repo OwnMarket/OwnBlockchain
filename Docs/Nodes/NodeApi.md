@@ -26,6 +26,7 @@ Endpoint | Verb | Description
 `/stats` | `GET` | Various node statistics
 `/network` | `GET` | Various network statistics
 `/pool` | `GET` | Pending Tx count in the pool
+`/pool/{blockchainAddress}` | `GET` | Pending TXs in the pool by the specified sender address
 `/node` | `GET` | General info about node
 
 Below are the detailed specifications of requests and responses with samples for each of the listed endpoints.
@@ -699,6 +700,42 @@ Response JSON payload:
 ```json
 {
     "pendingTxs": 0
+}
+```
+
+
+## `GET /pool/{blockchainAddress}`
+
+Request URL:
+```
+/pool/CHbNPHm1y1pUsGfDv7YhXoXYwfpTsbUP7Z2
+```
+
+Response JSON payload:
+```json
+{
+    "senderAddress": "CHbNPHm1y1pUsGfDv7YhXoXYwfpTsbUP7Z2",
+    "pendingTxCount": 3,
+    "pendingTxs": [
+        {
+            "txHash": "3GNpManFFB6iQgiqe7EJg2E234Aptc9Ep3tHXv9voMiL",
+            "nonce": 4,
+            "actionFee": 0.1,
+            "actionCount": 1
+        },
+        {
+            "txHash": "6LvLQ8cZsAqoj6BxMwkKjb8fguvjF3h7pPPWuQa6BmDt",
+            "nonce": 5,
+            "actionFee": 0.1,
+            "actionCount": 1
+        },
+        {
+            "txHash": "HTDWREz8Pb5USjdvHY9E2L2uBwCw6PmztADjCFX2S8e9",
+            "nonce": 7,
+            "actionFee": 0.1,
+            "actionCount": 1
+        }
+    ]
 }
 ```
 
