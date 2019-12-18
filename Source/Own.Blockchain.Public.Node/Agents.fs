@@ -373,7 +373,7 @@ module Agents =
             )
 
         validator <-
-            Agent.start <| fun (command : ConsensusCommand) ->
+            Agent.startPessimistic <| fun (command : ConsensusCommand) ->
                 async {
                     match state with
                     | Some s -> s.HandleConsensusCommand command
