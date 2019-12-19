@@ -226,7 +226,7 @@ module Consensus =
                 |? []
 
             restoreConsensusMessages ()
-            |> tee (fun ms -> if not ms.IsEmpty then Log.info "Restoring persisted consensus messages...")
+            |> tap (fun ms -> if not ms.IsEmpty then Log.info "Restoring persisted consensus messages...")
             |> List.sortBy (fun e -> e.BlockNumber, e.Round, e.ConsensusMessage)
             |> List.iter (fun envelope ->
                 let senderAddress =

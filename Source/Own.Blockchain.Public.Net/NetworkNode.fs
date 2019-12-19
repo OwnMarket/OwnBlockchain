@@ -85,7 +85,7 @@ type NetworkNode
             IsDead = true
             DeadTimestamp = Utils.getMachineTimestamp () |> Some
         }
-        |> tee (fun peerInfo ->
+        |> tap (fun peerInfo ->
             deadPeersInfoCache.AddOrUpdate (
                 peerInfo.NetworkAddress,
                 peerInfo,
@@ -906,7 +906,7 @@ type NetworkNode
                         |> List.except targetedAddresses
                         |> List.filter (isSelf >> not)
                         |> __.SelectPeer preferredPeer
-                        |> tee (fun address ->
+                        |> tap (fun address ->
                             messageIds
                             |> List.iter (fun messageId ->
                                 match address with

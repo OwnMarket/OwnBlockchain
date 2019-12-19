@@ -134,7 +134,7 @@ module Raw =
         | false, _ ->
             cacheItemKey
             |> getItemFromStorage
-            |> tee (
+            |> tap (
                 Result.iter (fun envelope ->
                     if cache.Keys.Count < maxCacheSize then
                         let cacheValue = envelope, DateTime.UtcNow

@@ -379,7 +379,7 @@ module Agents =
                 else
                     Log.infof "Configured as validator with address %s" validatorAddress.Value
                     Composition.createConsensusStateInstance publishEvent
-                    |> tee Consensus.setConsensusStateInstance
+                    |> tap Consensus.setConsensusStateInstance
                     |> Some
             )
 
