@@ -15,53 +15,49 @@ module Db =
         else
             DBNull.Value |> box
 
-    let private createInsertParams (parameters : (string * obj) list) =
-        let parameterNames =
-            parameters
-            |> List.map fst
-            |> fun names -> String.Join (", ", names)
-
-        let columnNames = parameterNames.Replace("@", "")
-
-        (parameterNames, columnNames)
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // TX
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let saveTx dbEngineType dbConnectionString isFetched (txInfoDto : TxInfoDto) : Result<unit, AppErrors> =
+        let sql =
+            """
+            INSERT INTO tx (
+                tx_hash,
+                sender_address,
+                nonce,
+                action_fee,
+                action_count,
+                is_fetched
+            )
+            VALUES (
+                @txHash,
+                @senderAddress,
+                @nonce,
+                @actionFee,
+                @actionCount,
+                @isFetched
+            )
+            """
+
+        let sqlParams =
+            [
+                "@txHash", txInfoDto.TxHash |> box
+                "@senderAddress", txInfoDto.SenderAddress |> box
+                "@nonce", txInfoDto.Nonce |> box
+                "@actionFee", txInfoDto.ActionFee |> box
+                "@actionCount", txInfoDto.ActionCount |> box
+                "@isFetched", isFetched |> box
+            ]
+
         try
-            let txParams =
-                [
-                    "@tx_hash", txInfoDto.TxHash |> box
-                    "@sender_address", txInfoDto.SenderAddress |> box
-                    "@nonce", txInfoDto.Nonce |> box
-                    "@action_fee", txInfoDto.ActionFee |> box
-                    "@action_count", txInfoDto.ActionCount |> box
-                    "@is_fetched", isFetched |> box
-                ]
-
-            let paramData = createInsertParams txParams
-
-            let insertSql =
-                sprintf
-                    """
-                    INSERT INTO tx (%s)
-                    VALUES (%s)
-                    """
-                    (snd paramData)
-                    (fst paramData)
-
-            let result = DbTools.execute dbEngineType dbConnectionString insertSql txParams
-
-            if result < 0 then
-                failwith "Unknown DB error"
-            else
-                Ok ()
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert TX"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "DB operation error"
+            Result.appError "Failed to insert TX"
 
     let getPendingTxs
         dbEngineType
@@ -212,37 +208,41 @@ module Db =
         : Result<unit, AppErrors>
         =
 
+        let sql =
+            """
+            INSERT INTO equivocation (
+                equivocation_proof_hash,
+                validator_address,
+                block_number,
+                consensus_round,
+                consensus_step
+            )
+            VALUES (
+                @equivocationProofHash,
+                @validatorAddress,
+                @blockNumber,
+                @consensusRound,
+                @consensusStep
+            )
+            """
+
+        let sqlParams =
+            [
+                "@equivocationProofHash", equivocationInfoDto.EquivocationProofHash |> box
+                "@validatorAddress", equivocationInfoDto.ValidatorAddress |> box
+                "@blockNumber", equivocationInfoDto.BlockNumber |> box
+                "@consensusRound", equivocationInfoDto.ConsensusRound |> box
+                "@consensusStep", equivocationInfoDto.ConsensusStep |> box
+            ]
+
         try
-            let equivocationProofParams =
-                [
-                    "@equivocation_proof_hash", equivocationInfoDto.EquivocationProofHash |> box
-                    "@validator_address", equivocationInfoDto.ValidatorAddress |> box
-                    "@block_number", equivocationInfoDto.BlockNumber |> box
-                    "@consensus_round", equivocationInfoDto.ConsensusRound |> box
-                    "@consensus_step", equivocationInfoDto.ConsensusStep |> box
-                ]
-
-            let paramData = createInsertParams equivocationProofParams
-
-            let insertSql =
-                sprintf
-                    """
-                    INSERT INTO equivocation (%s)
-                    VALUES (%s)
-                    """
-                    (snd paramData)
-                    (fst paramData)
-
-            let result = DbTools.execute dbEngineType dbConnectionString insertSql equivocationProofParams
-
-            if result < 0 then
-                failwith "Unknown DB error"
-            else
-                Ok ()
+            match DbTools.execute dbEngineType dbConnectionString sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't insert equivocation proof"
         with
         | ex ->
             Log.error ex.AllMessagesAndStackTraces
-            Result.appError "DB operation error"
+            Result.appError "Failed to insert equivocation proof"
 
     let getPendingEquivocationProofs
         dbEngineType
