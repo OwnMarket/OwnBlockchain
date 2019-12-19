@@ -46,21 +46,26 @@ module Common =
                 else
                     v
 
-    let retry timesToRetry f =
-        if timesToRetry < 1 then
-            raise (new ArgumentOutOfRangeException("timesToRetry", timesToRetry, "Value must be greater than zero"))
-
-        let rec retryIfFails n =
+    /// Repeats execution of "f", in the case of exception, as long as "condition" is true.
+    let retryWhile condition f =
+        let rec retryIfFails iteration =
             try
-                f ()
+                f iteration
             with
             | _ ->
-                if n > 0 then
-                    retryIfFails (n - 1)
+                if condition iteration then
+                    retryIfFails (iteration + 1)
                 else
                     reraise ()
 
-        retryIfFails timesToRetry
+        retryIfFails 1
+
+    /// Repeats execution of "f", in the case of exception, at most "timesToTry" times.
+    let retry timesToTry f =
+        if timesToTry < 1 then
+            raise (new ArgumentOutOfRangeException("timesToTry", timesToTry, "Value must be greater than zero"))
+
+        retryWhile (fun iteration -> iteration < timesToTry) f
 
     let unionCaseName (x : 'T) =
         match FSharpValue.GetUnionFields(x, typeof<'T>) with
