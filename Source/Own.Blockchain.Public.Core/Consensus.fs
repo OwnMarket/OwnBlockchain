@@ -715,19 +715,28 @@ module Consensus =
 
         member private __.OnTimeoutPropose(blockNumber, consensusRound) =
             if _blockNumber = blockNumber && _round = consensusRound && _step = ConsensusStep.Propose then
-                Log.infof "Consensus timeout: %i / %i / %s" blockNumber.Value consensusRound.Value _step.CaseName
+                Log.infof "Consensus timeout: %i / %i / %s"
+                    blockNumber.Value
+                    consensusRound.Value
+                    ConsensusStep.Propose.CaseName
                 _step <- ConsensusStep.Vote
                 __.SendVote(_round, None)
 
         member private __.OnTimeoutVote(blockNumber, consensusRound) =
             if _blockNumber = blockNumber && _round = consensusRound && _step = ConsensusStep.Vote then
-                Log.infof "Consensus timeout: %i / %i / %s" blockNumber.Value consensusRound.Value _step.CaseName
+                Log.infof "Consensus timeout: %i / %i / %s"
+                    blockNumber.Value
+                    consensusRound.Value
+                    ConsensusStep.Vote.CaseName
                 _step <- ConsensusStep.Commit
                 __.SendCommit(_round, None)
 
         member private __.OnTimeoutCommit(blockNumber, consensusRound) =
             if _blockNumber = blockNumber && _round = consensusRound then
-                Log.infof "Consensus timeout: %i / %i / %s" blockNumber.Value consensusRound.Value _step.CaseName
+                Log.infof "Consensus timeout: %i / %i / %s"
+                    blockNumber.Value
+                    consensusRound.Value
+                    ConsensusStep.Commit.CaseName
                 __.StartRound(_round + 1)
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////
