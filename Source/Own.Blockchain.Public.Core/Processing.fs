@@ -917,7 +917,16 @@ module Processing =
                     iteration
 
             let fetchedTxs =
-                getPendingTxs minTxActionFee txHashesToSkip txCountToFetch
+                try
+                    getPendingTxs minTxActionFee txHashesToSkip txCountToFetch
+                with
+                | ex ->
+                    Log.debug ex.AllMessagesAndStackTraces
+                    Log.warningf "Failed to fetch next %i pending TXs by skipping %i TXs in iteration %i"
+                        txCountToFetch
+                        txHashesToSkip.Length
+                        iteration
+                    []
                 |> List.map Mapping.pendingTxInfoFromDto
             let txSet = excludeUnprocessableTxs getChxAddressState getAvailableChxBalance (txSet @ fetchedTxs)
             if txSet.Length = maxTxCountPerBlock
