@@ -154,28 +154,39 @@ module Agents =
             | _ -> ()
 
             match c with
-            | Synchronize -> "Synchronize"
+            | Synchronize ->
+                "Synchronize"
+                |> formatMessage
+                |> Log.info
             | Message (sender, consensusMessageEnvelope) ->
                 sprintf "Message from %s: %i / %i / %A"
                     sender.Value
                     consensusMessageEnvelope.BlockNumber.Value
                     consensusMessageEnvelope.Round.Value
                     (consensusMessageEnvelope.ConsensusMessage |> Consensus.consensusMessageDisplayFormat)
+                |> formatMessage
+                |> Log.info
             | RetryPropose (blockNumber, consensusRound) ->
                 sprintf "RetryPropose %i / %i"
                     blockNumber.Value
                     consensusRound.Value
+                |> formatMessage
+                |> Log.info
             | Timeout (blockNumber, consensusRound, consensusStep) ->
                 sprintf "Timeout %i / %i / %s"
                     blockNumber.Value
                     consensusRound.Value
                     consensusStep.CaseName
+                |> formatMessage
+                |> Log.debug
             | StateRequested (request, _) ->
                 sprintf "StateRequested %s" request.ValidatorAddress.Value
+                |> formatMessage
+                |> Log.info
             | StateReceived response ->
                 sprintf "StateReceived %A" response
-            |> formatMessage
-            |> Log.info
+                |> formatMessage
+                |> Log.info
         | ConsensusStateRequestReceived (request, _) ->
             sprintf "%s / %i / %A"
                 request.ValidatorAddress.Value
