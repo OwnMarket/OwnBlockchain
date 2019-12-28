@@ -30,3 +30,19 @@ module Utils =
     /// Checks if a decimal number is truncated to 2 decimal digits.
     let isRounded2 x =
         x = round x 2
+
+    /// Starts async task to repeat "f" waiting "sleepBefore" and "sleepAfter" milliseconds.
+    let asyncLoop sleepBefore sleepAfter f =
+        let rec loop () =
+            async {
+                if sleepBefore > 0 then
+                    do! Async.Sleep sleepBefore
+
+                f ()
+
+                if sleepAfter > 0 then
+                    do! Async.Sleep sleepAfter
+
+                return! loop ()
+            }
+        loop ()

@@ -2,6 +2,7 @@ namespace Own.Blockchain.Public.Core
 
 open System
 open System.Collections.Generic
+open System.Collections.Concurrent
 open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
@@ -1252,18 +1253,50 @@ module Consensus =
                 requestEquivocationProofs proposer.NetworkAddress missingEquivocationProofs
                 false
 
-        let isValidBlock = memoizeBy (fun (b : Block) -> b.Header.Hash) <| fun block ->
-            block
-            |> Mapping.blockToDto
-            |> Validation.validateBlock isValidHash isValidAddress
-            >>= Blocks.validateEmptyBlockTimestamp minEmptyBlockTime (getLastAppliedBlockTimestamp ())
-            >>= applyBlockToCurrentState
-            |> Result.handle
-                (fun _ -> true)
-                (fun e ->
-                    Log.appErrors e
-                    false
+        let isValidBlock =
+            let cache = new ConcurrentDictionary<BlockNumber * BlockHash, bool>()
+
+            let cacheCleanupInterval = 60 * 1000 // 60 seconds
+            Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
+                try
+                    let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+                    cache
+                    |> List.ofDict
+                    |> List.iter (fun ((n, h), _) ->
+                        if n < lastAppliedBlockNumber then
+                            cache.TryRemove((n, h)) |> ignore
+                    )
+                with
+                | ex -> Log.error ex.AllMessagesAndStackTraces
+            )
+            |> Async.Start
+
+            let validateBlock block =
+                retry 3 (fun _ ->
+                    block
+                    |> Mapping.blockToDto
+                    |> Validation.validateBlock isValidHash isValidAddress
+                    >>= Blocks.validateEmptyBlockTimestamp minEmptyBlockTime (getLastAppliedBlockTimestamp ())
+                    >>= applyBlockToCurrentState
+                    |> Result.handle
+                        (fun _ -> true)
+                        (fun e ->
+                            Log.appErrors e
+                            false
+                        )
                 )
+
+            fun (block : Block) ->
+                try
+                    cache.GetOrAdd((block.Header.Number, block.Header.Hash), fun _ -> validateBlock block)
+                with
+                | ex ->
+                    Log.errorf "Failed to verify block %i (%s): %s"
+                        block.Header.Number.Value
+                        block.Header.Hash.Value
+                        ex.AllMessagesAndStackTraces
+                    // We don't cache the validation result on failure, to be able to try validating it again if needed.
+                    false
 
         let persistConsensusState =
             persistConsensusState
