@@ -1219,16 +1219,38 @@ module Consensus =
             | Some s when s.TimeToBlacklist > 0s -> true
             | _ -> false
 
-        let canParticipateInConsensus = memoizeWhen Option.isSome <| fun blockNumber ->
-            let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
-            if blockNumber = lastAppliedBlockNumber + 1 then
-                // Participation in consensus is relevant only relative to the current blockchain state,
-                // in which case the information about participation eligibility is cached for efficiency.
-                getValidatorsAtHeight lastAppliedBlockNumber
-                |> List.exists (fun (v : ValidatorSnapshot) -> v.ValidatorAddress = validatorAddress)
-                |> Some
-            else
-                None
+        let canParticipateInConsensus =
+            let cache = new ConcurrentDictionary<BlockNumber, bool option>()
+
+            let cacheCleanupInterval = 60 * 1000 // 60 seconds
+            Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
+                try
+                    let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+                    cache
+                    |> List.ofDict
+                    |> List.iter (fun (n, _) ->
+                        if n < lastAppliedBlockNumber then
+                            cache.TryRemove(n) |> ignore
+                    )
+                with
+                | ex -> Log.error ex.AllMessagesAndStackTraces
+            )
+            |> Async.Start
+
+            fun blockNumber ->
+                match cache.TryGetValue(blockNumber) with
+                | true, can -> can
+                | false, _ ->
+                    let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+                    if blockNumber = lastAppliedBlockNumber + 1 then
+                        // Participation in consensus is relevant only relative to the current blockchain state,
+                        // in which case the information about participation eligibility is cached for efficiency.
+                        getValidatorsAtHeight lastAppliedBlockNumber
+                        |> List.exists (fun (v : ValidatorSnapshot) -> v.ValidatorAddress = validatorAddress)
+                        |> Some
+                        |> tap (fun o -> cache.TryAdd(blockNumber, o) |> ignore)
+                    else
+                        None
 
         let ensureBlockReady (block : Block) =
             let missingTxs =
