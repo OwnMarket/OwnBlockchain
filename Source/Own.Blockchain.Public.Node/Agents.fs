@@ -383,6 +383,14 @@ module Agents =
                     |> Some
             )
 
+        if state.IsNone then
+            // Prevent Synchronization.appliedBlocks collection from growing indefinitely if node is not a validator.
+            async {
+                while true do
+                    Synchronization.appliedBlocks.Take() |> ignore
+            }
+            |> Async.Start
+
         validator <-
             Agent.startPessimistic <| fun (command : ConsensusCommand) ->
                 async {
