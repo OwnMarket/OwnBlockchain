@@ -1190,15 +1190,17 @@ module Consensus =
         timeoutVote
         timeoutCommit
         timeoutDelta
+        cacheCleanupInterval
         =
 
         let validatorAddress =
             addressFromPrivateKey validatorPrivateKey
 
+        let cacheCleanupInterval = cacheCleanupInterval * 1000 // Convert to milliseconds
+
         let isValidatorBlacklisted =
             let cache = new ConcurrentDictionary<BlockchainAddress * BlockNumber * BlockNumber, bool>()
 
-            let cacheCleanupInterval = 60 * 1000 // 60 seconds
             Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
                 try
                     let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -1241,7 +1243,6 @@ module Consensus =
         let canParticipateInConsensus =
             let cache = new ConcurrentDictionary<BlockNumber, bool option>()
 
-            let cacheCleanupInterval = 60 * 1000 // 60 seconds
             Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
                 try
                     let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
@@ -1297,7 +1298,6 @@ module Consensus =
         let isValidBlock =
             let cache = new ConcurrentDictionary<BlockNumber * BlockHash, bool>()
 
-            let cacheCleanupInterval = 60 * 1000 // 60 seconds
             Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
                 try
                     let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
