@@ -1195,7 +1195,24 @@ module Consensus =
         let validatorAddress =
             addressFromPrivateKey validatorPrivateKey
 
-        let isValidatorBlacklisted = memoize <| fun (validatorAddress, currentBlockNumber, incomingMsgBlockNumber) ->
+        let isValidatorBlacklisted =
+            let cache = new ConcurrentDictionary<BlockchainAddress * BlockNumber * BlockNumber, bool>()
+
+            let cacheCleanupInterval = 60 * 1000 // 60 seconds
+            Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
+                try
+                    let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+                    cache
+                    |> List.ofDict
+                    |> List.iter (fun ((va, cbn, ibn), _) ->
+                        if (max cbn ibn) < lastAppliedBlockNumber then
+                            cache.TryRemove((va, cbn, ibn)) |> ignore
+                    )
+                with
+                | ex -> Log.error ex.AllMessagesAndStackTraces
+            )
+            |> Async.Start
+
             (*
             currentBlockNumber and incomingMsgBlockNumber parameters ensure proper caching per block.
             Since function is relying on last applied state in DB, having only currentBlock parameter would result in
@@ -1215,9 +1232,11 @@ module Consensus =
             This reduces incorrect behaviour to the level equal to non-cached version of the function,
             while still benefiting from caching.
             *)
-            match getValidatorState validatorAddress with
-            | Some s when s.TimeToBlacklist > 0s -> true
-            | _ -> false
+            fun (validatorAddress, currentBlockNumber, incomingMsgBlockNumber) ->
+                cache.GetOrAdd((validatorAddress, currentBlockNumber, incomingMsgBlockNumber), fun _ ->
+                    getValidatorState validatorAddress
+                    |> Option.exists (fun s -> s.TimeToBlacklist > 0s)
+                )
 
         let canParticipateInConsensus =
             let cache = new ConcurrentDictionary<BlockNumber, bool option>()
