@@ -1,6 +1,39 @@
 # Changelog
 
 
+## 1.4.5 (2019-12-28)
+
+- Improve cache management in consensus.
+- Reduce redundancy in TX propagation.
+- Add retry logic in block verification.
+
+
+## 1.4.4 (2019-12-13)
+
+- Improved request/response message handling.
+- Improved peer list management by taking validators from the most recent available verified block.
+- Improved cache management.
+- Improved the synchronization speed.
+- Fixed the issue with unresponsive consensus agent.
+- Added /consensus API endpoint.
+
+
+## 1.4.3 (2019-11-20)
+
+- Implemented the logic to remove ghost peers.
+
+
+## 1.4.2 (2019-11-14)
+
+- Fixed the handling of the valid value certificate in consensus.
+- Improved the management of whitelisted nodes (boot, validators) in the network layer.
+
+
+## 1.4.1 (2019-11-13)
+
+- Tuned network code.
+
+
 ## 1.4.0 (2019-11-11)
 
 - Improved TX set preparation logic.
