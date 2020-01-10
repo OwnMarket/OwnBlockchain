@@ -32,3 +32,4 @@ All blockchain history, including history of your CHX address, (with all submitt
 CHX is traded on following exchanges:
 
 - BitMax ([CHX/BTC](https://bitmax.io/#/trade/btc/chx), [CHX/ETH](https://bitmax.io/#/trade/eth/chx), [CHX/USDT](https://bitmax.io/#/trade/usdt/chx))
+- Hotbit ([CHX/BTC](https://www.hotbit.io/exchange?symbol=CHX_BTC), [CHX/ETH](https://www.hotbit.io/exchange?symbol=CHX_ETH))
