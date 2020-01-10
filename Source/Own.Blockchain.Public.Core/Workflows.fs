@@ -203,11 +203,13 @@ module Workflows =
         getTx
         saveTxToDb
         txExists
+        txExistsInDb
         txResultExists
         deleteTxResult
         getEquivocationProof
         saveEquivocationProofToDb
         equivocationProofExists
+        equivocationProofExistsInDb
         equivocationProofResultExists
         deleteEquivocationProofResult
         createConsensusMessageHash
@@ -221,9 +223,10 @@ module Workflows =
 
         let logOnce = memoize Log.info
 
-        let lastBlockNumber = getLastStoredBlockNumber () |? getLastAppliedBlockNumber ()
+        let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
+        let lastStoredBlockNumber = getLastStoredBlockNumber () |? lastAppliedBlockNumber
 
-        lastBlockNumber + 1
+        lastAppliedBlockNumber + 1
         |> Seq.unfold (fun n ->
             getBlock n
             |> Result.map Blocks.extractBlockFromEnvelopeDto
@@ -239,7 +242,10 @@ module Workflows =
             |> Mapping.blockHeaderToBlockInfoDto block.Configuration.IsSome
             |> (fun blockInfo ->
                 Log.infof "Restoring info for block %i" block.Header.Number.Value
-                saveBlockToDb blockInfo
+                if block.Header.Number > lastStoredBlockNumber then
+                    saveBlockToDb blockInfo
+                else
+                    Ok ()
                 >>= (fun _ ->
                     result {
                         for txHash in block.TxSet do
@@ -254,8 +260,11 @@ module Workflows =
                                     maxActionCountPerTx
                                     txHash
                                 >>= (fun tx ->
-                                    Log.debugf "Saving info for TX %s" txHash.Value
-                                    tx |> Mapping.txToTxInfoDto |> saveTxToDb true
+                                    if not (txExistsInDb txHash) then
+                                        Log.debugf "Saving info for TX %s" txHash.Value
+                                        tx |> Mapping.txToTxInfoDto |> saveTxToDb true
+                                    else
+                                        Ok ()
                                 )
                                 >>= (fun _ ->
                                     if txResultExists txHash then
@@ -280,8 +289,13 @@ module Workflows =
                                     decodeHash
                                     createHash
                                 >>= (fun proof ->
-                                    Log.debugf "Saving info for equivocation proof %s" eqHash.Value
-                                    proof |> Mapping.equivocationProofToEquivocationInfoDto |> saveEquivocationProofToDb
+                                    if not (equivocationProofExistsInDb eqHash) then
+                                        Log.debugf "Saving info for equivocation proof %s" eqHash.Value
+                                        proof
+                                        |> Mapping.equivocationProofToEquivocationInfoDto
+                                        |> saveEquivocationProofToDb
+                                    else
+                                        Ok ()
                                 )
                                 >>= (fun _ ->
                                     if equivocationProofResultExists eqHash then
