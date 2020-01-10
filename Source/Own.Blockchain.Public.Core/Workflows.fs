@@ -202,10 +202,12 @@ module Workflows =
         saveBlockToDb
         getTx
         saveTxToDb
+        txExists
         txResultExists
         deleteTxResult
         getEquivocationProof
         saveEquivocationProofToDb
+        equivocationProofExists
         equivocationProofResultExists
         deleteEquivocationProofResult
         createConsensusMessageHash
@@ -241,56 +243,58 @@ module Workflows =
                 >>= (fun _ ->
                     result {
                         for txHash in block.TxSet do
-                            Log.debugf "Loading info for TX %s" txHash.Value
-                            Processing.getTxBody
-                                getTx
-                                createHash
-                                verifySignature
-                                isValidHash
-                                isValidAddress
-                                maxActionCountPerTx
-                                txHash
-                            >>= (fun tx ->
-                                Log.debugf "Saving info for TX %s" txHash.Value
-                                tx |> Mapping.txToTxInfoDto |> saveTxToDb true
-                            )
-                            >>= (fun _ ->
-                                if txResultExists txHash then
-                                    Log.debugf "Deleting TX result %s" txHash.Value
-                                    deleteTxResult txHash
-                                else
-                                    Ok ()
-                            )
-                            |> Result.iterError (fun e ->
-                                Log.appErrors e
-                                failwithf "Failed rebuilding the state - cannot restore info for TX %s"
-                                    txHash.Value
-                            )
+                            if txExists txHash then
+                                Log.debugf "Loading info for TX %s" txHash.Value
+                                Processing.getTxBody
+                                    getTx
+                                    createHash
+                                    verifySignature
+                                    isValidHash
+                                    isValidAddress
+                                    maxActionCountPerTx
+                                    txHash
+                                >>= (fun tx ->
+                                    Log.debugf "Saving info for TX %s" txHash.Value
+                                    tx |> Mapping.txToTxInfoDto |> saveTxToDb true
+                                )
+                                >>= (fun _ ->
+                                    if txResultExists txHash then
+                                        Log.debugf "Deleting TX result %s" txHash.Value
+                                        deleteTxResult txHash
+                                    else
+                                        Ok ()
+                                )
+                                |> Result.iterError (fun e ->
+                                    Log.appErrors e
+                                    failwithf "Failed rebuilding the state - cannot restore TX info: %s"
+                                        txHash.Value
+                                )
 
                         for eqHash in block.EquivocationProofs do
-                            Log.debugf "Loading info for equivocation proof %s" eqHash.Value
-                            getEquivocationProof eqHash
-                            >>= Validation.validateEquivocationProof
-                                verifySignature
-                                createConsensusMessageHash
-                                decodeHash
-                                createHash
-                            >>= (fun proof ->
-                                Log.debugf "Saving info for equivocation proof %s" eqHash.Value
-                                proof |> Mapping.equivocationProofToEquivocationInfoDto |> saveEquivocationProofToDb
-                            )
-                            >>= (fun proof ->
-                                if equivocationProofResultExists eqHash then
-                                    Log.debugf "Deleting equivocation proof result %s" eqHash.Value
-                                    deleteEquivocationProofResult eqHash
-                                else
-                                    Ok ()
-                            )
-                            |> Result.iterError (fun e ->
-                                Log.appErrors e
-                                failwithf "Failed rebuilding the state - cannot restore info for equivocation proof %s"
-                                    eqHash.Value
-                            )
+                            if equivocationProofExists eqHash then
+                                Log.debugf "Loading info for equivocation proof %s" eqHash.Value
+                                getEquivocationProof eqHash
+                                >>= Validation.validateEquivocationProof
+                                    verifySignature
+                                    createConsensusMessageHash
+                                    decodeHash
+                                    createHash
+                                >>= (fun proof ->
+                                    Log.debugf "Saving info for equivocation proof %s" eqHash.Value
+                                    proof |> Mapping.equivocationProofToEquivocationInfoDto |> saveEquivocationProofToDb
+                                )
+                                >>= (fun _ ->
+                                    if equivocationProofResultExists eqHash then
+                                        Log.debugf "Deleting equivocation proof result %s" eqHash.Value
+                                        deleteEquivocationProofResult eqHash
+                                    else
+                                        Ok ()
+                                )
+                                |> Result.iterError (fun e ->
+                                    Log.appErrors e
+                                    failwithf "Failed rebuilding the state - cannot restore equivocation proof info: %s"
+                                        eqHash.Value
+                                )
                     }
                 )
             )
