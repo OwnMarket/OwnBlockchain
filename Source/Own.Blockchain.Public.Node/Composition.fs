@@ -225,11 +225,13 @@ module Composition =
             getTx
             saveTxToDb
             txExists
+            txExistsInDb
             txResultExists
             deleteTxResult
             getEquivocationProof
             saveEquivocationProofToDb
             equivocationProofExists
+            equivocationProofExistsInDb
             equivocationProofResultExists
             deleteEquivocationProofResult
             Consensus.createConsensusMessageHash
