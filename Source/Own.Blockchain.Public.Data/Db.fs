@@ -228,6 +228,7 @@ module Db =
             """
             DELETE FROM tx
             WHERE action_fee < @minActionFee
+            AND NOT is_fetched
             RETURNING tx_hash
             """
 
