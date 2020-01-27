@@ -549,6 +549,8 @@ module Composition =
 
     let getValidatorStakesApi = Workflows.getValidatorStakesApi getValidatorState getValidatorStakes
 
+    let getValidatorApi = Workflows.getValidatorApi getValidatorState getCurrentValidators
+
     let getAddressStakesApi = Workflows.getAddressStakesApi getAddressStakes
 
     let getAddressApi = Workflows.getAddressApi getChxAddressState getDetailedChxBalance
