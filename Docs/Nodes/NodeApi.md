@@ -21,6 +21,7 @@ Endpoint | Verb | Description
 `/asset/{assetHash}` | `GET` | Asset info
 `/asset/{assetHash}/kyc-providers` | `GET` | List of KYC providers for the asset
 `/validators?activeOnly={true/false}` | `GET` | List of validators, optionally filtering the active only ones
+`/validator/{validatorAddress}` | `GET` | Information about a specific validator
 `/validator/{validatorAddress}/stakes` | `GET` | List of stakes for a validator
 `/peers` | `GET` | List of peers
 `/stats` | `GET` | Various node statistics
@@ -341,6 +342,27 @@ Response JSON payload:
             "amount": 100
         }
     ]
+}
+```
+
+
+## `GET /validator/{blockchainAddress}`
+
+Request URL:
+```
+/validator/CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ/stakes
+```
+
+Response JSON payload:
+```json
+{
+    "validatorAddress": "CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ",
+    "networkAddress": "localhost:25701",
+    "sharedRewardPercent": 0,
+    "isDepositLocked": true,
+    "isBlacklisted": false,
+    "isEnabled": true,
+    "isActive": true
 }
 ```
 
