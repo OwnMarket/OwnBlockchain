@@ -894,6 +894,16 @@ type GetValidatorStakesApiResponseDto = {
     Stakes : ValidatorStakeInfoDto list
 }
 
+type GetValidatorApiResponseDto = {
+    ValidatorAddress : string
+    NetworkAddress : string
+    SharedRewardPercent : decimal
+    IsDepositLocked : bool
+    IsBlacklisted : bool
+    IsEnabled : bool
+    IsActive : bool
+}
+
 type GetAccountApiHoldingDto = {
     AssetHash : string
     Balance : decimal

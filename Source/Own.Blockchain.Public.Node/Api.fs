@@ -191,6 +191,15 @@ module Api =
             return! response next ctx
         }
 
+    let getValidatorHandler blockchainAddress : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getValidatorApi (BlockchainAddress blockchainAddress)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAddressHandler blockchainAddress : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -379,6 +388,7 @@ module Api =
                 // Validators & Staking
                 route "/validators" >=> getValidatorsHandler
                 routef "/validator/%s/stakes" getValidatorStakesHandler
+                routef "/validator/%s" getValidatorHandler
                 routef "/address/%s/stakes" getAddressStakesHandler
 
                 // Trading

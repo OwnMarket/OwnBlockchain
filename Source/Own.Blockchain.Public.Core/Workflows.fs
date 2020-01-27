@@ -1726,6 +1726,29 @@ module Workflows =
             }
             |> Ok
 
+    let getValidatorApi
+        (getValidatorState : BlockchainAddress -> ValidatorStateDto option)
+        (getCurrentValidators : unit -> ValidatorSnapshot list)
+        (address : BlockchainAddress)
+        : Result<GetValidatorApiResponseDto, AppErrors>
+        =
+
+        match getValidatorState address with
+        | None ->
+            sprintf "Validator %s does not exist" address.Value
+            |> Result.appError
+        | Some state ->
+            {
+                ValidatorAddress = address.Value
+                NetworkAddress = state.NetworkAddress
+                SharedRewardPercent = state.SharedRewardPercent
+                IsDepositLocked = state.TimeToLockDeposit > 0s
+                IsBlacklisted = state.TimeToBlacklist > 0s
+                IsEnabled = state.IsEnabled
+                IsActive = getCurrentValidators () |> List.exists (fun v -> v.ValidatorAddress = address)
+            }
+            |> Ok
+
     let getAddressStakesApi
         (getAddressStakes : BlockchainAddress -> AddressStakeInfoDto list)
         (address : BlockchainAddress)
