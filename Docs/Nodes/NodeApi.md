@@ -351,7 +351,7 @@ Response JSON payload:
 
 Request URL:
 ```
-/validator/CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ/stakes
+/validator/CHMf4inrS8hnPNEgJVZPRHFhsDPCHSHZfAJ
 ```
 
 Response JSON payload:
