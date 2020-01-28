@@ -244,10 +244,12 @@ module Workflows =
             |> Mapping.blockHeaderToBlockInfoDto block.Configuration.IsSome
             |> (fun blockInfo ->
                 Log.infof "Restoring info for block %i" block.Header.Number.Value
-                if block.Header.Number > lastStoredBlockNumber then
-                    saveBlockToDb blockInfo
-                else
-                    Ok ()
+                (
+                    if block.Header.Number > lastStoredBlockNumber then
+                        saveBlockToDb blockInfo
+                    else
+                        Ok ()
+                )
                 >>= (fun _ ->
                     result {
                         for txHash in block.TxSet do
