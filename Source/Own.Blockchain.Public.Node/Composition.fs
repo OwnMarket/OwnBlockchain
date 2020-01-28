@@ -253,12 +253,14 @@ module Composition =
             txExists
             txExistsInDb
             txResultExists
+            getTxResult
             deleteTxResult
             getEquivocationProof
             saveEquivocationProofToDb
             equivocationProofExists
             equivocationProofExistsInDb
             equivocationProofResultExists
+            getEquivocationProofResult
             deleteEquivocationProofResult
             Consensus.createConsensusMessageHash
             Hashing.decode

@@ -205,12 +205,14 @@ module Workflows =
         txExists
         txExistsInDb
         txResultExists
+        getTxResult
         deleteTxResult
         getEquivocationProof
         saveEquivocationProofToDb
         equivocationProofExists
         equivocationProofExistsInDb
         equivocationProofResultExists
+        getEquivocationProofResult
         deleteEquivocationProofResult
         createConsensusMessageHash
         decodeHash
@@ -268,8 +270,22 @@ module Workflows =
                                 )
                                 >>= (fun _ ->
                                     if txResultExists txHash then
-                                        Log.debugf "Deleting TX result %s" txHash.Value
-                                        deleteTxResult txHash
+                                        getTxResult txHash
+                                        |> Result.map Mapping.txResultFromDto
+                                        |> Result.bind (fun txResult ->
+                                            if txResult.BlockNumber <= lastAppliedBlockNumber then
+                                                failwithf "Cannot delete TX %s result - it belongs to applied block %i"
+                                                    txHash.Value
+                                                    txResult.BlockNumber.Value
+                                            else
+                                                if txResult.BlockNumber <> block.Header.Number then
+                                                    Log.warningf "Block %i contains TX %s with result pointing to %i"
+                                                        block.Header.Number.Value
+                                                        txHash.Value
+                                                        txResult.BlockNumber.Value
+                                                Log.debugf "Deleting TX result %s" txHash.Value
+                                                deleteTxResult txHash
+                                        )
                                     else
                                         Ok ()
                                 )
@@ -299,8 +315,22 @@ module Workflows =
                                 )
                                 >>= (fun _ ->
                                     if equivocationProofResultExists eqHash then
-                                        Log.debugf "Deleting equivocation proof result %s" eqHash.Value
-                                        deleteEquivocationProofResult eqHash
+                                        getEquivocationProofResult eqHash
+                                        |> Result.map Mapping.equivocationProofResultFromDto
+                                        |> Result.bind (fun eqResult ->
+                                            if eqResult.BlockNumber <= lastAppliedBlockNumber then
+                                                failwithf "Cannot delete EQ %s result - it belongs to applied block %i"
+                                                    eqHash.Value
+                                                    eqResult.BlockNumber.Value
+                                            else
+                                                if eqResult.BlockNumber <> block.Header.Number then
+                                                    Log.warningf "Block %i contains EQ %s with result pointing to %i"
+                                                        block.Header.Number.Value
+                                                        eqHash.Value
+                                                        eqResult.BlockNumber.Value
+                                                Log.debugf "Deleting equivocation proof result %s" eqHash.Value
+                                                deleteEquivocationProofResult eqHash
+                                        )
                                     else
                                         Ok ()
                                 )
