@@ -1,6 +1,12 @@
 # Changelog
 
 
+## 1.4.6 (2020-01-28)
+
+- Improve node startup block restoration logic.
+- Add API endpoint for info about single validator.
+
+
 ## 1.4.5 (2019-12-28)
 
 - Improve cache management in consensus.
