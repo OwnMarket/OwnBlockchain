@@ -1972,6 +1972,27 @@ module Workflows =
             p.QuoteAssetHash
         )
 
+    let getTradeOrderBookAggregatedApi
+        (getExecutableTradeOrdersAggregated : AssetHash * AssetHash -> TradeOrderAggregatedDto list)
+        (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
+        =
+
+        let buyOrderSideCode = Mapping.tradeOrderSideToCode Buy
+        let bids, asks =
+            getExecutableTradeOrdersAggregated (baseAssetHash, quoteAssetHash)
+            |> List.partition (fun o -> o.Side = buyOrderSideCode)
+
+        {|
+            Bids =
+                bids
+                |> List.sortBy (fun o -> -o.LimitPrice)
+                |> List.map (fun o -> {| Price = o.LimitPrice; Amount = o.Amount |})
+            Asks =
+                asks
+                |> List.sortBy (fun o -> o.LimitPrice)
+                |> List.map (fun o -> {| Price = o.LimitPrice; Amount = o.Amount |})
+        |}
+
     let getTradeOrderBookApi
         (getExecutableTradeOrders : AssetHash * AssetHash -> TradeOrderInfoDto list)
         (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)

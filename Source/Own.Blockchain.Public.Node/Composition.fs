@@ -123,6 +123,8 @@ module Composition =
     let getTradeOrderState = Db.getTradeOrderState Config.DbEngineType Config.DbConnectionString
     let getTradeOrders = Db.getTradeOrders Config.DbEngineType Config.DbConnectionString
     let getExpiredTradeOrders = Db.getExpiredTradeOrders Config.DbEngineType Config.DbConnectionString
+    let getExecutableTradeOrdersAggregated =
+        Db.getExecutableTradeOrdersAggregated Config.DbEngineType Config.DbConnectionString
     let getExecutableTradeOrders = Db.getExecutableTradeOrders Config.DbEngineType Config.DbConnectionString
     let getAccountTradeOrders = Db.getAccountTradeOrders Config.DbEngineType Config.DbConnectionString
     let getIneligibleTradeOrders = Db.getIneligibleTradeOrders Config.DbEngineType Config.DbConnectionString
@@ -629,6 +631,8 @@ module Composition =
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getAssetKycProviders
 
     let getTradingPairsApi () = Workflows.getTradingPairsApi getTradingPairs
+
+    let getTradeOrderBookAggregatedApi = Workflows.getTradeOrderBookAggregatedApi getExecutableTradeOrdersAggregated
 
     let getTradeOrderBookApi = Workflows.getTradeOrderBookApi getExecutableTradeOrders
 

@@ -304,6 +304,16 @@ module Api =
             return! response next ctx
         }
 
+    let getTradeOrderBookAggregatedHandler (baseAssetHash, quoteAssetHash) : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getTradeOrderBookAggregatedApi (AssetHash baseAssetHash, AssetHash quoteAssetHash)
+                |> Ok
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getTradeOrderBookHandler (baseAssetHash : string, quoteAssetHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -393,6 +403,7 @@ module Api =
 
                 // Trading
                 route "/trading-pairs" >=> getTradingPairsHandler
+                routef "/trade-order-book/%s/%s/aggregated" getTradeOrderBookAggregatedHandler
                 routef "/trade-order-book/%s/%s" getTradeOrderBookHandler
                 routef "/account/%s/trade-orders" getAccountTradeOrdersHandler
                 routef "/trade-order/%s" getTradeOrderHandler

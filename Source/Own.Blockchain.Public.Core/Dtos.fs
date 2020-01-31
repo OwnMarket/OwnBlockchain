@@ -613,6 +613,13 @@ type TradingPairInfoDto = {
 }
 
 [<CLIMutable>]
+type TradeOrderAggregatedDto = {
+    Side : byte
+    LimitPrice : decimal
+    Amount : decimal
+}
+
+[<CLIMutable>]
 type TradeOrderInfoDto = {
     TradeOrderHash : string
     BlockTimestamp : int64

@@ -848,6 +848,34 @@ module Db =
         ]
         |> DbTools.query<TradeOrderInfoDto> dbEngineType dbConnectionString sql
 
+    let getExecutableTradeOrdersAggregated
+        dbEngineType
+        (dbConnectionString : string)
+        (AssetHash baseAssetHash, AssetHash quoteAssetHash)
+        : TradeOrderAggregatedDto list
+        =
+
+        let sql =
+            """
+            SELECT
+                side,
+                limit_price,
+                SUM(amount - amount_filled) AS amount
+            FROM trade_order
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE ba.asset_hash = @baseAssetHash
+            AND qa.asset_hash = @quoteAssetHash
+            AND is_executable = TRUE
+            GROUP BY side, limit_price
+            """
+
+        [
+            "@baseAssetHash", baseAssetHash |> box
+            "@quoteAssetHash", quoteAssetHash |> box
+        ]
+        |> DbTools.query<TradeOrderAggregatedDto> dbEngineType dbConnectionString sql
+
     let getExecutableTradeOrders
         dbEngineType
         (dbConnectionString : string)
