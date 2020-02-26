@@ -965,6 +965,7 @@ module Db =
         let sql =
             """
             SELECT
+                trade_order_hash,
                 block_timestamp,
                 block_number,
                 tx_position,
@@ -1012,6 +1013,7 @@ module Db =
             sprintf
                 """
                 SELECT
+                    trade_order_hash,
                     block_timestamp,
                     block_number,
                     tx_position,
