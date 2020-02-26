@@ -1966,6 +1966,8 @@ module Workflows =
 
         getTradingPairs ()
         |> List.sortBy (fun p ->
+            p.BaseAssetCode.IsNullOrWhiteSpace(),
+            p.QuoteAssetCode.IsNullOrWhiteSpace(),
             p.BaseAssetCode |??? "",
             p.QuoteAssetCode |??? "",
             p.BaseAssetHash,
