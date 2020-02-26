@@ -276,6 +276,15 @@ module Api =
             return! response next ctx
         }
 
+    let getAssetByCodeHandler (assetCode : string) : HttpHandler = fun next ctx ->
+        task {
+            let response =
+                Composition.getAssetByCodeApi (AssetCode assetCode)
+                |> toApiResponse
+
+            return! response next ctx
+        }
+
     let getAssetKycProvidersHandler (assetHash : string) : HttpHandler = fun next ctx ->
         task {
             let response =
@@ -352,6 +361,7 @@ module Api =
                 routef "/account/%s" getAccountHandler
                 routef "/asset/%s/kyc-providers" getAssetKycProvidersHandler
                 routef "/asset/%s" getAssetHandler
+                routef "/asset-by-code/%s" getAssetByCodeHandler
 
                 // Wallet
                 routeStartsWith "/wallet" >=> getWalletHandler
