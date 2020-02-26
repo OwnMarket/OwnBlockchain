@@ -628,6 +628,7 @@ module Composition =
     let getAccountKycProvidersApi = Workflows.getAccountKycProvidersApi getAccountState getAccountKycProviders
 
     let getAssetApi = Workflows.getAssetApi getAssetState
+    let getAssetByCodeApi = Workflows.getAssetByCodeApi getAssetHashByCode getAssetState
 
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getAssetKycProviders
 

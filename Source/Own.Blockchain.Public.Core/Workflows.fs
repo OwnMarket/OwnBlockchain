@@ -1939,6 +1939,31 @@ module Workflows =
             }
             |> Ok
 
+    let getAssetByCodeApi
+        (getAssetHashByCode : AssetCode -> AssetHash option)
+        (getAssetState : AssetHash -> AssetStateDto option)
+        (assetCode : AssetCode)
+        : Result<AssetInfoDto, AppErrors>
+        =
+
+        match getAssetHashByCode assetCode with
+        | None ->
+            sprintf "Asset with code %s does not exist" assetCode.Value
+            |> Result.appError
+        | Some assetHash ->
+            match getAssetState assetHash with
+            | None ->
+                sprintf "Asset %s does not exist" assetHash.Value
+                |> Result.appError
+            | Some assetState ->
+                {
+                    AssetHash = assetHash.Value
+                    AssetCode = assetState.AssetCode
+                    ControllerAddress = assetState.ControllerAddress
+                    IsEligibilityRequired = assetState.IsEligibilityRequired
+                }
+                |> Ok
+
     let getAssetKycProvidersApi
         (getAssetState : AssetHash -> AssetStateDto option)
         (getAssetKycProviders : AssetHash -> BlockchainAddress list)
