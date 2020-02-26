@@ -679,6 +679,41 @@ module Db =
 
         DbTools.query<TradingPairApiDto> dbEngineType dbConnectionString sql []
 
+    let getTradingPair
+        dbEngineType
+        (dbConnectionString : string)
+        (AssetHash baseAssetHash, AssetHash quoteAssetHash)
+        : TradingPairApiDto option
+        =
+
+        let sql =
+            """
+            SELECT
+                ba.asset_hash AS base_asset_hash,
+                ba.asset_code AS base_asset_code,
+                qa.asset_hash AS quote_asset_hash,
+                qa.asset_code AS quote_asset_code,
+                is_enabled,
+                last_price,
+                price_change
+            FROM trading_pair
+            JOIN asset AS ba ON ba.asset_id = base_asset_id
+            JOIN asset AS qa ON qa.asset_id = quote_asset_id
+            WHERE ba.asset_hash = @baseAssetHash
+            AND qa.asset_hash = @quoteAssetHash
+            """
+
+        let sqlParams =
+            [
+                "@baseAssetHash", baseAssetHash |> box
+                "@quoteAssetHash", quoteAssetHash |> box
+            ]
+
+        match DbTools.query<TradingPairApiDto> dbEngineType dbConnectionString sql sqlParams with
+        | [] -> None
+        | [tradingPair] -> Some tradingPair
+        | _ -> failwithf "Multiple trading pairs found for asset pair %s / %s" baseAssetHash quoteAssetHash
+
     let getTradingPairControllers
         dbEngineType
         (dbConnectionString : string)

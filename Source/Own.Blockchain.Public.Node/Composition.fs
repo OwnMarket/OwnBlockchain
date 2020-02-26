@@ -119,6 +119,7 @@ module Composition =
         | cs -> cs
 
     let getTradingPairs () = Db.getTradingPairs Config.DbEngineType Config.DbConnectionString
+    let getTradingPair = Db.getTradingPair Config.DbEngineType Config.DbConnectionString
     let getTradingPairState = Db.getTradingPairState Config.DbEngineType Config.DbConnectionString
     let getTradeOrderState = Db.getTradeOrderState Config.DbEngineType Config.DbConnectionString
     let getTradeOrders = Db.getTradeOrders Config.DbEngineType Config.DbConnectionString
@@ -631,6 +632,8 @@ module Composition =
     let getAssetKycProvidersApi = Workflows.getAssetKycProvidersApi getAssetState getAssetKycProviders
 
     let getTradingPairsApi () = Workflows.getTradingPairsApi getTradingPairs
+
+    let getTradingPairApi = Workflows.getTradingPairApi getTradingPair
 
     let getTradeOrderBookAggregatedApi = Workflows.getTradeOrderBookAggregatedApi getExecutableTradeOrdersAggregated
 

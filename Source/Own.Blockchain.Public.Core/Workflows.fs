@@ -1974,6 +1974,18 @@ module Workflows =
             p.QuoteAssetHash
         )
 
+    let getTradingPairApi
+        (getTradingPair : AssetHash * AssetHash -> TradingPairApiDto option)
+        (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
+        =
+
+        match getTradingPair (baseAssetHash, quoteAssetHash) with
+        | None ->
+            sprintf "Trading pair %s / %s does not exist" baseAssetHash.Value quoteAssetHash.Value
+            |> Result.appError
+        | Some s ->
+            Ok s
+
     let getTradeOrderBookAggregatedApi
         (getExecutableTradeOrdersAggregated : AssetHash * AssetHash -> TradeOrderAggregatedDto list)
         (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
