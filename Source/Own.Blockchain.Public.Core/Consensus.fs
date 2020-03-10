@@ -13,6 +13,7 @@ module Consensus =
 
     type ConsensusState
         (
+        consensusStateId : Guid,
         persistConsensusState : ConsensusStateInfo -> unit,
         restoreConsensusState : unit -> ConsensusStateInfo option,
         persistConsensusMessage : ConsensusMessageEnvelope -> unit,
@@ -45,6 +46,7 @@ module Consensus =
         ) =
 
         let mutable _consensusInitialized = false
+        let mutable _consensusStopped = false
 
         let mutable _validators = []
         let mutable _qualifiedMajority = 0
@@ -71,7 +73,12 @@ module Consensus =
         let _commits =
             new Dictionary<BlockNumber * ConsensusRound * BlockchainAddress, BlockHash option * Signature>()
 
+        member __.Id = consensusStateId
+
         member __.StartConsensus() =
+            if _consensusStopped then
+                failwithf "Stopped consensus state instance cannot be started again (%A)" consensusStateId
+
             __.RestoreState()
 
             if _blockNumber > BlockNumber 0L && _step = ConsensusStep.Propose then
@@ -88,6 +95,10 @@ module Consensus =
 
             Log.info "Consensus initialized"
             _consensusInitialized <- true
+
+        member __.StopConsensus() =
+            _consensusInitialized <- false
+            _consensusStopped <- true
 
         member __.HandleConsensusCommand(command : ConsensusCommand) =
             if not _consensusInitialized then
@@ -303,7 +314,8 @@ module Consensus =
                                 Log.warning "Stale consensus height detected"
                                 requestConsensusState _round None
 
-                        return! loop ()
+                        if not _consensusStopped then
+                            return! loop ()
                 }
 
             loop ()
@@ -1056,8 +1068,6 @@ module Consensus =
     let mutable private _consensusState : ConsensusState option = None
 
     let setConsensusStateInstance consensusState =
-        if _consensusState.IsSome then
-            failwithf "Consensus state already set"
         _consensusState <- Some consensusState
 
     let getConsensusInfo () =
@@ -1196,12 +1206,19 @@ module Consensus =
         let validatorAddress =
             addressFromPrivateKey validatorPrivateKey
 
+        let consensusStateId = Guid.NewGuid ()
+
+        let isCurrentState stateId =
+            match _consensusState with
+            | Some s -> s.Id = stateId
+            | None -> true // To make sure asyncWhile loops are not exiting before the state is created.
+
         let cacheCleanupInterval = cacheCleanupInterval * 1000 // Convert to milliseconds
 
         let isValidatorBlacklisted =
             let cache = new ConcurrentDictionary<BlockchainAddress * BlockNumber * BlockNumber, bool>()
 
-            Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
+            Utils.asyncWhile (fun _ -> isCurrentState consensusStateId) cacheCleanupInterval 0 (fun () ->
                 try
                     let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
                     cache
@@ -1243,7 +1260,7 @@ module Consensus =
         let canParticipateInConsensus =
             let cache = new ConcurrentDictionary<BlockNumber, bool option>()
 
-            Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
+            Utils.asyncWhile (fun _ -> isCurrentState consensusStateId) cacheCleanupInterval 0 (fun () ->
                 try
                     let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
                     cache
@@ -1298,7 +1315,7 @@ module Consensus =
         let isValidBlock =
             let cache = new ConcurrentDictionary<BlockNumber * BlockHash, bool>()
 
-            Utils.asyncLoop cacheCleanupInterval 0 (fun () ->
+            Utils.asyncWhile (fun _ -> isCurrentState consensusStateId) cacheCleanupInterval 0 (fun () ->
                 try
                     let lastAppliedBlockNumber = getLastAppliedBlockNumber ()
                     cache
@@ -1501,6 +1518,7 @@ module Consensus =
 
         new ConsensusState
             (
+            consensusStateId,
             persistConsensusState,
             restoreConsensusState,
             persistConsensusMessage,

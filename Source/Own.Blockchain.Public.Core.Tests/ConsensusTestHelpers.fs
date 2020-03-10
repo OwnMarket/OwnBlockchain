@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.Core.Tests
 
+open System
 open System.Collections.Generic
 open Own.Common.FSharp
 open Own.Blockchain.Common
@@ -267,6 +268,7 @@ module ConsensusTestHelpers =
 
             let state =
                 new ConsensusState(
+                    Guid.NewGuid(),
                     persistConsensusState,
                     restoreConsensusState,
                     persistConsensusMessage,
