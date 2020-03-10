@@ -368,7 +368,7 @@ module Agents =
         if validator <> None then
             failwith "Validator agent is already started"
 
-        let state =
+        let createConsensusState () =
             Config.ValidatorPrivateKey
             |> Option.ofObj
             |> Option.map (PrivateKey >> Composition.addressFromPrivateKey)
@@ -383,6 +383,8 @@ module Agents =
                     |> Some
             )
 
+        let mutable state = createConsensusState ()
+
         if state.IsNone then
             // Prevent Synchronization.appliedBlocks collection from growing indefinitely if node is not a validator.
             async {
@@ -395,7 +397,24 @@ module Agents =
             Agent.startPessimistic <| fun (command : ConsensusCommand) ->
                 async {
                     match state with
-                    | Some s -> s.HandleConsensusCommand command
+                    | Some s ->
+                        try
+                            s.HandleConsensusCommand command
+                        with
+                        | ex ->
+                            Log.errorf "Error in consensus agent: %s" ex.AllMessagesAndStackTraces
+                            Log.debugf "HandleConsensusCommand FAILED: %A" command
+
+                            Log.warning "Detaching consensus state..."
+                            s.StopConsensus()
+
+                            Log.notice "Creating new consensus state..."
+                            state <- createConsensusState ()
+                            state
+                            |> Option.iter (fun s ->
+                                Log.notice "Starting new consensus state..."
+                                s.StartConsensus()
+                            )
                     | None ->
                         // WORKAROUND: Avoid log pollution due to Synchronize being invoked upon applying the block.
                         if command <> Synchronize then
