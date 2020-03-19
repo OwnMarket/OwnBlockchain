@@ -1187,7 +1187,7 @@ module Processing =
                                     TimeInForce = action.TimeInForce
                                     ExpirationTimestamp =
                                         (DateTimeOffset.FromUnixTimeMilliseconds blockTimestamp.Value)
-                                            .AddHours(3.) // TODO DSX: Use pair.MaxTradeOrderDuration
+                                            .AddDays(30.) // TODO DSX: Use pair.MaxTradeOrderDuration
                                             .ToUnixTimeMilliseconds()
                                         |> Timestamp
                                     IsExecutable =
