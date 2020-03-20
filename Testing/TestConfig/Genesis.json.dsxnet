@@ -1,0 +1,20 @@
+{
+    "NetworkCode": "OWN_PUBLIC_BLOCKCHAIN_DSXNET",
+    "GenesisAddress": "CHbZeVFvkPHqLqPNabJhj5zjXLM6ynU5Jx8",
+    "GenesisValidators": [
+        "CHJBmD1QypXNf5Wmb8MkBnNH7ZgphEC5T1k@val01.dsxnet.weown.com:25701",
+        "CHah5kSNmipsgXrVHRvXijSiYjHuZ3hGqDd@val02.dsxnet.weown.com:25702",
+        "CHUKGspypCHRQceT5TAaT4JnfYDXGTNaTSb@val03.dsxnet.weown.com:25703",
+        "CHdDMQRa7KZYQ7QfToeE3DBeD9mmcwhju56@val04.dsxnet.weown.com:25704"
+    ],
+    "GenesisSignatures": [
+        "9bwe9rtUZPZayNBLU2gJ2azokZhSjZVbtt6f1g3a49QLkpGnx6jzpnF3dMxJQfFpbmSHQ4jtKJ4Va7MyPMTktFBSo",
+        "2dtLLNBAGQtbxWK4P7anetjrdnkkwC2dkaE6kSokdis9gWNJPMnL8of7x6ahMmH5txsBda8BCFpXNciejoNPukh2p",
+        "2h9KrTv2u6Hn9zacygyY1grD4Cnw514pb83HRCMFk6RvX1r1qLRAG6Ct6mUJAGWKPuRTTywpgQi23hS6rdmzLw88p",
+        "D7U7UH2NRQ51VPdnMp83fPSYPTNMMQcpW7J6g3ko8uKFebAvCUh8XRoh1Y8GwAkiDtNgmhMudQdKEoFtfktafPqaQ"
+    ],
+    "ConfigurationBlockDelta": 100,
+    "ValidatorDepositLockTime": 2,
+    "ValidatorBlacklistTime": 10,
+    "MaxTxCountPerBlock": 1000
+}
