@@ -901,6 +901,7 @@ type GetValidatorStakesApiResponseDto = {
     Stakes : ValidatorStakeInfoDto list
 }
 
+[<CLIMutable>]
 type GetValidatorApiResponseDto = {
     ValidatorAddress : string
     NetworkAddress : string
@@ -909,6 +910,10 @@ type GetValidatorApiResponseDto = {
     IsBlacklisted : bool
     IsEnabled : bool
     IsActive : bool
+}
+
+type GetValidatorsApiDto = {
+    Validators : GetValidatorApiResponseDto list
 }
 
 type GetAccountApiHoldingDto = {
@@ -940,20 +945,6 @@ type GetAccountApiKycProvidersDto = {
 type GetAssetApiKycProvidersDto = {
     AssetHash : string
     KycProviders : string list
-}
-
-[<CLIMutable>]
-type GetValidatorInfoApiDto = {
-    ValidatorAddress : string
-    NetworkAddress : string
-    SharedRewardPercent : decimal
-    IsActive : bool
-    IsDepositLocked : bool
-    IsBlacklisted : bool
-}
-
-type GetValidatorsApiDto = {
-    Validators : GetValidatorInfoApiDto list
 }
 
 [<CLIMutable>]
