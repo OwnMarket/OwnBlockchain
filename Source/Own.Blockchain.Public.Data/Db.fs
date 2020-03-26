@@ -1008,17 +1008,23 @@ module Db =
     let getAllValidators
         dbEngineType
         dbConnectionString
-        : GetValidatorInfoApiDto list
+        : GetValidatorApiResponseDto list
         =
 
         let sql =
             """
-            SELECT validator_address, network_address, shared_reward_percent
+            SELECT
+                validator_address,
+                network_address,
+                shared_reward_percent,
+                time_to_lock_deposit > 0 AS is_deposit_locked,
+                time_to_blacklist > 0 AS is_blacklisted,
+                is_enabled
             FROM validator
             ORDER by validator_address
             """
 
-        DbTools.query<GetValidatorInfoApiDto> dbEngineType dbConnectionString sql []
+        DbTools.query<GetValidatorApiResponseDto> dbEngineType dbConnectionString sql []
 
     let getValidatorState
         dbEngineType

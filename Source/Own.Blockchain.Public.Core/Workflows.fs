@@ -1622,35 +1622,23 @@ module Workflows =
 
     let getValidatorsApi
         (getCurrentValidators : unit -> ValidatorSnapshot list)
-        (getAllValidators : unit -> GetValidatorInfoApiDto list)
+        (getAllValidators : unit -> GetValidatorApiResponseDto list)
         (activeOnly : bool option)
         : Result<GetValidatorsApiDto, AppErrors>
         =
 
         let currentValidators =
             getCurrentValidators ()
-            |> List.map (fun v ->
-                {
-                    ValidatorAddress = v.ValidatorAddress.Value
-                    NetworkAddress = v.NetworkAddress.Value
-                    SharedRewardPercent = v.SharedRewardPercent
-                    IsActive = true
-                }
-            )
+            |> List.map (fun v -> v.ValidatorAddress.Value)
+            |> Set.ofList
 
         let allValidators =
             getAllValidators ()
-            |> List.map (fun v ->
-                let isActive =
-                    currentValidators
-                    |> List.map (fun c -> c.ValidatorAddress)
-                    |> List.contains v.ValidatorAddress
-                {v with IsActive = isActive}
-            )
+            |> List.map (fun v -> { v with IsActive = currentValidators.Contains v.ValidatorAddress })
 
         let validators =
             match activeOnly with
-            | Some isActive when isActive -> currentValidators
+            | Some isActive when isActive -> allValidators |> List.filter (fun v -> v.IsActive)
             | _ -> allValidators
 
         Ok {Validators = validators}
