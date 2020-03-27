@@ -265,6 +265,11 @@ module Processing =
                 | _ -> state
 
         // Helpers for trade order matching
+        member __.GetOpeningPrice (baseAssetHash : AssetHash, quoteAssetHash : AssetHash) =
+            getTradingPairFromStorage (baseAssetHash, quoteAssetHash)
+            |> Option.map (fun p -> p.LastPrice)
+            |? AssetAmount 0m
+
         member __.GetLoadedTradingPairs () =
             tradingPairs.Keys
             |> Seq.toList
@@ -1670,6 +1675,7 @@ module Processing =
     let matchTradeOrders (state : ProcessingState) (baseAssetHash, quoteAssetHash) =
         state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)
         Trading.matchTradeOrders
+            state.GetOpeningPrice
             state.GetTradingPair
             state.SetTradingPair
             state.GetTradeOrdersForTradingPair

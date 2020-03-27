@@ -119,6 +119,7 @@ module Trading =
         (getHolding : AccountHash * AssetHash -> HoldingState)
         (setHolding : AccountHash * AssetHash * HoldingState -> unit)
         (setTradeOrder : TradeOrderHash * TradeOrderState * TradeOrderChange -> unit)
+        (getOpeningPrice : AssetHash * AssetHash -> AssetAmount)
         (getTradingPair : AssetHash * AssetHash -> TradingPairState option)
         (setTradingPair : AssetHash * AssetHash * TradingPairState -> unit)
         ((buyOrderHash, buyOrder : TradeOrderState), (sellOrderHash, sellOrder : TradeOrderState))
@@ -205,7 +206,7 @@ module Trading =
                         buyOrder.QuoteAssetHash,
                         { p with
                             LastPrice = price
-                            PriceChange = price - p.LastPrice
+                            PriceChange = price - getOpeningPrice (buyOrder.BaseAssetHash, buyOrder.QuoteAssetHash)
                         }
                     )
                 | None ->
@@ -268,6 +269,7 @@ module Trading =
         )
 
     let matchTradeOrders
+        (getOpeningPrice : AssetHash * AssetHash -> AssetAmount)
         (getTradingPair : AssetHash * AssetHash -> TradingPairState option)
         (setTradingPair : AssetHash * AssetHash * TradingPairState -> unit)
         (getTradeOrders : AssetHash * AssetHash -> (TradeOrderHash * TradeOrderState) list)
@@ -277,7 +279,8 @@ module Trading =
         (baseAssetHash : AssetHash, quoteAssetHash : AssetHash)
         =
 
-        let processTopOrders = processTopOrders getHolding setHolding setTradeOrder getTradingPair setTradingPair
+        let processTopOrders =
+            processTopOrders getHolding setHolding setTradeOrder getOpeningPrice getTradingPair setTradingPair
         let updateStopOrders = updateStopOrders getTradeOrders setTradeOrder (baseAssetHash, quoteAssetHash)
 
         // Sync included STOP orders upon inclusion in the order book

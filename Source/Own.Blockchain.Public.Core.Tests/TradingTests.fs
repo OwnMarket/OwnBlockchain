@@ -631,9 +631,11 @@ module TradingTests =
                 ]
             ]
 
+        let openingPrice = AssetAmount 4m
+
         // ACT
         let existingOrderHashes, incomingOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders openingPrice
 
         // ASSERT
         test <@ output.TxResults.Count = incomingOrders.Length @>
@@ -677,7 +679,7 @@ module TradingTests =
         test <@ output.Holdings.[accountHash2, quoteAssetHash].Balance.Value = 1390m @>
 
         test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].LastPrice.Value = 5.5m @>
-        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].PriceChange.Value = 0.5m @>
+        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].PriceChange.Value = 1.5m @>
 
     [<Fact>]
     let ``Matching - Last trade price and negative price change stored in trading pair`` () =
@@ -710,9 +712,11 @@ module TradingTests =
                 ]
             ]
 
+        let openingPrice = AssetAmount 5m
+
         // ACT
         let existingOrderHashes, incomingOrderHashes, output =
-            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders (AssetAmount 0m)
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders openingPrice
 
         // ASSERT
         test <@ output.TxResults.Count = incomingOrders.Length @>
@@ -757,6 +761,62 @@ module TradingTests =
 
         test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].LastPrice.Value = 4.5m @>
         test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].PriceChange.Value = -0.5m @>
+
+    [<Theory>]
+    [<InlineData(5, 5, 40, 20, 4, 5, 1)>]
+    [<InlineData(5, 5.5, 10, 20, 4, 5, 1)>]
+    [<InlineData(5, 5.5, 40, 20, 4, 5.5, 1.5)>]
+    [<InlineData(5, 5.5, 60, 20, 4, 5.5, 1.5)>]
+    [<InlineData(5, 4, 10, 20, 4.5, 4, -0.5)>]
+    [<InlineData(5, 4, 40, 20, 4.5, 5, 0.5)>]
+    [<InlineData(5, 4, 60, 20, 4.5, 5, 0.5)>]
+    [<InlineData(5, 4, 60, 20, 5, 5, 0)>]
+    let ``Matching - Price change is calculated relative to the price at the start of the block processing``
+        (sellPrice1, sellPrice2, buyQty1, buyQty2, openingPrice, lastPrice, priceChange)
+        =
+
+        let openingPrice = AssetAmount openingPrice
+
+        // ARRANGE
+        let senderWallet = Signing.generateWallet ()
+        let accountHash1 = Helpers.randomHash () |> AccountHash
+        let accountHash2 = Helpers.randomHash () |> AccountHash
+        let baseAssetHash = Helpers.randomHash () |> AssetHash
+        let quoteAssetHash = Helpers.randomHash () |> AssetHash
+
+        let placeOrder = placeOrder (baseAssetHash.Value, quoteAssetHash.Value)
+
+        let holdings =
+            [
+                accountHash1, baseAssetHash, 1000m, true
+                accountHash2, quoteAssetHash, 2000m, true
+            ]
+
+        let existingOrders = []
+
+        let incomingOrders =
+            [
+                [ // TX1
+                    placeOrder accountHash1.Value ("SELL", 50m, "LIMIT", sellPrice1, 0m, 0m, false, "GTC")
+                    placeOrder accountHash1.Value ("SELL", 50m, "LIMIT", sellPrice2, 0m, 0m, false, "GTC")
+                ]
+                [ // TX2
+                    placeOrder accountHash2.Value ("BUY", buyQty1, "MARKET", 0m, 0m, 0m, false, "IOC")
+                    placeOrder accountHash2.Value ("BUY", buyQty2, "MARKET", 0m, 0m, 0m, false, "IOC")
+                ]
+            ]
+
+        // ACT
+        let _, _, output =
+            matchOrders (BlockNumber 2L) senderWallet holdings existingOrders incomingOrders openingPrice
+
+        // ASSERT
+        test <@ output.TxResults.Count = incomingOrders.Length @>
+        for txResult in output.TxResults |> Map.values do
+            test <@ txResult.Status = Success @>
+
+        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].LastPrice.Value = lastPrice @>
+        test <@ output.TradingPairs.[baseAssetHash, quoteAssetHash].PriceChange.Value = priceChange @>
 
     [<Fact>]
     let ``Matching - Sequential`` () =
