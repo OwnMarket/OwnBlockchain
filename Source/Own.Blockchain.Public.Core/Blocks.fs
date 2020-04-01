@@ -233,6 +233,7 @@ module Blocks =
             baseAssetHash.Value |> decodeHash
             quoteAssetHash.Value |> decodeHash
             state.IsEnabled |> boolToBytes
+            state.MaxTradeOrderDuration |> int16ToBytes
             state.LastPrice.Value |> decimalToBytes
             state.PriceChange.Value |> decimalToBytes
         ]

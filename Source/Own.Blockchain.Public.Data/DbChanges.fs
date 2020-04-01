@@ -290,6 +290,7 @@ module DbChanges =
                         base_asset_id BIGINT NOT NULL,
                         quote_asset_id BIGINT NOT NULL,
                         is_enabled BOOLEAN NOT NULL,
+                        max_trade_order_duration SMALLINT NOT NULL,
                         last_price DECIMAL(18, 7) NOT NULL,
                         price_change DECIMAL(18, 7) NOT NULL,
 
@@ -624,6 +625,7 @@ module DbChanges =
                         base_asset_id BIGINT NOT NULL,
                         quote_asset_id BIGINT NOT NULL,
                         is_enabled BOOLEAN NOT NULL,
+                        max_trade_order_duration SMALLINT NOT NULL,
                         last_price DECIMAL(18, 7) NOT NULL,
                         price_change DECIMAL(18, 7) NOT NULL,
 

@@ -187,6 +187,7 @@ module TradingTests =
         let getTradingPairState _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = lastPrice
                 PriceChange = AssetAmount 0m
             }

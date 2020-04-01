@@ -290,6 +290,7 @@ module BlockTests =
         let state =
             {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 4m
                 PriceChange = AssetAmount 1m
             }
@@ -299,6 +300,7 @@ module BlockTests =
                 "BBB" // BaseAssetHash
                 "CCC" // QuoteAssetHash
                 "A" // IsExecutable
+                ".H" // MaxTradeOrderDuration
                 "...D............" // LastPrice
                 "...A............" // PriceChange
             ]
@@ -676,12 +678,14 @@ module BlockTests =
                 (AssetHash "AAA", AssetHash "BBB"),
                     {
                         TradingPairState.IsEnabled = true
+                        MaxTradeOrderDuration = 8s
                         LastPrice = AssetAmount 2m
                         PriceChange = AssetAmount 0m
                     }
                 (AssetHash "CCC", AssetHash "DDD"),
                     {
                         TradingPairState.IsEnabled = false
+                        MaxTradeOrderDuration = 8s
                         LastPrice = AssetAmount 4m
                         PriceChange = AssetAmount 1m
                     }
@@ -866,8 +870,8 @@ module BlockTests =
                 "CCCCCIII...C.............C.FA." // Validator 3
                 "HHAAAAA...A............" // Stake 1
                 "IIBBBBB...B............" // Stake 2
-                "AAABBBA...B............................" // Trading Pair 1
-                "CCCDDD....D...............A............" // Trading Pair 2
+                "AAABBBA.H...B............................" // Trading Pair 1
+                "CCCDDD..H...D...............A............" // Trading Pair 2
                 // Trade Order 1
                 [
                     "AAA"
@@ -1251,12 +1255,14 @@ module BlockTests =
                 (AssetHash "AAA", AssetHash "BBB"),
                     {
                         TradingPairState.IsEnabled = true
+                        MaxTradeOrderDuration = 8s
                         LastPrice = AssetAmount 4m
                         PriceChange = AssetAmount 1m
                     }
                 (AssetHash "CCC", AssetHash "DDD"),
                     {
                         TradingPairState.IsEnabled = false
+                        MaxTradeOrderDuration = 8s
                         LastPrice = AssetAmount 4m
                         PriceChange = AssetAmount 1m
                     }
@@ -1738,12 +1744,14 @@ module BlockTests =
                 (AssetHash "AAA", AssetHash "BBB"),
                     {
                         TradingPairState.IsEnabled = true
+                        MaxTradeOrderDuration = 8s
                         LastPrice = AssetAmount 4m
                         PriceChange = AssetAmount 1m
                     }
                 (AssetHash "CCC", AssetHash "DDD"),
                     {
                         TradingPairState.IsEnabled = false
+                        MaxTradeOrderDuration = 8s
                         LastPrice = AssetAmount 4m
                         PriceChange = AssetAmount 1m
                     }

@@ -7691,6 +7691,7 @@ module ProcessingTests =
         let getTradingPairState _ =
             {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -7805,6 +7806,7 @@ module ProcessingTests =
         let getTradingPairState _ =
             {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -8079,6 +8081,7 @@ module ProcessingTests =
         let getTradingPairState _ =
             {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -8195,6 +8198,7 @@ module ProcessingTests =
         let getTradingPairStateFromStorage _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -8316,6 +8320,7 @@ module ProcessingTests =
         let getTradingPairStateFromStorage _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -8444,6 +8449,7 @@ module ProcessingTests =
         let getTradingPairStateFromStorage _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -8572,6 +8578,7 @@ module ProcessingTests =
         let getTradingPairStateFromStorage _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -9318,6 +9325,7 @@ module ProcessingTests =
         let getTradingPairStateFromStorage _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -9486,6 +9494,7 @@ module ProcessingTests =
         let getTradingPairStateFromStorage _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }
@@ -9699,6 +9708,7 @@ module ProcessingTests =
         let getTradingPairStateFromStorage _ =
             Some {
                 TradingPairState.IsEnabled = true
+                MaxTradeOrderDuration = 8s
                 LastPrice = AssetAmount 0m
                 PriceChange = AssetAmount 0m
             }

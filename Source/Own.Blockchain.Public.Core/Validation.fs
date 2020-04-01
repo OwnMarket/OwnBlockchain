@@ -280,6 +280,9 @@ module Validation =
         [
             yield! validateHash isValidHash action.BaseAssetHash "BaseAssetHash"
             yield! validateHash isValidHash action.QuoteAssetHash "QuoteAssetHash"
+
+            if action.MaxTradeOrderDuration <= 0s then
+                yield AppError "MaxTradeOrderDuration must be greater than zero"
         ]
 
     let private validatePlaceTradeOrder isValidHash (action : PlaceTradeOrderTxActionDto) =

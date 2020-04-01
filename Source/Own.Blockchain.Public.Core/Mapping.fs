@@ -285,6 +285,7 @@ module Mapping =
                 ConfigureTradingPairTxAction.BaseAssetHash = AssetHash a.BaseAssetHash
                 QuoteAssetHash = AssetHash a.QuoteAssetHash
                 IsEnabled = a.IsEnabled
+                MaxTradeOrderDuration = a.MaxTradeOrderDuration
             }
             |> ConfigureTradingPair
         | :? PlaceTradeOrderTxActionDto as a ->
@@ -757,6 +758,7 @@ module Mapping =
     let tradingPairStateToDto (state : TradingPairState) : TradingPairStateDto =
         {
             TradingPairStateDto.IsEnabled = state.IsEnabled
+            MaxTradeOrderDuration = state.MaxTradeOrderDuration
             LastPrice = state.LastPrice.Value
             PriceChange = state.PriceChange.Value
         }
@@ -764,6 +766,7 @@ module Mapping =
     let tradingPairStateFromDto (dto : TradingPairStateDto) : TradingPairState =
         {
             TradingPairState.IsEnabled = dto.IsEnabled
+            MaxTradeOrderDuration = dto.MaxTradeOrderDuration
             LastPrice = AssetAmount dto.LastPrice
             PriceChange = AssetAmount dto.PriceChange
         }

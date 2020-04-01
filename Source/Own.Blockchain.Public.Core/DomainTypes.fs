@@ -78,6 +78,7 @@ type TradingPairInfo = {
     BaseAssetHash : AssetHash
     QuoteAssetHash : AssetHash
     IsEnabled : bool
+    MaxTradeOrderDuration : int16
     LastPrice : AssetAmount
     PriceChange : AssetAmount
 }
@@ -251,6 +252,7 @@ type ConfigureTradingPairTxAction = {
     BaseAssetHash : AssetHash
     QuoteAssetHash : AssetHash
     IsEnabled : bool
+    MaxTradeOrderDuration : int16
 }
 
 type PlaceTradeOrderTxAction = {
@@ -535,6 +537,7 @@ type StakerInfo = {
 
 type TradingPairState = {
     IsEnabled : bool
+    MaxTradeOrderDuration : int16
     LastPrice : AssetAmount
     PriceChange : AssetAmount
 }

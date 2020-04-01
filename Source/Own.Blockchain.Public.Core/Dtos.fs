@@ -122,6 +122,7 @@ type ConfigureTradingPairTxActionDto = {
     BaseAssetHash : string
     QuoteAssetHash : string
     IsEnabled : bool
+    MaxTradeOrderDuration : int16 // Hours
 }
 
 [<CLIMutable>]
@@ -452,6 +453,7 @@ type StakeStateDto = {
 [<CLIMutable>]
 type TradingPairStateDto = {
     IsEnabled : bool
+    MaxTradeOrderDuration : int16
     LastPrice : decimal
     PriceChange : decimal
 }
@@ -608,6 +610,7 @@ type TradingPairInfoDto = {
     BaseAssetHash : string
     QuoteAssetHash : string
     IsEnabled : bool
+    MaxTradeOrderDuration : int16
     LastPrice : decimal
     PriceChange : decimal
 }
@@ -954,6 +957,7 @@ type TradingPairApiDto = {
     QuoteAssetHash : string
     QuoteAssetCode : string
     IsEnabled : bool
+    MaxTradeOrderDuration : int16
     LastPrice : decimal
     PriceChange : decimal
 } with

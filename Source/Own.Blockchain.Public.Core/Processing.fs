@@ -1092,6 +1092,7 @@ module Processing =
                         action.QuoteAssetHash,
                         {
                             IsEnabled = action.IsEnabled
+                            MaxTradeOrderDuration = action.MaxTradeOrderDuration
                             LastPrice = AssetAmount 0m
                             PriceChange = AssetAmount 0m
                         }
@@ -1102,6 +1103,7 @@ module Processing =
                         action.QuoteAssetHash,
                         { tradingPairState with
                             IsEnabled = action.IsEnabled
+                            MaxTradeOrderDuration = action.MaxTradeOrderDuration
                         }
                     )
                 Ok state
@@ -1192,7 +1194,7 @@ module Processing =
                                     TimeInForce = action.TimeInForce
                                     ExpirationTimestamp =
                                         (DateTimeOffset.FromUnixTimeMilliseconds blockTimestamp.Value)
-                                            .AddDays(30.) // TODO DSX: Use pair.MaxTradeOrderDuration
+                                            .AddHours(float pair.MaxTradeOrderDuration)
                                             .ToUnixTimeMilliseconds()
                                         |> Timestamp
                                     IsExecutable =

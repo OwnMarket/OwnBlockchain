@@ -670,6 +670,7 @@ module Db =
                 qa.asset_hash AS quote_asset_hash,
                 qa.asset_code AS quote_asset_code,
                 is_enabled,
+                max_trade_order_duration,
                 last_price,
                 price_change
             FROM trading_pair
@@ -694,6 +695,7 @@ module Db =
                 qa.asset_hash AS quote_asset_hash,
                 qa.asset_code AS quote_asset_code,
                 is_enabled,
+                max_trade_order_duration,
                 last_price,
                 price_change
             FROM trading_pair
@@ -734,6 +736,7 @@ module Db =
             """
             SELECT
                 is_enabled,
+                max_trade_order_duration,
                 last_price,
                 price_change
             FROM trading_pair
@@ -2775,6 +2778,7 @@ module Db =
                 base_asset_id,
                 quote_asset_id,
                 is_enabled,
+                max_trade_order_duration,
                 last_price,
                 price_change
             )
@@ -2782,6 +2786,7 @@ module Db =
                 (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash),
                 (SELECT asset_id FROM asset WHERE asset_hash = @quoteAssetHash),
                 @isEnabled,
+                @maxTradeOrderDuration,
                 @lastPrice,
                 @priceChange
             )
@@ -2792,6 +2797,7 @@ module Db =
                 "@baseAssetHash", tradingPairInfo.BaseAssetHash |> box
                 "@quoteAssetHash", tradingPairInfo.QuoteAssetHash |> box
                 "@isEnabled", tradingPairInfo.IsEnabled |> box
+                "@maxTradeOrderDuration", tradingPairInfo.MaxTradeOrderDuration |> box
                 "@lastPrice", tradingPairInfo.LastPrice |> box
                 "@priceChange", tradingPairInfo.PriceChange |> box
             ]
@@ -2816,6 +2822,7 @@ module Db =
             """
             UPDATE trading_pair
             SET is_enabled = @isEnabled,
+                max_trade_order_duration = @maxTradeOrderDuration,
                 last_price = @lastPrice,
                 price_change = @priceChange
             WHERE base_asset_id = (SELECT asset_id FROM asset WHERE asset_hash = @baseAssetHash)
@@ -2827,6 +2834,7 @@ module Db =
                 "@baseAssetHash", tradingPairInfo.BaseAssetHash |> box
                 "@quoteAssetHash", tradingPairInfo.QuoteAssetHash |> box
                 "@isEnabled", tradingPairInfo.IsEnabled |> box
+                "@maxTradeOrderDuration", tradingPairInfo.MaxTradeOrderDuration |> box
                 "@lastPrice", tradingPairInfo.LastPrice |> box
                 "@priceChange", tradingPairInfo.PriceChange |> box
             ]
@@ -2855,6 +2863,7 @@ module Db =
                     TradingPairInfoDto.BaseAssetHash = baseAssetHash
                     QuoteAssetHash = quoteAssetHash
                     IsEnabled = state.IsEnabled
+                    MaxTradeOrderDuration = state.MaxTradeOrderDuration
                     LastPrice = state.LastPrice
                     PriceChange = state.PriceChange
                 }
