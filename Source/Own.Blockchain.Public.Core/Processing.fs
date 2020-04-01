@@ -1131,9 +1131,9 @@ module Processing =
             match state.GetTradingPair(action.BaseAssetHash, action.QuoteAssetHash) with
             | None ->
                 Error TxErrorCode.TradingPairNotFound
+            | Some pair when not pair.IsEnabled ->
+                Error TxErrorCode.TradingPairDisabled
             | Some pair ->
-                // TODO DSX: Check trading pair conditions
-
                 // Check eligibility
                 let isEligible =
                     let assetHash =

@@ -131,7 +131,6 @@ module Trading =
         let price =
             match buyOrder.ExecOrderType, sellOrder.ExecOrderType with
             | ExecTradeOrderType.Market, ExecTradeOrderType.Market ->
-                // TODO DSX: Use the last trade price?
                 failwithf "Matching two MARKET orders not supported: %A" [buyOrder; sellOrder]
             | ExecTradeOrderType.Market, ExecTradeOrderType.Limit ->
                 sellOrder.LimitPrice

@@ -437,6 +437,7 @@ type TxErrorCode =
     | TradeOrderNotFound = 750s
     | InsufficientBaseAssetBalance = 760s
     | InsufficientQuoteAssetBalance = 770s
+    | TradingPairDisabled = 780s
 
     // Validators
     | ValidatorNotFound = 910s
