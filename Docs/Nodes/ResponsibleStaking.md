@@ -1,4 +1,4 @@
-# Stake Wisely
+# Responsible Staking
 
 This article explains the importance of carefully choosing validators to delegate stake to, as well as monitoring if they are actively proposing blocks, to avoid having fake validators and thereby jeopardizing the whole network.
 
