@@ -563,6 +563,10 @@ module Mapping =
             TimeToLockDeposit = dto.TimeToLockDeposit
             TimeToBlacklist = dto.TimeToBlacklist
             IsEnabled = dto.IsEnabled
+            LastProposedBlockNumber =
+                dto.LastProposedBlockNumber |> Option.ofNullable |> Option.map BlockNumber
+            LastProposedBlockTimestamp =
+                dto.LastProposedBlockTimestamp |> Option.ofNullable |> Option.map Timestamp
         }
 
     let validatorStateToDto (state : ValidatorState) : ValidatorStateDto =
@@ -572,6 +576,10 @@ module Mapping =
             TimeToLockDeposit = state.TimeToLockDeposit
             TimeToBlacklist = state.TimeToBlacklist
             IsEnabled = state.IsEnabled
+            LastProposedBlockNumber =
+                state.LastProposedBlockNumber |> Option.map (fun n -> n.Value) |> Option.toNullable
+            LastProposedBlockTimestamp =
+                state.LastProposedBlockTimestamp |> Option.map (fun t -> t.Value) |> Option.toNullable
         }
 
     let validatorChangeToCode (change : ValidatorChange) =

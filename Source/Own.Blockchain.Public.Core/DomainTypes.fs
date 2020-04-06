@@ -393,6 +393,8 @@ type ValidatorState = {
     TimeToLockDeposit : int16
     TimeToBlacklist : int16
     IsEnabled : bool
+    LastProposedBlockNumber : BlockNumber option
+    LastProposedBlockTimestamp : Timestamp option
 }
 
 type ValidatorChange =

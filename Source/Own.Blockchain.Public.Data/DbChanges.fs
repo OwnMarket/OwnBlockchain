@@ -264,6 +264,14 @@ module DbChanges =
                     ALTER TABLE tx ALTER is_fetched DROP DEFAULT;
                     """
             }
+            {
+                Number = 9
+                Script =
+                    """
+                    ALTER TABLE validator ADD last_proposed_block_number BIGINT;
+                    ALTER TABLE validator ADD last_proposed_block_timestamp BIGINT;
+                    """
+            }
         ]
 
     let internal postgresChanges : DbChange list =
@@ -522,6 +530,14 @@ module DbChanges =
                     """
                     ALTER TABLE tx ADD is_fetched BOOLEAN DEFAULT FALSE NOT NULL;
                     ALTER TABLE tx ALTER is_fetched DROP DEFAULT;
+                    """
+            }
+            {
+                Number = 9
+                Script =
+                    """
+                    ALTER TABLE validator ADD last_proposed_block_number BIGINT;
+                    ALTER TABLE validator ADD last_proposed_block_timestamp BIGINT;
                     """
             }
         ]

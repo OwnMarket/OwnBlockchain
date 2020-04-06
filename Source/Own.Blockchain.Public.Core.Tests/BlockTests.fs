@@ -229,6 +229,8 @@ module BlockTests =
                 TimeToLockDeposit = 3s
                 TimeToBlacklist = 5s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
 
         // ACT
@@ -517,6 +519,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 4s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -528,6 +532,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 5s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -539,6 +545,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 6s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -938,6 +946,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 4s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -949,6 +959,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 5s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -960,6 +972,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 6s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -1307,6 +1321,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 4s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -1318,6 +1334,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 5s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -1329,6 +1347,8 @@ module BlockTests =
                         TimeToLockDeposit = 3s
                         TimeToBlacklist = 6s
                         IsEnabled = true
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )

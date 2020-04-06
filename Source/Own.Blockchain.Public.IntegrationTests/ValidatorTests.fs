@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.IntegrationTests
 
+open System
 open Xunit
 open Swensen.Unquote
 open Own.Blockchain.Public.Core.DomainTypes
@@ -40,6 +41,8 @@ module ValidatorTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
                 IsEnabled = true
+                LastProposedBlockNumber = Nullable()
+                LastProposedBlockTimestamp = Nullable()
             }
             |> Helpers.addValidator
 
@@ -96,6 +99,8 @@ module ValidatorTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = timeToBlacklist
                 IsEnabled = true
+                LastProposedBlockNumber = Nullable()
+                LastProposedBlockTimestamp = Nullable()
             }
             |> Helpers.addValidator
 
