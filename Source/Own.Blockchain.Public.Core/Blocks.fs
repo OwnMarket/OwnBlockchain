@@ -164,8 +164,21 @@ module Blocks =
     let createValidatorStateHash
         decodeHash
         createHash
+        blockNumber
         (BlockchainAddress validatorAddress, (state : ValidatorState, change : ValidatorChange))
         =
+
+        let lastProposedBlockNumberBytes =
+            if blockNumber >= Forks.DormantValidators.BlockNumber then
+                state.LastProposedBlockNumber |> Option.map (fun n -> n.Value |> int64ToBytes) |? Array.empty
+            else
+                Array.empty
+
+        let lastProposedBlockTimestampBytes =
+            if blockNumber >= Forks.DormantValidators.BlockNumber then
+                state.LastProposedBlockTimestamp |> Option.map (fun n -> n.Value |> int64ToBytes) |? Array.empty
+            else
+                Array.empty
 
         let validatorChangeCodeBytes = [| change |> Mapping.validatorChangeToCode |> byte |]
 
@@ -176,6 +189,8 @@ module Blocks =
             state.TimeToLockDeposit |> int16ToBytes
             state.TimeToBlacklist |> int16ToBytes
             state.IsEnabled |> boolToBytes
+            lastProposedBlockNumberBytes
+            lastProposedBlockTimestampBytes
             validatorChangeCodeBytes
         ]
         |> Array.concat
@@ -470,7 +485,7 @@ module Blocks =
             output.Validators
             |> Map.toList
             |> List.sort // Ensure a predictable order
-            |> List.map (createValidatorStateHash decodeHash createHash)
+            |> List.map (createValidatorStateHash decodeHash createHash blockNumber)
 
         let stakeHashes =
             output.Stakes

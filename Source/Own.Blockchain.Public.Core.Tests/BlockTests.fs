@@ -219,8 +219,14 @@ module BlockTests =
         // ASSERT
         test <@ stateHash = "AAAHHHCCA" @>
 
-    [<Fact>]
-    let ``Blocks.createValidatorStateHash`` () =
+    [<Theory>]
+    [<InlineData(0, "AAAHHH...D.............C.EA.")>]
+    [<InlineData(4, "AAAHHH...D.............C.EA.")>]
+    [<InlineData(6, "AAAHHH...D.............C.EA.......F.......G.")>]
+    [<InlineData(9, "AAAHHH...D.............C.EA.......F.......G.")>]
+    let ``Blocks.createValidatorStateHash`` (blockNumber, expectedHash) =
+        let blockNumber = BlockNumber blockNumber
+
         let validatorAddress = BlockchainAddress "AAA"
         let state =
             {
@@ -229,19 +235,22 @@ module BlockTests =
                 TimeToLockDeposit = 3s
                 TimeToBlacklist = 5s
                 IsEnabled = true
-                LastProposedBlockNumber = None
-                LastProposedBlockTimestamp = None
+                LastProposedBlockNumber = Some (BlockNumber 6L)
+                LastProposedBlockTimestamp = Some (Timestamp 7L)
             }
+
+        Forks.Init Helpers.networkCode
 
         // ACT
         let stateHash =
             Blocks.createValidatorStateHash
                 DummyHash.decode
                 DummyHash.create
+                blockNumber
                 (validatorAddress, (state, ValidatorChange.Add))
 
         // ASSERT
-        test <@ stateHash = "AAAHHH...D.............C.EA." @>
+        test <@ stateHash = expectedHash @>
 
     [<Fact>]
     let ``Blocks.createValidatorSnapshotHash`` () =
@@ -437,6 +446,8 @@ module BlockTests =
 
     [<Fact>]
     let ``Blocks.assembleBlock`` () =
+        Forks.Init Helpers.networkCode
+
         let blockNumber = BlockNumber 1L
         let previousBlockHash = BlockHash "B"
         let configurationBlockNumber = BlockNumber 0L
@@ -1014,6 +1025,8 @@ module BlockTests =
 
     [<Fact>]
     let ``Blocks.assembleBlock and verify merkle proofs`` () =
+        Forks.Init Helpers.networkCode
+
         let wallet1 = Signing.generateWallet ()
         let wallet2 = Signing.generateWallet ()
         let proposerWallet = Signing.generateWallet ()
@@ -1471,7 +1484,7 @@ module BlockTests =
 
                 validators
                 |> Map.toList
-                |> List.map (Blocks.createValidatorStateHash Hashing.decode Hashing.hash)
+                |> List.map (Blocks.createValidatorStateHash Hashing.decode Hashing.hash blockNumber)
 
                 stakes
                 |> Map.toList
@@ -1497,6 +1510,8 @@ module BlockTests =
     [<InlineData("RIGHT_PREVIOUS_BLOCK_HASH", true)>]
     [<InlineData("WRONG_PREVIOUS_BLOCK_HASH", false)>]
     let ``Blocks.isValidSuccessorBlock`` (previousBlockHashInTestedBlock, expectedSuccess) =
+        Forks.Init Helpers.networkCode
+
         let wallet1 = Signing.generateWallet ()
         let wallet2 = Signing.generateWallet ()
         let proposerWallet = Signing.generateWallet ()
