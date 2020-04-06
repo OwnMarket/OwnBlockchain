@@ -9,6 +9,7 @@
         <Compile Include="DomainTypes.fs" />
         <Compile Include="Dtos.fs" />
         <Compile Include="Events.fs" />
+        <Compile Include="Forks.fs" />
         <Compile Include="Mapping.fs" />
         <Compile Include="Validation.fs" />
         <Compile Include="Serialization.fs" />
