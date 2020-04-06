@@ -1,6 +1,5 @@
 namespace Own.Blockchain.Public.Node
 
-open System.Reflection
 open Own.Blockchain.Public.Core.DomainTypes
 
 module Cli =
@@ -14,6 +13,7 @@ module Cli =
         |> printfn "%s"
 
     let handleStartNodeCommand () =
+        Composition.initForks ()
         Composition.initDb ()
         Composition.initBlockchainState ()
         Composition.rebuildBlockchainState ()
