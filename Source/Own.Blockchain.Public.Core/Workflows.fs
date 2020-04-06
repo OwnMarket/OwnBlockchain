@@ -90,8 +90,8 @@ module Workflows =
                             TimeToLockDeposit = validatorDepositLockTime
                             TimeToBlacklist = 0s
                             IsEnabled = true
-                            LastProposedBlockNumber = Some (BlockNumber 0L)
-                            LastProposedBlockTimestamp = Some (Timestamp 0L)
+                            LastProposedBlockNumber = None
+                            LastProposedBlockTimestamp = None
                         },
                         ValidatorChange.Add
                     )

@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.IntegrationTests
 
+open System
 open System.IO
 open System.Data
 open Own.Blockchain.Public.Core.Dtos
@@ -7,6 +8,12 @@ open Own.Blockchain.Public.Data
 open Own.Blockchain.Public.Node
 
 module Helpers =
+
+    let private boxNullable (v : Nullable<_>) =
+        if v.HasValue then
+            v.Value |> box
+        else
+            DBNull.Value |> box
 
     let dbExecute =
         DbTools.execute Config.DbEngineType Config.DbConnectionString
@@ -73,7 +80,9 @@ module Helpers =
                 shared_reward_percent,
                 time_to_lock_deposit,
                 time_to_blacklist,
-                is_enabled
+                is_enabled,
+                last_proposed_block_number,
+                last_proposed_block_timestamp
             )
             VALUES (
                 @validatorAddress,
@@ -81,7 +90,9 @@ module Helpers =
                 @sharedRewardPercent,
                 @timeToLockDeposit,
                 @timeToBlacklist,
-                @isEnabled
+                @isEnabled,
+                @lastProposedBlockNumber,
+                @lastProposedBlockTimestamp
             )
             """
 
@@ -92,6 +103,8 @@ module Helpers =
             "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
             "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
             "@isEnabled", validatorInfo.IsEnabled |> box
+            "@lastProposedBlockNumber", validatorInfo.LastProposedBlockNumber |> boxNullable
+            "@lastProposedBlockTimestamp", validatorInfo.LastProposedBlockTimestamp |> boxNullable
         ]
         |> dbExecute sql
         |> ignore
