@@ -2561,8 +2561,8 @@ module Db =
                 "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
                 "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
                 "@isEnabled", validatorInfo.IsEnabled |> box
-                "@lastProposedBlockNumber", validatorInfo.LastProposedBlockNumber |> box
-                "@lastProposedBlockTimestamp", validatorInfo.LastProposedBlockTimestamp |> box
+                "@lastProposedBlockNumber", validatorInfo.LastProposedBlockNumber |> boxNullable
+                "@lastProposedBlockTimestamp", validatorInfo.LastProposedBlockTimestamp |> boxNullable
             ]
 
         try
@@ -2633,8 +2633,8 @@ module Db =
                 "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
                 "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
                 "@isEnabled", validatorInfo.IsEnabled |> box
-                "@lastProposedBlockNumber", validatorInfo.LastProposedBlockNumber |> box
-                "@lastProposedBlockTimestamp", validatorInfo.LastProposedBlockTimestamp |> box
+                "@lastProposedBlockNumber", validatorInfo.LastProposedBlockNumber |> boxNullable
+                "@lastProposedBlockTimestamp", validatorInfo.LastProposedBlockTimestamp |> boxNullable
             ]
 
         try
