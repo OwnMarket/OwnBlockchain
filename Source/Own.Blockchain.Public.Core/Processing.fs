@@ -807,6 +807,8 @@ module Processing =
                         TimeToLockDeposit = 0s
                         TimeToBlacklist = 0s
                         IsEnabled = action.IsEnabled
+                        LastProposedBlockNumber = None
+                        LastProposedBlockTimestamp = None
                     },
                     ValidatorChange.Add
                 )
@@ -1678,6 +1680,19 @@ module Processing =
                 | None -> failwithf "Cannot get validator state for %s" v.ValidatorAddress.Value
         )
 
+    let setLastProposedBlock validatorAddress blockNumber blockTimestamp (state : ProcessingState) =
+        match state.GetValidator validatorAddress with
+        | Some s ->
+            state.SetValidator(
+                validatorAddress,
+                {s with
+                    LastProposedBlockNumber = Some blockNumber
+                    LastProposedBlockTimestamp = Some blockTimestamp
+                },
+                ValidatorChange.Update
+            )
+        | None -> failwithf "Cannot get validator state for %s" validatorAddress.Value
+
     let matchTradeOrders (state : ProcessingState) (baseAssetHash, quoteAssetHash) =
         state.LoadTradeOrdersForTradingPair (baseAssetHash, quoteAssetHash)
         Trading.matchTradeOrders
@@ -1847,4 +1862,6 @@ module Processing =
             updateValidatorCounters getLockedAndBlacklistedValidators state
             lockValidatorDeposits validatorDepositLockTime blockchainConfiguration state
 
-        state.ToProcessingOutput ()
+        setLastProposedBlock validatorAddress blockNumber blockTimestamp state
+
+        state.ToProcessingOutput()

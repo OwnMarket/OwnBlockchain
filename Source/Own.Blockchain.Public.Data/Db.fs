@@ -1520,7 +1520,9 @@ module Db =
                 shared_reward_percent,
                 (time_to_lock_deposit > 0 OR time_to_blacklist > 0) AS is_deposit_locked,
                 (time_to_blacklist > 0) AS is_blacklisted,
-                is_enabled
+                is_enabled,
+                last_proposed_block_number,
+                last_proposed_block_timestamp
             FROM validator
             ORDER by validator_address
             """
@@ -1536,7 +1538,14 @@ module Db =
 
         let sql =
             """
-            SELECT network_address, shared_reward_percent, time_to_lock_deposit, time_to_blacklist, is_enabled
+            SELECT
+                network_address,
+                shared_reward_percent,
+                time_to_lock_deposit,
+                time_to_blacklist,
+                is_enabled,
+                last_proposed_block_number,
+                last_proposed_block_timestamp
             FROM validator
             WHERE validator_address = @validatorAddress
             """
@@ -2528,7 +2537,9 @@ module Db =
                 shared_reward_percent,
                 time_to_lock_deposit,
                 time_to_blacklist,
-                is_enabled
+                is_enabled,
+                last_proposed_block_number,
+                last_proposed_block_timestamp
             )
             VALUES (
                 @validatorAddress,
@@ -2536,7 +2547,9 @@ module Db =
                 @sharedRewardPercent,
                 @timeToLockDeposit,
                 @timeToBlacklist,
-                @isEnabled
+                @isEnabled,
+                @lastProposedBlockNumber,
+                @lastProposedBlockTimestamp
             )
             """
 
@@ -2548,6 +2561,8 @@ module Db =
                 "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
                 "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
                 "@isEnabled", validatorInfo.IsEnabled |> box
+                "@lastProposedBlockNumber", validatorInfo.LastProposedBlockNumber |> box
+                "@lastProposedBlockTimestamp", validatorInfo.LastProposedBlockTimestamp |> box
             ]
 
         try
@@ -2604,7 +2619,9 @@ module Db =
                 shared_reward_percent = @sharedRewardPercent,
                 time_to_lock_deposit = @timeToLockDeposit,
                 time_to_blacklist = @timeToBlacklist,
-                is_enabled = @isEnabled
+                is_enabled = @isEnabled,
+                last_proposed_block_number = @lastProposedBlockNumber,
+                last_proposed_block_timestamp = @lastProposedBlockTimestamp
             WHERE validator_address = @validatorAddress
             """
 
@@ -2616,6 +2633,8 @@ module Db =
                 "@timeToLockDeposit", validatorInfo.TimeToLockDeposit |> box
                 "@timeToBlacklist", validatorInfo.TimeToBlacklist |> box
                 "@isEnabled", validatorInfo.IsEnabled |> box
+                "@lastProposedBlockNumber", validatorInfo.LastProposedBlockNumber |> box
+                "@lastProposedBlockTimestamp", validatorInfo.LastProposedBlockTimestamp |> box
             ]
 
         try
@@ -2646,6 +2665,8 @@ module Db =
                         TimeToLockDeposit = state.TimeToLockDeposit
                         TimeToBlacklist = state.TimeToBlacklist
                         IsEnabled = state.IsEnabled
+                        LastProposedBlockNumber = state.LastProposedBlockNumber
+                        LastProposedBlockTimestamp = state.LastProposedBlockTimestamp
                     }
                 match change with
                 | ValidatorChangeCode.Add ->

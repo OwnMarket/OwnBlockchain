@@ -90,6 +90,8 @@ module Workflows =
                             TimeToLockDeposit = validatorDepositLockTime
                             TimeToBlacklist = 0s
                             IsEnabled = true
+                            LastProposedBlockNumber = Some (BlockNumber 0L)
+                            LastProposedBlockTimestamp = Some (Timestamp 0L)
                         },
                         ValidatorChange.Add
                     )
@@ -1764,6 +1766,8 @@ module Workflows =
                 IsBlacklisted = state.TimeToBlacklist > 0s
                 IsEnabled = state.IsEnabled
                 IsActive = getCurrentValidators () |> List.exists (fun v -> v.ValidatorAddress = address)
+                LastProposedBlockNumber = state.LastProposedBlockNumber
+                LastProposedBlockTimestamp = state.LastProposedBlockTimestamp
             }
             |> Ok
 

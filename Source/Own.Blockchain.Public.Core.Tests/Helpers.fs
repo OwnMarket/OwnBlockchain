@@ -49,6 +49,21 @@ module Helpers =
         | PlaceTradeOrder action -> box action :?> 'T
         | CancelTradeOrder action -> box action :?> 'T
 
+    let getValidatorState expectedAddress validatorAddress =
+        if validatorAddress = expectedAddress then
+            {
+                ValidatorState.NetworkAddress = NetworkAddress ""
+                SharedRewardPercent = 0m
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 0s
+                IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
+            }
+            |> Some
+        else
+            None
+
     let newPendingTxInfo
         (txHash : TxHash)
         (senderAddress : BlockchainAddress)
@@ -157,7 +172,7 @@ module Helpers =
             GetAccountStateFromStorage : AccountHash -> AccountState option
             GetAssetStateFromStorage : AssetHash -> AssetState option
             GetAssetHashByCodeFromStorage : AssetCode -> AssetHash option
-            GetValidatorStateFromStorage : BlockchainAddress -> ValidatorState option
+            GetValidatorStateFromStorage : (BlockchainAddress -> ValidatorState option) option
             GetStakeStateFromStorage : BlockchainAddress * BlockchainAddress -> StakeState option
             GetStakersFromStorage : BlockchainAddress -> BlockchainAddress list
             GetTotalChxStakedFromStorage : BlockchainAddress -> ChxAmount
@@ -205,7 +220,7 @@ module Helpers =
             GetAccountStateFromStorage = fun _ -> unexpectedInvocation "GetAccountStateFromStorage"
             GetAssetStateFromStorage = fun _ -> unexpectedInvocation "GetAssetStateFromStorage"
             GetAssetHashByCodeFromStorage = fun _ -> unexpectedInvocation "GetAssetHashByCodeFromStorage"
-            GetValidatorStateFromStorage = fun _ -> None
+            GetValidatorStateFromStorage = None
             GetStakeStateFromStorage = fun _ -> unexpectedInvocation "GetStakeStateFromStorage"
             GetStakersFromStorage = fun _ -> unexpectedInvocation "GetStakersFromStorage"
             GetTotalChxStakedFromStorage = fun _ -> ChxAmount 0m
@@ -251,7 +266,7 @@ module Helpers =
             mockedDeps.GetAccountStateFromStorage
             mockedDeps.GetAssetStateFromStorage
             mockedDeps.GetAssetHashByCodeFromStorage
-            mockedDeps.GetValidatorStateFromStorage
+            (mockedDeps.GetValidatorStateFromStorage |? getValidatorState mockedDeps.ValidatorAddress)
             mockedDeps.GetStakeStateFromStorage
             mockedDeps.GetStakersFromStorage
             mockedDeps.GetTotalChxStakedFromStorage

@@ -437,6 +437,8 @@ type ValidatorStateDto = {
     TimeToLockDeposit : int16
     TimeToBlacklist : int16
     IsEnabled : bool
+    LastProposedBlockNumber : Nullable<int64>
+    LastProposedBlockTimestamp : Nullable<int64>
 }
 
 [<RequireQualifiedAccess>]
@@ -564,6 +566,8 @@ type ValidatorInfoDto = {
     TimeToLockDeposit : int16
     TimeToBlacklist : int16
     IsEnabled : bool
+    LastProposedBlockNumber : Nullable<int64>
+    LastProposedBlockTimestamp : Nullable<int64>
 }
 
 [<CLIMutable>]
@@ -913,6 +917,8 @@ type GetValidatorApiResponseDto = {
     IsBlacklisted : bool
     IsEnabled : bool
     IsActive : bool
+    LastProposedBlockNumber : Nullable<int64>
+    LastProposedBlockTimestamp : Nullable<int64>
 }
 
 type GetValidatorsApiDto = {

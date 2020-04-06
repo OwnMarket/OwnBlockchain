@@ -243,7 +243,7 @@ module ProcessingTests =
             [
                 senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
                 recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
-                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = Helpers.validatorDeposit + 100m}
                 staker1Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
                 staker2Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
                 staker3Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
@@ -345,7 +345,7 @@ module ProcessingTests =
             [
                 senderWallet.Address, {ChxAddressState.Nonce = Nonce 10L; Balance = ChxAmount 100m}
                 recipientWallet.Address, {ChxAddressState.Nonce = Nonce 20L; Balance = ChxAmount 100m}
-                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+                validatorWallet.Address, {ChxAddressState.Nonce = Nonce 30L; Balance = Helpers.validatorDeposit + 100m}
                 staker1Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
                 staker2Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
                 staker3Wallet.Address, {ChxAddressState.Nonce = Nonce 0L; Balance = ChxAmount 1000m}
@@ -6651,6 +6651,8 @@ module ProcessingTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
 
         // ACT
@@ -6658,7 +6660,7 @@ module ProcessingTests =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
             }
@@ -6799,6 +6801,8 @@ module ProcessingTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
             |> Some
 
@@ -6822,7 +6826,7 @@ module ProcessingTests =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
                 ValidatorAddress = validatorWallet.Address
@@ -6971,6 +6975,8 @@ module ProcessingTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 2s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
             |> Some
 
@@ -6994,7 +7000,7 @@ module ProcessingTests =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
                 ValidatorAddress = validatorWallet.Address
@@ -7060,6 +7066,8 @@ module ProcessingTests =
                 TimeToLockDeposit = 2s
                 TimeToBlacklist = 0s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
             |> Some
 
@@ -7083,7 +7091,7 @@ module ProcessingTests =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
                 ValidatorAddress = validatorWallet.Address
@@ -7147,6 +7155,8 @@ module ProcessingTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
 
         let blockchainConfiguration =
@@ -7171,7 +7181,7 @@ module ProcessingTests =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
                 BlockchainConfiguration = blockchainConfiguration
@@ -7248,6 +7258,8 @@ module ProcessingTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
             |> Some
 
@@ -7271,7 +7283,7 @@ module ProcessingTests =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 GetStakeStateFromStorage = getStakeState
                 GetStakersFromStorage = getStakers
                 ValidatorAddress = validatorWallet.Address
