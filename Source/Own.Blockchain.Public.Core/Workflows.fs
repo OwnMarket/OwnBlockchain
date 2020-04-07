@@ -596,6 +596,8 @@ module Workflows =
                 then
                     None // Nothing to propose.
                 else
+                    let validatorAddress = addressFromPrivateKey validatorPrivateKey
+
                     let newConfiguration =
                         if configBlockNumber + currentConfiguration.ConfigurationBlockDelta = blockNumber then
                             let newConfiguration : BlockchainConfiguration =
@@ -607,6 +609,7 @@ module Workflows =
                                     (currentConfiguration.Validators |> List.map (fun v -> v.ValidatorAddress))
                                     blockNumber
                                     timestamp
+                                    validatorAddress
 
                             if newConfiguration.Validators.Length < minValidatorCount then
                                 String.Format(
@@ -623,8 +626,6 @@ module Workflows =
                             |> Some
                         else
                             None
-
-                    let validatorAddress = addressFromPrivateKey validatorPrivateKey
 
                     let block, _ =
                         createBlock
@@ -884,6 +885,7 @@ module Workflows =
                             (currentConfiguration.Validators |> List.map (fun v -> v.ValidatorAddress))
                             block.Header.Number
                             block.Header.Timestamp
+                            block.Header.ProposerAddress
 
                     let expectedConfiguration =
                         if newConfiguration.Validators.Length < minValidatorCount then
