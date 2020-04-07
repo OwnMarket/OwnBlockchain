@@ -25,9 +25,10 @@ module Validators =
         maxValidatorCount
         validatorThreshold
         validatorDeposit
+        validatorsToSkip
         =
 
-        getTopValidatorsByStake maxValidatorCount validatorThreshold validatorDeposit
+        getTopValidatorsByStake maxValidatorCount validatorThreshold validatorDeposit validatorsToSkip
         |> List.map Mapping.validatorSnapshotFromDto
 
     let getValidatorsAtHeight getBlock blockNumber =
