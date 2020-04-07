@@ -63,6 +63,7 @@ module ValidatorTests =
                 Config.MaxValidatorCount
                 (ChxAmount Config.ValidatorThreshold)
                 (ChxAmount Config.ValidatorDeposit)
+                []
 
         // ASSERT
         test <@ topValidators.Length = 1 @>
@@ -121,6 +122,68 @@ module ValidatorTests =
                 Config.MaxValidatorCount
                 (ChxAmount Config.ValidatorThreshold)
                 (ChxAmount Config.ValidatorDeposit)
+                []
+
+        // ASSERT
+        test <@ topValidators.Length = 1 @>
+        test <@ topValidators.[0].ValidatorAddress = validator2Wallet.Address.Value @>
+
+    [<Fact>]
+    let ``Validator not included in the config if on the skip list`` () =
+        // ARRANGE
+        Helpers.resetTestData ()
+
+        let validator1Wallet = Signing.generateWallet ()
+        let validator2Wallet = Signing.generateWallet ()
+        let stakerWallet = Signing.generateWallet ()
+
+        [
+            validator1Wallet.Address.Value, 0s
+            validator2Wallet.Address.Value, 0s
+        ]
+        |> List.iter (fun (address, timeToBlacklist) ->
+            {
+                BlockchainAddress = address
+                ChxAddressState =
+                    {
+                        ChxAddressStateDto.Nonce = 0L
+                        Balance = Config.ValidatorDeposit
+                    }
+            }
+            |> Helpers.addChxAddress
+
+            {
+                ValidatorAddress = address
+                NetworkAddress = sprintf "%s.weown.com:25718" address
+                SharedRewardPercent = 0m
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = timeToBlacklist
+                IsEnabled = true
+                LastProposedBlockNumber = Nullable()
+                LastProposedBlockTimestamp = Nullable()
+            }
+            |> Helpers.addValidator
+
+            {
+                StakeInfoDto.StakerAddress = stakerWallet.Address.Value
+                ValidatorAddress = address
+                StakeState =
+                    {
+                        Amount = Config.ValidatorThreshold
+                    }
+            }
+            |> Helpers.addStake
+        )
+
+        let validatorsToSkip = [ validator1Wallet.Address ]
+
+        // ACT
+        let topValidators =
+            Composition.getTopValidatorsByStake
+                Config.MaxValidatorCount
+                (ChxAmount Config.ValidatorThreshold)
+                (ChxAmount Config.ValidatorDeposit)
+                validatorsToSkip
 
         // ASSERT
         test <@ topValidators.Length = 1 @>

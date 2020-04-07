@@ -563,6 +563,9 @@ module Workflows =
                                     currentConfiguration.ValidatorDepositLockTime
                                     currentConfiguration.ValidatorBlacklistTime
                                     currentConfiguration.MaxTxCountPerBlock
+                                    (currentConfiguration.Validators |> List.map (fun v -> v.ValidatorAddress))
+                                    blockNumber
+                                    timestamp
 
                             if newConfiguration.Validators.Length < minValidatorCount then
                                 String.Format(
@@ -824,6 +827,9 @@ module Workflows =
                             currentConfiguration.ValidatorDepositLockTime
                             currentConfiguration.ValidatorBlacklistTime
                             currentConfiguration.MaxTxCountPerBlock
+                            (currentConfiguration.Validators |> List.map (fun v -> v.ValidatorAddress))
+                            block.Header.Number
+                            block.Header.Timestamp
 
                     let expectedConfiguration =
                         if newConfiguration.Validators.Length < minValidatorCount then

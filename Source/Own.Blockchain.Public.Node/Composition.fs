@@ -96,6 +96,7 @@ module Composition =
     let getBlacklistedValidators () = Db.getBlacklistedValidators Config.DbEngineType Config.DbConnectionString
     let getLockedAndBlacklistedValidators () =
         Db.getLockedAndBlacklistedValidators Config.DbEngineType Config.DbConnectionString
+    let getDormantValidators = Db.getDormantValidators Config.DbEngineType Config.DbConnectionString
 
     let getTopStakersByStake =
         Db.getTopStakersByStake Config.DbEngineType Config.DbConnectionString Config.MaxRewardedStakesCount
@@ -142,12 +143,13 @@ module Composition =
 
     let addressFromPrivateKey = memoize Signing.addressFromPrivateKey
 
-    let getTopValidators () =
+    let getTopValidators validatorsToSkip =
         Validators.getTopValidators
             getTopValidatorsByStake
             Config.MaxValidatorCount
             (ChxAmount Config.ValidatorThreshold)
             (ChxAmount Config.ValidatorDeposit)
+            validatorsToSkip
 
     let getValidatorsAtHeight =
         Validators.getValidatorsAtHeight
@@ -185,6 +187,8 @@ module Composition =
         Blocks.createNewBlockchainConfiguration
             getTopValidators
             getBlacklistedValidators
+            getDormantValidators
+            Config.MaxValidatorDormantTime
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Blockchain

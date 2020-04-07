@@ -1,5 +1,6 @@
 namespace Own.Blockchain.Public.Core
 
+open System
 open Own.Common.FSharp
 open Own.Blockchain.Common
 open Own.Blockchain.Common.Conversion
@@ -715,15 +716,36 @@ module Blocks =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     let createNewBlockchainConfiguration
-        (getTopValidators : unit -> ValidatorSnapshot list)
+        (getTopValidators : BlockchainAddress list -> ValidatorSnapshot list)
         (getBlacklistedValidators : unit -> BlockchainAddress list)
+        (getDormantValidators : BlockNumber -> Timestamp -> BlockchainAddress list)
+        maxValidatorDormantTime
         configurationBlockDelta
         validatorDepositLockTime
         validatorBlacklistTime
         maxTxCountPerBlock
+        currentValidators
+        (blockNumber : BlockNumber)
+        (blockTimestamp : Timestamp)
         =
 
-        let validators = getTopValidators ()
+        let currentValidators = currentValidators |> Set.ofList
+
+        let dormantValidators =
+            if blockNumber >= Forks.DormantValidators.BlockNumber then
+                let minProposedBlockNumber = blockNumber - configurationBlockDelta
+                let minProposedBlockTimestamp =
+                    blockTimestamp.Value
+                    |> DateTimeOffset.FromUnixTimeMilliseconds
+                    |> fun dt -> dt.AddHours(float -maxValidatorDormantTime).ToUnixTimeMilliseconds()
+                    |> Timestamp
+                getDormantValidators minProposedBlockNumber minProposedBlockTimestamp
+                |> List.filter currentValidators.Contains
+            else
+                []
+
+        let validators = getTopValidators dormantValidators
+
         let blacklistedValidators = getBlacklistedValidators () |> List.sort
 
         {

@@ -1065,6 +1065,7 @@ module Db =
         (topCount : int)
         (ChxAmount threshold)
         (ChxAmount deposit)
+        (validatorsToSkip : BlockchainAddress list)
         : ValidatorSnapshotDto list
         =
 
@@ -1091,6 +1092,7 @@ module Db =
                 WHERE time_to_blacklist = 0
                 AND is_enabled
                 AND (chx_address.balance - COALESCE(d.total_delegation, 0)) >= @deposit
+                {0}
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 """
             | Postgres ->
@@ -1114,9 +1116,21 @@ module Db =
                 WHERE time_to_blacklist = 0
                 AND is_enabled
                 AND (chx_address.balance - COALESCE(d.total_delegation, 0)) >= @deposit
+                {0}
                 ORDER BY total_stake DESC, staker_count DESC, validator_address
                 LIMIT @topCount
                 """
+
+        let validatorsToSkipCondition =
+            if validatorsToSkip.IsEmpty then
+                ""
+            else
+                validatorsToSkip
+                |> List.map (fun v -> sprintf "'%s'" v.Value)
+                |> fun vs -> String.Join(", ", vs)
+                |> sprintf "AND validator_address NOT IN (%s)"
+
+        let sql = String.Format(sql, validatorsToSkipCondition)
 
         [
             "@topCount", topCount |> box
@@ -1156,6 +1170,29 @@ module Db =
             """
 
         DbTools.query<string> dbEngineType dbConnectionString sql []
+        |> List.map BlockchainAddress
+
+    let getDormantValidators
+        dbEngineType
+        dbConnectionString
+        (minProposedBlockNumber : BlockNumber)
+        (minProposedBlockTimestamp : Timestamp)
+        : BlockchainAddress list
+        =
+
+        let sql =
+            """
+            SELECT validator_address
+            FROM validator
+            WHERE (last_proposed_block_number IS NULL OR last_proposed_block_number < @minProposedBlockNumber)
+            AND (last_proposed_block_timestamp IS NULL OR last_proposed_block_timestamp < @minProposedBlockTimestamp)
+            """
+
+        [
+            "@minProposedBlockNumber", minProposedBlockNumber.Value |> box
+            "@minProposedBlockTimestamp", minProposedBlockTimestamp.Value |> box
+        ]
+        |> DbTools.query<string> dbEngineType dbConnectionString sql
         |> List.map BlockchainAddress
 
     let getTopStakersByStake
