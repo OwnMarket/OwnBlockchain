@@ -1226,22 +1226,19 @@ module Processing =
     let lockValidatorDeposits
         validatorDepositLockTime
         (blockNumber : BlockNumber)
-        (blockchainConfiguration : BlockchainConfiguration option)
+        (validators : BlockchainAddress list)
         (state : ProcessingState)
         =
 
-        blockchainConfiguration
-        |> Option.iter (fun c ->
-            for v in c.Validators do
-                match state.GetValidator(v.ValidatorAddress) with
-                | Some s ->
-                    state.SetValidator(
-                        v.ValidatorAddress,
-                        {s with TimeToLockDeposit = validatorDepositLockTime},
-                        ValidatorChange.Update
-                    )
-                | None -> failwithf "Cannot get validator state for %s" v.ValidatorAddress.Value
-        )
+        for validatorAddress in validators do
+            match state.GetValidator(validatorAddress) with
+            | Some s ->
+                state.SetValidator(
+                    validatorAddress,
+                    {s with TimeToLockDeposit = validatorDepositLockTime},
+                    ValidatorChange.Update
+                )
+            | None -> failwithf "Cannot get validator state for %s" validatorAddress.Value
 
     let setLastProposedBlock validatorAddress blockNumber blockTimestamp (state : ProcessingState) =
         match state.GetValidator validatorAddress with
@@ -1255,6 +1252,20 @@ module Processing =
                 ValidatorChange.Update
             )
         | None -> failwithf "Cannot get validator state for %s" validatorAddress.Value
+
+    let disableDormantValidators dormantValidators (state : ProcessingState) =
+        for validatorAddress in dormantValidators do
+            match state.GetValidator(validatorAddress) with
+            | Some s ->
+                // Disable validator
+                state.SetValidator(validatorAddress, { s with IsEnabled = false }, ValidatorChange.Update)
+
+                // Revoke all stakes
+                state.GetStakers validatorAddress
+                |> List.iter (fun stakerAddress ->
+                    state.SetStake (stakerAddress, validatorAddress, {StakeState.Amount = ChxAmount 0m})
+                )
+            | None -> failwithf "Cannot get validator state for %s" validatorAddress.Value
 
     let processChanges
         getTx
@@ -1390,9 +1401,16 @@ module Processing =
 
         distributeReward processTxActions getTopStakers validatorAddress sharedRewardPercent state
 
-        if blockchainConfiguration.IsSome then
+        blockchainConfiguration
+        |> Option.iter (fun c ->
+            disableDormantValidators c.DormantValidators state
             updateValidatorCounters getLockedAndBlacklistedValidators state
-            lockValidatorDeposits validatorDepositLockTime blockNumber blockchainConfiguration state
+            lockValidatorDeposits
+                validatorDepositLockTime
+                blockNumber
+                (c.Validators |> List.map (fun v -> v.ValidatorAddress))
+                state
+        )
 
         setLastProposedBlock validatorAddress blockNumber blockTimestamp state
 
