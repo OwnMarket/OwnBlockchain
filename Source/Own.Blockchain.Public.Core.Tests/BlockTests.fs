@@ -833,6 +833,9 @@ module BlockTests =
                         BlockchainAddress "DD"
                         BlockchainAddress "EE"
                     ]
+                DormantValidators =
+                    [
+                    ]
                 ValidatorDepositLockTime = 7s
                 ValidatorBlacklistTime = 8s
                 MaxTxCountPerBlock = 9

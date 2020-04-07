@@ -327,6 +327,7 @@ type BlockchainConfiguration = {
     ConfigurationBlockDelta : int
     Validators : ValidatorSnapshot list
     ValidatorsBlacklist : BlockchainAddress list
+    DormantValidators : BlockchainAddress list
     ValidatorDepositLockTime : int16
     ValidatorBlacklistTime : int16
     MaxTxCountPerBlock : int
