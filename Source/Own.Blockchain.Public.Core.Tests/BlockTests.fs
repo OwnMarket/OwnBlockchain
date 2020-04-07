@@ -448,7 +448,7 @@ module BlockTests =
     let ``Blocks.assembleBlock`` () =
         Forks.Init Helpers.networkCode
 
-        let blockNumber = BlockNumber 1L
+        let blockNumber = BlockNumber 6L
         let previousBlockHash = BlockHash "B"
         let configurationBlockNumber = BlockNumber 0L
         let timestamp = Timestamp 3L
@@ -835,6 +835,8 @@ module BlockTests =
                     ]
                 DormantValidators =
                     [
+                        BlockchainAddress "FF"
+                        BlockchainAddress "GG"
                     ]
                 ValidatorDepositLockTime = 7s
                 ValidatorBlacklistTime = 8s
@@ -963,6 +965,8 @@ module BlockTests =
                 "CCCCCIII...C...............F............" // Validator 3
                 "DD" // Blacklisted validator 1
                 "EE" // Blacklisted validator 2
+                "FF" // Dormant validator 1
+                "GG" // Dormant validator 2
                 ".G" // ValidatorDepositLockTime
                 ".H" // ValidatorBlacklistTime
                 "...I" // MaxTxCountPerBlock
@@ -978,7 +982,7 @@ module BlockTests =
 
         let blockHash =
             [
-                ".......A" // blockNumber
+                ".......F" // blockNumber
                 "B" // previousBlockHash
                 "........" // configurationBlockNumber
                 ".......C" // timestamp
