@@ -243,6 +243,7 @@ module Blocks =
         decodeHash
         createHash
         createMerkleTree
+        blockNumber
         (blockchainConfiguration : BlockchainConfiguration option)
         =
 
@@ -259,10 +260,17 @@ module Blocks =
                 |> List.sort // Ensure a predictable order
                 |> List.map (fun a -> a.Value |> decodeHash |> createHash)
 
+            let dormantValidatorAddressHashes =
+                c.DormantValidators
+                |> List.sort // Ensure a predictable order
+                |> List.map (fun a -> a.Value |> decodeHash |> createHash)
+
             [
                 yield c.ConfigurationBlockDelta |> int32ToBytes |> createHash
                 yield! validatorSnapshotHashes
                 yield! blacklistedValidatorAddressHashes
+                if blockNumber >= Forks.DormantValidators.BlockNumber then
+                    yield! dormantValidatorAddressHashes
                 yield c.ValidatorDepositLockTime |> int16ToBytes |> createHash
                 yield c.ValidatorBlacklistTime |> int16ToBytes |> createHash
                 yield c.MaxTxCountPerBlock |> int32ToBytes |> createHash
@@ -453,7 +461,7 @@ module Blocks =
 
         let configurationRoot =
             blockchainConfiguration
-            |> createConfigurationMerkleRoot decodeHash createHash createMerkleTree
+            |> createConfigurationMerkleRoot decodeHash createHash createMerkleTree blockNumber
 
         let blockHash =
             createBlockHash
@@ -653,6 +661,7 @@ module Blocks =
                 decodeHash
                 createHash
                 createMerkleTree
+                block.Header.Number
                 block.Configuration
 
         let blockHash =
