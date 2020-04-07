@@ -737,6 +737,7 @@ module Blocks =
         currentValidators
         (blockNumber : BlockNumber)
         (blockTimestamp : Timestamp)
+        (proposerAddress : BlockchainAddress)
         =
 
         let currentValidators = currentValidators |> Set.ofList
@@ -751,6 +752,7 @@ module Blocks =
                     |> Timestamp
                 getDormantValidators minProposedBlockNumber minProposedBlockTimestamp
                 |> List.filter currentValidators.Contains
+                |> List.except [proposerAddress]
             else
                 []
 
