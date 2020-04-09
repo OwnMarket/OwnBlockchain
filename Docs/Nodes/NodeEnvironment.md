@@ -20,22 +20,21 @@ This, of course, highly depends on the network conditions and usage patterns (i.
 
 A machine used to host a node serving as the backend for a rarely used wallet will, of course, serve the purpose even with one CPU core, because lagging behind the network during activity bursts might be tolerable in such a scenario.
 
-However, a machine hosting a node used as an entry point to the network for another software system (e.g. share register, bank, exchange, etc.), with frequent interactions with the blockchain, should have 2-4 CPU cores to avoid lagging behind network due to not being able to apply incoming blocks and transactions fast enough.
+However, for a machine hosting a node used as an entry point to the network for another software system (e.g. share register, bank, exchange, etc.), with frequent interactions with the blockchain, it is recommended to have more than one CPU core to avoid lagging behind network due to not being able to apply incoming blocks and transactions fast enough. Frequency of the calls to the node's API should be taken into consideration as well, when planning the capacity of the machine.
 
-Validator nodes participate in consensus protocol, with frequent message exchange bursts during which all message signatures must be cryptographically verified. To be able to cope with the amount of messages and create new blocks on time, validator nodes should have "serious" computational power. This heavily depends on the number of validator nodes (min 4, max 100) and on the transaction volume at the point in time. Hence, validators should have **at least** 4 CPU cores, while 8-16 CPU cores is a strongly recommended configuration.
+Validator nodes participate in consensus protocol, with frequent message exchange bursts during which all message signatures must be cryptographically verified. To be able to cope with the amount of messages and create new blocks on time, validator nodes should have a sufficient computational power. Although this heavily depends on the number of active validator nodes in the network and on the transaction volume at the point in time, the recommendation is for validators to have 4-8 CPU cores.
 
 
 ### RAM
 
-The amount of RAM a node is using depends on the node activity.
-In idle state node is using ~100 MB. However, during activity bursts usage can significantly increase. To ensure there is enough RAM in such cases and avoid swapping, it is recommended to have at least 1 GB of RAM available to the node at all times.
+The amount of RAM a node is using depends on the node activity. On average the node is using ~150 MB. However, during activity bursts usage can increase. To ensure there is enough RAM in such cases and avoid swapping, it is recommended to have at least 500 MB of RAM available to the node at all times.
 
 If the node is configured to use PostgreSQL as a database engine, and if PostgreSQL instance is running on the same machine as the node, in addition to the RAM used by the node, there should be enough RAM available for the PostgreSQL instance itself. Please refer to PostgreSQL documentation for more information about its system requirements.
 
 
 ### Disk
 
-According to the load test results, amount of disk space required per 1 million transactions is ~5 GB. The growth, of course, depends on the usage of the network.
+Disk space requirements depend on the amount of transactions processed on the blockchain. A MainNet node requires ~17 GB of disk space to store the first year of blockchain data. The growth, of course, depends on the future usage of the network.
 
 
 ## Operating System Requirements
