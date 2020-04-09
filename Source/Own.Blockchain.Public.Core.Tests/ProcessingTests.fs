@@ -7060,6 +7060,93 @@ module ProcessingTests =
         test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
 
     [<Fact>]
+    let ``Processing.processChanges RemoveValidator fails if validator is included in the new active set`` () =
+        // INIT STATE
+        let senderValidatorWallet = Signing.generateWallet ()
+        let validatorWallet = Signing.generateWallet ()
+
+        let initialChxState =
+            [
+                senderValidatorWallet.Address,
+                    {ChxAddressState.Nonce = Nonce 10L; Balance = Helpers.validatorDeposit + 10m}
+                validatorWallet.Address,
+                    {ChxAddressState.Nonce = Nonce 30L; Balance = ChxAmount 100m}
+            ]
+            |> Map.ofList
+
+        // PREPARE TX
+        let nonce = Nonce 11L
+        let actionFee = ChxAmount 1m
+
+        let txHash, txEnvelope =
+            [
+                {
+                    ActionType = "RemoveValidator"
+                    ActionData = RemoveValidatorTxActionDto()
+                } :> obj
+            ]
+            |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
+
+        let txSet = [txHash]
+
+        // COMPOSE
+        let getTx _ =
+            Ok txEnvelope
+
+        let getChxAddressState address =
+            initialChxState |> Map.tryFind address
+
+        let getValidatorState _ =
+            Some {
+                ValidatorState.NetworkAddress = NetworkAddress ""
+                SharedRewardPercent = 0m
+                TimeToLockDeposit = 0s
+                TimeToBlacklist = 0s
+                IsEnabled = true
+            }
+
+        let blockchainConfiguration =
+            Some {
+                BlockchainConfiguration.ConfigurationBlockDelta = 10
+                Validators = [
+                    {
+                        ValidatorSnapshot.ValidatorAddress = senderValidatorWallet.Address
+                        NetworkAddress = NetworkAddress ""
+                        SharedRewardPercent = 0m
+                        TotalStake = ChxAmount 500_000m
+                    }
+                ]
+                ValidatorsBlacklist = []
+                ValidatorDepositLockTime = 10s
+                ValidatorBlacklistTime = 100s
+                MaxTxCountPerBlock = 1000
+            }
+
+        // ACT
+        let output =
+            { Helpers.processChangesMockedDeps with
+                GetTx = getTx
+                GetChxAddressStateFromStorage = getChxAddressState
+                GetValidatorStateFromStorage = getValidatorState
+                ValidatorAddress = validatorWallet.Address
+                TxSet = txSet
+                BlockchainConfiguration = blockchainConfiguration
+            }
+            |> Helpers.processChanges
+
+        // ASSERT
+        let senderChxBalance = initialChxState.[senderValidatorWallet.Address].Balance - actionFee
+        let validatorChxBalance = initialChxState.[validatorWallet.Address].Balance + actionFee
+        let expectedStatus = (TxActionNumber 1s, TxErrorCode.ValidatorDepositLocked) |> TxActionError |> Failure
+
+        test <@ output.TxResults.Count = 1 @>
+        test <@ output.TxResults.[txHash].Status = expectedStatus @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Nonce = nonce @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Nonce = initialChxState.[validatorWallet.Address].Nonce @>
+        test <@ output.ChxAddresses.[senderValidatorWallet.Address].Balance = senderChxBalance @>
+        test <@ output.ChxAddresses.[validatorWallet.Address].Balance = validatorChxBalance @>
+
+    [<Fact>]
     let ``Processing.processChanges RemoveValidator followed by ConfigureValidator updates validator state`` () =
         // INIT STATE
         let senderValidatorWallet = Signing.generateWallet ()

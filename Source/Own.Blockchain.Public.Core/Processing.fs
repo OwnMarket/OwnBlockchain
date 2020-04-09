@@ -604,6 +604,7 @@ module Processing =
                 Ok state
 
     let processRemoveValidatorTxAction
+        newValidators
         (state : ProcessingState)
         (senderAddress : BlockchainAddress)
         : Result<ProcessingState, TxErrorCode>
@@ -614,7 +615,7 @@ module Processing =
         | Some validatorState ->
             if validatorState.TimeToBlacklist > 0s then
                 Error TxErrorCode.ValidatorIsBlacklisted
-            elif validatorState.TimeToLockDeposit > 0s then
+            elif validatorState.TimeToLockDeposit > 0s || (newValidators |> List.contains senderAddress) then
                 Error TxErrorCode.ValidatorDepositLocked
             else
                 state.GetStakers senderAddress
@@ -1012,6 +1013,7 @@ module Processing =
     let processTxAction
         deriveHash
         validatorDeposit
+        newValidators
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actionNumber : TxActionNumber)
@@ -1029,7 +1031,7 @@ module Processing =
         | SetAssetController action -> processSetAssetControllerTxAction state senderAddress action
         | SetAssetCode action -> processSetAssetCodeTxAction state senderAddress action
         | ConfigureValidator action -> processConfigureValidatorTxAction validatorDeposit state senderAddress action
-        | RemoveValidator -> processRemoveValidatorTxAction state senderAddress
+        | RemoveValidator -> processRemoveValidatorTxAction newValidators state senderAddress
         | DelegateStake action -> processDelegateStakeTxAction validatorDeposit state senderAddress action
         | SubmitVote action -> processSubmitVoteTxAction state senderAddress action
         | SubmitVoteWeight action -> processSubmitVoteWeightTxAction state senderAddress action
@@ -1042,6 +1044,7 @@ module Processing =
     let processTxActions
         deriveHash
         validatorDeposit
+        newValidators
         (senderAddress : BlockchainAddress)
         (nonce : Nonce)
         (actions : TxAction list)
@@ -1054,7 +1057,7 @@ module Processing =
             result
             >>= fun state ->
                 let actionNumber = index + 1 |> Convert.ToInt16 |> TxActionNumber
-                processTxAction deriveHash validatorDeposit senderAddress nonce actionNumber action state
+                processTxAction deriveHash validatorDeposit newValidators senderAddress nonce actionNumber action state
                 |> Result.mapError (fun e -> TxActionError (actionNumber, e))
         ) (Ok state)
 
@@ -1276,7 +1279,13 @@ module Processing =
         (txSet : TxHash list)
         =
 
-        let processTxActions = processTxActions deriveHash validatorDeposit
+        let newValidators =
+            blockchainConfiguration
+            |> Option.map (fun c -> c.Validators)
+            |? []
+            |> List.map (fun v -> v.ValidatorAddress)
+
+        let processTxActions = processTxActions deriveHash validatorDeposit newValidators
 
         let loadTxs txHashes =
             txHashes
