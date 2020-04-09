@@ -31,6 +31,8 @@ The amount of RAM a node is using depends on the node activity. On average the n
 
 If the node is configured to use PostgreSQL as a database engine, and if PostgreSQL instance is running on the same machine as the node, in addition to the RAM used by the node, there should be enough RAM available for the PostgreSQL instance itself. Please refer to PostgreSQL documentation for more information about its system requirements.
 
+2 GB of RAM is sufficient for the machine with Ubuntu Server 18.04 LTS and PostgreSQL, if it is dedicated to running the blockchain node.
+
 
 ### Disk
 
