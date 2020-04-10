@@ -7111,6 +7111,8 @@ module ProcessingTests =
                 TimeToLockDeposit = 0s
                 TimeToBlacklist = 0s
                 IsEnabled = true
+                LastProposedBlockNumber = None
+                LastProposedBlockTimestamp = None
             }
 
         let blockchainConfiguration =
@@ -7125,6 +7127,7 @@ module ProcessingTests =
                     }
                 ]
                 ValidatorsBlacklist = []
+                DormantValidators = []
                 ValidatorDepositLockTime = 10s
                 ValidatorBlacklistTime = 100s
                 MaxTxCountPerBlock = 1000
@@ -7135,7 +7138,7 @@ module ProcessingTests =
             { Helpers.processChangesMockedDeps with
                 GetTx = getTx
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 ValidatorAddress = validatorWallet.Address
                 TxSet = txSet
                 BlockchainConfiguration = blockchainConfiguration
