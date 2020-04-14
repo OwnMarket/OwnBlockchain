@@ -1412,6 +1412,7 @@ module Processing =
                 state
         )
 
-        setLastProposedBlock validatorAddress blockNumber blockTimestamp state
+        if blockNumber >= Forks.DormantValidators.BlockNumber then
+            setLastProposedBlock validatorAddress blockNumber blockTimestamp state
 
         state.ToProcessingOutput()

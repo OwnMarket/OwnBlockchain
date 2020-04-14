@@ -187,7 +187,10 @@ module Workflows =
 
                     do! genesisState
                         |> Mapping.outputToDto
-                        |> persistStateChanges genesisBlock.Header.Number
+                        |> persistStateChanges
+                            genesisBlock.Header.Number
+                            genesisBlock.Header.Timestamp
+                            genesisBlock.Header.ProposerAddress
                 }
 
             match result with
@@ -895,7 +898,7 @@ module Workflows =
             let outputDto = Mapping.outputToDto output
             do! persistTxResults outputDto.TxResults
             do! persistEquivocationProofResults outputDto.EquivocationProofResults
-            do! persistStateChanges blockNumber outputDto
+            do! persistStateChanges blockNumber block.Header.Timestamp block.Header.ProposerAddress outputDto
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
