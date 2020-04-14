@@ -187,7 +187,10 @@ module Workflows =
 
                     do! genesisState
                         |> Mapping.outputToDto genesisBlock.Header.Number
-                        |> persistStateChanges genesisBlock.Header.Number
+                        |> persistStateChanges
+                            genesisBlock.Header.Number
+                            genesisBlock.Header.Timestamp
+                            genesisBlock.Header.ProposerAddress
                 }
 
             match result with
@@ -951,7 +954,7 @@ module Workflows =
             do! persistTxResults outputDto.TxResults
             do! persistEquivocationProofResults outputDto.EquivocationProofResults
             do! persistClosedTradeOrders outputDto.ClosedTradeOrders
-            do! persistStateChanges blockNumber outputDto
+            do! persistStateChanges blockNumber block.Header.Timestamp block.Header.ProposerAddress outputDto
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

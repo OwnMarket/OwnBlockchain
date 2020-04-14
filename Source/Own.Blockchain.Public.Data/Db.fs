@@ -4,6 +4,7 @@ open System
 open System.Data.Common
 open Own.Common.FSharp
 open Own.Blockchain.Common
+open Own.Blockchain.Public.Core
 open Own.Blockchain.Public.Core.DomainTypes
 open Own.Blockchain.Public.Core.Dtos
 
@@ -2719,6 +2720,39 @@ module Db =
         |> Map.toList
         |> List.fold foldFn (Ok ())
 
+    let private setLastProposedBlockForProposer
+        conn
+        transaction
+        (blockNumber : BlockNumber)
+        (blockTimestamp : Timestamp)
+        (validatorAddress : BlockchainAddress)
+        : Result<unit, AppErrors>
+        =
+
+        let sql =
+            """
+            UPDATE validator
+            SET last_proposed_block_number = @lastProposedBlockNumber,
+                last_proposed_block_timestamp = @lastProposedBlockTimestamp
+            WHERE validator_address = @validatorAddress
+            """
+
+        let sqlParams =
+            [
+                "@validatorAddress", validatorAddress.Value |> box
+                "@lastProposedBlockNumber", blockNumber.Value |> box
+                "@lastProposedBlockTimestamp", blockTimestamp.Value |> box
+            ]
+
+        try
+            match DbTools.executeWithinTransaction conn transaction sql sqlParams with
+            | 1 -> Ok ()
+            | _ -> Result.appError "Didn't update last proposed block for proposer"
+        with
+        | ex ->
+            Log.error ex.AllMessagesAndStackTraces
+            Result.appError "Failed to update last proposed block for proposer"
+
     let private addStake conn transaction (stakeInfo : StakeInfoDto) : Result<unit, AppErrors> =
         let sql =
             """
@@ -3136,6 +3170,8 @@ module Db =
         dbEngineType
         dbConnectionString
         (blockNumber : BlockNumber)
+        (blockTimestamp : Timestamp)
+        (proposerAddress : BlockchainAddress)
         (stateChanges : ProcessingOutputDto)
         : Result<unit, AppErrors>
         =
@@ -3153,6 +3189,17 @@ module Db =
                 do! removeProcessedEquivocationProofs conn transaction stateChanges.EquivocationProofResults
                 do! updateChxAddresses conn transaction stateChanges.ChxAddresses
                 do! updateValidators conn transaction stateChanges.Validators
+                if blockNumber > BlockNumber 0L && blockNumber < Forks.DormantValidators.BlockNumber then
+                    // setLastProposedBlock in Processing module cannot be called before the fork block,
+                    // because it would induce a change in state merkle root, incompatible with earlier code (<1.5.0).
+                    // State merkle root would always include an item for the proposer validator state change,
+                    // in which the LastProposedBlockNumber and LastProposedBlockTimestamp would be set for proposer.
+                    // To avoid the incompatibility and enable gradual rollout of network nodes without interruption,
+                    // update of LastProposedBlockNumber and LastProposedBlockTimestamp is being applied here,
+                    // but only until the fork block is reached, after which the logic in the Processing module will
+                    // take over and continue to update the values for the subsequent blocks.
+                    // The update is not executed for the genesis block though, because it doesn't have a proposer.
+                    do! setLastProposedBlockForProposer conn transaction blockNumber blockTimestamp proposerAddress
                 do! updateStakes conn transaction stateChanges.Stakes
                 do! updateAssets conn transaction stateChanges.Assets
                 do! updateAccounts conn transaction stateChanges.Accounts
