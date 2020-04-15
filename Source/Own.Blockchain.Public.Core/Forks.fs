@@ -34,7 +34,7 @@ type Forks () =
                 |> Some
             | "OWN_PUBLIC_BLOCKCHAIN_TESTNET" ->
                 {
-                    Forks.DormantValidatorsFork.BlockNumber = BlockNumber Int64.MaxValue // TODO FORK: Set for release
+                    Forks.DormantValidatorsFork.BlockNumber = BlockNumber 1_000_000L
                 }
                 |> Some
             | "OWN_PUBLIC_BLOCKCHAIN_DEVNET" ->
