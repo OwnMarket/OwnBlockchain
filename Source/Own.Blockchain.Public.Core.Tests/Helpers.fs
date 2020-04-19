@@ -229,6 +229,7 @@ module Helpers =
         }
 
     let processChanges mockedDeps =
+        Forks.Init networkCode
         Processing.processChanges
             mockedDeps.GetTx
             mockedDeps.GetEquivocationProof
