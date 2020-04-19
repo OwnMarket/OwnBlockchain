@@ -2375,7 +2375,9 @@ module Db =
                 do! removeProcessedEquivocationProofs conn transaction stateChanges.EquivocationProofResults
                 do! updateChxAddresses conn transaction stateChanges.ChxAddresses
                 do! updateValidators conn transaction stateChanges.Validators
-                if blockNumber > BlockNumber 0L && blockNumber < Forks.DormantValidators.BlockNumber then
+                if blockNumber >= Forks.DormantValidators.TrackingStartBlockNumber
+                    && blockNumber < Forks.DormantValidators.BlockNumber
+                then
                     // setLastProposedBlock in Processing module cannot be called before the fork block,
                     // because it would induce a change in state merkle root, incompatible with earlier code (<1.5.0).
                     // State merkle root would always include an item for the proposer validator state change,
@@ -2384,7 +2386,8 @@ module Db =
                     // update of LastProposedBlockNumber and LastProposedBlockTimestamp is being applied here,
                     // but only until the fork block is reached, after which the logic in the Processing module will
                     // take over and continue to update the values for the subsequent blocks.
-                    // The update is not executed for the genesis block though, because it doesn't have a proposer.
+                    // The tracking of the last proposed block info starts at block number specified in
+                    // Forks.DormantValidatorsFork.TrackingStartBlockNumber parameter.
                     do! setLastProposedBlockForProposer conn transaction blockNumber blockTimestamp proposerAddress
                 do! updateStakes conn transaction stateChanges.Stakes
                 do! updateAssets conn transaction stateChanges.Assets

@@ -11,7 +11,11 @@ module Forks =
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     type DormantValidatorsFork = {
+        /// Block number at which the dormant validator logic is activated.
         BlockNumber : BlockNumber
+
+        /// Block number at which tracking of last proposed block, in the blockchain state, starts.
+        TrackingStartBlockNumber : BlockNumber
     }
 
 type Forks () =
@@ -29,27 +33,33 @@ type Forks () =
             match networkCode with
             | "OWN_PUBLIC_BLOCKCHAIN_MAINNET" ->
                 {
-                    Forks.DormantValidatorsFork.BlockNumber = BlockNumber Int64.MaxValue // TODO FORK: Set for release
+                    // TODO FORK: Set both values for release
+                    Forks.DormantValidatorsFork.BlockNumber = BlockNumber Int64.MaxValue
+                    Forks.DormantValidatorsFork.TrackingStartBlockNumber = BlockNumber Int64.MaxValue
                 }
                 |> Some
             | "OWN_PUBLIC_BLOCKCHAIN_TESTNET" ->
                 {
                     Forks.DormantValidatorsFork.BlockNumber = BlockNumber 1_000_000L
+                    Forks.DormantValidatorsFork.TrackingStartBlockNumber = BlockNumber 993_000L
                 }
                 |> Some
             | "OWN_PUBLIC_BLOCKCHAIN_DEVNET" ->
                 {
                     Forks.DormantValidatorsFork.BlockNumber = BlockNumber 1L
+                    Forks.DormantValidatorsFork.TrackingStartBlockNumber = BlockNumber 1L
                 }
                 |> Some
             | "UNIT_TESTS" ->
                 {
                     Forks.DormantValidatorsFork.BlockNumber = BlockNumber 6L
+                    Forks.DormantValidatorsFork.TrackingStartBlockNumber = BlockNumber 1L
                 }
                 |> Some
             | _ ->
                 {
                     Forks.DormantValidatorsFork.BlockNumber = BlockNumber 1L
+                    Forks.DormantValidatorsFork.TrackingStartBlockNumber = BlockNumber 1L
                 }
                 |> Some
 
