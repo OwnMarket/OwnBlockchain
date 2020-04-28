@@ -33,9 +33,8 @@ type Forks () =
             match networkCode with
             | "OWN_PUBLIC_BLOCKCHAIN_MAINNET" ->
                 {
-                    // TODO FORK: Set both values for release
-                    Forks.DormantValidatorsFork.BlockNumber = BlockNumber Int64.MaxValue
-                    Forks.DormantValidatorsFork.TrackingStartBlockNumber = BlockNumber Int64.MaxValue
+                    Forks.DormantValidatorsFork.BlockNumber = BlockNumber Int64.MaxValue // TODO FORK: Set for release
+                    Forks.DormantValidatorsFork.TrackingStartBlockNumber = BlockNumber 1_300_000L
                 }
                 |> Some
             | "OWN_PUBLIC_BLOCKCHAIN_TESTNET" ->
