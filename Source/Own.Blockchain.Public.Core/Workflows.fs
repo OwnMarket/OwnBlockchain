@@ -843,8 +843,8 @@ module Workflows =
                             newConfiguration
 
                     if c <> expectedConfiguration then
-                        Log.debugf "RECEIVED CONFIGURATION:\n%A" c
-                        Log.debugf "EXPECTED CONFIGURATION:\n%A" expectedConfiguration
+                        Log.warningf "RECEIVED CONFIGURATION:\n%A" c
+                        Log.warningf "EXPECTED CONFIGURATION:\n%A" expectedConfiguration
                         return!
                             sprintf "Configuration in block %i is different than expected"
                                 block.Header.Number.Value

@@ -244,7 +244,7 @@ type Config () =
     static member ConsensusTimeoutPropose = 5000 // Milliseconds
     static member ConsensusTimeoutVote = 5000 // Milliseconds
     static member ConsensusTimeoutCommit = 5000 // Milliseconds
-    static member ConsensusTimeoutDelta = 1000 // Milliseconds
+    static member ConsensusTimeoutDelta = 100 // Milliseconds
 
     static member StaleConsensusDetectionInterval = 10000 // Milliseconds
 
