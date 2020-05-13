@@ -857,6 +857,7 @@ module Blocks =
                 getDormantValidators minProposedBlockNumber minProposedBlockTimestamp
                 |> List.filter currentValidators.Contains
                 |> List.except [proposerAddress]
+                |> List.sort
             else
                 []
 
