@@ -7171,6 +7171,7 @@ module ProcessingTests =
                     }
                 ]
                 ValidatorsBlacklist = []
+                DormantValidators = []
                 ValidatorDepositLockTime = 10s
                 ValidatorBlacklistTime = 100s
                 MaxTxCountPerBlock = 1000
