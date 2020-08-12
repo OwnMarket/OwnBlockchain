@@ -40,7 +40,13 @@ Please refer to the corresponding section below, depending on your use case.
 
 ## Scripted deployment
 
-This deployment approach assumes installing the node on a clean machine with `Ubuntu Server 18.04 LTS` operating system installed.
+This deployment approach assumes installing the node on a clean machine with `Ubuntu Server 18.04 LTS` or `CentOS 8` operating system installed. Official AWS image identifiers for CentOS 8 are available [here](https://wiki.centos.org/Cloud/AWS).
+
+**NOTE:** On CentOS you will have to install `wget` and `nano` before being able to proceed with the node setup. To install these tools, execute:
+
+```bash
+sudo dnf install -y wget nano
+```
 
 Login into your Linux machine and execute one of the below two commands in terminal. **Don't execute both commands.**
 

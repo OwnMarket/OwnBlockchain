@@ -6,11 +6,29 @@ cd "${0%/*}"
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Postgres'
 echo '////////////////////////////////////////////////////////////////////////////////'
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
-wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt update -y
-sudo apt install -y postgresql-10 postgresql-contrib-10
+if cat /etc/os-release | grep 'ID_LIKE' | grep 'rhel'; then
+    sudo dnf install -y @postgresql:10 postgresql-contrib
+    if [ ! -f /var/lib/pgsql/data/postgresql.conf ]; then
+        sudo postgresql-setup --initdb --unit postgresql
+    fi
+    sudo sed -i -- 's/ident$/md5/g' /var/lib/pgsql/data/pg_hba.conf
+    sudo systemctl enable postgresql
+    sudo systemctl start postgresql
+else
+    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+    wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+    sudo apt update -y
+    sudo apt install -y postgresql-10 postgresql-contrib-10
+fi
 sudo -u postgres psql -c 'CREATE EXTENSION IF NOT EXISTS adminpack'
+sudo -u postgres psql -c 'SELECT version()'
+
+if cat /etc/os-release | grep 'ID_LIKE' | grep 'rhel'; then
+    echo '////////////////////////////////////////////////////////////////////////////////'
+    echo '// .NET Core dependencies'
+    echo '////////////////////////////////////////////////////////////////////////////////'
+    sudo dnf install -y krb5-libs libicu openssl-libs
+fi
 
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Node binaries'
