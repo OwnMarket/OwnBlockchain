@@ -6,14 +6,14 @@ cd "${0%/*}"
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Postgres'
 echo '////////////////////////////////////////////////////////////////////////////////'
-if cat /etc/os-release | grep 'ID_LIKE' | grep 'rhel'; then
+if grep 'ID_LIKE' /etc/os-release | grep 'rhel'; then
     sudo dnf install -y @postgresql:10 postgresql-contrib
     if [ ! -f /var/lib/pgsql/data/postgresql.conf ]; then
         sudo postgresql-setup --initdb --unit postgresql
     fi
     sudo sed -i -- 's/ident$/md5/g' /var/lib/pgsql/data/pg_hba.conf
+    sudo systemctl restart postgresql
     sudo systemctl enable postgresql
-    sudo systemctl start postgresql
 else
     sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
     wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -23,7 +23,7 @@ fi
 sudo -u postgres psql -c 'CREATE EXTENSION IF NOT EXISTS adminpack'
 sudo -u postgres psql -c 'SELECT version()'
 
-if cat /etc/os-release | grep 'ID_LIKE' | grep 'rhel'; then
+if grep 'ID_LIKE' /etc/os-release | grep 'rhel'; then
     echo '////////////////////////////////////////////////////////////////////////////////'
     echo '// .NET Core dependencies'
     echo '////////////////////////////////////////////////////////////////////////////////'
