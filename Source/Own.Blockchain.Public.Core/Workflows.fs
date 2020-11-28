@@ -720,15 +720,11 @@ module Workflows =
     let persistTxResults saveTxResult txResults =
         txResults
         |> Map.toList
-        |> List.map (fun (txHash, txResult) ->
-            Log.noticef "Saving TxResult %s" txHash
-            saveTxResult (TxHash txHash) txResult
-        )
-        |> List.choose (function Error e -> Some e | _ -> None)
-        |> List.concat
-        |> function
-        | [] -> Ok ()
-        | appErrors -> Error appErrors
+        |> List.fold (fun result (txHash, txResult) ->
+            result >>= fun _ ->
+                Log.noticef "Saving TxResult %s" txHash
+                saveTxResult (TxHash txHash) txResult
+        ) (Ok ())
 
     let removeOrphanTxResults getAllPendingTxHashes txResultExists deleteTxResult =
         let pendingTxHashes = getAllPendingTxHashes ()
