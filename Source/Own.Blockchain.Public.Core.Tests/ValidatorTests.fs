@@ -599,6 +599,8 @@ module ValidatorTests =
                     TimeToLockDeposit = 3s
                     TimeToBlacklist = 0s
                     IsEnabled = true
+                    LastProposedBlockNumber = None
+                    LastProposedBlockTimestamp = None
                 }
             elif validatorAddress = adversaryWallet.Address then
                 Some {
@@ -607,6 +609,8 @@ module ValidatorTests =
                     TimeToLockDeposit = 2s
                     TimeToBlacklist = 0s
                     IsEnabled = true
+                    LastProposedBlockNumber = None
+                    LastProposedBlockTimestamp = None
                 }
             else
                 None
@@ -617,7 +621,7 @@ module ValidatorTests =
                 GetTx = getTx
                 GetEquivocationProof = getEquivocationProof
                 GetChxAddressStateFromStorage = getChxAddressState
-                GetValidatorStateFromStorage = getValidatorState
+                GetValidatorStateFromStorage = Some getValidatorState
                 Validators = [validatorWallet.Address; adversaryWallet.Address]
                 ValidatorAddress = validatorWallet.Address
                 BlockNumber = BlockNumber 2L
