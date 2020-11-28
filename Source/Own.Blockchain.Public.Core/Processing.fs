@@ -1225,7 +1225,6 @@ module Processing =
 
     let lockValidatorDeposits
         validatorDepositLockTime
-        (blockNumber : BlockNumber)
         (validators : BlockchainAddress list)
         (state : ProcessingState)
         =
@@ -1406,7 +1405,6 @@ module Processing =
             updateValidatorCounters getLockedAndBlacklistedValidators state
             lockValidatorDeposits
                 validatorDepositLockTime
-                blockNumber
                 (c.Validators |> List.map (fun v -> v.ValidatorAddress))
                 state
         )
