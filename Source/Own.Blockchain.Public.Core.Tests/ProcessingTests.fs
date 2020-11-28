@@ -187,7 +187,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 1L) actionFee
 
@@ -274,7 +274,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -376,7 +376,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -466,7 +466,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -534,7 +534,7 @@ module ProcessingTests =
                                         RecipientAddress = recipientWallet.Address.Value
                                         Amount = amountPerAction.Value
                                     }
-                            } :> obj
+                            }
                     ]
                     |> Helpers.newTx senderWallet (Nonce nonce) (Timestamp 0L) actionFee
             ]
@@ -611,7 +611,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -678,7 +678,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -736,7 +736,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -801,7 +801,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = 9.98m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
 
@@ -814,7 +814,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = 1m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
 
@@ -890,7 +890,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = 9.99m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
 
@@ -903,7 +903,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = 1m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
 
@@ -978,7 +978,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1034,7 +1034,7 @@ module ProcessingTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1122,7 +1122,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1212,7 +1212,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1296,7 +1296,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1387,7 +1387,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1478,7 +1478,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1570,7 +1570,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1662,7 +1662,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1754,7 +1754,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1842,7 +1842,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -1933,7 +1933,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteHash = voteHash.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2028,7 +2028,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash1.Value
                             VoteHash = voteHashYes.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce1 (Timestamp 0L) actionFee
 
@@ -2044,7 +2044,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash2.Value
                             VoteHash = voteHashYes.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce2 (Timestamp 0L) actionFee
 
@@ -2134,7 +2134,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteHash = voteHash.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2213,7 +2213,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteHash = voteHash.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2228,7 +2228,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteHash = voteHash.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -2325,7 +2325,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteHash = voteHash.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2409,7 +2409,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteHash = voteHashYes.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2495,7 +2495,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteWeight = voteWeight.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2580,7 +2580,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteWeight = voteWeight.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2655,7 +2655,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteWeight = voteWeight.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2733,7 +2733,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteWeight = voteWeight.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -2748,7 +2748,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash.Value
                             VoteWeight = voteWeight.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -2851,7 +2851,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash1.Value
                             VoteHash = voteHashYes.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce1 (Timestamp 0L) actionFee
 
@@ -2867,7 +2867,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash1.Value
                             VoteWeight = voteWeight.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce2 (Timestamp 0L) actionFee
 
@@ -2959,7 +2959,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash1.Value
                             VoteHash = voteHashYes.Value
                         }
-                } :> obj
+                }
                 {
                     ActionType = "SubmitVoteWeight"
                     ActionData =
@@ -2969,7 +2969,7 @@ module ProcessingTests =
                             ResolutionHash = resolutionHash1.Value
                             VoteWeight = voteWeight.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce1 (Timestamp 0L) actionFee
 
@@ -3054,7 +3054,7 @@ module ProcessingTests =
                             IsPrimaryEligible = true
                             IsSecondaryEligible = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3142,7 +3142,7 @@ module ProcessingTests =
                             IsPrimaryEligible = true
                             IsSecondaryEligible = false
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3233,7 +3233,7 @@ module ProcessingTests =
                             IsPrimaryEligible = true
                             IsSecondaryEligible = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3248,7 +3248,7 @@ module ProcessingTests =
                             IsPrimaryEligible = true
                             IsSecondaryEligible = false
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -3349,7 +3349,7 @@ module ProcessingTests =
                             IsPrimaryEligible = true
                             IsSecondaryEligible = false
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3436,7 +3436,7 @@ module ProcessingTests =
                             IsPrimaryEligible = true
                             IsSecondaryEligible = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3451,7 +3451,7 @@ module ProcessingTests =
                             IsPrimaryEligible = true
                             IsSecondaryEligible = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -3557,7 +3557,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             IsEligibilityRequired = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3639,7 +3639,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             IsEligibilityRequired = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3719,7 +3719,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             IsEligibilityRequired = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3814,7 +3814,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             KycControllerAddress = otherWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3904,7 +3904,7 @@ module ProcessingTests =
                             AssetHash = assetHash1.Value
                             KycControllerAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -3918,7 +3918,7 @@ module ProcessingTests =
                             AssetHash = assetHash2.Value
                             KycControllerAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -4027,7 +4027,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             KycControllerAddress = otherWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4110,7 +4110,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             KycControllerAddress = otherWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4203,7 +4203,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             KycControllerAddress = otherWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4296,7 +4296,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             KycControllerAddress = otherWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4390,7 +4390,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4466,7 +4466,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4546,7 +4546,7 @@ module ProcessingTests =
                             AssetHash = assetHash1.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4559,7 +4559,7 @@ module ProcessingTests =
                             AssetHash = assetHash2.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -4655,7 +4655,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4727,7 +4727,7 @@ module ProcessingTests =
                             AssetHash = assetHash1.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4740,7 +4740,7 @@ module ProcessingTests =
                             AssetHash = assetHash2.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -4832,7 +4832,7 @@ module ProcessingTests =
                             AssetHash = assetHash1.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -4845,7 +4845,7 @@ module ProcessingTests =
                             AssetHash = assetHash2.Value
                             ProviderAddress = senderWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (nonce + 1) (Timestamp 0L) actionFee
 
@@ -4932,7 +4932,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = emissionAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5017,7 +5017,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = emissionAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5097,7 +5097,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = emissionAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5173,7 +5173,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = emissionAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5260,7 +5260,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = emissionAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5341,7 +5341,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = emissionAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5422,7 +5422,7 @@ module ProcessingTests =
                 {
                     ActionType = "CreateAccount"
                     ActionData = CreateAccountTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5502,7 +5502,7 @@ module ProcessingTests =
                 {
                     ActionType = "CreateAsset"
                     ActionData = CreateAssetTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5594,7 +5594,7 @@ module ProcessingTests =
                             AccountHash = accountHash.Value
                             ControllerAddress = newControllerWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5661,7 +5661,7 @@ module ProcessingTests =
                             AccountHash = accountHash.Value
                             ControllerAddress = newControllerWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5733,7 +5733,7 @@ module ProcessingTests =
                             AccountHash = accountHash.Value
                             ControllerAddress = newControllerWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5809,7 +5809,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             ControllerAddress = newControllerWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5876,7 +5876,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             ControllerAddress = newControllerWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -5948,7 +5948,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             ControllerAddress = newControllerWallet.Address.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6029,7 +6029,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             AssetCode = assetCode.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6100,7 +6100,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             AssetCode = assetCode.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6171,7 +6171,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             AssetCode = assetCode.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6246,7 +6246,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             AssetCode = assetCode.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6323,11 +6323,11 @@ module ProcessingTests =
                 {
                     ActionType = "CreateAsset"
                     ActionData = CreateAssetTxActionDto()
-                } :> obj
+                }
                 {
                     ActionType = "CreateAccount"
                     ActionData = CreateAssetTxActionDto()
-                } :> obj
+                }
                 {
                     ActionType = "CreateAssetEmission"
                     ActionData =
@@ -6336,7 +6336,7 @@ module ProcessingTests =
                             EmissionAccountHash = emissionAccountHash.Value
                             Amount = 30m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (Nonce 11L) (Timestamp 0L) actionFee
 
@@ -6345,7 +6345,7 @@ module ProcessingTests =
                 {
                     ActionType = "CreateAccount"
                     ActionData = CreateAssetTxActionDto()
-                } :> obj
+                }
                 {
                     ActionType = "TransferAsset"
                     ActionData =
@@ -6355,7 +6355,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = 10m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (Nonce 12L) (Timestamp 0L) actionFee
 
@@ -6364,7 +6364,7 @@ module ProcessingTests =
                 {
                     ActionType = "CreateAccount"
                     ActionData = CreateAssetTxActionDto()
-                } :> obj
+                }
                 {
                     ActionType = "TransferAsset"
                     ActionData =
@@ -6374,7 +6374,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = 20m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet (Nonce 13L) (Timestamp 0L) actionFee
 
@@ -6473,7 +6473,7 @@ module ProcessingTests =
                 {
                     ActionType = "CreateAccount"
                     ActionData = CreateAccountTxActionDto()
-                } :> obj
+                }
                 {
                     ActionType = "TransferAsset"
                     ActionData =
@@ -6483,7 +6483,7 @@ module ProcessingTests =
                             AssetHash = assetHash.Value
                             Amount = amountToTransfer.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6587,7 +6587,7 @@ module ProcessingTests =
                             SharedRewardPercent = newSharedRewardPercent
                             IsEnabled = false
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6668,7 +6668,7 @@ module ProcessingTests =
                             SharedRewardPercent = newSharedRewardPercent
                             IsEnabled = true
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -6737,7 +6737,7 @@ module ProcessingTests =
                 {
                     ActionType = "RemoveValidator"
                     ActionData = RemoveValidatorTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
@@ -6833,7 +6833,7 @@ module ProcessingTests =
                 {
                     ActionType = "RemoveValidator"
                     ActionData = RemoveValidatorTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
@@ -6911,7 +6911,7 @@ module ProcessingTests =
                 {
                     ActionType = "RemoveValidator"
                     ActionData = RemoveValidatorTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
@@ -7002,7 +7002,7 @@ module ProcessingTests =
                 {
                     ActionType = "RemoveValidator"
                     ActionData = RemoveValidatorTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
@@ -7091,7 +7091,7 @@ module ProcessingTests =
                 {
                     ActionType = "RemoveValidator"
                     ActionData = RemoveValidatorTxActionDto()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
@@ -7186,7 +7186,7 @@ module ProcessingTests =
                 {
                     ActionType = "RemoveValidator"
                     ActionData = RemoveValidatorTxActionDto()
-                } :> obj
+                }
                 {
                     ActionType = "ConfigureValidator"
                     ActionData =
@@ -7195,7 +7195,7 @@ module ProcessingTests =
                             SharedRewardPercent = newSharedRewardPercent
                             IsEnabled = false
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderValidatorWallet nonce (Timestamp 0L) actionFee
 
@@ -7306,7 +7306,7 @@ module ProcessingTests =
                             ValidatorAddress = stakeValidatorAddress.Value
                             Amount = stakeChangeAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -7376,7 +7376,7 @@ module ProcessingTests =
                             ValidatorAddress = stakeValidatorAddress.Value
                             Amount = stakeAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -7443,7 +7443,7 @@ module ProcessingTests =
                             ValidatorAddress = stakeValidatorAddress.Value
                             Amount = stakeAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -7515,7 +7515,7 @@ module ProcessingTests =
                             ValidatorAddress = stakeValidatorAddress.Value
                             Amount = stakeAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -7590,7 +7590,7 @@ module ProcessingTests =
                             ValidatorAddress = stakeValidatorAddress.Value
                             Amount = stakeAmount.Value
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 

@@ -33,7 +33,7 @@ module SubmissionTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = 10m
                         }
-                } :> obj
+                }
                 {
                     ActionType = "TransferChx"
                     ActionData =
@@ -41,7 +41,7 @@ module SubmissionTests =
                             RecipientAddress = recipientWallet.Address.Value
                             Amount = 10m
                         }
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
@@ -106,23 +106,23 @@ module SubmissionTests =
                 {
                     ActionType = "CreateAccount"
                     ActionData = new CreateAccountTxActionDto ()
-                } :> obj
+                }
                 {
                     ActionType = "CreateAccount"
                     ActionData = new CreateAccountTxActionDto ()
-                } :> obj
+                }
                 {
                     ActionType = "CreateAccount"
                     ActionData = new CreateAccountTxActionDto ()
-                } :> obj
+                }
                 {
                     ActionType = "CreateAccount"
                     ActionData = new CreateAccountTxActionDto ()
-                } :> obj
+                }
                 {
                     ActionType = "CreateAccount"
                     ActionData = new CreateAccountTxActionDto ()
-                } :> obj
+                }
             ]
             |> Helpers.newTx senderWallet nonce (Timestamp 0L) actionFee
 
