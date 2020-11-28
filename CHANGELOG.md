@@ -1,7 +1,69 @@
 # Changelog
 
 
-## 1.4.6 (2020-01-28)
+## 1.6.0 (2020-11-28)
+
+Backported following changes from vNext into the v1.6:
+
+- Replace raw disk files (i.e. blocks and TXs) with the DB storage.
+- Prevent TX submission if nonce is not greater than current address nonce.
+- Delete TXs below min fee from the pool.
+- Provide TX pool info by address.
+
+
+## 1.5.7 (2020-08-13)
+
+- Added support for installing the node on CentOS 8.
+
+
+## 1.5.6 (2020-05-13)
+
+- Fixed the issue with inconsistent block configuration structure at the activation of dormant validator logic.
+
+
+## 1.5.5 (2020-05-13)
+
+- Intermediate release for diagnostic purpose.
+
+
+## 1.5.4 (2020-05-05)
+
+- Activate dormant validator logic on `MAINNET` at block `1330000`.
+
+
+## 1.5.3 (2020-04-29)
+
+- Activated last proposed block tracking on `MAINNET` at block `1300000`.
+
+
+## 1.5.2 (2020-04-19)
+
+- Removed tracking of last proposed block until defined point in chain, to ensure full sync compatibility.
+
+
+## 1.5.1 (2020-04-15)
+
+- Activated dormant validator handling on `TESTNET`.
+
+
+## 1.5.0 (2020-04-14)
+
+- Implemented automatic disabling of dormant validators.
+
+
+## 1.4.8 (2020-04-10)
+
+- Don't allow removing a validator at the point of inclusion in the new active set.
+- Exposed additional fields in validators API endpoint.
+
+
+## 1.4.7 (2020-03-11)
+
+- Restart failed consensus state instance on error, to prevent node from staling.
+- Expose API endpoint to fetch asset by code.
+
+
+## 1.4.6 (2020-01-29)
 
 - Improve node startup block restoration logic.
 - Add API endpoint for info about single validator.
@@ -21,7 +83,7 @@
 - Improved cache management.
 - Improved the synchronization speed.
 - Fixed the issue with unresponsive consensus agent.
-- Added /consensus API endpoint.
+- Added `/consensus` API endpoint.
 
 
 ## 1.4.3 (2019-11-20)
@@ -38,6 +100,11 @@
 ## 1.4.1 (2019-11-13)
 
 - Tuned network code.
+
+
+## 1.3.8 (2019-11-13)
+
+- Increase allowed number of incoming connections on network socket.
 
 
 ## 1.4.0 (2019-11-11)
