@@ -3,16 +3,21 @@
 set -e
 cd "${0%/*}"
 
+NODE_DIR=/opt/own/blockchain/public/node
+DATA_DIR=/var/lib/own/blockchain/public/node
+
+if [ -f "$DATA_DIR/ins1/Data/Block_0" ]; then
+    echo "Update not possible. Please reinstall the node and perform full synchronization."
+    exit 1
+fi
+
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Node binaries'
 echo '////////////////////////////////////////////////////////////////////////////////'
-NODE_DIR=/opt/own/blockchain/public/node
 pushd "$NODE_DIR"
 sudo rm -rf *
 popd
 sudo cp -r ./* "$NODE_DIR"
-
-DATA_DIR=/var/lib/own/blockchain/public/node
 
 echo '////////////////////////////////////////////////////////////////////////////////'
 echo '// Systemd service unit'
