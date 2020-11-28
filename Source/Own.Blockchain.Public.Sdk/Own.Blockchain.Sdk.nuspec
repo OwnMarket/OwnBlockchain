@@ -9,5 +9,8 @@
     <authors>Own AG</authors>
     <copyright>© Own AG</copyright>
     <license type="expression">MIT</license>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
   </metadata>
 </package>
