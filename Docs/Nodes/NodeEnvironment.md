@@ -36,7 +36,7 @@ If the node is configured to use PostgreSQL as a database engine, and if Postgre
 
 ### Disk
 
-Disk space requirements depend on the amount of transactions processed on the blockchain. A MainNet node requires ~17 GB of disk space to store the first year of blockchain data. The growth, of course, depends on the future usage of the network.
+Disk space requirements depend on the amount of transactions processed on the blockchain. A MainNet node requires ~15 GB of disk space to store the first 2 million blocks of blockchain data. The growth, of course, depends on the future usage of the network.
 
 
 ## Operating System Requirements
