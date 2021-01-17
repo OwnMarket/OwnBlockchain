@@ -3,6 +3,7 @@
 open System
 open System.Security.Cryptography
 open Own.Common.FSharp
+open Own.Blockchain.Common
 open Own.Blockchain.Public.Core.DomainTypes
 
 module Signing =
@@ -32,21 +33,15 @@ module Signing =
         |> Secp256k1.calculatePublicKey
         |> Hashing.blockchainAddress
 
-    let private signHashBytes (networkId : NetworkId option) (PrivateKey privateKey) (hashBytes : byte[]) : Signature =
-        if hashBytes.Length <> 32 then
-            failwithf "Data to sign is expected to be 32 bytes long (256-bit hash). Actual length: %i" hashBytes.Length
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Generic
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        let dataToSign =
-            networkId
-            |> Option.map (fun h -> h.Value)
-            |? Array.empty
-            |> Array.append hashBytes
-            |> Hashing.hashBytes
-
+    let private sign (PrivateKey privateKey) (bytesToSign : byte[]) : Signature =
         let recoveryId, signatureSerialized =
             privateKey
             |> Hashing.decode
-            |> Secp256k1.sign dataToSign
+            |> Secp256k1.sign bytesToSign
 
         [
             signatureSerialized
@@ -55,6 +50,53 @@ module Signing =
         |> Array.concat
         |> Hashing.encode
         |> Signature
+
+    let private verify (Signature signature) bytesToVerify : BlockchainAddress option =
+        let signatureBytes = signature |> Hashing.decode
+        let recoveryId = signatureBytes.[64] |> int
+        let signature =
+            [
+                signatureBytes |> Seq.take 32 |> Seq.toArray
+                signatureBytes |> Seq.skip 32 |> Seq.take 32 |> Seq.toArray
+            ]
+            |> Array.concat
+            |> Secp256k1.parseSignature recoveryId
+
+        let publicKey = Secp256k1.recoverPublicKeyFromSignature signature bytesToVerify
+
+        if Secp256k1.verifySignature signature bytesToVerify publicKey then
+            Secp256k1.serializePublicKey publicKey
+            |> Hashing.blockchainAddress
+            |> Some
+        else
+            None
+
+    let signPlainText privateKey message =
+        message
+        |> Conversion.stringToBytes
+        |> Hashing.hashBytes
+        |> sign privateKey
+
+    let verifyPlainTextSignature signature message =
+        message
+        |> Conversion.stringToBytes
+        |> Hashing.hashBytes
+        |> verify signature
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Network-specific
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    let private signHashBytes (networkId : NetworkId option) privateKey (hashBytes : byte[]) : Signature =
+        if hashBytes.Length <> 32 then
+            failwithf "Data to sign is expected to be 32 bytes long (256-bit hash). Actual length: %i" hashBytes.Length
+
+        networkId
+        |> Option.map (fun h -> h.Value)
+        |? Array.empty
+        |> Array.append hashBytes
+        |> Hashing.hashBytes
+        |> sign privateKey
 
     let signHash getNetworkId privateKey hash =
         try
@@ -66,31 +108,11 @@ module Signing =
         | ex ->
             raise (new Exception(sprintf "Failed to sign the hash %s" hash, ex))
 
-    let verifySignature getNetworkId (Signature signature) messageHash : BlockchainAddress option =
+    let verifySignature getNetworkId signature messageHash : BlockchainAddress option =
         let networkId : NetworkId = getNetworkId ()
-        let signatureBytes = signature |> Hashing.decode
         let messageHashBytes = messageHash |> Hashing.decode
 
-        let dataToVerify =
-            networkId.Value
-            |> Array.append messageHashBytes
-            |> Hashing.hashBytes
-
-        let recoveryId = signatureBytes.[64] |> int
-
-        let signature =
-            [
-                signatureBytes |> Seq.take 32 |> Seq.toArray
-                signatureBytes |> Seq.skip 32 |> Seq.take 32 |> Seq.toArray
-            ]
-            |> Array.concat
-            |> Secp256k1.parseSignature recoveryId
-
-        let publicKey = Secp256k1.recoverPublicKeyFromSignature signature dataToVerify
-
-        if Secp256k1.verifySignature signature dataToVerify publicKey then
-            Secp256k1.serializePublicKey publicKey
-            |> Hashing.blockchainAddress
-            |> Some
-        else
-            None
+        networkId.Value
+        |> Array.append messageHashBytes
+        |> Hashing.hashBytes
+        |> verify signature

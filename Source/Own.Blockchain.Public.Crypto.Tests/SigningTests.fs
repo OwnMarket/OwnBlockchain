@@ -59,6 +59,34 @@ module SigningTests =
         test <@ actual = expected @>
 
     [<Fact>]
+    let ``Signing.signPlainText`` () =
+        // ARRANGE
+        let privateKey = PrivateKey "3rzY3EENhYrWXzUqNnMEbGUr3iEzzSZrjMwJ1CgQpJpq"
+        let txt = "Chainium"
+        let expected =
+            Signature "EzCsWgPozyVT9o6TycYV6q1n4YK4QWixa6Lk4GFvwrj6RU3K1wHcwNPZJUMBYcsGp5oFhytHiThon5zqE8uLk8naB"
+
+        // ACT
+        let actual = Signing.signPlainText privateKey txt
+
+        // ASSERT
+        test <@ actual = expected @>
+
+    [<Fact>]
+    let ``Signing.verifyPlainTextSignature`` () =
+        // ARRANGE
+        let wallet = Signing.generateWallet ()
+        let expected = Some wallet.Address
+        let txt = "Chainium"
+        let signature = Signing.signPlainText wallet.PrivateKey txt
+
+        // ACT
+        let actual = Signing.verifyPlainTextSignature signature txt
+
+        // ASSERT
+        test <@ actual = expected @>
+
+    [<Fact>]
     let ``Signing.signHash`` () =
         let messageHash = Conversion.stringToBytes "Chainium" |> Hashing.hash
 
