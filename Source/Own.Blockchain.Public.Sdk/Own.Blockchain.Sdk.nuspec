@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Own.Blockchain.Sdk</id>
-    <version>1.1.0</version>
+    <version>1.1.2</version>
     <title>Own Blockchain SDK</title>
     <description>SDK for interacting with WeOwn public blockchain</description>
     <tags>Chainium Own WeOwn Blockchain Crypto SDK</tags>
