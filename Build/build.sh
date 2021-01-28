@@ -61,11 +61,18 @@ rm -rf "$TEMP_DIR/Faucet"
 pushd ../Source/Own.Blockchain.Public.Sdk
 TEMP_SDK_LIB_DIR="$TEMP_DIR/SDK/lib/netstandard2.0"
 mkdir -p "$TEMP_SDK_LIB_DIR"
-dotnet publish -c Release -r linux-x64 -o "$TEMP_SDK_LIB_DIR"
+dotnet publish -c Release -o "$TEMP_SDK_LIB_DIR"
 cp *.nuspec "$TEMP_DIR/SDK"
 popd
 
-cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native "$TEMP_SDK_LIB_DIR"
+TEMP_SDK_NATIVE_DIR="$TEMP_DIR/SDK/runtimes"
+mkdir -p "$TEMP_SDK_NATIVE_DIR"
+cp -r ~/.nuget/packages/secp256k1.net/0.1.48/content/native/* "$TEMP_SDK_NATIVE_DIR"
+for PLATFORM_ID in linux-x64 osx-x64 win-x64 win-x86; do
+    PLATFORM_DIR="$TEMP_SDK_NATIVE_DIR/$PLATFORM_ID"
+    mkdir -p "$PLATFORM_DIR/native"
+    find "$PLATFORM_DIR" -maxdepth 1 -type f -exec mv "{}" "$PLATFORM_DIR/native" \;
+done
 
 pushd "$TEMP_DIR/SDK"
 nuget pack -OutputDirectory "$OUTPUT_DIR"

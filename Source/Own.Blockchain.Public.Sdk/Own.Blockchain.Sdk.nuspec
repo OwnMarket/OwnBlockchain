@@ -4,8 +4,8 @@
     <id>Own.Blockchain.Sdk</id>
     <version>1.1.0</version>
     <title>Own Blockchain SDK</title>
-    <description>SDK for interacting with Own public blockchain</description>
-    <tags>Chainium Own Blockchain Crypto SDK</tags>
+    <description>SDK for interacting with WeOwn public blockchain</description>
+    <tags>Chainium Own WeOwn Blockchain Crypto SDK</tags>
     <authors>Own AG</authors>
     <copyright>© Own AG</copyright>
     <license type="expression">MIT</license>
